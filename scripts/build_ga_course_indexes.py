@@ -12,8 +12,8 @@ from pathlib import Path
 import nbformat
 from nbformat.v4 import new_markdown_cell, new_notebook
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-BOOK_ROOT = PROJECT_ROOT / "Geometric-Algebra-for-Computer-Science"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
 
 
 @dataclass(frozen=True)
@@ -118,8 +118,8 @@ def build_book_index() -> str:
         "## How To Use This Course",
         "",
         "- Start with the canonical notebook in each chapter folder; each chapter also has a local `00-index.ipynb` with page-span notes and artifact pointers.",
-        "- Run notebooks top to bottom. Generated figures and checks are written under `D:/Geometry/artifacts/chapter-XX` or `D:/Geometry/artifacts/appendices`.",
-        "- Shared inspectable code lives under `D:/Geometry/utils`, including `utils.ga` and chapter-specific helper modules.",
+        "- Run notebooks top to bottom. Generated figures and checks are written under this book's `artifacts/chapter-XX` and `artifacts/appendices` folders.",
+        "- Shared inspectable code lives under this book's `utils` package, including `utils.ga` and chapter-specific helper modules.",
         "- The notebooks use original explanations and paraphrased problem framing; they avoid copied textbook prose, page scans, and long verbatim passages.",
         "",
     ]

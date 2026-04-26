@@ -10,15 +10,20 @@ from pathlib import Path
 import nbformat
 from nbclient import NotebookClient
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-BOOK_DIR = PROJECT_ROOT / "Geometric-Algebra-for-Computer-Science"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
 
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 def notebook_paths(all_notebooks: bool, limit: int | None) -> list[Path]:
-    paths = sorted(BOOK_DIR.rglob("*.ipynb"))
+    artifact_root = BOOK_ROOT / "artifacts"
+    paths = [
+        path
+        for path in sorted(BOOK_ROOT.rglob("*.ipynb"))
+        if artifact_root not in path.parents
+    ]
     generated = [
         path
         for path in paths
@@ -64,7 +69,7 @@ def main() -> None:
     if not paths:
         raise SystemExit("no notebooks found to validate")
     for index, path in enumerate(paths, start=1):
-        print(f"[{index}/{len(paths)}] {path.relative_to(PROJECT_ROOT)}")
+        print(f"[{index}/{len(paths)}] {path.relative_to(REPO_ROOT)}")
         try:
             execute_notebook(path, args.timeout)
         except Exception as exc:  # noqa: BLE001

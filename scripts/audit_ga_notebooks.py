@@ -8,8 +8,8 @@ from pathlib import Path
 
 import nbformat
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-BOOK_ROOT = PROJECT_ROOT / "Geometric-Algebra-for-Computer-Science"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
 
 
 def notebook_stats(path: Path) -> dict[str, object]:
@@ -28,7 +28,7 @@ def notebook_stats(path: Path) -> dict[str, object]:
         for source in code
     )
     return {
-        "path": str(path.relative_to(PROJECT_ROOT)),
+        "path": str(path.relative_to(REPO_ROOT)),
         "markdown_words": sum(len(source.split()) for source in markdown),
         "markdown_cells": len(markdown),
         "code_cells": len(code),
@@ -39,7 +39,12 @@ def notebook_stats(path: Path) -> dict[str, object]:
 
 
 def discover_notebooks() -> list[Path]:
-    candidates = sorted(BOOK_ROOT.rglob("*.ipynb"))
+    artifact_root = BOOK_ROOT / "artifacts"
+    candidates = [
+        path
+        for path in sorted(BOOK_ROOT.rglob("*.ipynb"))
+        if artifact_root not in path.parents
+    ]
     ignored_names = {
         "00-index.ipynb",
         "00-part-index.ipynb",

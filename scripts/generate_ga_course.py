@@ -15,9 +15,9 @@ from textwrap import dedent
 
 import nbformat as nbf
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-BOOK_DIR = PROJECT_ROOT / "Geometric-Algebra-for-Computer-Science"
-COURSE_ARTIFACT_ROOT = PROJECT_ROOT / "artifacts" / "book-ga-cs"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BOOK_DIR = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
+COURSE_ARTIFACT_ROOT = BOOK_DIR / "artifacts" / "book-ga-cs"
 
 KERNEL_METADATA = {
     "kernelspec": {"display_name": "Python (Geometry)", "language": "python", "name": "geometry"},
@@ -540,14 +540,18 @@ def setup_code(slug: str) -> str:
 
     import numpy as np
 
-    PROJECT_ROOT = Path.cwd()
+    BOOK_ROOT = Path.cwd()
     for candidate in (Path.cwd(), *Path.cwd().parents):
-        if (candidate / "utils" / "ga").exists():
-            PROJECT_ROOT = candidate
+        if (candidate / "00-book-index.ipynb").exists() and (candidate / "utils" / "ga").exists():
+            BOOK_ROOT = candidate
+            break
+        nested = candidate / "Geometric-Algebra-for-Computer-Science"
+        if (nested / "00-book-index.ipynb").exists() and (nested / "utils" / "ga").exists():
+            BOOK_ROOT = nested
             break
 
-    if str(PROJECT_ROOT) not in sys.path:
-        sys.path.insert(0, str(PROJECT_ROOT))
+    if str(BOOK_ROOT) not in sys.path:
+        sys.path.insert(0, str(BOOK_ROOT))
 
     from utils.artifacts import save_json
     from utils.ga import (
@@ -566,9 +570,9 @@ def setup_code(slug: str) -> str:
     )
 
     np.set_printoptions(precision=4, suppress=True)
-    ARTIFACT_ROOT = PROJECT_ROOT / "artifacts" / "book-ga-cs"
+    ARTIFACT_ROOT = BOOK_ROOT / "artifacts" / "book-ga-cs"
     ARTIFACT_TOPIC = "{slug}"
-    print(PROJECT_ROOT)
+    print(BOOK_ROOT)
     """
 
 

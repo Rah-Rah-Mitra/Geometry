@@ -13,9 +13,10 @@ import json
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
+if str(BOOK_ROOT) not in sys.path:
+    sys.path.insert(0, str(BOOK_ROOT))
 
 import matplotlib
 
