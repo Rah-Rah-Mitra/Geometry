@@ -1,0 +1,1297 @@
+12 APPLICATIONS OF THE
+   HOMOGENEOUS MODEL
+
+
+
+The homogeneous model is well suited to applications in which incidences of offset ﬂat
+subspaces are central, but less so when metric properties are also important. In this, it
+plays a role similar to Grassmann-Cayley algebra. This chapter gives details on its direct
+use in applications.
+In the ﬁrst part, we discuss the coordinate representations of the homogeneous elements.
+This naturally embeds the powerful Plücker coordinates for line computations, which
+are seen to be are a natural extension of homogeneous point coordinates (using the outer
+product). We show how you can master them and derive new application formulas simply.
+Those coordinates for lines, as well as points and planes, permit compact formulation of
+the afﬁne transformations as matrices.
+In the second part, we give an advanced application of the homogeneous model. It is well
+suited to encode the projective geometry involved in the imaging of the world by one
+or more pinhole cameras. The homogeneous model permits easy speciﬁcation of how
+observations in the various cameras are connected, which permits using observations by
+one camera to guide the search for corresponding features in another camera. We treat
+the fairly advanced subjects of stereo-vision based on point and line matches in 2 or 3
+cameras.
+Both subjects of this chapter are incidental to the main ﬂow of the book, though the sec-
+tion on Plücker coordinates prepares you for the implementation of geometric algebra in
+Part III.
+                                           327
+328                                                   APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+12.1 HOMOGENEOUS PLÜCKER COORDINATES IN 3-D
+In the previous chapter, we saw how the homogeneous model permits direct and dual
+representation of ﬂats. This extends the commonly used homogeneous coordinates for
+points and hyperplanes used throughout computer graphics and robotics literature. In
+some more specialized texts, you may also ﬁnd a representation of lines by Plücker coor-
+dinates. These are coordinates tailored to the description of lines, and they permit direct
+computation with lines as basic elements. That provides for faster and simpler code than if
+you described lines by a direction vector and a position vector, or as two plane equations,
+or by two points. Repeated attempts have been made to introduce them into mainstream
+computer graphics, where line computations are obviously important, but with limited
+success.
+It is clear why Plücker coordinates are less well known than they deserve to be. In the usual
+texts, they are presented as a strange mathematical trick, not clearly related to the homo-
+geneous coordinates. They require 6-D vectors and corresponding matrices, which appear
+extraneous to the usual 4-D data structures in homogeneous coordinate software. So most
+people continue to encode lines as composite elements in a data structure consisting of
+two vectors. This denies lines the status of being convenient elements of computation, and
+that in turn affects solutions to practical problems; if there is a natural way of describing
+and solving some problem using lines, it is less likely to be found. An example is visual
+self-localization by a robot in an ofﬁce environment; a typical solution looks to match
+point features, neglecting the numerous straight lines usually present in such an environ-
+ment. Reducing everything to point-based or plane-based computations may be subopti-
+mal and neglects the perfectly useful and stably measurable straight edges. But to actually
+use them in your estimation processes, you need the ability to compute with them.
+In this chapter, we show how to look at the Plücker coordinates in a manner that makes
+them natural and convenient to use. There are no new concepts here; this is an application
+of the structure of the previous chapter, but is good to relate the algebra to the speciﬁc
+coordinate techniques that the proponents of Plücker coordinates (such as [57]) suggest.
+
+
+12.1.1 LINE REPRESENTATION
+Let us again look at the representation of lines, and focus speciﬁcally on a 3-D base space.
+The line representation p ∧ q of (11.3) as
+
+                               p ∧ q = e0 ∧ (q − p) + p ∧ q                            (12.1)
+
+involves six coordinates: three for the 2-blade e0 ∧ (q − p) and three for the 2-blade p ∧ q.
+There is one dependency relationship (since e0 ∧ (q − p) ∧ (p ∧ q) = 0), and that reduces
+the degrees of freedom of the line to ﬁve. Geometrically, you can interpret the ﬁrst term
+of (12.1) as the direction vector and the second term as the moment. We have denoted
+those in Figure 12.1. This ﬁgure cannot show the fourth dimension e0 ; with that extra
+S E C T I O N 12 . 1   HOMOGENEOUS PLÜCKER COORDINATES IN 3-D                                                 329
+
+
+
+
+                                                          p×q
+
+
+
+
+                                                                          q−p
+
+
+
+                                                                                     q
+                                                                          p
+                                                                                         p∧q
+
+
+
+
+                          F i g u r e 12.1: Plücker coordinates of a line in 3-D.
+
+
+
+
+                       dimension it should look more like Figure 11.2(a), which is its lower-dimensional version
+                       for lines in 2-D.
+                       We can group the six coordinates of a line in 3-D as two vectors of three components, by
+                       employing the cross product:
+
+                                           p ∧ q = e0 ∧ (q − p) + p ∧ q = (p − q) e0 + (p × q) I3 .        (12.2)
+
+                       We recognize (minus) the direction vector and the dual of the moment 2-blade (which
+                       is the properly weighted normal vector of the plane through the line and the origin).
+                       Together, these form the Plücker coordinates of the 3-D line, denoted by
+
+                                                                   −{p − q; p × q}                         (12.3)
+
+                       (see [57]). Classically, these are often treated as six slots for storing numbers, without
+                       much algebraic structure, and manipulations with these numbers may seem rather arbi-
+                       trary, especially when combined with the homogeneous coordinate representations of
+                       points and planes. Table 12.1 gives some examples. The operations are simple and fast
+                       and that explains the interest of the Plücker coordinates, but the structure between these
+                       “magic formulas” is lost, so that implementations are hard to extend to cases not covered
+                       in such tables (or to higher dimensions). The usual nonalgebraic encoding of the type of
+                       element represented by different kinds of brackets around the coordinates does little to
+                       clarify the structure of the table.
+330                                                           APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+      T a b l e 12.1: Common Plücker coordinate computations with a line {a, m}, a plane [n, δ], and
+      a point (p : 1). The type of bracket denotes the type of object nonalgebraically. (Expanded from
+      [57].) Note that a is minus the usual direction vector.
+
+
+      (p : 1)                              Point at location p
+      [n, − δ]                             Plane with normal n and offset δ
+      n·p−δ                                Distance from point to plane
+      {a, m} = {p − q, p × q}              Line through two points, from Q to P
+      (m·m)/(a·a)                          Squared distance of line to origin
+      (m × a : a · a)                      Point on line closest to origin
+      [a × m : m · m]                      Plane through line, perpendicular to origin plane
+      (m × n + δ a : a · n)                Point in line and plane
+      [a × p − m : m · p]                  Plane through line and point
+      [a × n : m · n]                      Plane through line, additional direction n
+
+
+
+In the geometric algebra point of view, we see that the six numbers are coefﬁcients on a
+speciﬁc basis, in (12.2) demonstrated by the extra symbols e0 and I3 . This gives the full
+algebraic meaning to the Plücker coordinates, and endows them automatically with rela-
+tionships to the other elements through their membership in geometric algebra. Their
+actual construction in (12.2) is a clear instance of this: by taking the outer product of
+two homogeneous points, we get the line representation, providing the straightforward
+connection between point coordinates and line coordinates through the standard oper-
+ation of outer product. The same standard operation should connect the table entries
+for point, line, and plane through line and point. This obvious geometrical fact is not
+at all clear from the corresponding entries in Table 12.1. Only by translating the bracket
+notation back into its actual geometric basis and applying the standard constructions of
+geometric algebra can we understand and extend such tables.
+
+
+12.1.2 THE ELEMENTS IN COORDINATE FORM
+In the homogeneous model of 3-D space, the representation of the quantities in terms of
+coordinates is easily computed. We give a complete inventory of the repertoire of geomet-
+ric elements in the homogeneous model. We study the coordinate representation of the
+offset ﬂat subspaces of various grades (points, lines, and planes) in both their direct and
+in their dual representations.
+
+  1. Point. We have seen that the 1-D homogeneous subspace representing a 0-D point
+     in the homogeneous model is of the form e0 + p (or a multiple). In a homoge-
+     neous model of 3-space with basis {e1 , e2 , e3 , e0 }, it therefore has the coordinates
+S E C T I O N 12 . 1   HOMOGENEOUS PLÜCKER COORDINATES IN 3-D                                                          331
+
+
+
+
+                            (p1 , p2 , p3 , 1) (or a multiple), with (p1 , p2 , p3 ) the Euclidean coordinates of its
+                            position vector. In Table 12.1 this is written as (p : 1), following [57].
+                         2. Hyperplane. If we have a plane characterized as all points x such that x · n = δ,
+                            this can be written as (e0 + x) · (−n + δe0−1 ) = 0, so as x · (−n + δe0−1 ) = 0.
+                            Therefore −n + δe0−1 (or any multiple of it) is the dual of the blade representing
+                            the hyperplane. It is represented on a basis {e1 , e2 , e3 , e0−1 }, which appears different
+                            from the basis for points until you realize that e0−1 = ±e0 , depending on the metric
+                            chosen. Therefore the bases are the same, and you cannot tell these elements apart
+                            as vectors.
+                            If −n + δe0−1 is the dual of a blade, then the blade itself must be
+
+                                                      (−n + δe0−1 ) (e0 I3 ) = −ne0 I3 + δI3
+
+                            (where we take the undualization in the (n + 1)-dimensional homogeneous
+                            model, so relative to the pseudoscalar e0 I3 ). This has the Plücker coefﬁcients
+                            [n1 , n2 , n3 : −δ] used in Table 12.1, but on the trivector basis
+
+                                                     {e2 e3 e0 , e3 e1 e0 , e1 e2 e0 , − e1 e2 e3 },
+
+                            which is clearly different from the vector basis for points. In standard literature
+                            on Plücker coordinates, this difference in basis is denoted nonalgebraically by
+                            square brackets: [n : −δ]. Others consider planes as row vectors, and points as
+                            column vectors, so then their brackets could be interpreted as specifying this
+                            difference.
+                            If you want a consistent representation of the direct and dual-oriented planes, you
+                            should be very explicit in your choice of basis. The dual plane also has a represen-
+                            tation [n : −δ], but the basis is {−e1 , − e2 , − e3 , − e0−1 = ∓e0 } (the sign of the last
+                            element related to the sign in e0−1 = ±e0 ). Such headaches are the consequences of
+                            splitting up a single geometric element (the dual plane) in its coordinates and basis,
+                            each of which separately have no objective geometric meaning.
+                         3. Lines. We have seen above in (12.2) that a line is represented by minus the usual
+                            direction vector a = p − q and a moment vector m = p × q = −p × a as
+
+                                                                   L = a e0 + m I3                                (12.4)
+
+                            The six coefﬁcients {a1 , a2 , a3 , m1 , m2 , m3 } of this line are on the bivector basis
+
+                                                     {e1 e0 , e2 e0 , e3 e0 , e2 e3 , e3 e1 , e1 e2 }.            (12.5)
+
+                            In Table 12.1, we follow [57] in using curly brackets for this data type. In derivations
+                            with lines, we obviously need to revert to the fully expressed form.
+332                                                   APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+      The dual representation of such a line is
+                                 L∗ = L I3−1 e0−1 = a I3 + m e0−1 ,                    (12.6)
+      so it has the coefﬁcients {±m1 , ± m2 , ± m3 , a1 , a2 , a3 } on the bivector basis, the
+      ± signs are again determined by the metric chosen. Such a dual line is not in the
+      usual Plücker coordinate tables, though we will soon see that it is convenient to have.
+It should be clear that a mere coefﬁcient-based representation is dangerous and needs
+to be accompanied by some bookkeeping, at the very least by maintaining separate data
+structures (and this is presumably what the brackets are intended to remind us of). We
+would be in favor of letting that bookkeeping be done by the algebraic tags on the coef-
+ﬁcients; it is unambiguous, nonarbitrary, and computational. It is not necessarily more
+expensive, for the multiplications of the basis blades used as tags are essentially Boolean
+operations. We will expand on this in Chapter 19 for general geometric algebras.
+
+12.1.3 COMBINING ELEMENTS
+In interactions of elements, the explicit basis speciﬁcation takes care of the computational
+rules for the Plücker formula table. We give some examples to explain entries in the table,
+and some that go beyond it, to show how the algebra empowers you to extend it if your
+application so requires.
+
+  1. Plane through Point and Line. The formula for augmenting a point p by a line L
+     to make a plane is of course simply the outer product of point and the direct line
+     representation. Rewriting the result in terms of a 3-D cross product, we get
+
+              p ∧ L = (e0 + p) ∧ (a e0 + m I3 ) = e0 ∧ (m I3 + p ∧ a) + p ∧ (m I3 )
+                    = −(m + p × a) e0 I3 + (p · m) I3 .
+
+      So this is indeed the plane [a × p − m : m · p] listed in Table 12.1. That this should
+      be the natural extension of the construction of a line from two points is hard to
+      guess from the Plücker table—yet it is a straightforward computation when one
+      remembers their embedding in the full algebra.
+  2. Point and Plane. To compute the meet of a hyperplane Π and a point p in general
+     position, we need to compute by (5.8)
+                 Π ∩ p = −p ∩ Π = −Π∗ p = (n − δe0−1 )(e0 + p) = n · p − δ.
+      We recognize a scalar outcome, of which the geometry is the oriented distance
+      between point and hyperplane. This imbues scalars (grade 0 blades) with a geomet-
+      rical meaning: they are distances, and distances are apparently legitimate outcomes
+      of a coincidence operation.
+      This is of course the standard formula in the homogeneous model (calling this a
+      Plücker coordinate formula is overdoing it), but is nice to see it as a standard meet
+      rather than a special (albeit trivial) construct.
+S E C T I O N 12 . 1   HOMOGENEOUS PLÜCKER COORDINATES IN 3-D                                                    333
+
+
+
+
+                         3. Line and Plane. The meet of a plane dually represented as Π∗ = −n + δe0−1 and a
+                            line L, in general position, is computed as
+
+                                   −Π ∩ L = −L ∩ Π = −Π∗ L = (n − δe0−1 )(ae0 + mI3 )
+                                            = (n · a)e0 + n(mI3 ) + δa + 0 = (n · a)e0 + (n ∧ m)I3 + δa
+                                            = (n · a)e0 + (m × n + δa)
+
+                            Note how the orthogonality relationships between the basis elements automatically
+                            kill the potential term involving δ and m.
+                            This is the correct result, representing a point at the location (m × n + δa)/(n · a)
+                            in its homogeneous coordinates. It corresponds to the result in Table 12.1.
+                         4. Skew Lines. The meet of two lines L1 and L2 in general position (skew) is a measure
+                            of their signed distance. We have seen this in algebraic form in (11.9). Here we redo
+                            the computation compactly using the speciﬁc Plücker coordinates with their alge-
+                            braic tags:
+
+                                 L1 ∩ L2 = L∗2 L1 = (a2 I3 + m2 e0−1 )(a1 e0 + m1 I3 ) = −m1 · a2 − m2 · a1 .
+
+                            Note that we used the dual line representation for one of the lines to derive this
+                            compact expression quickly. Again, the basis orthogonality relationships have pre-
+                            vented terms containing m1 · m2 or a1 · a2 from appearing (as they should!). If you
+                            had any problems evaluating the expression (a2 I3 )(m1 I3 ), use duality (twice) and
+                            the commutation of the outer product of a vector and a bivector: (a2 I3 )(m1 I3 ) =
+                            ((a2 I3 ) ∧ m1 )I3 = (m1 ∧ (a2 I3 ))I3 = (m1 a2 )I3 I3 = −m1 · a2 .
+                            The scalar result above retrieves the well-known compact Plücker-based method
+                            of determining how lines pass each other in space; three tests on the signs of such
+                            quantities representing the edges of a triangle determine efﬁciently whether a ray
+                            hits the inside of the triangle.
+                         5. Intersecting Lines. When the parameters of the two lines L1 = p1 ∧ a1 and L2 =
+                            p2 ∧ a2 satisfy a1 ∧ a2 = 0 but (p1 ∧ a1 ) ∧ (p2 ∧ a2 ) = 0, then lines are not skew but
+                            intersect (the latter condition implies (p1 − p2 ) ∧ a1 ∧ a2 = 0). The resulting meet
+                            was given in (11.20); this is easily translated into Plücker format as
+
+                                       L1 ∩ L2 = a1 × a2 2 e0 + a1 m2 · (a1 × a2 ) + a2 m1 · (a2 × a1 )
+                                                  + 12 (a2 · m1 − a1 · m2 ) (a1 × a2 ).
+
+                            This outcome is immediately interpretable as a point; it is not one of the formulas
+                            one usually ﬁnds in the Plücker tables.
+
+                       The other relationships of the table can be derived in a similar manner. If you need one
+                       that is not in the table, you can now derive it yourself.
+334                                                          APPLICATIONS OF THE HOMOGENEOUS MODEL   C H A P T E R 12
+
+
+
+
+12.1.4 MATRICES OF MOTIONS IN PLÜCKER COORDINATES
+An afﬁne transformation A transforms a vector x to
+
+                                       A[x] = f[x] + t,
+
+and it has to satisfy A[e0 ] = e0 to be afﬁne. We found in (11.16) that a general afﬁne
+transformation of the base space Rn transforms a blade in the representation space
+Rn+1 as
+
+                               A[X] = f[X] + t ∧ (e0−1 f[X]),
+where we conveniently deﬁne f[e0 ] = e0 so that f can be extended to any blade.
+We can now spell out the effects on the different elements of their Plücker bases and write
+the result again on that basis. If we then represent the elements by Plücker coordinates,
+the afﬁne transformation is representable as a matrix. By this transference principle, we
+can easily compute the afﬁne matrices of some common transformations. We explain the
+derivations, which you can relate to the result given in Table 12.2.
+The point transformation is familiar, and a direct consequence of the deﬁnition. You can
+compute its columns simply:
+
+                      A[e0 ] = f[e0 ] + t = e0 + t, and A[ei ] = f[ei ].
+
+The line transformation follows from the transformation of the elements of the line basis,
+and is more involved:
+
+                        A[ei ∧ e0 ] = A[ei ] ∧ A[e0 ] = f[ei ] ∧ (e0 + t)
+                                    = f[ei ∧ e0 ] − t ∧ f[ei ]
+                                    = f[ei ∧ e0 ] − (t × f[ei ]) I3 ,
+
+which in its matrix form involves the cross product matrix [[t× ]]. The other part of the
+line transformation follows from results such as
+
+           A[e2 e3 ] = f[e2 e3 ] = f[e1 I3 ] = f−1 [e1 ]f[I3 ] = det(f) f−1 [e1 ]I3 .
+
+The transformations for a dual line have not been speciﬁed in the table, but they are easily
+made. Comparing (12.4) and (12.6), line dualization is achieved by the matrix
+                                                     
+                                           [[0]] ±[[1]]
+                                                         ,
+                                           [[1]] [[0]]
+
+the sign choice again depending on the metric of the representation space. Using this
+dualization matrix, any matrix for an operation on a dual line can be obtained from
+S E C T I O N 12 . 1   HOMOGENEOUS PLÜCKER COORDINATES IN 3-D                                                                      335
+
+
+
+
+                          T a b l e 12.2: Transformation of the ﬂats in the homogeneous model through matrices
+                          constructed from the outermorphisms acting on their Plücker coordinates. The same alge-
+                          braic formula leads to quite different matrices. [[t× ]] is the matrix of a cross product, deﬁned
+                          through [[t× ]][[x]] = [[t × x]]. [[1]] is an identity matrix of appropriate size, [[0]] a zero matrix.
+
+
+                       Element                Point                         Line                              Plane
+
+
+                                                                  (e1 e0 , e2 e0 , e3 e0 ,             (e2 e3 e0 , e3 e1 e0 ,
+                       Basis             (e1 , e2 , e3 , e0 )
+                                                                  e2 e 3 , e 3 e 1 , e 1 e 2 )        e1 e2 e0 , − e1 e2 e3 )
+
+
+                                                                                    
+                                                                                                                    
+                                                                                                                      
+                                             [[f]] [[t]]       [[f]]          [[0]]            det(f) [[f]]−T   [[0]]
+                       Afﬁne
+                                            [[0]]T 1        −[[t× ]][[f]] det(f) [[f]]−T     −[t]T det(f)[f]−T det(f)
+
+
+                                                                
+                                                                                                      
+                                                                                                                      
+                                             [[1]] [[t]]                [[1]] [[0]]                         [[1]] [[0]]
+                       Translation t
+                                            [[0]]T 1                   −[[t× ]] [[1]]                      −[[t]]T 1
+
+
+                                                                  
+                                                                                                       
+                                                                                                                        
+                                            [[R]] [[0]]                 [[R]] [[0]]                           [[R]] [[0]]
+                       Rotation R
+                                           [[0]]T 1                     [[0]] [[R]]                          [[0]]T 1
+
+
+
+
+                       the operation A on a direct line by undualization, performing A, and dualization. This
+                       transforms a matrix from acting on a direct line to acting on a dual line, according to
+
+                                                                       
+                                                                                               
+                                                                                                
+                                                     [[A11 ]] [[A12 ]]       ±[[A22 ]] [[A21 ]]
+                                                                         →                        .
+                                                     [[A21 ]] [[A22 ]]       [[A12 ]] ±[[A11 ]]
+
+
+                       In the plane transformation matrix acting on elements of the form [n, − δ], you may
+                       recognize the 3 × 3 upper left submatrix as the transformation of the normal vector from
+                       (4.15). This also occurs in the direct representation of the plane, for the resulting coordi-
+                       nates should undergo the same transformation whether they represent a direct plane or
+                       a dual plane. You may derive it in the same manner as in its occurrence for line transfor-
+                       mations, above.
+336                                                  APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+12.1.5 SPARSE USAGE OF THE 24 DIMENSIONS
+The Plücker coordinate representation and its associated matrices begin to show how an
+implementation of geometric algebra can make use of the sparseness of the geometrically
+signiﬁcant structures. In principle, the Clifford algebra of the 4-D representation space has
+24 = 16 dimensions, and arbitrary linear transformations on this algebra would therefore
+require 16×16 matrices, to be applied to a 16×1 vector, for some 2×162 = 512 operations
+per transformation.
+We have seen how the basic elements of 4-D geometry form subspaces of speciﬁc grades
+1, 4, 6, 4, and 1. A linear transformation of the representation vector space (which is
+4-D) leads to smaller matrices on each of those. This is already a reduction from 4, 096
+operations to 13 +43 +63 +43 +13 = 346, saving a factor of 12. Of course, one invokes only
+the transformation for the element at hand rather than transforming the whole ladder of
+subspaces the worst case among these are the middle grades, which require some 216
+operations for a general linear transformation.
+Even among those linear transformations on the representational spaces, not all are equal,
+for the extra dimension and the base space R3 have different semantics. Therefore, the
+useful transformations on the base space often have a special form. In the afﬁne matrices
+above, this is reﬂected by their sparseness; one block is always zero. This leads to some
+additional reduction of the computational load.
+We will go into the implementational issues in detail in Part III, after we have a more com-
+plete view of how geometric algebra performs its Euclidean computations. The matrices
+above will be found to play a role in fast implementations, and the consistent structure of
+geometric algebra permits them to be constructed implicitly by an automatic code gen-
+erator rather than having to be coded by hand.
+
+
+
+
+12.2 IMAGING BY MULTIPLE CAMERAS
+When you have multiple cameras observing the geometry of the world, the same points
+or lines may be visible from several of them. If you know the relative positions and ori-
+entations of the cameras, this allows a reconstruction of the 3-D event; alternatively, the
+observed consistency can be used to estimate the camera parameters.
+This geometrical situation is well suited to analysis by the homogeneous model, since
+it involves general points, lines, and planes. We do so in this section, retrieving classical
+results in a coordinate-free and highly geometrical manner. (Some indices on symbols are
+unavoidable, but they refer to the different cameras rather than to coordinates.)
+As is usual when treating these issues, we simplify the situation geometrically by consid-
+ering only ideal pinhole cameras, which perform an ideal central projection.
+S E C T I O N 12 . 2   IMAGING BY MULTIPLE CAMERAS                                                                                       337
+
+
+
+
+                                                                                                                                    e0
+                                                                                                                x
+                                                                f                            x
+                                                                            e0
+                                                    x
+                                                  f −1 . x
+
+
+
+
+                           F i g u r e 12.2: A pinhole camera.
+
+
+
+
+                       12.2.1 THE PINHOLE CAMERA
+                       Let us derive the formulas for the projection in a pinhole camera model using the
+                       homogeneous model. We choose to denote the vectors from the pinhole, so the pinhole
+                       itself is e0 , the point at the origin.1
+                       The imaging plane of the pinhole is in a direction e, at a distance f. We can merge these
+                       parameters f and e by saying that the support vector of the imaging plane is the vector f =
+                       f e. The imaging plane Π itself is then dually denoted by Π∗ ≡ π = e0−1 − f −1 . Verify this:
+                       the equation x · π = 0 for a probe point x = e0 + x should lead to the Euclidean equation
+                       x · f = f · f, showing that the f-component of the vector x has the correct magnitude to be
+                       in the image plane.
+                       If we now take an arbitrary unit point x in 3-D, the light ray from the pinhole to that
+                       point is
+                                                                    L = e0 ∧ x = e0 ∧ x.                                           (12.7)
+                       This deﬁnes x fully as the Euclidean coordinate of x relative to x, since the equation can
+                       be solved as x = e0−1 (e0 ∧ x). (This solution holds even when x has been given in homo-
+                       geneous coordinates relative to a different origin; see structural exercise 2.) This shows
+                       clearly that the point at x plays the role of the Euclidean direction x of the ray line. To
+                       ﬁnd the projection formula of the vector x, we need to intersect this line with the imaging
+                       plane. This is an instance of the meet formula, and since we have the plane given dually,
+                       it is easiest to use the inner product form of the meet:
+
+                             Π ∩ L = L ∩ Π = Π∗ L = πL = (e0−1 − f −1 )(e0 ∧ x) = e0 (f −1 · x) + x.                            (12.8)
+
+
+                       1   The usual texts on imaging prevent awkward signs by imagining the imaging plane to be in front of the pinhole,
+                           at a distance f in the direction denoted by a unit vector e. We do not need to do so in our formulas, since the
+                           intrinsic treatment of oriented elements in geometric algebra takes care of the signs automatically. You can take
+                           f positive or negative, and the formulas still work to produce the projection onto the corresponding image plane.
+338                                                         APPLICATIONS OF THE HOMOGENEOUS MODEL   C H A P T E R 12
+
+
+
+
+This is a point at the 3-D location
+                                                        x
+                                      x ≡ P[x] =       −1
+                                                                 ,                        (12.9)
+                                                   f        ·x
+that is precisely the rescaling of x you would expect: the magnitude guarantees that
+x · f = f · f, so that x indeed ends on the imaging plane. An interesting way of rewriting
+this is explored in structural exercise 3.
+The mapping that we have produced is nonlinear—already, the test of the linear scaling
+property (which requires that αx should be mapped onto αx ) fails. However, if we stay
+within the homogeneous domain and do not do the rescaling, the mapping is linear:
+
+                                    x → e0 (f −1 · x) + x.
+
+To get the mapping in terms of points rather than vectors, we substitute x = e0−1 (e0 ∧ x),
+and obtain
+                                                    
+                            x → e0 (f −1 − e0−1 ) · x + x.                         (12.10)
+Alternatively, you can derive this by using L = e0 ∧ x instead of L = e0 ∧ x in (12.8). The
+matrix of this linear transformation on the basis {e1 , e2 , e3 , e0 } is obtained by determining
+the action on each of the basis vectors. For instance, e0 → e0 −e0 = 0; and e1 → e0 (f −1 ·
+e1 ) + e1 , so that the e0 coordinate of the image of e1 is f −1 · e1 . The other components are
+similar, and the full matrix becomes
+                                                     
+                                             [[1]] [[0]]
+                                                          ,
+                                          [[f −1 ]]T 0
+
+familiar from the classical treatment (although that usually gives the matrix multiplied by
+f, with e3 as axis direction). In implementations, this is what you would use to act on
+the homogeneous vectors, but the explicit algebraic form is more convenient for symbolic
+simpliﬁcations.
+In the classical way of using homogeneous coordinates, the linearity of the mapping is
+already an advantage, certainly combined with the representation of rigid body motions
+as linear transformations in the homogeneous coordinate representation. But the geo-
+metric algebra treatment goes beyond this: not only is the transformation linear, it is also
+an outermorphism. Therefore, combinations of the original objects using outer products
+transform nicely (i.e., covariantly). In particular, spanning behaves well under the cen-
+tral projection. The general projection of a homogeneously represented object X to the
+imaging plane is simply always the meet of e0 ∧ X with the image plane Π:
+                                                                   
+                X → (e0−1 − f −1 )(e0 ∧ X) = e0 ∧ (f −1 − e0−1 ) X + X.
+
+You can show, by analogy to the above, that this results in a ﬂat with direction
+D = e0−1 (e0 ∧ (f −1 X )) and support point (e0−1 e0 ∧ X)/D.
+S E C T I O N 12 . 2   IMAGING BY MULTIPLE CAMERAS                                                                  339
+
+
+
+
+                       Lines can now be projected immediately. On the Plücker line basis of (12.5), the projection
+                       is represented by the matrix
+                                                         
+                                                                      ×
+                                                                          
+                                                           [[0]] [[f −1 ]]
+                                                                             ,                              (12.11)
+                                                           [[0]] [[1]]
+                       which is derived by techniques similar to our derivation of the matrices in Table 12.2. The
+                       projection of a general plane is not very interesting, since all planes project to the image
+                       plane by the matrix
+                                                                            
+                                                              [[0]] −[[f −1 ]]
+                                                                                 .
+                                                             [[0]]T [[1]]
+                       Of course, in the homogeneous model of geometric algebra, we also have the rigid body
+                       motions present as linear transformations and their outermorphisms, so the whole frame-
+                       work now contains everything of interest in a consistent manner.
+
+                       12.2.2 HOMOGENEOUS COORDINATES AS IMAGING
+                       Two points spanning a line in the world generate a projected line in the image plane
+                       spanned by two projected points. It is an amusing (but rather confusing) property of
+                       the homogeneous model that homogeneous coordinates can be introduced in the image
+                       plane using the support vector f as the extra homogeneous embedding dimension. Let
+                       us consider a camera or focal length equal to 1, and focal vector f. We will denote points
+                       in the image plane relative to the optical center (the location f ) by an underscore. Then
+                       a point at image location x is seen from the pinhole as f + x. It generates a ray of pos-
+                       sible real-world positions e0 ∧ (f + x). The line spanned by two image points could be
+                       constructed in two ways, which are indeed consistent:
+                          •   The two rays e0 ∧(f+x) and e0 ∧(f+y) together span a world plane e0 ∧(f+x)∧(f+y),
+                              and this plane cuts the image plane in the world line
+
+                                                        (e0−1 − f −1 )(e0 ∧ (f + x) ∧ (f + y)) =
+                                                         = e0 ∧ (y − x) + (f + x) ∧ (f + y)
+                                                         = (e0 + f + x) ∧ (y − x).
+
+                              We see from the ﬁnal form (compare (11.3)) that this is a line in the direction (y−x)
+                              passing through the point f+x of the world (which is the point x on the image plane).
+                              This is of course what we would expect.
+                          •   Directly taking the outer product of the two points in the image plane gives
+
+                                                       (f + x) ∧ (f + y) = (f + x) ∧ (y − x).
+
+                              If we are to interpret this as the line through the image points at x and y, then clearly
+                              f plays the role of the homogeneous coordinate in (11.3).
+340                                                   APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+The similarity of the two approaches is apparent and generalizes to higher dimensions.
+Taking a slightly philosophical excursion, working in homogeneous coordinates is like
+viewing the 3-D world through a pinhole in a 4-D camera. Homogeneous coordinates
+are a useful version of Plato’s cave metaphor, where the 3-D shadows of a 4-D higher
+reality are what we experience, but in which there is a clear mathematical advantage to
+use the 4-D “ideal world” as our spatial representation. With homogeneous coordinates,
+this metaphor can be taken literally as a projection from 4-D to 3-D.
+
+
+12.2.3 CAMERAS AND STEREO VISION
+When working with cameras, one often measures positions in the local coordinate system
+of the camera. In that case, the use of coordinates is essential for the conversions to objec-
+tive world coordinates for comparison with other camera measurements. So even though
+geometric algebra is coordinate-free in a way that linear algebra is not, we still need coor-
+dinate transformations for common geometrical tasks.
+Let us look at a single camera. Its position and orientation can be characterized rela-
+tive to a standard position and orientation, at the origin e0 looking in the fe3 -direction
+(where f is the focal length). Any general rigid body transformation can be performed as
+a pure rotation around the origin, followed by a translation. Let us denote the composite
+transformation by A[·]. In the homogeneous coordinate representation, it is linear and an
+outermorphism.
+To be speciﬁc, consider a camera oriented by RA (so that RA [fe3 ] = f) and its pinhole at
+the point a = e0 + a. This deﬁnes A as
+
+                          X → A[X] = RA [X] + a ∧ (e0−1 RA [X]).                     (12.12)
+
+If we measure a point in the image of camera A at location x (which for now we take to
+be converted to millimeters on the image plane after processing using the internal camera
+parameters), then this is a vector having the direction x = fe3 + x in the local coordinate
+system. Also in that system, it determines the line e0 ∧ x emanating from the pinhole. This
+line can be converted to world coordinates by applying A, which you may either see as a
+coordinate transformation or as moving the camera to its actual conﬁguration:
+
+                       A[e0 ∧ x] = A[e0 ] ∧ A[x] = (e0 + a) ∧ RA [x].
+
+Here we applied the outermorphism A to each of the factors in the outer product. We
+wrote the result on e0 as a translation characterized by the position vector a and its
+effect on the purely directional element x as a rotation RA . Both are easy consequences
+of (12.12).
+Introducing a second camera B, we have a similar equation generating a line B[e0 ∧ xB ]
+from the observation xB (or xB ) and the rigid body motion B. If those two cameras are
+looking at the same point x and we know their relative positions and attitudes, then the
+S E C T I O N 12 . 2   IMAGING BY MULTIPLE CAMERAS                                                                341
+
+
+
+
+                       measurements xA and xB (or rather xA and xB ) are not geometrically independent. There
+                       is a linear constraint relating them, known as the epipolar constraint, which arises from
+                       the fact that the two 3-D lines we have constructed should intersect in the point x.
+                       For this to happen, the meet of the two lines should be degenerate, which happens when
+                       their naïve join (computed as an outer product) is zero:
+
+                                                       0 = A[e0 ∧ xA ] ∧ B[e0 ∧ xB ].
+
+                       Because A and B are outermorphisms, we can manipulate this equation to a more familiar
+                       form. First distribute the mappings over the outer products:
+
+                             0 = A[e0 ] ∧ A[xA ] ∧ B[e0 ] ∧ B[xB ] = (e0 + a) ∧ RA [xA ] ∧ (e0 + b) ∧ RB [xB ].
+
+                       Taking the inner product of this equation with e0−1 , and noting that the second and fourth
+                       factor are purely Euclidean (so that they do not contribute), we get
+
+                                     0 = RA [xA ] ∧ (e0 + b) ∧ RB [xB ] + (e0 + a) ∧ RA [xA ] ∧ RB [xB ]
+                                       = RA [xA ] ∧ (b − a) ∧ RB [xB ].
+
+                       The meaning of the resulting equation is sketched in Figure 12.3: the observed vectors and
+                       the relative camera position are in one plane. (If in the derivation the idea of taking the
+                       inner product with e0−1 strikes you as unnatural, you can also write out the above equation
+                       in its Euclidean and non-Euclidean components, and focus on the non-Euclidean part
+                       being zero—that is, the same. The Euclidean part is then automatically zero, so we have
+                       not lost generality.)
+                       The equation above is often rewritten in terms of the relative rotation of B relative to A,
+                       which is RBA ≡ RA−1 RB . This gives, applying RA−1 to the whole blade equation:
+
+                                                     0 = xA ∧ RA−1 [b − a] ∧ RBA [xB ].
+
+                       We recognize in RA−1 [b − a] the position of the pinhole of B measured in the A-frame.
+                       Denoting that as the translation vector tA , we get
+
+                                                          0 = xA ∧ tA ∧ RBA [xB ].                            (12.13)
+
+                       This is the epipolar constraint on the point xA given the point xB (in B coordinates) and
+                       the relative poses of the cameras.
+                       Note that this equation states that the measured xA should lie on the 2-blade tA ∧ RBA [xB ]
+                       parameterized by xB . In the image plane, this implies that the point xA /fA lies on the line
+                       tA ∧ RBA [e3 + xB /fB ]—note now e3 plays the role of a homogeneous model dimension for
+                       the image plane, just as we showed before.
+342                                                               APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+                                             x
+
+
+                           RB[xB]
+                                                            RA[xA]
+
+
+
+
+                                                                                    A
+
+                       B
+                                                                             a
+                                           b
+                                                                 eo
+
+
+
+      F i g u r e 12.3: The epipolar constraint. We show two cameras A (in red) and B (in green) with
+      their observations of the same point X. In the world, these give the vectors RA [xA ] from the
+      location a of camera A and RB [xB ] from the location b of camera B. Since the cameras are
+      looking at the same point, these ray vectors must be in one plane with the relative position
+      vector b − a, and that is the epipolar condition. For clarity in visualization, we have followed the
+      habit of most literature to draw the image planes in front of the pinholes.
+
+
+
+
+In the classical treatment of the epipolar constraint, there are of course no trivector
+equations. We get to a scalar equation by taking the Euclidean dual of (12.13), which
+gives
+                                         0 = xA · (tA × RBA [xB ]).
+This is the form in which you ﬁnd the epipolar constraint in texts on stereo vision,
+although it is often formulated in matrix form
+                                        0 = [[xA ]]T [[t×      B
+                                                        A ]][[RA ]][[xB ]]
+
+by introducing the matrix [[t×   A ]] that performs the cross product with tA . The combination
+             ×      B
+[[EA ]] = [[tA ]][[RA ]] is known as the essential matrix of the stereo vision problem.
+   B
+
+
+
+12.2.4 LINE-BASED STEREO VISION
+In more advanced stereo vision, one does not use only potential point matches to recon-
+struct the depth image of reality, but also line matches. In the usual formulation, the
+S E C T I O N 12 . 2   IMAGING BY MULTIPLE CAMERAS                                                                        343
+
+
+
+
+                       representation of such lines and the matches that are their consequences is not always
+                       straightforward. The reason is that you require Plücker coordinates to represent lines, and
+                       this is an extra representational step in the classical approaches. In the geometric algebra
+                       approach, lines are natural elements of the algebra, just like points are, and the formu-
+                       lation of the line-based stereo matching is more clearly analogous to that for points. We
+                       investigate that brieﬂy in this section.
+                       Consider a camera A as above, with rigid body motion A[·], but now look at the inter-
+                       pretation of an observed line in the image plane. First, place a camera in the origin, in
+                       standard orientation. A line in the image plane at location x in the image and direction u
+                       (parallel to the image plane) is
+
+                                                     L = (e0 + f + x) ∧ u = e0 u + M,
+
+                       so it is characterized by a direction vector u and a 3-D moment 2-blade M = (f + x) ∧ u.
+                       This line generates the plane of rays from the pinhole e0 :
+
+                                                              e0 ∧ L = e0 ∧ M,                                    (12.14)
+
+                       which only depends on the moment of the line; see Figure 12.4. The 3-D Euclidean
+                       2-blade M thus completely characterizes the observed line (obviously, you can retrieve
+                       the direction by intersection with the image plane), and we will denote the observed line
+                       by this 2-blade. (This is also shown by the matrix of the line projection in (12.11), which
+                       only involves the coordinates of the moment.) Note the subtle difference between the
+
+
+
+
+                                                       f
+                                                                 e0
+
+                                              L    M
+
+
+
+
+                          F i g u r e 12.4: The plane of rays generated by a line observation L is characterized by its
+                          moment 2-blade M.
+344                                                   APPLICATIONS OF THE HOMOGENEOUS MODEL     C H A P T E R 12
+
+
+
+
+effectively observed line M and the real-world 3-D line L, and how (12.14) expresses that
+they are geometrically and algebraically identical when seen from the pinhole.
+Moving the camera to its general position and orientation by its rigid body motion A, we
+ﬁnd that an observed line LA in the image corresponds to a potential plane
+                     A[e0 ∧ LA ] = A[e0 ∧ MA ] = (e0 + a) ∧ RA [MA ].
+Now consider three cameras A, B, C, each observing the same line L as LA , LB , and LC ,
+respectively, in their own local frames of reference. The world planes of the observed lines
+should intersect in line L. Algebraically, we can express this by stating that their meet
+naïvely computed with the pseudoscalar e0 I3 as a join is zero (since they are not in gen-
+eral position). This gives the equation
+                    0 = (A[e0 ∧ LA ])∗ ∧ (B[e0 ∧ LB ])∗ ∧ (C[e0 ∧ LC ])∗ .
+To get more speciﬁc in the consequences, we expand the rigid body motion in its trans-
+lational and rotational parts and write the full dual in terms of the Euclidean dual (since
+I4 = e0 I3 , we have X∗ = X夹 e0−1 ). As shorthand, we deﬁne Euclidean dual moment vec-
+tors mA ≡ MA 夹 , and so on, in local camera coordinates, and their rotated versions mA ,
+mB , mC to world coordinates:
+
+                               mA ≡ RA [mA ] = RA [MA ]夹 ,
+                               mB ≡ RB [mB ] = RB [MB ]夹 ,
+                               mC ≡ RC [mC ] = RC [MC ]夹 .
+The mA , mB , mC are dual representations of the planes of the rays for each of the lines and
+therefore simply dual representations of the observed lines in all their projective essence.
+You may think of them as the observed lines. The mA , and so on, are those directions
+transferred to world coordinates. Then we obtain
+                            ∗                      ∗                        ∗
+    0 = (e0 + a) ∧ RA [MA ] ∧ (e0 + b) ∧ RB [MB ] ∧ (e0 + c) ∧ RC [MC ]
+      = ((e0 + a)(mA e0−1 )) ∧ ((e0 + b)(mB e0−1 )) ∧ ((e0 + c)(mC e0−1 ))
+                                                                         
+      = (a · mA ) e0−1 − mA ∧ (b · mB ) e0−1 − mB ∧ (c · mC ) e0−1 − mC
+      = −mA ∧ mB ∧ mC
+                                                                        
+        + (a · mA ) ∧ mB ∧ mC − mA ∧ (b · mB ) ∧ mC + mA ∧ mB ∧ (c · mC ) e0−1 .
+Therefore, there are two equations that follow from the triviality of the meet:
+                                    0 = mA ∧ mB ∧ mC
+and
+            0 = (a · mA ) mB ∧ mC − (b · mB ) mA ∧ mC + (c · mC ) mA ∧ mB .
+The ﬁrst equation has a simple geometrical interpretation: the mi are the normal vectors
+of planes through a common line L, and these are of course coplanar. The second involves
+the positional aspects, and is more quantitative.
+S E C T I O N 12 . 2   IMAGING BY MULTIPLE CAMERAS                                                                                       345
+
+
+
+
+                       We can interpret these equations as a condition on any of the observed lines, given the
+                       other two lines. Let us develop this for mA . To factorize mA out of the second equation
+                       (in terms of the outer product), we need to get rid of the ﬁrst term. We can do so by taking
+                       the inner product with a of the ﬁrst equation, which gives
+
+                                    0 = (a · mA ) ∧ mB ∧ mC − (a · mB ) ∧ mA ∧ mC + (a · mC )mA ∧ mB .
+
+                       Inserting this into the second equation yields
+                                                                                             
+                                             0 = mA ∧            (c − a) · mC mB − (b − a) · mB mC .                               (12.15)
+
+                       Given the observed lines mB and mC in their local coordinates, plus the relative poses
+                       of the cameras as given by A, B, C, this speciﬁes what mA should be (modulo the usual
+                       homogeneous scale factor). This is a linear relationship of two variables mB and mC to
+                       provide a third: it is a tensor, and we can rewrite it symbolically as a mapping T with two
+                       arguments:
+                                                                   0 = mA ∧ T(mB , mC ).
+                       T is called the trifocal tensor. One can derive similar trifocal tensors by factoring out mB
+                       or mC , so there are three of them in this situation.
+                       Converting this into the more classical coordinate form, we consider everything relative
+                       to camera A. This means that we should apply A −1 to the tensor equation. All elements
+                       involved are Euclidean direction elements, so they simply transform by RA−1 . Let us abbre-
+                       viate RBA ≡ RA−1 RB and RCA ≡ RA−1 RC , and the relative position of the cameras B and C in
+                       terms of A as tB ≡ RA−1 [b − a] and tC ≡ RA−1 [c − a]. 2
+                                                                                                          
+                                         0 = mA ∧ RBA [mB ] (tC · RCA [mC ]) − (RBA [mB ] · tB ) RCA [mC ]
+
+                       The result is then written in terms of matrix operations on vectors (since that is all you
+                       have classically), or in tensor notation. The i th coordinate of the line mA is proportional to
+                                                                                                                   
+                                                               j                               j
+                                   [[mA ]]i ∝ [[mB ]]j [[RBA ]]i [[tC ]]l [[RCA ]]kl − [[RBA ]]m [[tB ]]m [[RCA ]]ki [[mC ]]k
+                                                       jk
+                                               = [[T]]i [[mB ]]j [[mC ]]k ,
+
+                       so that gives the trifocal tensor in tensorial notation (including the usual summation con-
+                       vention over repeated upper and lower index pairs).
+
+
+                       2   In the other literature on multicamera treatments, it is customary to parameterize the rigid body motion inversely
+                                                                                                                                     −1
+                           (not where the camera frame is in the world frame, but vice versa). Replace our rotations like R with R and t
+                                    −1
+                           with −R t to get that parameterization. It simpliﬁes the appearance of the ﬁnal results somewhat, since an R
+                           gets absorbed into the new t twice.
+346                                                  APPLICATIONS OF THE HOMOGENEOUS MODEL     C H A P T E R 12
+
+
+
+
+The trifocal constraint of (12.15) can be used to derive constraints on points as well as
+lines. For example, if we know the two observed lines mB and mC , and wonder what the
+constraint might be for a point xA to be the projection of the line Λ, then this follows
+immediately from the demand that it should lie on the line LA , which is xA ∧ e0 ∧ MA = 0,
+so xA ∧ MA = 0. Introducing xA = A[xA ] = a + RA [xA ] as the same point in world
+coordinates, we have xA · mA = 0, so that the constraint on the point is obtained by
+taking the inner product of the trifocal constraint with xA :
+                                                           
+                0 = (xA · mB ) (c − a) · mC − mB · (b − a) (xA · mC ).
+
+Therefore, xA lies on the dual line
+                                                    
+                         mB (c − a) · mC − mB · (b − a) mC .
+
+Another way of looking at the trifocal tensor is as a line-parameterized homography (i.e., a
+a projective mapping between spaces). Suppose we ﬁx mC ; then this determines a spatial
+plane, which can be used to transfer points in B that are observations from the same world
+line to points in A (project the ray of observation xB to meet the plane in a point, then
+observe this point as xA ). This mapping can be extended uniquely to the whole image
+plane as a homography. We can give an explicit formula for this homography between the
+planes A and B: it should be proportional to the inverse adjoint of the mapping for lines
+mA and mB , given mC . The adjoint of
+                                                                 
+                   m → (c − a) · mC RB [m] − (b − a) · RB [m] mC
+
+is easily found as
+                                    
+                     x → (c − a) · mC RB−1 [x] − (mC · x) RB−1 [b − a],
+
+and we take the inverse by simply considering this not as a mapping from xB to xA , but
+from xA to xB . Therefore the homography between image A and image B is
+                                    
+                   xB ∝ (c − a) · mC RAB [xA ] − (mC · xA ) RAB [b − a].
+
+Similarly, you can derive where a point should be in image A once you have observed it
+in image B and C, just using the trifocal tensor.
+If you therefore have a robotic environment in which you see enough lines for which you
+are able to do the correspondence in the three images, then you can estimate the trifocal
+tensor (using techniques from [25]), and employ this to compute other correspondences
+between the images as well.
+
+
+12.3 FURTHER READING
+The impressive book by Faugeras and Luong [21] deals with the geometry of mul-
+tiple cameras. Like [60], it uses the Grassmann-Cayley algebra of the outer product
+S E C T I O N 12 . 4   EXERCISES                                                                                   347
+
+
+
+
+                       (which they call join) and its adjoint (which they call meet). This provides a concept
+                       of duality, but no metric. The book contains a compact mathematical explanation of
+                       this structure, illustrated with geometrical usage. Unfortunately, the authors quickly
+                       revert to a matrix-based notation in the chapters that put the structure to practical use,
+                       and what could have been explicitly deﬁned algebraic products become tricks in matrix
+                       manipulation.
+                       Another modern reference on the geometry of imaging is [25], which dextrously
+                       avoids using even Grassmann algebra. All operations are expressed in terms of matrices
+                       or tensors deﬁned in terms of Plücker coordinates. The powerful results can therefore
+                       be implemented directly, but the geometrical structure of the techniques is often hard
+                       to grasp.
+                       We ﬁnd that both these books have become much more accessible now that geometric
+                       algebra offers a structural, representation-independent insight to help one understand
+                       what is essentially going on. They can then be browsed quickly for useful techniques.
+
+
+
+                       12.4 EXERCISES
+                       12.4.1 STRUCTURAL EXERCISES
+                         1. Table 12.1 contains the case in which a line {a, m} is extended to a plane by
+                            an additional direction n to form the plane [a × n : n · m]. Demonstrate the
+                            correctness of this formula by representing the spanning L ∧ n in terms of the
+                            Plücker coordinates.
+                         2. Show that the solution of x from the relationship e0 ∧ x = e0 ∧ x of (12.7) is indeed
+                            x = e0−1 (e0 ∧ x), and understand to your satisfaction that this still gives the cor-
+                            rect vector x for the point x, even when the latter would have been given relative to
+                            another origin e0 for the homogeneous coordinates.
+                         3. Knowing some of the standard formulas in geometric algebra, you may recognize
+                            that the central projection formula (12.9) is not unlike the usual orthogonal pro-
+                            jection formula onto a line with direction a, which maps x to (x · a) a −1 . Demon-
+                            strate that we can consider the central projection x → x /(f −1 · x) as the ﬁxed
+                            vector f gets inverted, projected onto the variable vector x, and then reinverted, to pro-
+                            duce x . This interpretation of the formula generalizes to substituting x by a line
+                            or plane (just replace the inner product with the contraction); it then produces
+                            the support vector of the projected line or plane. (Hint: Show that x satisﬁes:
+                            x −1 = (f −1 · x) x −1 = (f −1 · x −1 ) x and interpret.)
+                         4. Show that the images of all x under the construction of the previous exercise before
+                            the ﬁnal inversion (that is, (f −1 · x)/x) lie on a sphere through the pinhole and
+                            the end of the vector f −1 . This is sketched in Figure 12.5 for f = |f = 1. It bears
+                            uncanny resemblance to an eyeball!
+348                                                                APPLICATIONS OF THE HOMOGENEOUS MODEL     C H A P T E R 12
+
+
+
+
+                                                                                 x
+
+
+                                    f                   f      o
+
+
+                                                f−1.x
+                                         x       x
+                                        f−1.x
+
+
+
+
+      F i g u r e 12.5: The projection of the optical center f onto all rays through the pinhole generates
+      an eyeball.
+
+
+
+
+  5. Equation (12.9) gives the projection of a unit 3-D point at location x to become a
+     point at location x , which is on the image plane, but it is not expressed yet in image
+     plane coordinates x. Show that the mapping from the 3-D point at x to the image
+     point at x = x − f can be written as
+
+                                                            f (f −1 ∧ x)
+                                                     x →                   .
+                                                              f −1 · x
+         Interpret this expression geometrically, especially the numerator.
+  6. Represent the result of the previous problem in homogeneous coordinates, using
+     the center of the image at f as origin. Before you do so, guess the answer!
+
+
+12.5 PROGRAMMING EXAMPLES AND EXERCISES
+12.5.1 LOADING TRANSFORMATIONS INTO OPENGL
+This example illustrates the good interoperability between homogeneous coordinates-
+based software (such as OpenGL) and the homogeneous model.
+Any outermorphism can be straightforwardly loaded into OpenGL. First, the images
+of the four basis vectors under the outermorphism are computed, and then the matrix
+S E C T I O N 12 . 5   PROGRAMMING EXAMPLES AND EXERCISES                                                    349
+
+
+
+
+                       representation of the outermorphism is constructed, whose coordinates are then loaded
+                       onto the modelview matrix of OpenGL.
+                       We use a translation-rotation as an simple example. In our OpenGL examples so far,
+                       loading this transformation to the modelview matrix would be implemented as:
+
+                          glTranslatef(0.0f, 0.0f, distance); // translate
+                          rotor R = g_modelRotor;
+                          rotorGLMult(R); // rotate (implemented in h3ga_util.cpp)
+
+                       Using the matrix representation of the outermorphism, this becomes:
+
+                          // get the translation vector & the rotor
+                          h3ga::vector T = _vector(distance * e3);
+                          rotor R = g_modelRotor;
+                          rotor Ri = _rotor(inverse(R));
+
+                          // compute images of basis vectors:
+                          point imageOfE1 = _point(R * e1 * Ri + (T ^ (e0 << (R * e1 * Ri))));
+                          point imageOfE2 = _point(R * e2 * Ri + (T ^ (e0 << (R * e2 * Ri))));
+                          point imageOfE3 = _point(R * e3 * Ri + (T ^ (e0 << (R * e3 * Ri))));
+                          point imageOfE0 = _point(R * e0 * Ri + (T ^ (e0 << (R * e0 * Ri))));
+
+                          // create matrix representation:
+                          omPoint M(imageOfE1, imageOfE2, imageOfE3, imageOfE0);
+
+                          // load matrix representation into GL modelview matrix:
+                          glLoadMatrixf(M.m_c);
+
+                       For this simple example, it is of course counterproductive to replace the short OpenGL
+                       code with its geometric algebra equivalent: the example is intended to demonstrate the
+                       principles only.
+
+                       12.5.2 TRANSFORMING PRIMITIVES WITH OPENGL MATRICES
+                       This example performs the opposite of the previous example. Instead of setting the
+                       OpenGL modelview matrix using the matrix representation of an outermorphism, it
+                       reads out the modelview matrix and turns it into a matrix representation of an outer-
+                       morphism. The actions are as follows:
+
+                          •   The code reads the OpenGL transformation matrix;
+                          •   It loads this into a matrix representation of an outermorphism;
+                          •   It resets the OpenGL modelview matrix;
+                          •   It applies the transform to the primitives, and then draws them.
+
+                       We can then transform not only points, but also lines and planes, as this example is just
+                       the example from Section 11.13.2 with some modiﬁcations.
+350                                                    APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+To initialize the matrix representation of the outermorphism, we use:
+      // extract OpenGL modelview matrix
+      float MVM[16];
+      glMatrixMode(GL_MODELVIEW);
+      glGetFloatv(GL_MODELVIEW_MATRIX, MVM);
+
+      // reset OpenGL modelview matrix (we will apply the transform ourselves)
+      glLoadIdentity();
+
+      // initialize the images of the basis vectors:
+      point images[4];
+      for (int i = 0; i < 4; i++) {
+        images[i].set(point_e1_e2_e3_e0, &(MVM[i * 4]));
+        /* or:
+        images[i].set(point_e1_e2_e3_e0,
+           MVM[i * 4 + 0],
+           MVM[i * 4 + 1],
+           MVM[i * 4 + 2],
+           MVM[i * 4 + 3]);
+        */
+      }
+
+      // initialized matrix representation of outer morphism
+      om M(images);
+
+To draw any primitive (point, lines, plane):
+      void applyTransformAndDraw(const om &M, const mv &X) {
+        // apply the outermorphism:
+        mv MX = apply_om(M, X);
+        draw(MX);
+      }
+
+The actual code is slightly more complicated due to the use of a custom probing point;
+see the GA sandbox source code package.
+In the graphics, there is a somewhat undesirable side effect due to the explicit use of a basis
+in a factorization algorithm that is used to draw the plane. It is best observed by starting
+the example and rotating the scene (drag the left mouse button along the edges of the
+viewport). You will notice that edges of the depicted plane stay in place while the rest of
+the scene rotates. This feels counterintuitive (compare this to Example 11.13.2 where the
+edges do rotate).
+The cause of this is the following. To draw the plane, we need two vectors that span it. We
+obtain these by factorization, using the (basis-dependent) algorithm described in Sec-
+tion 21.6. In the original example (Section 11.13.2), we factor the plane, transform the
+factors, and then draw the plane using the rotated factors. Then the plane rotates visibly,
+because its vector factors do. In the present example, we ﬁrst rotate the plane, then factor
+it, and then draw the rotated plane using its factors. When the rotation plane is the same
+S E C T I O N 12 . 5   PROGRAMMING EXAMPLES AND EXERCISES                                                                  351
+
+
+
+
+                       as the plane itself, the rendering of the plane will not change at all. Intuitively, the former
+                       is better, but algebraically, the latter result is more correct, for it shows the true behavior
+                       of a plane under rotation.
+
+                       12.5.3 MARKER RECONSTRUCTION IN OPTICAL MOTION
+                              CAPTURE
+                       In Section 10.7.3 we implemented an algorithm for external camera calibration. That
+                       algorithm computed the position and orientation of any number of cameras. The cur-
+                       rent example builds upon that earlier example by using the calibrated cameras to perform
+                       measurements of the position of markers. We use the homogeneous model to reconstruct
+                       3-D markers from actual capture data. Figure 12.6 shows the example in action.
+                       The markers are little spheres (size from 0.5–3.0 cm) wrapped in retroreﬂective tape. Every
+                       time the camera records an image (between 20 to 500 times per second), an LED ring
+                       around the camera lens illuminates the scene, and the markers reﬂect this light back to
+                       the camera sensor. With proper exposure time (our system typically uses between 0.2 and
+                       1ms), the result is that the markers are visible as bright blobs in the otherwise black images.
+                       The centers of the 2-D markers are easily retrieved from the images, since the center of
+                       a projected sphere is a good approximation to the projection of the center of that sphere
+                       when the markers are sufﬁciently far away.
+                       When a marker is visible from multiple calibrated cameras, its position can be recon-
+                       structed by computing the intersection point of rays from the camera centers through
+
+
+
+
+                          F i g u r e 12.6: Example 3 in action. The four red arrows are the cameras and the black dots
+                          are the reconstructed markers. When the example is in motion, it is immediately clear that the
+                          black dots are attached to a human.
+352                                                       APPLICATIONS OF THE HOMOGENEOUS MODEL      C H A P T E R 12
+
+
+
+
+                                             Marker
+
+
+
+
+                          Image plane
+
+                      Camera pinhole
+
+
+
+      F i g u r e 12.7: Reconstruction of markers.
+
+
+
+
+the marker center. This is illustrated in 2-D in Figure 12.7. Markers can of course be
+occluded by the subject to which they are attached, so not all cameras can see every marker
+all the time. The more cameras that actually see a particular marker, the more precise
+the reconstruction can be. The simplistic marker reconstruction algorithm used in this
+example reconstructs the markers as follows: we iterate over every pair of 2-D markers
+from two different cameras. For each pair, we perform the following actions:
+
+      •   First, we construct a plane through the two camera centers and the 2-D marker in
+          the image plane of one camera. This plane is then intersected with the image plane
+          of the other camera to compute the epipolar line:
+
+          // normalizedPoints P1, P2 are the camera positions.
+          // normalizedPoint M1 is the marker position, on image plane of
+          // camera 1.
+          // plane IP2 is the image plane of camera 2.
+
+          // compute the epipolar line in the image plane of camera 2:
+          line L2 = _line(unit_r(dual(P1 ^ M1 ^ P2) << IP2));
+      •   Once we have the epipolar line, we search for 2-D markers sufﬁciently close to it (as
+          the data is inherently noisy, we will rarely have a precise intersection of the epipolar
+          line with a marker). We compute the distance of each candidate marker as (M2*)L2:
+
+          // normalizedPoint M2 is the marker position, on image plane of
+          // camera 2
+S E C T I O N 12 . 5   PROGRAMMING EXAMPLES AND EXERCISES                                                       353
+
+
+
+
+                              // compute distance in image plane:
+                              mv::Float distance = fabs(_Float((M2 << IP2) << L2));
+
+                              The dual is of course taken relative to the image plane of the second camera.
+                          •   If the distance is less than some epsilon value, we reconstruct a 3-D marker by
+                              computing the average of the closest points on the two lines P1 ∧ M1 and P2 ∧ M2.
+                              We collect all reconstructed points in an array. How these points are computed is
+                              described below.
+
+                       After this loop, we iterate over all pairs of reconstructed 3-D markers to ﬁnd the ones that
+                       are sufﬁciently close in 3-D space (where close is typically deﬁned as within the distance
+                       of the radius of the marker). We merge close markers by summing them. We do not nor-
+                       malize the points, as we use the e0 coordinates as a rough counters for how many cameras
+                       contributed to a particular reconstruction. We return only those markers that have been
+                       seen by a sufﬁcient number of cameras:
+                          /*
+                          R is the array of reconstructed 3D markers (candidates).
+                          ‘reconstructedMarkers’ is the final array of 3D markers
+                          (normalizedPoints) that is returned to the caller.
+                          */
+                          if ((int)R[i].e0() >= minNbCameras) {
+                            reconstructedMarkers.push_back(_normalizedPoint(R[i] /
+                             R[i].e0()));
+                          }
+
+                       When you read the full source code of the example in the GA sandbox source code pack-
+                       age, you may encounter some use of the conformal model of the later chapters. Our actual
+                       motion capture system is based primarily on the conformal model, hence this example
+                       (which was derived from it to illustrate homogeneous model techniques) stores the cam-
+                       era transformations as conformal versors.
+                       A more reﬁned reconstruction algorithm would use some kind of data structure to quickly
+                       look up points close to particular epipolar lines. For each successful match in two cam-
+                       eras, an initial 3-D marker is then reconstructed. These 3-D markers can subsequently be
+                       projected onto the image planes of the other cameras, after which another data structure
+                       (e.g., a spatial hashing table) can be used to quickly ﬁnd markers in the vicinity of the
+                       projected points. A least-squares-based solution (see Section 10.4.2) would then be used
+                       to ﬁnd the optimal reconstruction of the 3-D marker given the 2-D measurements in each
+                       camera.
+
+                       Computing Closest Points on Lines
+                       Computing the closest points on two skew lines is an important operation that is
+                       performed in the inner loop of by the reconstruction algorithm. We provide an efﬁcient
+                       geometric algebra implementation in Figure 12.8. The two lines are passed in factored
+                       form (i.e., as points and directions such that the actual lines are P1∧D1 and P2∧D2).
+354                                                 APPLICATIONS OF THE HOMOGENEOUS MODEL     C H A P T E R 12
+
+
+
+
+      bool closestPointsOnCrossingLines(
+        const normalizedPoint &P1, const h3ga::vector &D1,
+        const normalizedPoint &P2, const h3ga::vector &D2,
+        mv::Float &d1, mv::Float &d2) {
+
+          // Compute difference between starting points
+          h3ga::vector dif = _vector(P2 - P1);
+
+       // compute inverse pseudoscalar of space spanned by D1 and D2
+        bivector I = _bivector(D1 ^ D2);
+        if (_Float(norm_e2(I)) == 0.0f) // check parallel
+          return true; // returning true means ’lines are parallel’
+        bivector Ii = _bivector(inverse(I));
+
+       // compute reciprocals:
+        h3ga::vector rD1 = _vector(D2 << Ii);
+        h3ga::vector rD2 = _vector(D1 << Ii);
+
+          // solution:
+          d1 = _Float(rD1 << dif);
+          d2 = _Float(rD2 << dif);
+
+          return false;
+      }
+
+
+
+      F i g u r e 12.8: Crossing lines code.
+
+
+
+
+The function returns scalars d1 and d2 such that P1 + d1 ∗ D1 and P2 + d2 ∗ D2 are
+the closest points on the two lines.
+The function works by projecting the vector P2 — P1 onto the bivector D1∧D2. The geo-
+metric intuition behind this is that we are trying to minimize the distance P2 — P1 between
+the two points by moving along the lines. d1 and d2 are the coordinates of the projected
+vector relative to the basis spanned by D1 and D2. Because D1 and D2 are not orthonormal,
+we need to compute their reciprocals (rD1 and rD2) ﬁrst.
+

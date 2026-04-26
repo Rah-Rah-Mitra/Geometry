@@ -19,17 +19,21 @@ if sys.platform.startswith("win"):
 
 def notebook_paths(all_notebooks: bool, limit: int | None) -> list[Path]:
     paths = sorted(BOOK_DIR.rglob("*.ipynb"))
-    generated = [path for path in paths if path.name != "legacy-seed-why-geometric-algebra.ipynb"]
+    generated = [
+        path
+        for path in paths
+        if path.name not in {"legacy-seed-why-geometric-algebra.ipynb"}
+    ]
     if not all_notebooks:
         smoke_names = {
             "00-book-index.ipynb",
-            "01-vector-spaces-as-modeling-spaces.ipynb",
-            "01-homogeneous-representation-space.ipynb",
-            "01-representational-space-and-conformal-metric.ipynb",
-            "01-representing-basis-blades-with-bitmaps.ipynb",
-            "01-ray-tracing-basics.ipynb",
-            "exercises-and-solutions.ipynb",
-            "01-study-notes.ipynb",
+            "02-spanning-oriented-subspaces.ipynb",
+            "11-the-homogeneous-model.ipynb",
+            "13-conformal-model-operational-euclidean-geometry.ipynb",
+            "19-basis-blades-and-operations.ipynb",
+            "23-ray-tracing-with-conformal-geometry.ipynb",
+            "appendix-a-metrics-and-null-vectors.ipynb",
+            "appendix-d-common-equations.ipynb",
         }
         generated = [path for path in generated if path.name in smoke_names]
     if limit is not None:

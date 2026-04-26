@@ -251,6 +251,29 @@ def line_trace(
     return curve_trace(line.sample(t_min, t_max, 80), name, color, width)
 
 
+def segment_trace(
+    points: np.ndarray,
+    name: str,
+    color: str,
+    width: int = 5,
+    marker_size: int = 4,
+    dash: str | None = None,
+) -> go.Scatter3d:
+    points = np.asarray(points, dtype=float)
+    line: dict[str, object] = {"color": color, "width": width}
+    if dash:
+        line["dash"] = dash
+    return go.Scatter3d(
+        x=points[:, 0],
+        y=points[:, 1],
+        z=points[:, 2],
+        mode="lines+markers",
+        name=name,
+        line=line,
+        marker={"color": color, "size": marker_size},
+    )
+
+
 def point_trace(points: np.ndarray, labels: list[str], color: str) -> go.Scatter3d:
     points = np.asarray(points)
     return go.Scatter3d(
@@ -264,6 +287,16 @@ def point_trace(points: np.ndarray, labels: list[str], color: str) -> go.Scatter
         marker={"color": color, "size": 5},
         showlegend=False,
     )
+
+
+def circle_point_errors(circle: Circle3D, points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    points, single = as_points(points)
+    centered = points - circle.center
+    radial_errors = np.linalg.norm(centered, axis=1) - circle.radius
+    plane_errors = centered @ circle.normal
+    if single:
+        return radial_errors[0], plane_errors[0]
+    return radial_errors, plane_errors
 
 
 def plane_surface_trace(plane: Plane3D, name: str = "plane") -> go.Surface:
