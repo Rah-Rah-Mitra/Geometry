@@ -7,8 +7,8 @@ import sys
 
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
+BOOK_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = BOOK_ROOT.parent
 if str(BOOK_ROOT) not in sys.path:
     sys.path.insert(0, str(BOOK_ROOT))
 

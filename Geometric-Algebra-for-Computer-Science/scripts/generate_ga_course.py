@@ -15,8 +15,8 @@ from textwrap import dedent
 
 import nbformat as nbf
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-BOOK_DIR = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
+BOOK_DIR = Path(__file__).resolve().parents[1]
+REPO_ROOT = BOOK_DIR.parent
 COURSE_ARTIFACT_ROOT = BOOK_DIR / "artifacts" / "book-ga-cs"
 
 KERNEL_METADATA = {

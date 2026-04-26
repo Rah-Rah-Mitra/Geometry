@@ -12,8 +12,8 @@ from pathlib import Path
 import nbformat
 from nbformat.v4 import new_markdown_cell, new_notebook
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
+BOOK_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = BOOK_ROOT.parent
 
 
 @dataclass(frozen=True)

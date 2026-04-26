@@ -10,8 +10,8 @@ from pathlib import Path
 import nbformat
 from nbclient import NotebookClient
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
+BOOK_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = BOOK_ROOT.parent
 
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

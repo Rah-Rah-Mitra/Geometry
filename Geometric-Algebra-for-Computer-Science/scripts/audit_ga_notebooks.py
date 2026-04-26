@@ -8,8 +8,8 @@ from pathlib import Path
 
 import nbformat
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-BOOK_ROOT = REPO_ROOT / "Geometric-Algebra-for-Computer-Science"
+BOOK_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = BOOK_ROOT.parent
 
 
 def notebook_stats(path: Path) -> dict[str, object]:
