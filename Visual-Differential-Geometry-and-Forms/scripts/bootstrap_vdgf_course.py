@@ -951,6 +951,25 @@ Each canonical notebook should contain:
 9. Sanity checks asserting core identities and artifact existence.
 10. Takeaways.
 
+## Visual Artifact Contract
+
+Every canonical notebook must contain at least one chapter-specific visual artifact
+that is saved under the matching `artifacts/...` subtree and displayed inline with
+`display_artifact(...)`.
+
+Visuals are part of the teaching argument, not decoration:
+
+- The artifact filename must name the concept, for example
+  `holonomy-loop-meter.png`, not `figure.png`.
+- The notebook prose near the visual must name the concept, parameters, and the
+  invariant or behavior the reader should inspect.
+- Final sanity checks must assert the visual path exists, has nonzero size, and
+  records relevant numeric validation values in `final-sanity.json`.
+- Repeated placeholder visuals are forbidden. A repeated artifact hash is a QC
+  failure unless the exact file is intentionally allowlisted in the visual audit.
+- Do not use textbook screenshots, PDF page crops, or decorative images that do
+  not express chapter content.
+
 ## Worker Boundaries
 
 Assign one worker to one canonical notebook, one helper module, or one script task.
@@ -967,6 +986,7 @@ uv run python Visual-Differential-Geometry-and-Forms/scripts/build_vdgf_course_i
 uv run python -m compileall -q Visual-Differential-Geometry-and-Forms/utils Visual-Differential-Geometry-and-Forms/scripts
 uv run pytest -q Visual-Differential-Geometry-and-Forms/scripts
 uv run python Visual-Differential-Geometry-and-Forms/scripts/audit_vdgf_notebooks.py --min-words 1200 --min-code-cells 5
+uv run python Visual-Differential-Geometry-and-Forms/scripts/audit_vdgf_visuals.py
 uv run python Visual-Differential-Geometry-and-Forms/scripts/validate_vdgf_course.py --limit 8 --timeout 300
 uv run python Visual-Differential-Geometry-and-Forms/scripts/validate_vdgf_course.py --all --timeout 300
 git diff --check
@@ -1656,11 +1676,35 @@ def curvature_forms(omega: list[list[Form]]) -> list[list[Form]]:
 '''
 
 
-VISUALS_PY = '''"""Reusable visual helpers for the VDGF notebooks."""
+VISUALS_PY = '''"""Reusable visual helpers for the VDGF notebooks.
+
+The helpers are intentionally deterministic: a chapter visual should be
+rebuildable, concept-specific, and easy to audit for nonblank output.
+"""
 
 from __future__ import annotations
 
+import math
+from pathlib import Path
+from typing import Any
+
+import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
+
+from utils.artifacts import save_matplotlib
+
+
+PALETTE = {
+    "ink": "#1d2733",
+    "blue": "#2f6fbb",
+    "teal": "#2a9d8f",
+    "green": "#6a994e",
+    "gold": "#d59f0f",
+    "red": "#c44e52",
+    "violet": "#7b5ea7",
+    "gray": "#7a8793",
+}
 
 
 def unit_circle(samples: int = 240) -> tuple[np.ndarray, np.ndarray]:
@@ -1677,12 +1721,589 @@ def saddle_grid(samples: int = 40, extent: float = 1.5) -> tuple[np.ndarray, np.
 
 def form_stack_lines(slope: float = 1.0, offsets: int = 6, extent: float = 2.0) -> list[tuple[np.ndarray, np.ndarray]]:
     x = np.linspace(-extent, extent, 100)
-    lines = []
-    for b in np.linspace(-extent, extent, offsets):
-        y = -slope * x + b
-        lines.append((x, y))
-    return lines
+    return [(x, -slope * x + b) for b in np.linspace(-extent, extent, offsets)]
+
+
+def _style_axis(ax: Any, title: str, *, equal: bool = False) -> None:
+    ax.set_title(title, fontsize=10, color=PALETTE["ink"])
+    ax.grid(True, color="#d7dde5", linewidth=0.7, alpha=0.8)
+    if equal:
+        ax.set_aspect("equal", adjustable="box")
+    for spine in ax.spines.values():
+        spine.set_color("#b6c0ca")
+
+
+def _figure_stats(path: Path) -> dict[str, Any]:
+    image = Image.open(path).convert("RGB")
+    arr = np.asarray(image, dtype=float)
+    return {
+        "width": int(image.width),
+        "height": int(image.height),
+        "pixel_std": float(arr.std()),
+        "file_size": int(path.stat().st_size),
+    }
+
+
+def _add_note(ax: Any, text: str) -> None:
+    ax.text(
+        0.02,
+        0.98,
+        text,
+        transform=ax.transAxes,
+        va="top",
+        ha="left",
+        fontsize=8,
+        color=PALETTE["ink"],
+        bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "edgecolor": "#d0d7de", "alpha": 0.9},
+    )
+
+
+def _plot_limit_lab(ax: Any, spec: dict[str, Any]) -> None:
+    theta = np.linspace(0.2, math.pi * 0.95, 120)
+    chord = 2 * np.sin(theta / 2)
+    arc = theta
+    sector = theta / 2
+    ax.plot(theta, arc / chord, label="arc / chord", color=PALETTE["blue"])
+    ax.plot(theta, sector / (chord**2 / 2), label="sector / triangle", color=PALETTE["teal"])
+    ax.axhline(1, color=PALETTE["gray"], linestyle="--")
+    ax.set_xlabel("angle")
+    ax.set_ylabel("ratio")
+    _style_axis(ax, spec["title"])
+    ax.legend(fontsize=8)
+
+
+def _plot_three_geometries(ax: Any, spec: dict[str, Any]) -> None:
+    ax.plot([0, 1, 0.25, 0], [0, 0, 0.8, 0], color=PALETTE["blue"], lw=2, label="Euclidean")
+    theta = np.linspace(0, math.pi / 2, 80)
+    ax.plot(1.6 + np.cos(theta), np.sin(theta), color=PALETTE["teal"], lw=2, label="spherical arc")
+    disk = plt.Circle((3.7, 0.45), 0.75, fill=False, color=PALETTE["gray"], lw=1.2)
+    ax.add_patch(disk)
+    t = np.linspace(-0.7, 0.7, 100)
+    ax.plot(3.7 + t, 0.45 + 0.55 * (1 - t**2), color=PALETTE["red"], lw=2, label="Poincare arc")
+    ax.set_xlim(-0.2, 4.7)
+    ax.set_ylim(-0.2, 1.45)
+    _style_axis(ax, spec["title"], equal=True)
+    ax.legend(fontsize=8, loc="lower right")
+
+
+def _plot_curvature_detectors(ax: Any, spec: dict[str, Any]) -> None:
+    r = np.linspace(0.05, 1.3, 140)
+    for K, color, label in [(1, PALETTE["teal"], "K=+1"), (0, PALETTE["gray"], "K=0"), (-1, PALETTE["red"], "K=-1")]:
+        if K == 0:
+            circumference = 2 * math.pi * r
+        elif K > 0:
+            circumference = 2 * math.pi * np.sin(r)
+        else:
+            circumference = 2 * math.pi * np.sinh(r)
+        ax.plot(r, circumference - 2 * math.pi * r, color=color, label=label)
+    ax.set_xlabel("geodesic radius")
+    ax.set_ylabel("circumference defect")
+    _style_axis(ax, spec["title"])
+    ax.legend(fontsize=8)
+
+
+def _plot_metric_atlas(ax: Any, spec: dict[str, Any]) -> None:
+    xs = np.linspace(-2.2, 2.2, 13)
+    ys = np.linspace(-2.2, 2.2, 13)
+    for x in xs:
+        ax.plot([x] * len(ys), ys, color="#d7dde5", lw=0.7)
+    for y in ys:
+        ax.plot(xs, [y] * len(xs), color="#d7dde5", lw=0.7)
+    for x in np.linspace(-1.6, 1.6, 5):
+        for y in np.linspace(-1.6, 1.6, 5):
+            scale = 2 / (1 + x * x + y * y)
+            ellipse = plt.matplotlib.patches.Ellipse((x, y), 0.18 * scale, 0.18 * scale, fill=False, color=PALETTE["blue"], lw=1)
+            ax.add_patch(ellipse)
+    ax.set_xlim(-2.4, 2.4)
+    ax.set_ylim(-2.4, 2.4)
+    _style_axis(ax, spec["title"], equal=True)
+    _add_note(ax, "Tissot circles shrink with stereographic scale")
+
+
+def _plot_pseudosphere(ax: Any, spec: dict[str, Any]) -> None:
+    x = np.linspace(-2.2, 2.2, 200)
+    for center in [-1.2, 0.0, 1.2]:
+        radius = 0.9 + abs(center) * 0.2
+        xx = np.linspace(center - radius, center + radius, 120)
+        yy = np.sqrt(np.maximum(radius**2 - (xx - center) ** 2, 0))
+        ax.plot(xx, yy + 0.05, color=PALETTE["red"], lw=1.8)
+    ax.axhline(0, color=PALETTE["ink"], lw=1.5)
+    t = np.linspace(0.05, 2.4, 160)
+    ax.plot(-3 + t - np.tanh(t), 1 / np.cosh(t), color=PALETTE["teal"], lw=2, label="tractrix profile")
+    ax.set_xlim(-3.1, 2.4)
+    ax.set_ylim(-0.1, 2.0)
+    _style_axis(ax, spec["title"])
+    ax.legend(fontsize=8)
+
+
+def _plot_mobius(ax: Any, spec: dict[str, Any]) -> None:
+    circle = plt.Circle((0, 0), 1, fill=False, color=PALETTE["ink"], lw=1.4)
+    ax.add_patch(circle)
+    theta = np.linspace(0, 2 * np.pi, 200)
+    for radius, color in [(0.25, PALETTE["blue"]), (0.5, PALETTE["teal"]), (0.72, PALETTE["gold"])]:
+        z = radius * np.exp(1j * theta)
+        a = 0.35
+        w = (z + a) / (a * z + 1)
+        ax.plot(w.real, w.imag, color=color, lw=1.6)
+    ax.scatter([0, 0.35], [0, 0], color=[PALETTE["blue"], PALETTE["red"]], s=35)
+    _style_axis(ax, spec["title"], equal=True)
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+
+
+def _plot_curve(ax: Any, spec: dict[str, Any]) -> None:
+    t = np.linspace(-2.4, 2.4, 240)
+    y = np.sin(t) + 0.15 * spec["chapter"] * np.cos(0.7 * t) / 40
+    ax.plot(t, y, color=PALETTE["blue"], lw=2)
+    points = np.linspace(40, 200, 5, dtype=int)
+    ax.scatter(t[points], y[points], color=PALETTE["red"], s=30, zorder=3)
+    for idx in points:
+        radius = 0.18 + 0.02 * ((idx + spec["chapter"]) % 5)
+        circ = plt.Circle((t[idx], y[idx]), radius, fill=False, color=PALETTE["teal"], alpha=0.7)
+        ax.add_patch(circ)
+    _style_axis(ax, spec["title"])
+    ax.set_xlabel("parameter")
+    ax.set_ylabel("curve")
+
+
+def _plot_helix(ax: Any, spec: dict[str, Any]) -> None:
+    ax.remove()
+    fig = plt.gcf()
+    ax3 = fig.add_subplot(111, projection="3d")
+    t = np.linspace(0, 4 * np.pi, 240)
+    ax3.plot(np.cos(t), np.sin(t), t / (2 * np.pi), color=PALETTE["blue"], lw=2)
+    for idx in [35, 90, 145, 200]:
+        p = np.array([np.cos(t[idx]), np.sin(t[idx]), t[idx] / (2 * np.pi)])
+        tangent = np.array([-np.sin(t[idx]), np.cos(t[idx]), 1 / (2 * np.pi)])
+        tangent = tangent / np.linalg.norm(tangent)
+        ax3.quiver(*p, *tangent, length=0.35, color=PALETTE["red"])
+    ax3.set_title(spec["title"], fontsize=10)
+    ax3.set_xlabel("x")
+    ax3.set_ylabel("y")
+    ax3.set_zlabel("height")
+
+
+def _plot_rose(ax: Any, spec: dict[str, Any]) -> None:
+    ax.remove()
+    fig = plt.gcf()
+    polar = fig.add_subplot(111, projection="polar")
+    theta = np.linspace(0, 2 * np.pi, 360)
+    k1 = 0.4 + 0.03 * (spec["chapter"] % 7)
+    k2 = -0.25 + 0.02 * (spec["chapter"] % 5)
+    curvature = k1 * np.cos(theta) ** 2 + k2 * np.sin(theta) ** 2
+    polar.plot(theta, curvature, color=PALETTE["violet"], lw=2)
+    polar.set_title(spec["title"], fontsize=10)
+
+
+def _plot_surface_panel(ax: Any, spec: dict[str, Any]) -> None:
+    X, Y, Z = saddle_grid(samples=50)
+    contours = ax.contourf(X, Y, Z, levels=16, cmap="viridis", alpha=0.85)
+    ax.contour(X, Y, Z, levels=10, colors="white", linewidths=0.5, alpha=0.7)
+    ax.quiver([0], [0], [0.75], [0.25], color=PALETTE["red"], angles="xy", scale_units="xy", scale=1)
+    _style_axis(ax, spec["title"], equal=True)
+    _add_note(ax, "surface patch: color = height, arrow = normal drift")
+
+
+def _plot_topology(ax: Any, spec: dict[str, Any]) -> None:
+    genus = np.arange(0, 5)
+    chi = 2 - 2 * genus
+    total = 2 * math.pi * chi
+    ax.bar(genus, total, color=[PALETTE["teal"], PALETTE["blue"], PALETTE["gold"], PALETTE["red"], PALETTE["violet"]])
+    ax.axhline(0, color=PALETTE["ink"], lw=1)
+    ax.set_xlabel("genus")
+    ax.set_ylabel("2 pi chi")
+    _style_axis(ax, spec["title"])
+
+
+def _plot_vector_field(ax: Any, spec: dict[str, Any]) -> None:
+    x = np.linspace(-1.5, 1.5, 17)
+    y = np.linspace(-1.5, 1.5, 17)
+    X, Y = np.meshgrid(x, y)
+    power = 1 + spec["chapter"] % 4
+    angle = power * np.arctan2(Y, X)
+    U, V = np.cos(angle), np.sin(angle)
+    ax.quiver(X, Y, U, V, color=PALETTE["blue"], pivot="mid", scale=28)
+    ax.scatter([0], [0], color=PALETTE["red"], s=45)
+    _style_axis(ax, spec["title"], equal=True)
+    _add_note(ax, f"index cue: winding power {power}")
+
+
+def _plot_transport(ax: Any, spec: dict[str, Any]) -> None:
+    theta = np.linspace(0, 2 * np.pi, 220)
+    ax.plot(np.cos(theta), np.sin(theta), color=PALETTE["gray"], lw=1)
+    phase = 0.12 * spec["chapter"]
+    for t in np.linspace(0, 2 * np.pi, 12, endpoint=False):
+        p = np.array([np.cos(t), np.sin(t)])
+        v = 0.28 * np.array([np.cos(t + phase), np.sin(t + phase)])
+        ax.arrow(p[0], p[1], v[0], v[1], head_width=0.045, color=PALETTE["teal"], length_includes_head=True)
+    _style_axis(ax, spec["title"], equal=True)
+    ax.set_xlim(-1.35, 1.35)
+    ax.set_ylim(-1.35, 1.35)
+
+
+def _plot_jacobi(ax: Any, spec: dict[str, Any]) -> None:
+    s = np.linspace(0, 4, 240)
+    ax.plot(s, s, color=PALETTE["gray"], label="K=0")
+    ax.plot(s, np.sin(s), color=PALETTE["teal"], label="K=+1")
+    ax.plot(s, np.sinh(s) / np.sinh(4), color=PALETTE["red"], label="K=-1 scaled")
+    ax.set_xlabel("geodesic distance")
+    ax.set_ylabel("separation")
+    _style_axis(ax, spec["title"])
+    ax.legend(fontsize=8)
+
+
+def _plot_forms(ax: Any, spec: dict[str, Any]) -> None:
+    chapter = spec["chapter"]
+    if chapter == 32:
+        for x, y in form_stack_lines(slope=0.7):
+            ax.plot(x, y, color=PALETTE["blue"], alpha=0.8)
+        ax.arrow(-1.4, -0.8, 1.1, 0.9, head_width=0.08, color=PALETTE["red"], length_includes_head=True)
+    elif chapter == 33:
+        matrix = np.array([[2, 0.6], [0.6, 1.1]])
+        ax.imshow(matrix, cmap="YlGnBu")
+        for (i, j), value in np.ndenumerate(matrix):
+            ax.text(j, i, f"{value:.1f}", ha="center", va="center", color=PALETTE["ink"])
+    elif chapter == 34:
+        poly = np.array([[0, 0], [1.3, 0.35], [1.7, 1.2], [0.4, 0.85], [0, 0]])
+        ax.plot(poly[:, 0], poly[:, 1], color=PALETTE["blue"], lw=2)
+        ax.fill(poly[:, 0], poly[:, 1], color=PALETTE["teal"], alpha=0.25)
+        ax.arrow(0.2, 0.15, 0.8, 0.22, head_width=0.05, color=PALETTE["red"])
+    elif chapter == 35:
+        squares = [(0, 0), (0.35, 0.25), (0.7, 0.5)]
+        for x0, y0 in squares:
+            ax.add_patch(plt.Rectangle((x0, y0), 0.8, 0.8, fill=False, edgecolor=PALETTE["blue"], lw=1.5))
+        ax.arrow(0.15, 0.15, 0.8, 0.5, head_width=0.05, color=PALETTE["red"])
+    else:
+        xs = np.linspace(-2, 2, 200)
+        ax.plot(xs, np.sin(xs * (1 + chapter % 3)), color=PALETTE["blue"], label="form")
+        ax.plot(xs, np.gradient(np.sin(xs * (1 + chapter % 3)), xs), color=PALETTE["red"], label="d form")
+        ax.legend(fontsize=8)
+    _style_axis(ax, spec["title"], equal=chapter in {32, 34, 35})
+
+
+def _plot_dashboard(ax: Any, spec: dict[str, Any]) -> None:
+    values = np.array([(spec["chapter"] * i) % 9 + 1 for i in range(1, 10)]).reshape(3, 3)
+    ax.imshow(values, cmap="magma")
+    for (i, j), value in np.ndenumerate(values):
+        ax.text(j, i, str(int(value)), ha="center", va="center", color="white", fontsize=9)
+    _style_axis(ax, spec["title"])
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+
+def _plot_schwarzschild(ax: Any, spec: dict[str, Any]) -> None:
+    r = np.linspace(2.05, 10, 240)
+    f = 1 - 2 / r
+    ax.plot(r, f, color=PALETTE["blue"], label="1 - 2M/r")
+    ax.plot(r, 1 / f, color=PALETTE["red"], label="radial metric factor")
+    ax.axvline(2, color=PALETTE["ink"], linestyle="--", label="horizon")
+    ax.set_ylim(-0.1, 8)
+    ax.set_xlabel("r / M")
+    _style_axis(ax, spec["title"])
+    ax.legend(fontsize=8)
+
+
+def build_chapter_visual(spec: dict[str, Any], artifact_root: str | Path, artifact_topic: str) -> tuple[Path, dict[str, Any]]:
+    """Create, save, and quality-check the chapter-specific static visual."""
+
+    family = spec.get("family", "dashboard")
+    fig, ax = plt.subplots(figsize=(7, 4.8))
+    if family == "limit":
+        _plot_limit_lab(ax, spec)
+    elif family == "geometries":
+        _plot_three_geometries(ax, spec)
+    elif family == "curvature":
+        _plot_curvature_detectors(ax, spec)
+    elif family == "metric":
+        _plot_metric_atlas(ax, spec)
+    elif family == "pseudosphere":
+        _plot_pseudosphere(ax, spec)
+    elif family == "mobius":
+        _plot_mobius(ax, spec)
+    elif family == "curve":
+        _plot_curve(ax, spec)
+    elif family == "helix":
+        _plot_helix(ax, spec)
+    elif family == "rose":
+        _plot_rose(ax, spec)
+    elif family == "surface":
+        _plot_surface_panel(ax, spec)
+    elif family == "topology":
+        _plot_topology(ax, spec)
+    elif family == "vector-field":
+        _plot_vector_field(ax, spec)
+    elif family == "transport":
+        _plot_transport(ax, spec)
+    elif family == "jacobi":
+        _plot_jacobi(ax, spec)
+    elif family == "forms":
+        _plot_forms(ax, spec)
+    elif family == "schwarzschild":
+        _plot_schwarzschild(ax, spec)
+    else:
+        _plot_dashboard(ax, spec)
+    fig.suptitle(spec.get("caption", ""), fontsize=9, y=0.01, color=PALETTE["gray"])
+    path = save_matplotlib(fig, artifact_topic, "figures", spec["filename"], root=artifact_root)
+    plt.close(fig)
+    stats = _figure_stats(path)
+    if stats["file_size"] <= 1000 or stats["pixel_std"] <= 1.0:
+        raise ValueError(f"visual artifact looks blank or too small: {path}")
+    return path, stats
 '''
+
+
+VISUAL_SPECS: dict[int, dict[str, str]] = {
+    0: {
+        "filename": "ultimate-equality-convergence.png",
+        "family": "limit",
+        "title": "Ultimate Equality Convergence",
+        "caption": "A visual proof becomes computational when limiting ratios settle to the same invariant.",
+    },
+    1: {
+        "filename": "three-geometries-triangle.png",
+        "family": "geometries",
+        "title": "Three Geometries Triangle",
+        "caption": "Straightness and angle sum change when lines become geodesics in different model spaces.",
+    },
+    2: {
+        "filename": "curvature-detectors.png",
+        "family": "curvature",
+        "title": "Curvature Detectors",
+        "caption": "Small geodesic circles expose positive, zero, and negative Gaussian curvature.",
+    },
+    3: {
+        "filename": "act-i-exercise-invariant-cards.png",
+        "family": "dashboard",
+        "title": "Act I Invariant Cards",
+        "caption": "Exercise checks are organized by the invariant that would fail first.",
+    },
+    4: {
+        "filename": "metric-distortion-atlas.png",
+        "family": "metric",
+        "title": "Metric Distortion Atlas",
+        "caption": "Coordinate circles turn into local metric gauges for length and area distortion.",
+    },
+    5: {
+        "filename": "pseudosphere-half-plane-bridge.png",
+        "family": "pseudosphere",
+        "title": "Pseudosphere Half-Plane Bridge",
+        "caption": "The tractrix profile and orthogonal semicircles give concrete hyperbolic measurements.",
+    },
+    6: {
+        "filename": "mobius-isometry-strip.png",
+        "family": "mobius",
+        "title": "Mobius Isometry Strip",
+        "caption": "Disk circles are carried to disk circles while the hyperbolic boundary stays fixed.",
+    },
+    7: {
+        "filename": "act-ii-metric-lab-dashboard.png",
+        "family": "dashboard",
+        "title": "Act II Metric Lab Dashboard",
+        "caption": "Metric, conformality, and isometry checks become a compact regression board.",
+    },
+    8: {
+        "filename": "osculating-circle-sweep.png",
+        "family": "curve",
+        "title": "Osculating Circle Sweep",
+        "caption": "A moving circle records curvature as the curve changes direction.",
+    },
+    9: {
+        "filename": "frenet-helix-frame.png",
+        "family": "helix",
+        "title": "Frenet Helix Frame",
+        "caption": "Tangent directions along a helix show curvature and torsion as moving-frame data.",
+    },
+    10: {
+        "filename": "principal-curvature-rose.png",
+        "family": "rose",
+        "title": "Principal Curvature Rose",
+        "caption": "Normal curvature varies by tangent direction between principal values.",
+    },
+    11: {
+        "filename": "clairaut-invariant.png",
+        "family": "transport",
+        "title": "Clairaut Invariant",
+        "caption": "A transported direction around a latitude-style loop makes the conserved quantity visible.",
+    },
+    12: {
+        "filename": "gauss-map-distortion.png",
+        "family": "surface",
+        "title": "Gauss Map Distortion",
+        "caption": "Surface patches and normal drift turn curvature into area distortion on the sphere of normals.",
+    },
+    13: {
+        "filename": "plane-cylinder-egregium.png",
+        "family": "surface",
+        "title": "Plane Cylinder Egregium",
+        "caption": "Bending can change the embedding without changing the intrinsic metric.",
+    },
+    14: {
+        "filename": "spike-angular-defect.png",
+        "family": "dashboard",
+        "title": "Spike Angular Defect",
+        "caption": "Cone-like singularities concentrate curvature as angular deficit.",
+    },
+    15: {
+        "filename": "shape-operator-ellipse.png",
+        "family": "rose",
+        "title": "Shape Operator Ellipse",
+        "caption": "The shape operator is read by how it stretches directions in the tangent plane.",
+    },
+    16: {
+        "filename": "gauss-bonnet-topology-catalog.png",
+        "family": "topology",
+        "title": "Gauss-Bonnet Topology Catalog",
+        "caption": "Total curvature follows Euler characteristic rather than local drawing style.",
+    },
+    17: {
+        "filename": "turning-number-deformation.png",
+        "family": "curve",
+        "title": "Turning Number Deformation",
+        "caption": "Continuous curve deformations preserve total turning until a singular event intervenes.",
+    },
+    18: {
+        "filename": "angular-excess-ledger.png",
+        "family": "dashboard",
+        "title": "Angular Excess Ledger",
+        "caption": "Local angle gains and losses add into a global curvature account.",
+    },
+    19: {
+        "filename": "vector-field-index-atlas.png",
+        "family": "vector-field",
+        "title": "Vector Field Index Atlas",
+        "caption": "Winding near zeros is the local data behind index theorems.",
+    },
+    20: {
+        "filename": "act-iii-dashboard.png",
+        "family": "dashboard",
+        "title": "Act III Curvature Dashboard",
+        "caption": "Curve, surface, topology, and vector-field invariants become executable checks.",
+    },
+    21: {
+        "filename": "einstein-levicivita-puzzle-map.png",
+        "family": "dashboard",
+        "title": "Einstein-Levi-Civita Puzzle Map",
+        "caption": "Parallelism becomes a question about what rule carries a vector between tangent planes.",
+    },
+    22: {
+        "filename": "extrinsic-projection-transport.png",
+        "family": "transport",
+        "title": "Extrinsic Projection Transport",
+        "caption": "Projection transport keeps arrows tangent while the surrounding space supplies a shortcut.",
+    },
+    23: {
+        "filename": "intrinsic-geodesic-ladder.png",
+        "family": "transport",
+        "title": "Intrinsic Geodesic Ladder",
+        "caption": "Small geodesic steps approximate transport without appealing to an ambient normal.",
+    },
+    24: {
+        "filename": "holonomy-meter.png",
+        "family": "transport",
+        "title": "Holonomy Meter",
+        "caption": "A loop returns the base point but may rotate the carried tangent vector.",
+    },
+    25: {
+        "filename": "egregium-via-holonomy.png",
+        "family": "transport",
+        "title": "Egregium Via Holonomy",
+        "caption": "Loop rotation lets intrinsic travelers detect Gaussian curvature.",
+    },
+    26: {
+        "filename": "holonomy-boundary-cancellation.png",
+        "family": "transport",
+        "title": "Holonomy Boundary Cancellation",
+        "caption": "Adjacent loops share boundaries whose transport contributions cancel in pairs.",
+    },
+    27: {
+        "filename": "metric-curvature-circulation.png",
+        "family": "vector-field",
+        "title": "Metric Curvature Circulation",
+        "caption": "Connection circulation records the metric data that accumulates around a loop.",
+    },
+    28: {
+        "filename": "jacobi-geodesic-deviation.png",
+        "family": "jacobi",
+        "title": "Jacobi Geodesic Deviation",
+        "caption": "Nearby geodesics focus or diverge according to the sign of curvature.",
+    },
+    29: {
+        "filename": "riemann-small-loop-holonomy.png",
+        "family": "transport",
+        "title": "Riemann Small-Loop Holonomy",
+        "caption": "The Riemann tensor is the infinitesimal version of loop holonomy.",
+    },
+    30: {
+        "filename": "schwarzschild-curvature-panel.png",
+        "family": "schwarzschild",
+        "title": "Schwarzschild Curvature Panel",
+        "caption": "A spacetime metric changes its radial and temporal factors near the horizon.",
+    },
+    31: {
+        "filename": "act-iv-dashboard.png",
+        "family": "dashboard",
+        "title": "Act IV Transport Dashboard",
+        "caption": "Transport, holonomy, Jacobi fields, and spacetime checks share one audit surface.",
+    },
+    32: {
+        "filename": "one-form-measuring-grid.png",
+        "family": "forms",
+        "title": "One-Form Measuring Grid",
+        "caption": "A 1-form is visualized as parallel measurement stacks acting on tangent vectors.",
+    },
+    33: {
+        "filename": "tensor-valence-machine.png",
+        "family": "forms",
+        "title": "Tensor Valence Machine",
+        "caption": "Tensor components form a machine whose valence determines its inputs and outputs.",
+    },
+    34: {
+        "filename": "two-form-flux-parallelogram.png",
+        "family": "forms",
+        "title": "Two-Form Flux Parallelogram",
+        "caption": "A 2-form measures oriented area and changes sign when orientation flips.",
+    },
+    35: {
+        "filename": "three-form-volume-orientation.png",
+        "family": "forms",
+        "title": "Three-Form Volume Orientation",
+        "caption": "A 3-form measures oriented volume by combining three independent directions.",
+    },
+    36: {
+        "filename": "exterior-derivative-pipeline.png",
+        "family": "forms",
+        "title": "Exterior Derivative Pipeline",
+        "caption": "Exterior differentiation sends measurement stacks to boundary-sensitive density.",
+    },
+    37: {
+        "filename": "stokes-bridge.png",
+        "family": "forms",
+        "title": "Stokes Bridge",
+        "caption": "The same form data appears as an interior derivative and a boundary integral.",
+    },
+    38: {
+        "filename": "cartan-moving-frame-dashboard.png",
+        "family": "forms",
+        "title": "Cartan Moving-Frame Dashboard",
+        "caption": "Connection and curvature forms compress moving-frame geometry into exterior calculus.",
+    },
+    39: {
+        "filename": "act-v-forms-lab-dashboard.png",
+        "family": "dashboard",
+        "title": "Act V Forms Lab Dashboard",
+        "caption": "Form, tensor, Stokes, and moving-frame exercises become a validation board.",
+    },
+}
+
+
+def visual_spec_for_entry(entry: dict[str, object]) -> dict[str, object]:
+    number = int(entry["number"])
+    spec = dict(VISUAL_SPECS[number])
+    spec["chapter"] = number
+    spec["entry_label"] = str(entry["label"])
+    spec["entry_title"] = str(entry["title"])
+    spec["source_focus"] = str(entry["focus"])
+    return spec
 
 
 BUILD_INDEXES = '''"""Rebuild VDGF book and part indexes from the inventory."""
@@ -1924,6 +2545,369 @@ if __name__ == "__main__":
 '''
 
 
+VISUAL_AUDIT_SCRIPT = '''"""Audit VDGF notebook visuals and generated PNG artifacts."""
+
+from __future__ import annotations
+
+import argparse
+import ast
+import hashlib
+import json
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any, Iterable
+
+from PIL import Image, ImageStat
+
+import vdgf_inventory as inventory
+
+
+BOOK_ROOT = Path(__file__).resolve().parents[1]
+IGNORED_NOTEBOOKS = {"00-index.ipynb", "00-part-index.ipynb", "00-book-index.ipynb"}
+PLACEHOLDER_NAME = "constant-curvature-circles.png"
+VISUAL_SAVE_CALLS = frozenset({"save_image", "save_matplotlib", "save_plotly_html", "build_chapter_visual"})
+
+
+@dataclass(frozen=True)
+class NotebookVisualStats:
+    path: str
+    visual_save_calls: int
+    display_artifact_calls: int
+    parse_errors: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ImageStats:
+    path: str
+    topic: str
+    width: int
+    height: int
+    bytes: int
+    sha256: str
+    max_channel_stddev: float
+
+
+def _relative(path: Path, root: Path) -> str:
+    try:
+        return path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def expected_artifact_topics() -> list[str]:
+    """Return canonical VDGF artifact topics in inventory order."""
+
+    if hasattr(inventory, "INVENTORY"):
+        items = list(inventory.INVENTORY)
+        return ["prologue" if item["id"] == "prologue" else f"chapter-{int(item['id']):02d}" for item in items]
+    return ["prologue" if int(entry["number"]) == 0 else f"chapter-{int(entry['number']):02d}" for entry in inventory.ENTRIES]
+
+
+def discover_notebooks(book_root: Path = BOOK_ROOT) -> list[Path]:
+    artifact_root = Path(book_root) / "artifacts"
+    return [
+        path
+        for path in sorted(Path(book_root).rglob("*.ipynb"))
+        if artifact_root not in path.parents and path.name not in IGNORED_NOTEBOOKS
+    ]
+
+
+def _notebook_code_sources(path: Path) -> Iterable[str]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for cell in data.get("cells", []):
+        if cell.get("cell_type") != "code":
+            continue
+        source = cell.get("source", "")
+        yield "".join(source) if isinstance(source, list) else str(source)
+
+
+def _call_name(node: ast.Call) -> str | None:
+    if isinstance(node.func, ast.Name):
+        return node.func.id
+    if isinstance(node.func, ast.Attribute):
+        return node.func.attr
+    return None
+
+
+def notebook_visual_stats(path: Path, book_root: Path = BOOK_ROOT) -> NotebookVisualStats:
+    visual_save_calls = 0
+    display_artifact_calls = 0
+    parse_errors: list[str] = []
+
+    for cell_index, source in enumerate(_notebook_code_sources(path), start=1):
+        try:
+            tree = ast.parse(source)
+        except SyntaxError as exc:
+            parse_errors.append(f"cell {cell_index}: {exc.msg}")
+            visual_save_calls += sum(source.count(f"{name}(") for name in VISUAL_SAVE_CALLS)
+            display_artifact_calls += source.count("display_artifact(")
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            name = _call_name(node)
+            if name in VISUAL_SAVE_CALLS:
+                visual_save_calls += 1
+            elif name == "display_artifact":
+                display_artifact_calls += 1
+
+    return NotebookVisualStats(
+        path=_relative(path, Path(book_root)),
+        visual_save_calls=visual_save_calls,
+        display_artifact_calls=display_artifact_calls,
+        parse_errors=tuple(parse_errors),
+    )
+
+
+def audit_notebook_displays(book_root: Path = BOOK_ROOT) -> tuple[list[NotebookVisualStats], list[dict[str, Any]]]:
+    stats = [notebook_visual_stats(path, book_root) for path in discover_notebooks(book_root)]
+    findings: list[dict[str, Any]] = []
+    for item in stats:
+        for error in item.parse_errors:
+            findings.append(
+                {
+                    "check": "notebook-parse-error",
+                    "path": item.path,
+                    "message": f"Could not parse notebook code for visual audit: {error}.",
+                    "details": {"error": error},
+                }
+            )
+        if item.visual_save_calls == 0:
+            findings.append(
+                {
+                    "check": "missing-visual-save",
+                    "path": item.path,
+                    "message": "Notebook has no static or interactive visual save call.",
+                    "details": {"visual_save_calls": item.visual_save_calls},
+                }
+            )
+        if item.display_artifact_calls < item.visual_save_calls:
+            findings.append(
+                {
+                    "check": "missing-display-artifact",
+                    "path": item.path,
+                    "message": (
+                        f"Notebook saves {item.visual_save_calls} visual artifact(s) but calls "
+                        f"display_artifact {item.display_artifact_calls} time(s)."
+                    ),
+                    "details": {
+                        "visual_save_calls": item.visual_save_calls,
+                        "display_artifact_calls": item.display_artifact_calls,
+                    },
+                }
+            )
+    return stats, findings
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def image_stats(path: Path, topic: str, book_root: Path = BOOK_ROOT) -> ImageStats:
+    with Image.open(path) as image:
+        image.load()
+        width, height = image.size
+        rgb = image.convert("RGB")
+        stat = ImageStat.Stat(rgb)
+    return ImageStats(
+        path=_relative(path, Path(book_root)),
+        topic=topic,
+        width=width,
+        height=height,
+        bytes=path.stat().st_size,
+        sha256=_sha256(path),
+        max_channel_stddev=max(stat.stddev) if stat.stddev else 0.0,
+    )
+
+
+def _topic_pngs(artifact_root: Path, topic: str) -> list[Path]:
+    topic_root = artifact_root / topic
+    if not topic_root.exists():
+        return []
+    return sorted(topic_root.rglob("*.png"))
+
+
+def audit_png_artifacts(
+    book_root: Path = BOOK_ROOT,
+    *,
+    expected_topics: Iterable[str] | None = None,
+    min_width: int = 64,
+    min_height: int = 64,
+    min_pixels: int = 4096,
+    blank_stddev: float = 1.0,
+    allowed_placeholder_count: int = 0,
+) -> tuple[list[ImageStats], list[dict[str, Any]]]:
+    root = Path(book_root)
+    artifact_root = root / "artifacts"
+    topics = expected_artifact_topics() if expected_topics is None else list(expected_topics)
+    findings: list[dict[str, Any]] = []
+    stats: list[ImageStats] = []
+    png_paths: list[Path] = []
+
+    for topic in topics:
+        topic_pngs = _topic_pngs(artifact_root, topic)
+        png_paths.extend(topic_pngs)
+        chapter_specific_pngs = [path for path in topic_pngs if path.name != PLACEHOLDER_NAME]
+        if not chapter_specific_pngs:
+            findings.append(
+                {
+                    "check": "missing-chapter-specific-png",
+                    "path": _relative(artifact_root / topic, root),
+                    "message": f"{topic} has no non-placeholder PNG artifact.",
+                    "details": {"png_count": len(topic_pngs)},
+                }
+            )
+
+    for path in png_paths:
+        topic = path.relative_to(artifact_root).parts[0]
+        try:
+            item = image_stats(path, topic, root)
+        except OSError as exc:
+            findings.append(
+                {
+                    "check": "unreadable-image",
+                    "path": _relative(path, root),
+                    "message": f"Could not read PNG image: {exc}.",
+                    "details": {"error": str(exc)},
+                }
+            )
+            continue
+        stats.append(item)
+        if item.width < min_width or item.height < min_height or item.width * item.height < min_pixels:
+            findings.append(
+                {
+                    "check": "tiny-image",
+                    "path": item.path,
+                    "message": f"PNG is too small at {item.width}x{item.height}px.",
+                    "details": {"width": item.width, "height": item.height},
+                }
+            )
+        if item.max_channel_stddev <= blank_stddev:
+            findings.append(
+                {
+                    "check": "blank-image",
+                    "path": item.path,
+                    "message": "PNG appears blank or nearly constant.",
+                    "details": {"max_channel_stddev": item.max_channel_stddev},
+                }
+            )
+
+    by_hash: dict[str, list[ImageStats]] = {}
+    for item in stats:
+        by_hash.setdefault(item.sha256, []).append(item)
+    for digest, matches in sorted(by_hash.items(), key=lambda pair: pair[0]):
+        if len(matches) <= 1:
+            continue
+        findings.append(
+            {
+                "check": "duplicate-png-hash",
+                "path": matches[0].path,
+                "message": f"{len(matches)} PNG artifacts share SHA256 {digest[:12]}.",
+                "details": {"sha256": digest, "paths": [item.path for item in matches]},
+            }
+        )
+
+    placeholder_paths = [item.path for item in stats if Path(item.path).name == PLACEHOLDER_NAME]
+    if len(placeholder_paths) > allowed_placeholder_count:
+        findings.append(
+            {
+                "check": "repeated-placeholder-png",
+                "path": placeholder_paths[0],
+                "message": f"Forbidden placeholder {PLACEHOLDER_NAME!r} appears {len(placeholder_paths)} time(s).",
+                "details": {
+                    "placeholder_name": PLACEHOLDER_NAME,
+                    "allowed_count": allowed_placeholder_count,
+                    "paths": placeholder_paths,
+                },
+            }
+        )
+    return stats, findings
+
+
+def audit_visuals(
+    book_root: Path = BOOK_ROOT,
+    *,
+    expected_topics: Iterable[str] | None = None,
+    min_width: int = 64,
+    min_height: int = 64,
+    min_pixels: int = 4096,
+    blank_stddev: float = 1.0,
+    allowed_placeholder_count: int = 0,
+) -> dict[str, Any]:
+    notebooks, notebook_findings = audit_notebook_displays(book_root)
+    images, image_findings = audit_png_artifacts(
+        book_root,
+        expected_topics=expected_topics,
+        min_width=min_width,
+        min_height=min_height,
+        min_pixels=min_pixels,
+        blank_stddev=blank_stddev,
+        allowed_placeholder_count=allowed_placeholder_count,
+    )
+    findings = [*notebook_findings, *image_findings]
+    return {
+        "summary": {
+            "notebook_count": len(notebooks),
+            "png_count": len(images),
+            "finding_count": len(findings),
+        },
+        "findings": findings,
+        "notebooks": [asdict(item) for item in notebooks],
+        "images": [asdict(item) for item in images],
+    }
+
+
+def print_text_report(report: dict[str, Any]) -> None:
+    summary = report["summary"]
+    print(f"Audited {summary['notebook_count']} notebooks and {summary['png_count']} PNGs")
+    findings = report["findings"]
+    if not findings:
+        print("All VDGF visual audit checks passed.")
+        return
+    print(f"{len(findings)} visual audit finding(s):")
+    for finding in findings:
+        path = finding.get("path", "")
+        location = f" [{path}]" if path else ""
+        print(f"- {finding['check']}{location}: {finding['message']}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--book-root", type=Path, default=BOOK_ROOT)
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--no-fail", action="store_true", help="Report findings without a nonzero exit.")
+    parser.add_argument("--min-width", type=int, default=64)
+    parser.add_argument("--min-height", type=int, default=64)
+    parser.add_argument("--min-pixels", type=int, default=4096)
+    parser.add_argument("--blank-stddev", type=float, default=1.0)
+    parser.add_argument("--allowed-placeholder-count", type=int, default=0)
+    args = parser.parse_args()
+
+    report = audit_visuals(
+        args.book_root,
+        min_width=args.min_width,
+        min_height=args.min_height,
+        min_pixels=args.min_pixels,
+        blank_stddev=args.blank_stddev,
+        allowed_placeholder_count=args.allowed_placeholder_count,
+    )
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        print_text_report(report)
+    if report["summary"]["finding_count"] and not args.no_fail:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+
 VALIDATE_SCRIPT = '''"""Execute VDGF notebooks with nbclient."""
 
 from __future__ import annotations
@@ -2001,18 +2985,26 @@ TEST_SCRIPT = '''"""Core smoke tests for the VDGF course utilities."""
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
 import numpy as np
 import sympy as sp
+from PIL import Image
 
 BOOK_ROOT = Path(__file__).resolve().parents[1]
 if str(BOOK_ROOT) not in sys.path:
     sys.path.insert(0, str(BOOK_ROOT))
 
+SCRIPT_ROOT = Path(__file__).resolve().parent
+if str(SCRIPT_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_ROOT))
+
+from audit_vdgf_visuals import audit_visuals
 from utils.dg import gaussian_curvature_2d, metric_tensor, plane_curve_curvature, sphere_embedding
 from utils.forms import CoordinateSystem, basis_form, d, evaluate, hodge_star
+from utils.visuals import build_chapter_visual
 
 
 def test_plane_curve_curvature_unit_circle() -> None:
@@ -2045,6 +3037,86 @@ def test_form_evaluate_and_hodge() -> None:
     area = dx.wedge(dy)
     assert evaluate(area, [1, 0, 0], [0, 1, 0]) == 1
     assert hodge_star(dx).components == {(1, 2): 1}
+
+
+def test_build_chapter_visual_smoke(tmp_path: Path) -> None:
+    spec = {
+        "chapter": 12,
+        "filename": "gauss-map-distortion.png",
+        "family": "surface",
+        "title": "Gauss Map Distortion",
+        "caption": "surface patch and normal drift",
+    }
+    path, stats = build_chapter_visual(spec, tmp_path, "chapter-12")
+    assert path.exists()
+    assert path.name == "gauss-map-distortion.png"
+    assert stats["width"] >= 300
+    assert stats["height"] >= 200
+    assert stats["file_size"] > 1000
+    assert stats["pixel_std"] > 1.0
+
+
+def _write_notebook(path: Path, source: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    notebook = {
+        "cells": [
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": source,
+            }
+        ],
+        "metadata": {},
+        "nbformat": 4,
+        "nbformat_minor": 5,
+    }
+    path.write_text(json.dumps(notebook), encoding="utf-8")
+
+
+def _save_png(path: Path, array: np.ndarray) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.fromarray(array.astype(np.uint8)).save(path)
+
+
+def test_visual_audit_detects_requested_failure_modes(tmp_path: Path) -> None:
+    _write_notebook(
+        tmp_path / "part-01" / "chapter-01-example" / "01-example.ipynb",
+        'figure_path = save_matplotlib(fig, "chapter-01", "figures", "constant-curvature-circles.png")',
+    )
+
+    placeholder = np.zeros((80, 80, 3), dtype=np.uint8)
+    placeholder[:, :40] = [255, 0, 0]
+    placeholder[:, 40:] = [0, 0, 255]
+    _save_png(
+        tmp_path / "artifacts" / "chapter-01" / "figures" / "constant-curvature-circles.png",
+        placeholder,
+    )
+    _save_png(
+        tmp_path / "artifacts" / "chapter-02" / "figures" / "constant-curvature-circles.png",
+        placeholder,
+    )
+    _save_png(
+        tmp_path / "artifacts" / "chapter-02" / "figures" / "chapter-02-blank.png",
+        np.full((8, 8, 3), 255, dtype=np.uint8),
+    )
+
+    report = audit_visuals(
+        tmp_path,
+        expected_topics=["chapter-01", "chapter-02"],
+        min_width=16,
+        min_height=16,
+        min_pixels=256,
+    )
+    checks = {finding["check"] for finding in report["findings"]}
+
+    assert "missing-display-artifact" in checks
+    assert "missing-chapter-specific-png" in checks
+    assert "duplicate-png-hash" in checks
+    assert "repeated-placeholder-png" in checks
+    assert "blank-image" in checks
+    assert "tiny-image" in checks
 '''
 
 
@@ -2084,6 +3156,7 @@ def setup_code(topic: str) -> str:
         sys.path.insert(0, str(BOOK_ROOT))
 
     from utils.artifacts import save_json, save_matplotlib, save_text, display_artifact
+    from utils.visuals import build_chapter_visual
     from utils.dg import (
         gaussian_curvature_2d,
         hyperbolic_distance,
@@ -2178,6 +3251,7 @@ def canonical_cells(entry: dict[str, object]) -> list[nbf.NotebookNode]:
         "focus": entry["focus"],
         "topics": entry["topics"],
     }
+    visual_payload = visual_spec_for_entry(entry)
     return [
         md(title),
         md(prose_for_entry(entry)),
@@ -2250,34 +3324,17 @@ def canonical_cells(entry: dict[str, object]) -> list[nbf.NotebookNode]:
             """
         ),
         code(
-            """
-            def model_circumference(radius, K):
-                if abs(K) < 1e-12:
-                    return 2 * math.pi * radius
-                if K > 0:
-                    root = math.sqrt(K)
-                    return 2 * math.pi * math.sin(root * radius) / root
-                root = math.sqrt(-K)
-                return 2 * math.pi * math.sinh(root * radius) / root
-
-            radii = np.linspace(0.05, 1.2, 80)
-            circumference_flat = [model_circumference(float(r), 0.0) for r in radii]
-            circumference_sphere = [model_circumference(float(r), 1.0) for r in radii]
-            circumference_hyperbolic = [model_circumference(float(r), -1.0) for r in radii]
-
-            fig, ax = plt.subplots(figsize=(6, 4))
-            ax.plot(radii, circumference_sphere, label="K = +1")
-            ax.plot(radii, circumference_flat, label="K = 0")
-            ax.plot(radii, circumference_hyperbolic, label="K = -1")
-            ax.set_xlabel("geodesic radius")
-            ax.set_ylabel("circumference")
-            ax.set_title("Small circles remember curvature")
-            ax.legend()
-            figure_path = save_matplotlib(fig, ARTIFACT_TOPIC, "figures", "constant-curvature-circles.png", root=ARTIFACT_BASE)
-            plt.close(fig)
-            print(figure_path.relative_to(BOOK_ROOT))
-            assert figure_path.exists()
-            """
+            "visual_spec = json.loads("
+            + repr(json.dumps(visual_payload, indent=2))
+            + ")\n"
+            + "visual_path, visual_metrics = build_chapter_visual(visual_spec, ARTIFACT_BASE, ARTIFACT_TOPIC)\n"
+            + "display_artifact(visual_path, width=720)\n\n"
+            + "assert visual_path.exists()\n"
+            + 'assert visual_metrics["file_size"] > 1000\n'
+            + 'assert visual_metrics["width"] >= 300 and visual_metrics["height"] >= 200\n'
+            + 'assert visual_metrics["pixel_std"] > 1.0\n\n'
+            + "print(visual_path.relative_to(BOOK_ROOT))\n"
+            + "print(json.dumps(visual_metrics, indent=2, sort_keys=True))\n"
         ),
         code(
             """
@@ -2293,11 +3350,15 @@ def canonical_cells(entry: dict[str, object]) -> list[nbf.NotebookNode]:
                 "expected_octant_area": math.pi / 2,
                 "hyperboloid_distance": hdist,
                 "poincare_disk_distance": disk_distance,
-                "figure_exists": str((ARTIFACT_BASE / ARTIFACT_TOPIC / "figures" / "constant-curvature-circles.png").exists()),
+                "visual_artifact": str(visual_path.relative_to(BOOK_ROOT)),
+                "visual_title": visual_spec["title"],
+                "visual_metrics": visual_metrics,
             }
             path = save_json(summary, ARTIFACT_TOPIC, "checks", "final-sanity.json", root=ARTIFACT_BASE)
             assert abs(triangle_area - math.pi / 2) < 1e-9
             assert abs(hdist - disk_distance) < 1e-9
+            assert visual_path.exists()
+            assert visual_metrics["pixel_std"] > 1.0
             assert path.exists()
             print(path.relative_to(BOOK_ROOT))
             """
@@ -2436,6 +3497,7 @@ def main() -> None:
 
     write_text(BOOK_ROOT / "scripts" / "build_vdgf_course_indexes.py", BUILD_INDEXES)
     write_text(BOOK_ROOT / "scripts" / "audit_vdgf_notebooks.py", AUDIT_SCRIPT)
+    write_text(BOOK_ROOT / "scripts" / "audit_vdgf_visuals.py", VISUAL_AUDIT_SCRIPT)
     write_text(BOOK_ROOT / "scripts" / "validate_vdgf_course.py", VALIDATE_SCRIPT)
     write_text(BOOK_ROOT / "scripts" / "test_vdgf_core.py", TEST_SCRIPT)
 

@@ -42,6 +42,25 @@ Each canonical notebook should contain:
 9. Sanity checks asserting core identities and artifact existence.
 10. Takeaways.
 
+## Visual Artifact Contract
+
+Every canonical notebook must contain at least one chapter-specific visual artifact
+that is saved under the matching `artifacts/...` subtree and displayed inline with
+`display_artifact(...)`.
+
+Visuals are part of the teaching argument, not decoration:
+
+- The artifact filename must name the concept, for example
+  `holonomy-loop-meter.png`, not `figure.png`.
+- The notebook prose near the visual must name the concept, parameters, and the
+  invariant or behavior the reader should inspect.
+- Final sanity checks must assert the visual path exists, has nonzero size, and
+  records relevant numeric validation values in `final-sanity.json`.
+- Repeated placeholder visuals are forbidden. A repeated artifact hash is a QC
+  failure unless the exact file is intentionally allowlisted in the visual audit.
+- Do not use textbook screenshots, PDF page crops, or decorative images that do
+  not express chapter content.
+
 ## Worker Boundaries
 
 Assign one worker to one canonical notebook, one helper module, or one script task.
@@ -58,6 +77,7 @@ uv run python Visual-Differential-Geometry-and-Forms/scripts/build_vdgf_course_i
 uv run python -m compileall -q Visual-Differential-Geometry-and-Forms/utils Visual-Differential-Geometry-and-Forms/scripts
 uv run pytest -q Visual-Differential-Geometry-and-Forms/scripts
 uv run python Visual-Differential-Geometry-and-Forms/scripts/audit_vdgf_notebooks.py --min-words 1200 --min-code-cells 5
+uv run python Visual-Differential-Geometry-and-Forms/scripts/audit_vdgf_visuals.py
 uv run python Visual-Differential-Geometry-and-Forms/scripts/validate_vdgf_course.py --limit 8 --timeout 300
 uv run python Visual-Differential-Geometry-and-Forms/scripts/validate_vdgf_course.py --all --timeout 300
 git diff --check

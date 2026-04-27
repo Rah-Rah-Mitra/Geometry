@@ -114,6 +114,29 @@ Rules:
 - Do not store large scans or copyrighted page images.
 - If a notebook generates an artifact, include a final assertion that the file exists.
 
+## Visual Artifact Contract
+
+Every canonical notebook must contain at least one chapter-specific visual artifact
+that is saved under the matching `artifacts/...` subtree and displayed inline with
+`display_artifact(...)` or the course-local equivalent.
+
+Visuals are part of the teaching argument, not decoration:
+
+- The artifact filename must name the concept, for example
+  `outer-product-orientation.png`, not `figure.png`.
+- The notebook prose near the visual must name the concept, parameters, and the
+  invariant or behavior the reader should inspect.
+- Final sanity checks must assert the visual path exists, has nonzero size, and
+  records relevant numeric validation values when the notebook has a final check
+  artifact.
+- Repeated placeholder visuals are forbidden. A repeated artifact hash is a QC
+  failure unless the exact file is intentionally allowlisted in an audit.
+- Make the geometry inspectable with labels, meaningful scale/aspect ratio, and
+  legends when multiple objects overlap.
+- Use color and styling to clarify structure; do not rely on hue alone for meaning.
+- Do not use textbook screenshots, PDF page crops, or decorative images that do
+  not express chapter content.
+
 ## Utilities
 
 Shared code belongs in `utils/`.
