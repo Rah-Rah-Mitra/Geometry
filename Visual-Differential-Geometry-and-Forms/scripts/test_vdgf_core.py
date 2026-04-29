@@ -21,6 +21,7 @@ if str(SCRIPT_ROOT) not in sys.path:
 from audit_vdgf_visuals import audit_visuals
 from utils.dg import gaussian_curvature_2d, metric_tensor, plane_curve_curvature, sphere_embedding
 from utils.forms import CoordinateSystem, basis_form, d, evaluate, hodge_star
+from utils.chapter_visuals import build_visual_storyboard, chapter_check_payload
 from utils.visuals import build_chapter_visual
 
 
@@ -73,6 +74,40 @@ def test_build_chapter_visual_smoke(tmp_path: Path) -> None:
     assert stats["pixel_std"] > 1.0
 
 
+def test_build_visual_storyboard_smoke(tmp_path: Path) -> None:
+    storyboard = {
+        "chapter_number": 2,
+        "chapter_label": "Chapter 02",
+        "visual_sequence": [
+            {
+                "concept": "Curvature Detector",
+                "kind": "curvature",
+                "filename": "curvature-detector-smoke.png",
+                "observation": "circle defects separate signs of curvature",
+            },
+            {
+                "concept": "Metric Grid",
+                "kind": "metric",
+                "filename": "metric-grid-smoke.png",
+                "observation": "ellipses encode local scale",
+            },
+            {
+                "concept": "Proof Ledger",
+                "kind": "proof",
+                "filename": "proof-ledger-smoke.png",
+                "observation": "objects, formulas, and checks agree",
+            },
+        ],
+    }
+    results = build_visual_storyboard(storyboard, tmp_path, "chapter-02")
+    payload = chapter_check_payload(storyboard, results)
+
+    assert len(results) == 3
+    assert all((tmp_path / "chapter-02" / "figures" / item["filename"]).exists() for item in results)
+    assert payload["assertions"]["has_multiple_visuals"]
+    assert payload["assertions"]["all_visuals_nonblank"]
+
+
 def _write_notebook(path: Path, source: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     notebook = {
@@ -100,7 +135,7 @@ def _save_png(path: Path, array: np.ndarray) -> None:
 def test_visual_audit_detects_requested_failure_modes(tmp_path: Path) -> None:
     _write_notebook(
         tmp_path / "part-01" / "chapter-01-example" / "01-example.ipynb",
-        'figure_path = save_matplotlib(fig, "chapter-01", "figures", "constant-curvature-circles.png")',
+        'figure_path = build_visual_storyboard(storyboard, ARTIFACT_BASE, "chapter-01")',
     )
 
     placeholder = np.zeros((80, 80, 3), dtype=np.uint8)

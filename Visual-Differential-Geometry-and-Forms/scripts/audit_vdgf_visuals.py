@@ -18,7 +18,9 @@ import vdgf_inventory as inventory
 BOOK_ROOT = Path(__file__).resolve().parents[1]
 IGNORED_NOTEBOOKS = {"00-index.ipynb", "00-part-index.ipynb", "00-book-index.ipynb"}
 PLACEHOLDER_NAME = "constant-curvature-circles.png"
-VISUAL_SAVE_CALLS = frozenset({"save_image", "save_matplotlib", "save_plotly_html", "build_chapter_visual"})
+VISUAL_SAVE_CALLS = frozenset(
+    {"save_image", "save_matplotlib", "save_plotly_html", "build_chapter_visual", "build_visual_storyboard"}
+)
 
 
 @dataclass(frozen=True)

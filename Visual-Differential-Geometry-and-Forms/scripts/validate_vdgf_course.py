@@ -26,7 +26,7 @@ def notebook_paths(all_notebooks: bool, limit: int | None) -> list[Path]:
             "01-euclidean-and-non-euclidean-geometry.ipynb",
             "04-mapping-surfaces-the-metric.ipynb",
             "15-the-shape-operator.ipynb",
-            "29-riemanns-curvature.ipynb",
+            "29-riemann-s-curvature.ipynb",
             "32-1-forms.ipynb",
             "38-differential-geometry-via-forms.ipynb",
         }
