@@ -20,12 +20,30 @@ The workspace root still owns shared environment files such as `pyproject.toml`,
 `uv.lock`, and `.venv`. Run commands from the workspace root unless a script says
 otherwise.
 
+## Repo-Local Skills
+
+This workspace includes repo-local Codex skills under `D:\Geometry\.codex\skills`.
+Use them when assigning or doing chapter work:
+
+- `geometry-visualization-planner`: create a visual storyboard and library choices
+  before notebook authoring.
+- `geometry-chapter-notebook-author`: author or revise a standalone visual-first
+  chapter notebook directly in its chapter folder.
+- `geometry-notebook-qc`: review notebooks, artifacts, execution, and visual
+  relevance before handoff.
+
+When using parallel agents, pass the relevant skill path and the assigned chapter or
+page span to each worker. The skills contain the shared geometry library catalog.
+
 ## Non-Negotiables
 
 - Write original teaching prose, derivations, code, and visual explanations. Do not
   copy textbook passages, long exercise text, or page screenshots.
 - A notebook should be useful without opening the textbook: explain the motivation,
   definitions, worked examples, pitfalls, checks, and takeaways.
+- Visualization is part of delivery, not a decoration or quota. Use diagrams, 3D
+  plots, widgets, symbolic checks, mesh/surface views, proof diagrams, and
+  computational experiments wherever they clarify the chapter's geometry.
 - Keep course-owned helpers in `utils/`, course-owned outputs in `artifacts/`, and
   course-owned build/validation tools in `scripts/`.
 - Every canonical notebook must execute cleanly with `nbclient`.
@@ -33,6 +51,9 @@ otherwise.
   workspace paths such as `D:/Geometry/artifacts`.
 - Preserve the existing folder hierarchy and notebook names unless the user asks for
   a structural migration.
+- Chapter workers must read the assigned source pages before editing and should
+  author the full canonical notebook directly rather than driving chapter work from a
+  large course-generation script.
 
 ## Book Map
 
@@ -66,7 +87,9 @@ Follow the seed style used by Chapter 1:
 4. Imports and setup cell that discovers `BOOK_ROOT`.
 5. Concept sections with original explanations and equations.
 6. Executable examples using `utils/` helpers and local functions.
-7. Interactive or visual artifacts with Plotly, Matplotlib, or rich tables.
+7. Visual explanations and executable artifacts: diagrams, plots, 3D scenes,
+   widgets, symbolic derivations, tables, or computational experiments as the
+   concepts require.
 8. Applied lab or design exercise.
 9. Sanity checks that assert important identities and artifact existence.
 10. Chapter takeaways.
@@ -114,13 +137,14 @@ Rules:
 - Do not store large scans or copyrighted page images.
 - If a notebook generates an artifact, include a final assertion that the file exists.
 
-## Visual Artifact Contract
+## Visualization-First Contract
 
-Every canonical notebook must contain at least one chapter-specific visual artifact
-that is saved under the matching `artifacts/...` subtree and displayed inline with
-`display_artifact(...)` or the course-local equivalent.
+Canonical notebooks should use visual and computational forms wherever they improve
+the delivery of the geometry. The standard is not a fixed count; the standard is
+whether the notebook can stand alone as a clearer learning product than a passive
+textbook reading.
 
-Visuals are part of the teaching argument, not decoration:
+Visuals are part of the teaching argument:
 
 - The artifact filename must name the concept, for example
   `outer-product-orientation.png`, not `figure.png`.
@@ -136,6 +160,34 @@ Visuals are part of the teaching argument, not decoration:
 - Use color and styling to clarify structure; do not rely on hue alone for meaning.
 - Do not use textbook screenshots, PDF page crops, or decorative images that do
   not express chapter content.
+- For proof-heavy material, visualize the proof state where possible: assumptions,
+  dependencies, limiting processes, deformations, counterexamples, orientation
+  changes, or small symbolic/numeric examples that make the invariant visible.
+- Use interactive Plotly, ipywidgets, PyVista, Trimesh, or other installed tools when
+  changing a parameter, rotating a model, or inspecting a surface teaches the idea.
+
+## Geometry Stack
+
+Use the shared `uv` environment at the workspace root. Prefer installed libraries
+before adding dependencies:
+
+| Use case | Installed libraries |
+| --- | --- |
+| General plotting | `numpy`, `scipy`, `matplotlib`, `plotly`, `ipywidgets`, `ipympl`, `pandas`, `polars`, `seaborn` |
+| 3D surfaces and meshes | `pyvista`, `trimesh`, `meshio`, `gpytoolbox`, `manifold3d`, `potpourri3d`, `robust_laplacian`, `mapbox_earcut`, `xatlas`, `trame` |
+| Computational geometry | `scipy.spatial`, `shapely`, `networkx` |
+| Symbolic geometry | `sympy`, `galgebra` |
+| Geometric algebra | `kingdon`, `clifford`, `galgebra`, `pyganja`, course-local `utils.ga` |
+| Computer vision | `cv2` from `opencv-contrib-python`, `skimage`, `kornia`, `torch`, `torchvision` |
+| Riemannian/statistical geometry | `geomstats`, `pyriemann` |
+| Optimal transport | `ot` from POT, `geomloss` |
+| Topological data analysis | `ripser`, `gudhi`, `persim` |
+| GIS/geometric maps | `geopandas`, `rasterio`, `fiona`, `pyproj`, `pyogrio`, `osmnx`, `contextily`, `folium`, `pydeck` |
+
+Document these as optional/external rather than importing them in canonical
+notebooks: `open3d` is not available for the current CPython 3.13 environment,
+`meshplot` and `singular` do not resolve from the package registry here, and
+SageMath/Singular require an external Sage/Singular installation.
 
 ## Utilities
 
@@ -157,16 +209,23 @@ script/helper task.
 Workers must:
 
 - Read the relevant chapter/page span before editing.
+- If assigned chapter work, design or consume a visualization storyboard and then
+  author the full canonical notebook directly in the chapter folder.
 - Write only inside their assigned chapter folder, its matching `artifacts/` subtree,
   and any explicitly assigned helper module.
 - Avoid editing global indexes unless assigned to the index/QC worker.
 - Avoid editing shared `utils/ga/` unless assigned to the core utility worker.
+- Avoid using `generate_ga_course.py` for chapter-level improvement work unless the
+  assignment is explicitly a bootstrap or regeneration task.
 - Report changed files, generated artifacts, checks run, and any residual gaps.
 
 Suggested worker roles:
 
+- Visualization planner: reads the source span and proposes the visual storyboard.
 - Chapter worker: authors one canonical notebook and local artifacts.
 - Utility worker: implements shared algebra/model helpers and tests.
+- Dependency/library worker: checks installed packages and recommends compatible
+  tools for chapter visuals.
 - Index worker: regenerates `00-book-index.ipynb` and part indexes.
 - QC worker: runs audits, validates links, executes notebooks, and checks stale paths.
 
@@ -176,6 +235,7 @@ Run these from `D:\Geometry`:
 
 ```powershell
 uv run python Geometric-Algebra-for-Computer-Science/scripts/build_ga_course_indexes.py
+uv run python Geometric-Algebra-for-Computer-Science/scripts/smoke_geometry_stack.py
 uv run python -m compileall -q Geometric-Algebra-for-Computer-Science/utils Geometric-Algebra-for-Computer-Science/scripts
 uv run pytest -q
 uv run python Geometric-Algebra-for-Computer-Science/scripts/audit_ga_notebooks.py --min-words 1000 --min-code-cells 5
