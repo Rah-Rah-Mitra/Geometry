@@ -29,7 +29,7 @@ Last updated: 2026-05-01
 | &#9745; [Introduction to Geometry](./Introduction-to-Geometry) - Implemented | &#9744; | &#9744; |
 | &#9745; [Mathematical Foundations of Geometric Deep Learning](./Mathematical-Foundations-of-Geometric-Deep-Learning) - Implemented | &#9744; | &#9744; |
 | &#9745; [Modern Robotics](./Modern-Robotics) - Implemented | &#9744; | &#9744; |
-| &#9745; [Multiple View Geometry in Computer Vision](./Multiple-View-Geometry-in-Computer-Vision) - Implemented | &#9744; | &#9744; |
+| &#9745; [Multiple View Geometry in Computer Vision](./Multiple-View-Geometry-in-Computer-Vision) - Implemented | &#9745; | &#9744; |
 | &#9745; [Perspectives on Projective Geometry](./Perspectives-on-Projective-Geometry) - Implemented | &#9744; | &#9744; |
 | &#9745; [The Four Pillars of Geometry](./The-Four-Pillars-of-Geometry) - Implemented | &#9744; | &#9744; |
 | &#9745; [Topology](./Topology) - Implemented | &#9744; | &#9744; |
