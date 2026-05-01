@@ -2,6 +2,8 @@
 
 Use this template when `spawn_agents_on_csv` is available and the book has many similar chapter tasks. This workflow is experimental in Codex, so keep concurrency explicit and require every worker to report a structured result.
 
+Subagent capacity is shared across Codex sessions working on this repo. Before launching a large CSV batch, check whether another Codex session is already using the Geometry subagent pool. If it is, lower `max_concurrency` or wait so follow-up sessions can still spawn QC, validation, or emergency fix workers.
+
 ## Input CSV
 
 Create one CSV row per chapter with these columns:
@@ -82,3 +84,4 @@ After the batch finishes:
 - Assign one `geometry_index_builder` after successful chapter work.
 - Assign one `geometry_notebook_qc` and one `geometry_validation_worker` after implementation.
 - Keep `agents.max_depth = 1`; batch workers must not spawn nested workers.
+- If another Codex session also needs this repo, reserve spare subagent capacity instead of saturating all 16 threads.

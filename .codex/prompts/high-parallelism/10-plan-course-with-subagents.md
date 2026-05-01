@@ -11,10 +11,13 @@ Use this prompt to plan a visualization-first course before implementation.
 2. Read the course AGENTS.md if present.
 3. Spawn `geometry_book_mapper` to map the PDF, chapter/appendix spans, section hierarchy, source mapping, existing folders, scripts, indexes, and artifact conventions.
 4. Build a chapter manifest with chapter_id, chapter_title, source_pages, notebook_path, artifact_subtree, and brief_path.
+5. Check whether another Codex session is already using Geometry subagents. The subagent cap is shared, so lower planning concurrency or wait if the pool is saturated.
 
 ## Chapter Planning
 
 Spawn `geometry_visual_planner` agents, one per chapter or small chapter batch. Cap active planning concurrency at 8 to 12 even when `agents.max_threads = 16`.
+
+Leave spare subagent capacity when another Codex session is active on `D:/Geometry`; otherwise that session may be unable to spawn its own workers.
 
 Each planner must:
 

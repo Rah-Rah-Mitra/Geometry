@@ -7,6 +7,7 @@ Use this prompt after implementation workers have completed chapter notebooks an
 1. Read course AGENTS.md, changed-file list, implementation reports, and validation hints.
 2. Keep `agents.max_depth = 1`.
 3. Use read-only QC first. Fixing passes require explicit write scopes.
+4. Check whether other Codex sessions are using Geometry subagents. If the shared pool is busy, run QC in smaller batches so other sessions are not blocked from spawning workers.
 
 ## QC Workers
 
@@ -14,6 +15,7 @@ Spawn `geometry_notebook_qc` agents by custom agent name:
 
 - one QC worker per chapter for large courses, or one QC worker per small chapter batch
 - cap active QC concurrency at 8 to 12
+- reserve spare capacity when another Codex session is active on this repo
 - each QC worker reads the assigned notebook, artifacts, source-map notes, AGENTS.md, and relevant scripts
 - each QC worker uses the geometry library catalog
 - QC workers do not edit files

@@ -13,6 +13,7 @@ This repo uses project-scoped Codex custom agents for visualization-first textbo
 - Workspace-write agents must respect their assigned file boundaries.
 - Shared utilities should be edited by one worker at a time.
 - Raise `agents.max_threads` only when chapter briefs, source spans, and QC capacity are ready. More threads do not improve weak briefs.
+- Treat the subagent cap as a global repo/session capacity constraint. If another Codex session is already using all available Geometry subagent threads, a new Codex session working on this repo may be unable to spawn additional subagents until those workers finish.
 
 ## Roles
 
@@ -44,6 +45,8 @@ For many chapters, keep the flow staged:
 4. Assign `geometry_artifact_engineer` to shared helpers or hard visual assets, with a unique write scope.
 5. Run `geometry_index_builder` after chapter authors finish.
 6. Run `geometry_notebook_qc` and `geometry_validation_worker` after implementation.
+
+When running multiple Codex sessions against `D:/Geometry`, coordinate batches manually. Leave spare capacity for urgent QC, validation, or follow-up work, because one busy session can consume the shared subagent budget.
 
 CSV fan-out guidance lives in `D:/Geometry/.codex/prompts/subagent-batches/chapter-workers-csv.md`.
 High-parallelism workflow prompts live in `D:/Geometry/.codex/prompts/high-parallelism/`.
