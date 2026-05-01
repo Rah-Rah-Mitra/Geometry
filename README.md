@@ -24,7 +24,7 @@ transport, and geometric statistics.
 | Implemented | A book folder exists in this repo with notebook scaffolding or canonical notebooks. |
 | Planned | The book is part of the roadmap, but no folder exists yet. |
 
-Last updated: 2026-04-29
+Last updated: 2026-05-01
 
 ## What Each Notebook Course Entails
 
@@ -48,11 +48,18 @@ that make the geometry inspectable.
 | [Computational Geometry: Algorithms and Applications](./Computational-Geometry-Algorithms-and-Applications) | Implemented | Convex hulls, sweep-line algorithms, triangulations, Voronoi diagrams, arrangements, range search, motion planning, quadtrees, visibility, and robust geometric predicates. |
 | [Differential Geometry: From Elastic Curves to Willmore Surfaces](./Differential-Geometry-From-Elastic-Curves-to-Willmore-Surfaces) | Implemented | Curves, reparametrization, curvature, variational calculus, surface metrics, Stokes' theorem, Gauss-Bonnet, minimal surfaces, CMC surfaces, and Willmore energy. |
 | [Directional Statistics](./Directional-Statistics) | Implemented | Circular and spherical data, von Mises and Fisher models, uniformity tests, regression, shape analysis, special functions, and executable replacements for statistical tables. |
+| [Euclid and Beyond](./Euclid-and-Beyond) | Implemented | Euclidean foundations, Hilbert axioms, fields, segment arithmetic, area, construction problems, field extensions, non-Euclidean geometry, and polyhedra. |
+| [Euclidean and Non-Euclidean Geometries](./Euclidean-and-Non-Euclidean-Geometries) | Implemented | Euclidean axioms, incidence and logic, neutral geometry, parallel postulate history, hyperbolic models, transformations, elliptic geometry, and continuity variants. |
 | [Fundamentals of Computer Graphics](./Fundamentals-of-Computer-Graphics) | Implemented | Ray tracing, rasterization, transformations, sampling, materials, animation, color, perception, tone mapping, implicit modeling, games, and visualization workflows. |
 | [Geometric Algebra for Computer Science](./Geometric-Algebra-for-Computer-Science) | Implemented | Blades, products, meets and joins, rotors, homogeneous and conformal models, geometric differentiation, implementation issues, and graphics/vision applications. |
 | [Geometric Tools for Computer Graphics](./Geometric-Tools-for-Computer-Graphics) | Implemented | Vectors, matrices, transformations, distance and intersection queries, curves, surfaces, meshes, spatial data structures, and practical geometry algorithms for graphics. |
+| [Geometry: A Metric Approach with Models](./Geometry-A-Metric-Approach-with-Models) | Implemented | Incidence and metric geometry, betweenness, plane separation, angle measure, neutral geometry, parallels, hyperbolic and Euclidean models, area, and isometries. |
+| [Geometry I](./Geometry-I) | Implemented | Group actions, affine and projective spaces, barycenters, cross-ratios, complexification, Euclidean affine and vector geometry, triangles, spheres, circles, and convexity. |
+| [Geometry II](./Geometry-II) | Implemented | Polytopes, quadratic forms, projective and affine quadrics, conics, sphere geometry, elliptic and hyperbolic geometry, and spaces of spheres. |
 | [Geometry with an Introduction to Cosmic Topology](./Geometry-with-an-Introduction-to-Cosmic-Topology) | Implemented | Complex coordinates, transformations, Mobius geometry, hyperbolic and elliptic models, surface geometry, quotient spaces, cosmic topology, and universe-shape diagnostics. |
 | [Ideals, Varieties, and Algorithms](./Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra) | Implemented | Polynomial ideals, affine varieties, Grobner bases, elimination, robotics, theorem proving, invariant theory, projective algebraic geometry, and dimension. |
+| [Introduction to Geometry](./Introduction-to-Geometry) | Implemented | Classical Euclidean geometry, symmetry, coordinates, complex numbers, Platonic solids, affine and projective geometry, hyperbolic geometry, curves, surfaces, topology, and four-dimensional geometry. |
+| [The Four Pillars of Geometry](./The-Four-Pillars-of-Geometry) | Implemented | Euclidean construction and axioms, linear algebra, projective geometry, transformation groups, and non-Euclidean geometry. |
 | [Undergraduate Algebraic Geometry](./Undergraduate-Algebraic-Geometry) | Implemented | Conics, cubics, group law, affine varieties, coordinate rings, projective and birational geometry, tangent spaces, dimension, and the 27 lines on a cubic surface. |
 | [Visual Differential Geometry and Forms](./Visual-Differential-Geometry-and-Forms) | Implemented | Euclidean and non-Euclidean geometry, metrics, geodesics, curvature, Gauss-Bonnet, manifolds, vector fields, differential forms, Stokes' theorem, and de Rham intuition. |
 
@@ -70,12 +77,13 @@ and affine geometry, transformations, projective ideas, and non-Euclidean models
 
 | Book | Status | Planned notebook purpose |
 | --- | --- | --- |
-| John Stillwell, *The Four Pillars of Geometry* | Planned | A panoramic first course linking Euclidean construction, linear algebra, projective geometry, and transformation groups. |
-| H. S. M. Coxeter, *Introduction to Geometry* | Planned | A high-breadth classical course for synthetic, Euclidean, projective, and non-Euclidean geometric thinking. |
-| Marcel Berger, *Geometry I* and *Geometry II* | Planned | A selective advanced undergraduate encyclopedia for classical geometry, symmetry, and cross-branch connections. |
-| Robin Hartshorne, *Geometry: Euclid and Beyond* | Planned | A rigorous Euclidean foundations course moving from axioms and constructions toward modern proof-based geometry. |
-| Marvin Greenberg, *Euclidean and Non-Euclidean Geometries* | Planned | A foundations and history course centered on Euclidean axioms, models, and the discovery of hyperbolic geometry. |
-| Millman and Parker, *Geometry: A Metric Approach with Models* | Planned | A model-based metric geometry course comparing Cartesian, Poincare, taxicab, and Moulton-style geometries. |
+| John Stillwell, *The Four Pillars of Geometry* | [Implemented](./The-Four-Pillars-of-Geometry) | A panoramic first course linking Euclidean construction, linear algebra, projective geometry, transformation groups, and non-Euclidean geometry. |
+| H. S. M. Coxeter, *Introduction to Geometry* | [Implemented](./Introduction-to-Geometry) | A high-breadth classical course for synthetic, Euclidean, projective, non-Euclidean, differential, and topological geometric thinking. |
+| Marcel Berger, *Geometry I* | [Implemented](./Geometry-I) | A selective advanced undergraduate course on affine spaces, projective spaces, symmetry, Euclidean geometry, and convexity. |
+| Marcel Berger, *Geometry II* | [Implemented](./Geometry-II) | A continuation through polytopes, quadratic forms, quadrics, conics, sphere geometry, and elliptic and hyperbolic models. |
+| Robin Hartshorne, *Geometry: Euclid and Beyond* | [Implemented](./Euclid-and-Beyond) | A rigorous Euclidean foundations course moving from axioms and constructions toward fields, area, non-Euclidean geometry, and polyhedra. |
+| Marvin Greenberg, *Euclidean and Non-Euclidean Geometries* | [Implemented](./Euclidean-and-Non-Euclidean-Geometries) | A foundations and history course centered on Euclidean axioms, models, transformations, continuity, and the discovery of hyperbolic geometry. |
+| Millman and Parker, *Geometry: A Metric Approach with Models* | [Implemented](./Geometry-A-Metric-Approach-with-Models) | A model-based metric geometry course comparing incidence, metric, neutral, Euclidean, hyperbolic, and isometry-focused geometries. |
 
 ### Projective Geometry, Transformations, Vision, and Geometric Algebra
 
