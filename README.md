@@ -45,21 +45,32 @@ that make the geometry inspectable.
 | Course | Status | What the notebooks cover |
 | --- | --- | --- |
 | [A Mathematical Introduction to Robotic Manipulation](./A-Mathematical-Introduction-to-Robotic-Manipulation) | Implemented | Rigid-body motion, twists, wrenches, robot kinematics, dynamics, grasping, multifingered manipulation, nonholonomic motion, and Lie-theoretic robotics labs. |
+| [Basic Topology](./Basic-Topology) | Implemented | Euler characteristic, continuity, compactness, connectedness, quotient spaces, fundamental groups, triangulations, surfaces, simplicial homology, degree, Lefschetz number, knots, and covering spaces. |
 | [Computational Geometry: Algorithms and Applications](./Computational-Geometry-Algorithms-and-Applications) | Implemented | Convex hulls, sweep-line algorithms, triangulations, Voronoi diagrams, arrangements, range search, motion planning, quadtrees, visibility, and robust geometric predicates. |
+| [Differential Geometry of Curves and Surfaces](./Differential-Geometry-of-Curves-and-Surfaces) | Implemented | Curves, regular surfaces, first fundamental forms, Gauss maps, Gaussian curvature, geodesics, intrinsic surface geometry, Gauss-Bonnet intuition, and global surface diagnostics. |
 | [Differential Geometry: From Elastic Curves to Willmore Surfaces](./Differential-Geometry-From-Elastic-Curves-to-Willmore-Surfaces) | Implemented | Curves, reparametrization, curvature, variational calculus, surface metrics, Stokes' theorem, Gauss-Bonnet, minimal surfaces, CMC surfaces, and Willmore energy. |
 | [Directional Statistics](./Directional-Statistics) | Implemented | Circular and spherical data, von Mises and Fisher models, uniformity tests, regression, shape analysis, special functions, and executable replacements for statistical tables. |
+| [Elementary Differential Geometry: Andrew Pressley](./Elementary-Differential-Geometry-Andrew-Pressley) | Implemented | Plane and space curves, curvature, torsion, global curve properties, surface patches, first and second fundamental forms, geodesics, hyperbolic geometry, minimal surfaces, and Gauss-Bonnet. |
+| [Elementary Differential Geometry: Barrett O'Neill](./Elementary-Differential-Geometry-Barrett-ONeill) | Implemented | Calculus on Euclidean spaces, frame fields, Euclidean geometry, calculus on surfaces, shape operators, intrinsic and global surface geometry, Riemannian geometry, and computer-formula labs. |
 | [Euclid and Beyond](./Euclid-and-Beyond) | Implemented | Euclidean foundations, Hilbert axioms, fields, segment arithmetic, area, construction problems, field extensions, non-Euclidean geometry, and polyhedra. |
 | [Euclidean and Non-Euclidean Geometries](./Euclidean-and-Non-Euclidean-Geometries) | Implemented | Euclidean axioms, incidence and logic, neutral geometry, parallel postulate history, hyperbolic models, transformations, elliptic geometry, and continuity variants. |
 | [Fundamentals of Computer Graphics](./Fundamentals-of-Computer-Graphics) | Implemented | Ray tracing, rasterization, transformations, sampling, materials, animation, color, perception, tone mapping, implicit modeling, games, and visualization workflows. |
 | [Geometric Algebra for Computer Science](./Geometric-Algebra-for-Computer-Science) | Implemented | Blades, products, meets and joins, rotors, homogeneous and conformal models, geometric differentiation, implementation issues, and graphics/vision applications. |
+| [Geometric Deep Learning](./Geometric-Deep-Learning) | Implemented | Representation learning, high-dimensional generalization, geometric priors, graphs, groups, grids, manifolds, gauges, equivariant models, applications, and historical lineage. |
 | [Geometric Tools for Computer Graphics](./Geometric-Tools-for-Computer-Graphics) | Implemented | Vectors, matrices, transformations, distance and intersection queries, curves, surfaces, meshes, spatial data structures, and practical geometry algorithms for graphics. |
 | [Geometry: A Metric Approach with Models](./Geometry-A-Metric-Approach-with-Models) | Implemented | Incidence and metric geometry, betweenness, plane separation, angle measure, neutral geometry, parallels, hyperbolic and Euclidean models, area, and isometries. |
 | [Geometry I](./Geometry-I) | Implemented | Group actions, affine and projective spaces, barycenters, cross-ratios, complexification, Euclidean affine and vector geometry, triangles, spheres, circles, and convexity. |
 | [Geometry II](./Geometry-II) | Implemented | Polytopes, quadratic forms, projective and affine quadrics, conics, sphere geometry, elliptic and hyperbolic geometry, and spaces of spheres. |
 | [Geometry with an Introduction to Cosmic Topology](./Geometry-with-an-Introduction-to-Cosmic-Topology) | Implemented | Complex coordinates, transformations, Mobius geometry, hyperbolic and elliptic models, surface geometry, quotient spaces, cosmic topology, and universe-shape diagnostics. |
 | [Ideals, Varieties, and Algorithms](./Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra) | Implemented | Polynomial ideals, affine varieties, Grobner bases, elimination, robotics, theorem proving, invariant theory, projective algebraic geometry, and dimension. |
+| [Information Geometry and Its Applications](./Information-Geometry-and-Its-Applications) | Implemented | Divergence functions, dually flat geometry, exponential and mixture families, alpha geometry, dual connections, statistical inference, EM, semiparametrics, time series, ML, natural gradients, and signal processing. |
 | [Introduction to Geometry](./Introduction-to-Geometry) | Implemented | Classical Euclidean geometry, symmetry, coordinates, complex numbers, Platonic solids, affine and projective geometry, hyperbolic geometry, curves, surfaces, topology, and four-dimensional geometry. |
+| [Mathematical Foundations of Geometric Deep Learning](./Mathematical-Foundations-of-Geometric-Deep-Learning) | Implemented | Algebraic structures, metric and analytical geometry, vector calculus, topology, differential geometry, functional analysis, spectral theory, graph theory, and message-passing foundations. |
+| [Modern Robotics](./Modern-Robotics) | Implemented | Screw theory, configuration spaces, rigid-body motions, forward and inverse kinematics, velocity kinematics, dynamics, trajectory generation, motion planning, control, grasping, and mobile robots. |
+| [Multiple View Geometry in Computer Vision](./Multiple-View-Geometry-in-Computer-Vision) | Implemented | Projective transformations, camera models, calibration, epipolar geometry, fundamental and trifocal tensors, structure computation, homographies, auto-calibration, cheirality, degeneracies, and estimation appendices. |
+| [Perspectives on Projective Geometry](./Perspectives-on-Projective-Geometry) | Implemented | Pappus configurations, projective planes, homogeneous coordinates, cross-ratios, bracket algebra, conics, diagram techniques, Cayley-Klein geometries, complex projective lines, and hyperbolic models. |
 | [The Four Pillars of Geometry](./The-Four-Pillars-of-Geometry) | Implemented | Euclidean construction and axioms, linear algebra, projective geometry, transformation groups, and non-Euclidean geometry. |
+| [Topology](./Topology) | Implemented | Set theory, topological spaces, continuity, connectedness, compactness, countability and separation axioms, Tychonoff, metrization, function spaces, Baire spaces, fundamental groups, plane separation, van Kampen, surfaces, and covering spaces. |
 | [Undergraduate Algebraic Geometry](./Undergraduate-Algebraic-Geometry) | Implemented | Conics, cubics, group law, affine varieties, coordinate rings, projective and birational geometry, tangent spaces, dimension, and the 27 lines on a cubic surface. |
 | [Visual Differential Geometry and Forms](./Visual-Differential-Geometry-and-Forms) | Implemented | Euclidean and non-Euclidean geometry, metrics, geodesics, curvature, Gauss-Bonnet, manifolds, vector fields, differential forms, Stokes' theorem, and de Rham intuition. |
 
@@ -93,8 +104,8 @@ representations of geometric operations.
 
 | Book | Status | Planned notebook purpose |
 | --- | --- | --- |
-| Jurgen Richter-Gebert, *Perspectives on Projective Geometry* | Planned | A modern projective geometry course emphasizing duality, cross-ratio, conics, and projective models of other geometries. |
-| Hartley and Zisserman, *Multiple View Geometry in Computer Vision* | Planned | A computer vision geometry course on cameras, epipolar geometry, reconstruction, calibration, and projective estimation. |
+| Jurgen Richter-Gebert, *Perspectives on Projective Geometry* | [Implemented](./Perspectives-on-Projective-Geometry) | A modern projective geometry course emphasizing duality, cross-ratio, conics, and projective models of other geometries. |
+| Hartley and Zisserman, *Multiple View Geometry in Computer Vision* | [Implemented](./Multiple-View-Geometry-in-Computer-Vision) | A computer vision geometry course on cameras, epipolar geometry, reconstruction, calibration, and projective estimation. |
 | Dorst, Fontijne, and Mann, *Geometric Algebra for Computer Science* | [Implemented](./Geometric-Algebra-for-Computer-Science) | A multivector and conformal-model course for representing subspaces, rotations, intersections, and 3D geometric computation. |
 
 ### Differential Geometry and Topology
@@ -104,11 +115,11 @@ compactness, connectedness, curvature, geodesics, topology, and global invariant
 
 | Book | Status | Planned notebook purpose |
 | --- | --- | --- |
-| Manfredo do Carmo, *Differential Geometry of Curves and Surfaces* | Planned | A classic curves-and-surfaces course on curvature, geodesics, Gauss maps, and global surface geometry. |
-| Andrew Pressley, *Elementary Differential Geometry* | Planned | A gentler curves-and-surfaces course with visual pacing and computational checks. |
-| Barrett O'Neill, *Elementary Differential Geometry* | Planned | A curves-and-surfaces course with early exposure to forms and modern differential-geometric notation. |
-| M. A. Armstrong, *Basic Topology* | Planned | An intuition-first course in point-set, geometric, and algebraic topology. |
-| James Munkres, *Topology* | Planned | A rigorous senior undergraduate path through general topology and algebraic topology foundations. |
+| Manfredo do Carmo, *Differential Geometry of Curves and Surfaces* | [Implemented](./Differential-Geometry-of-Curves-and-Surfaces) | A classic curves-and-surfaces course on curvature, geodesics, Gauss maps, and global surface geometry. |
+| Andrew Pressley, *Elementary Differential Geometry* | [Implemented](./Elementary-Differential-Geometry-Andrew-Pressley) | A gentler curves-and-surfaces course with visual pacing and computational checks. |
+| Barrett O'Neill, *Elementary Differential Geometry* | [Implemented](./Elementary-Differential-Geometry-Barrett-ONeill) | A curves-and-surfaces course with early exposure to forms and modern differential-geometric notation. |
+| M. A. Armstrong, *Basic Topology* | [Implemented](./Basic-Topology) | An intuition-first course in point-set, geometric, and algebraic topology. |
+| James Munkres, *Topology* | [Implemented](./Topology) | A rigorous senior undergraduate path through general topology and algebraic topology foundations. |
 | Tristan Needham, *Visual Differential Geometry and Forms* | [Implemented](./Visual-Differential-Geometry-and-Forms) | A visual route through metrics, curvature, manifolds, vector fields, differential forms, and Stokes-style theorems. |
 | Pinkall and Gross, *Differential Geometry: From Elastic Curves to Willmore Surfaces* | [Implemented](./Differential-Geometry-From-Elastic-Curves-to-Willmore-Surfaces) | A variational geometry course connecting elastic curves, surface curvature, topology, Gauss-Bonnet, and Willmore surfaces. |
 | Weeks, *Geometry with an Introduction to Cosmic Topology* | [Implemented](./Geometry-with-an-Introduction-to-Cosmic-Topology) | A non-Euclidean and topology course linking transformation geometry, hyperbolic/elliptic models, surfaces, and cosmic topology. |
@@ -139,10 +150,11 @@ representations.
 | Schneider and Eberly, *Geometric Tools for Computer Graphics* | [Implemented](./Geometric-Tools-for-Computer-Graphics) | A practical geometry course for transformations, intersections, distance queries, curves, surfaces, meshes, and graphics algorithms. |
 | Marschner and Shirley, *Fundamentals of Computer Graphics* | [Implemented](./Fundamentals-of-Computer-Graphics) | A graphics course covering image formation, ray tracing, rasterization, shading, sampling, animation, color, perception, and visualization. |
 | Murray, Li, and Sastry, *A Mathematical Introduction to Robotic Manipulation* | [Implemented](./A-Mathematical-Introduction-to-Robotic-Manipulation) | A Lie-group and screw-theoretic robotics course for rigid motion, manipulation, grasping, dynamics, and nonholonomic systems. |
-| Lynch and Park, *Modern Robotics* | Planned | A modern robotics course on screw theory, kinematics, dynamics, planning, control, and executable robot models. |
+| Lynch and Park, *Modern Robotics* | [Implemented](./Modern-Robotics) | A modern robotics course on screw theory, kinematics, dynamics, planning, control, and executable robot models. |
 | Mardia and Jupp, *Directional Statistics* | [Implemented](./Directional-Statistics) | A statistics-on-circles-and-spheres course for circular data, spherical data, shape spaces, models, inference, and table replacement. |
-| Shun-ichi Amari, *Information Geometry and Its Applications* | Planned | An applied information geometry course connecting Fisher metrics, divergences, optimization, inference, signal processing, and machine learning. |
-| Bronstein, Bruna, Cohen, and Velickovic, *Geometric Deep Learning* | Planned | A modern ML geometry course on graphs, groups, geodesics, gauges, invariance, equivariance, and geometric priors. |
+| Shun-ichi Amari, *Information Geometry and Its Applications* | [Implemented](./Information-Geometry-and-Its-Applications) | An applied information geometry course connecting Fisher metrics, divergences, optimization, inference, signal processing, and machine learning. |
+| Haitz Saez de Ocariz Borde and Michael Bronstein, *Mathematical Foundations of Geometric Deep Learning* | [Implemented](./Mathematical-Foundations-of-Geometric-Deep-Learning) | A mathematical primer for geometric ML covering algebra, metric geometry, calculus, topology, functional analysis, spectral theory, and graph theory. |
+| Bronstein, Bruna, Cohen, and Velickovic, *Geometric Deep Learning* | [Implemented](./Geometric-Deep-Learning) | A modern ML geometry course on graphs, groups, geodesics, gauges, invariance, equivariance, and geometric priors. |
 
 ### Graduate Manifolds, Topology, and Riemannian Geometry
 
@@ -191,11 +203,11 @@ topology, information geometry, statistics on manifolds, and optimal transport.
 | Federer, *Geometric Measure Theory* | Planned | A geometric analysis course on rectifiability, currents, area, and measure-theoretic treatment of geometric objects. |
 | Edelsbrunner and Harer, *Computational Topology: An Introduction* | Planned | A computational topology course on complexes, algorithms, persistent homology, and data-driven topological summaries. |
 | Amari and Nagaoka, *Methods of Information Geometry* | Planned | A mathematical information geometry course on statistical manifolds, dual affine connections, information theory, and convexity. |
-| Shun-ichi Amari, *Information Geometry and Its Applications* | Planned | An application-facing graduate path through information-geometric methods in inference, optimization, neural networks, and signal processing. |
+| Shun-ichi Amari, *Information Geometry and Its Applications* | [Implemented](./Information-Geometry-and-Its-Applications) | An application-facing graduate path through information-geometric methods in inference, optimization, neural networks, and signal processing. |
 | Chikuse, *Statistics on Special Manifolds* | Planned | A statistics-on-manifolds course for Stiefel and Grassmann data, orientations, subspaces, and matrix-valued samples. |
 | Bhattacharya and Bhattacharya, *Nonparametric Inference on Manifolds* | Planned | A manifold statistics course on nonparametric inference, shape spaces, image analysis, and machine vision applications. |
 | Villani, *Optimal Transport: Old and New* | Planned | A graduate optimal transport course on Monge-Kantorovich transport, Wasserstein geometry, PDE, probability, and curvature. |
-| Bronstein, Bruna, Cohen, and Velickovic, *Geometric Deep Learning* | Planned | A geometric machine learning course on graphs, manifolds, groups, gauges, equivariance, and learned geometric priors. |
+| Bronstein, Bruna, Cohen, and Velickovic, *Geometric Deep Learning* | [Implemented](./Geometric-Deep-Learning) | A geometric machine learning course on graphs, manifolds, groups, gauges, equivariance, and learned geometric priors. |
 
 ## Suggested Reading Spine
 
