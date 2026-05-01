@@ -8,7 +8,7 @@ Use this prompt after chapter-specific briefs or storyboards exist.
 2. Confirm each implementation row has chapter_id, source_pages, notebook_path, artifact_subtree, and brief_path.
 3. Keep `agents.max_depth = 1`. Chapter workers must not spawn workers.
 4. Cap active chapter authors at 8 to 12 even when `agents.max_threads = 16`.
-5. Check other active Codex sessions before launching the batch. Geometry subagent capacity is shared globally enough that a saturated pool can prevent another session from spawning any subagents.
+5. Check other active Codex sessions before launching the batch. Geometry subagent capacity is shared globally enough that a saturated pool can prevent another session from spawning any subagents. If that happens, adjust `agents.max_threads` within the approved ceiling range or stop/finish existing workers before retrying.
 
 ## Worker Allocation
 
@@ -19,7 +19,7 @@ Spawn custom agents by name:
 - `geometry_index_builder`: one worker after chapter workers finish.
 - `geometry_validation_worker`: one worker after implementation for scoped checks.
 
-Do not saturate all 16 threads when another Codex session may need QC, validation, or fix workers.
+If another Codex session cannot spawn QC, validation, or fix workers, raise the configured thread ceiling within the approved range instead of debugging the worker prompt.
 
 ## Chapter Author Instruction
 

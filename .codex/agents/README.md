@@ -13,7 +13,8 @@ This repo uses project-scoped Codex custom agents for visualization-first textbo
 - Workspace-write agents must respect their assigned file boundaries.
 - Shared utilities should be edited by one worker at a time.
 - Raise `agents.max_threads` only when chapter briefs, source spans, and QC capacity are ready. More threads do not improve weak briefs.
-- Treat the subagent cap as a global repo/session capacity constraint. If another Codex session is already using all available Geometry subagent threads, a new Codex session working on this repo may be unable to spawn additional subagents until those workers finish.
+- Treat the subagent cap as a global repo/session capacity constraint. If another Codex session is already using all available Geometry subagent threads, a new Codex session working on this repo may be unable to spawn additional subagents.
+- When a Codex session cannot spawn any subagents because the shared pool is exhausted, adjust the configured ceiling instead of relying on spare-capacity discipline. For this repo, keep the ceiling at or below 20 unless the user explicitly requests a higher cap and accepts the machine-load tradeoff.
 
 ## Roles
 
@@ -46,7 +47,7 @@ For many chapters, keep the flow staged:
 5. Run `geometry_index_builder` after chapter authors finish.
 6. Run `geometry_notebook_qc` and `geometry_validation_worker` after implementation.
 
-When running multiple Codex sessions against `D:/Geometry`, coordinate batches manually. Leave spare capacity for urgent QC, validation, or follow-up work, because one busy session can consume the shared subagent budget.
+When running multiple Codex sessions against `D:/Geometry`, coordinate the ceiling deliberately. If a second session cannot spawn subagents because another session consumed the shared budget, raise `agents.max_threads` within the approved range or stop/finish existing workers before retrying.
 
 CSV fan-out guidance lives in `D:/Geometry/.codex/prompts/subagent-batches/chapter-workers-csv.md`.
 High-parallelism workflow prompts live in `D:/Geometry/.codex/prompts/high-parallelism/`.
