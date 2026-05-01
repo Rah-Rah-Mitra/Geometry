@@ -110,3 +110,39 @@ git diff --check
 ```
 
 Run `uv sync` only if `pyproject.toml` or `uv.lock` changes.
+
+## Geometry visualization library policy
+
+Use the installed geometry stack intentionally. Do not default to generic Matplotlib-only notebooks when the chapter’s geometry calls for richer representations.
+
+### Library routing
+
+- Use Matplotlib for durable 2D diagrams, proof sketches, constructions, incidence, orientation, area, angle, curves, and labeled static figures.
+- Use Plotly for interactive 2D/3D parameter exploration, transformations, surfaces, and standalone HTML artifacts.
+- Use ipywidgets/ipympl when parameter variation is central to understanding the concept.
+- Use PyVista, VTK, Trimesh, and MeshIO for 3D surfaces, meshes, normals, curvature, polyhedra, frames, slicing, and spatial inspection.
+- Use gpytoolbox, potpourri3d, robust_laplacian, manifold3d, and xatlas for mesh Laplacians, geodesics, parameterization, remeshing, and surface diagnostics.
+- Use SymPy for exact symbolic checks, coordinate transformations, polynomial identities, and derivations.
+- Use Galgebra, Clifford, Kingdon, and PyGanja for exterior algebra, geometric algebra, rotors, bivectors, conformal/projective models, and algebraic proof experiments.
+- Use Gudhi, Ripser, and Persim for topology, filtrations, simplicial complexes, persistent homology, and persistence diagrams.
+- Use Geomstats and PyRiemann for manifolds, geodesics, metrics, curvature intuition, SPD geometry, and statistical geometry.
+- Use Shapely, scipy.spatial, and NetworkX for computational geometry, intersections, Voronoi/Delaunay, arrangements, graph structures, and proof dependency diagrams.
+- Use OpenCV, Kornia, Torch, Torchvision, scikit-image, and Pillow for projective geometry, homographies, epipolar geometry, image geometry, camera models, and transformation experiments.
+- Use POT and GeomLoss for optimal transport, Wasserstein geometry, barycenters, and metric geometry of distributions.
+- Use GIS libraries only when geographic geometry clarifies the chapter.
+
+### Visual justification rule
+
+Every major visualization must have:
+
+1. the concept it teaches,
+2. the reason this representation was chosen,
+3. an inspection target for the learner,
+4. a nearby prose explanation,
+5. a check, invariant, or sanity test where practical.
+
+Decorative visuals are not acceptable.
+
+### Notebook-first rule
+
+A chapter notebook is a teaching document, not the output of a generic course generator. Scripts may support indexing, auditing, validation, and reproducible artifact creation, but they must not mass-populate chapter notebooks with generic teaching cells.
