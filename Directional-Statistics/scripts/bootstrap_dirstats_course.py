@@ -710,12 +710,12 @@ def write_agents() -> None:
         Run from `D:\\Geometry`:
 
         ```powershell
-        uv run python "Directional Statistics/scripts/build_dirstats_course_indexes.py"
-        uv run python -m compileall -q "Directional Statistics/utils" "Directional Statistics/scripts"
-        uv run python "Directional Statistics/scripts/audit_dirstats_notebooks.py" --min-words 1200 --min-code-cells 5
-        uv run python "Directional Statistics/scripts/audit_dirstats_visuals.py"
-        uv run python "Directional Statistics/scripts/audit_dirstats_artifacts.py"
-        uv run python "Directional Statistics/scripts/validate_dirstats_course.py" --limit 8 --timeout 300
+        uv run python "Directional-Statistics/scripts/build_dirstats_course_indexes.py"
+        uv run python -m compileall -q "Directional-Statistics/utils" "Directional-Statistics/scripts"
+        uv run python "Directional-Statistics/scripts/audit_dirstats_notebooks.py" --min-words 1200 --min-code-cells 5
+        uv run python "Directional-Statistics/scripts/audit_dirstats_visuals.py"
+        uv run python "Directional-Statistics/scripts/audit_dirstats_artifacts.py"
+        uv run python "Directional-Statistics/scripts/validate_dirstats_course.py" --limit 8 --timeout 300
         git diff --check
         ```
         """,
@@ -2061,10 +2061,14 @@ def notebook_cells(entry: dict) -> list:
     import sys
 
     def find_book_root(start: Path) -> Path:
-        for candidate in [start, *start.parents]:
-            if candidate.name == "Directional Statistics" and (candidate / "AGENTS.md").exists():
+        for candidate in [start.resolve(), *start.resolve().parents]:
+            if (
+                (candidate / "AGENTS.md").exists()
+                and (candidate / "scripts" / "validate_dirstats_course.py").exists()
+                and (candidate / "utils").exists()
+            ):
                 return candidate
-        raise RuntimeError("Could not locate Directional Statistics course root")
+        raise RuntimeError("Could not locate Directional-Statistics course root")
 
     BOOK_ROOT = find_book_root(Path.cwd())
     if str(BOOK_ROOT) not in sys.path:

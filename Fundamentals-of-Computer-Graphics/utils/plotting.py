@@ -22,6 +22,16 @@ PALETTE = {
     "paper": "#fbfcfe",
 }
 
+BOOK_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _book_relative(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(BOOK_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
 
 def style_axis(ax: Any, title: str, *, equal: bool = False, xlabel: str | None = None, ylabel: str | None = None) -> None:
     ax.set_title(title, fontsize=11, color=PALETTE["ink"])
@@ -68,7 +78,7 @@ def image_stats(path: str | Path) -> dict[str, float | int | str]:
         arr = np.asarray(rgb, dtype=float)
     digest = hashlib.sha256(p.read_bytes()).hexdigest()
     return {
-        "path": p.as_posix(),
+        "path": _book_relative(p),
         "width": int(rgb.width),
         "height": int(rgb.height),
         "bytes": int(p.stat().st_size),

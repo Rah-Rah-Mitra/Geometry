@@ -14,6 +14,13 @@ from PIL import Image as PILImage
 BOOK_ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_ROOT = BOOK_ROOT / "artifacts"
 
+def book_relative(path: str | Path) -> str:
+    resolved = Path(path).resolve()
+    try:
+        return resolved.relative_to(BOOK_ROOT).as_posix()
+    except ValueError:
+        return Path(path).as_posix()
+
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip().lower())
     slug = re.sub(r"-+", "-", slug).strip("-._")
@@ -80,7 +87,7 @@ def display_artifact(path: str | Path, *, width: int | str | None = None, height
         if height:
             return display(IFrame(src=str(resolved), width=width or "100%", height=height))
         return display(HTML(resolved.read_text(encoding="utf-8")))
-    link = escape(resolved.as_posix(), quote=True)
+    link = escape(book_relative(resolved), quote=True)
     return display(HTML(f'<a href="{link}">{link}</a>'))
 
 def assert_artifacts(paths: list[str | Path], *, min_bytes: int = 1200) -> list[dict[str, Any]]:
@@ -91,5 +98,5 @@ def assert_artifacts(paths: list[str | Path], *, min_bytes: int = 1200) -> list[
         threshold = 40 if path.suffix.lower() in {".json", ".csv", ".txt"} else min_bytes
         assert path.exists(), f"missing artifact: {path}"
         assert size >= threshold, f"artifact too small: {path} ({size} bytes)"
-        records.append({"path": path.as_posix(), "bytes": int(size)})
+        records.append({"path": book_relative(path), "bytes": int(size)})
     return records

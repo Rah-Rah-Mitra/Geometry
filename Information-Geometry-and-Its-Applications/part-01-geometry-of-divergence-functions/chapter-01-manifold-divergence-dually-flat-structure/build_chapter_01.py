@@ -145,7 +145,7 @@ def make_artifacts() -> dict:
         scene=dict(xaxis_title="theta_1", yaxis_title="theta_2", zaxis_title="phi(theta)"),
         margin=dict(l=0, r=0, t=55, b=0),
     )
-    fig3.write_html(ART / "legendre_dual_surface.html", include_plotlyjs="cdn", full_html=True)
+    fig3.write_html(ART / "legendre_dual_surface.html", include_plotlyjs=True, full_html=True)
 
     def kl(qv, pv):
         qv = np.asarray(qv)
@@ -218,7 +218,7 @@ def make_artifacts() -> dict:
         ternary=dict(sum=1, aaxis_title="q0", baxis_title="q1", caxis_title="q2"),
         margin=dict(l=20, r=20, t=60, b=20),
     )
-    fig4.write_html(ART / "kl_simplex_projection.html", include_plotlyjs="cdn", full_html=True)
+    fig4.write_html(ART / "kl_simplex_projection.html", include_plotlyjs=True, full_html=True)
 
     def D_exp(th, ps):
         th = np.asarray(th)
@@ -382,7 +382,7 @@ for th in np.array([[-1.1,-.8],[-.5,.9],[.7,-.7],[1.1,1.0]]):
     z0 = 0.5*th@A@th + 0.18*np.exp(0.55*th[0]-0.3*th[1])
     fig3.add_trace(go.Scatter3d(x=[th[0], th[0]+0.22*eta[0]], y=[th[1], th[1]+0.22*eta[1]], z=[z0,z0+.04], mode='lines+markers', line=dict(color='black', width=5), marker=dict(size=3), showlegend=False))
 fig3.update_layout(title='Legendre map: gradient sends primal coordinates theta to dual coordinates eta', scene=dict(xaxis_title='theta_1', yaxis_title='theta_2', zaxis_title='phi(theta)'), margin=dict(l=0,r=0,t=55,b=0))
-fig3.write_html(ARTIFACT_DIR / 'legendre_dual_surface.html', include_plotlyjs='cdn', full_html=True)
+fig3.write_html(ARTIFACT_DIR / 'legendre_dual_surface.html', include_plotlyjs=True, full_html=True)
 
 def kl(q, p):
     q=np.asarray(q); p=np.asarray(p)
@@ -404,7 +404,7 @@ fig4.add_trace(go.Scatterternary(a=mean_line[:,0], b=mean_line[:,1], c=mean_line
 fig4.add_trace(go.Scatterternary(a=[prior[0]], b=[prior[1]], c=[prior[2]], mode='markers+text', marker=dict(size=13, color='#2563eb'), text=['prior'], textposition='top center', name='prior'))
 fig4.add_trace(go.Scatterternary(a=[qstar[0]], b=[qstar[1]], c=[qstar[2]], mode='markers+text', marker=dict(size=14, color='#16a34a'), text=['projection'], textposition='bottom center', name='projection'))
 fig4.update_layout(title='KL projection onto a moment-flat slice of the probability simplex', ternary=dict(sum=1, aaxis_title='q0', baxis_title='q1', caxis_title='q2'), margin=dict(l=20,r=20,t=60,b=20))
-fig4.write_html(ARTIFACT_DIR / 'kl_simplex_projection.html', include_plotlyjs='cdn', full_html=True)
+fig4.write_html(ARTIFACT_DIR / 'kl_simplex_projection.html', include_plotlyjs=True, full_html=True)
 sorted(p.name for p in ARTIFACT_DIR.iterdir())
 '''.strip()
 

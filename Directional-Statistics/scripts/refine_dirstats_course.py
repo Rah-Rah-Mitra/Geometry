@@ -152,10 +152,14 @@ def notebook_cells(entry: dict) -> list:
     import sys
 
     def find_book_root(start: Path) -> Path:
-        for candidate in [start, *start.parents]:
-            if candidate.name == "Directional Statistics" and (candidate / "AGENTS.md").exists():
+        for candidate in [start.resolve(), *start.resolve().parents]:
+            if (
+                (candidate / "AGENTS.md").exists()
+                and (candidate / "scripts" / "validate_dirstats_course.py").exists()
+                and (candidate / "utils").exists()
+            ):
                 return candidate
-        raise RuntimeError("Could not locate Directional Statistics course root")
+        raise RuntimeError("Could not locate Directional-Statistics course root")
 
     BOOK_ROOT = find_book_root(Path.cwd())
     if str(BOOK_ROOT) not in sys.path:

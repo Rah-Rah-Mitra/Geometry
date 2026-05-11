@@ -17,6 +17,14 @@ BOOK_ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_ROOT = BOOK_ROOT / "artifacts"
 
 
+def book_relative(path: str | Path) -> str:
+    resolved = Path(path).resolve()
+    try:
+        return resolved.relative_to(BOOK_ROOT).as_posix()
+    except ValueError:
+        return Path(path).as_posix()
+
+
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip().lower())
     slug = re.sub(r"-+", "-", slug).strip("-._")
@@ -99,5 +107,5 @@ def display_artifact(path: str | Path, *, width: int | str | None = None, height
         return display(HTML(resolved.read_text(encoding="utf-8")))
     if suffix in {".html", ".htm"}:
         return display(IFrame(src=str(resolved), width=width or "100%", height=height or 420))
-    link = escape(resolved.as_posix(), quote=True)
+    link = escape(book_relative(resolved), quote=True)
     return display(HTML(f'<a href="{link}">{link}</a>'))

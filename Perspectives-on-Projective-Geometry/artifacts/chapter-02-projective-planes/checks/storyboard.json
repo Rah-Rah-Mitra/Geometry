@@ -1,74 +1,107 @@
 {
-  "chapter goal": "What changes when points and lines are treated as dual citizens of the same incidence world?",
-  "computational checks": [
-    "cross-ratio invariance under a projective reparametrization",
-    "join/meet incidence for generated homogeneous points",
-    "artifact existence and nonzero size",
-    "mode-specific conic or hyperbolic numeric check when relevant"
+  "acceptance criteria": [
+    "nbclient execution for chapter 2 succeeds",
+    "scoped notebook and visual audits pass for chapter 2",
+    "git diff --check passes for the assigned notebook and artifact subtree"
   ],
-  "gaps": "Proof-heavy material in Chapter 2 is represented by incidence diagrams, determinant/cross-ratio checks, or small parameter experiments rather than copied text.",
-  "implementation notes": {
-    "artifact_root": "artifacts/chapter-02-projective-planes",
-    "chapter_folder": "part-01-projective-geometry/chapter-02-projective-planes",
-    "helpers": [
-      "utils.artifacts",
-      "utils.projective",
-      "utils.conics",
-      "utils.cayley_klein",
-      "utils.chapter_visuals"
-    ]
-  },
-  "source span read": "sections 2.1-2.3; printed pages 35-46; PDF pages 57-68",
+  "artifact plan": [
+    "artifacts/chapter-02-projective-planes/figures/perspective-incidence-projection.png",
+    "artifacts/chapter-02-projective-planes/figures/line-at-infinity-completion.png",
+    "artifacts/chapter-02-projective-planes/figures/axiom-duality-proof-dependencies.png",
+    "artifacts/chapter-02-projective-planes/figures/fano-plane-smallest-model.png",
+    "artifacts/chapter-02-projective-planes/figures/duality-incidence-transpose.png",
+    "artifacts/chapter-02-projective-planes/html/perspective-incidence-lab.html",
+    "artifacts/chapter-02-projective-planes/tables/fano-line-table.csv",
+    "artifacts/chapter-02-projective-planes/tables/fano-incidence-matrix.csv",
+    "artifacts/chapter-02-projective-planes/tables/finite-plane-counts.csv",
+    "artifacts/chapter-02-projective-planes/checks/finite-plane-sanity.json",
+    "artifacts/chapter-02-projective-planes/checks/visual-checks.json",
+    "artifacts/chapter-02-projective-planes/checks/final-sanity.json"
+  ],
+  "chapter goal": "Build a standalone incidence model of projective planes, from perspective drawings to the Fano plane.",
+  "computational checks": [
+    "central projection point-line residuals below 1e-10",
+    "vanishing point lies on each projected parallel image line",
+    "ideal points lie on the drawn line at infinity",
+    "Fano point pairs determine one line and line pairs determine one point",
+    "Fano counts satisfy n = 2 and n^2 + n + 1 = 7",
+    "all generated artifacts exist and have nonzero size"
+  ],
+  "concept inventory": [
+    "perspective drawing as central projection that preserves point-line incidence",
+    "parallel Euclidean directions represented by ideal points on one line at infinity",
+    "projective plane as a triple (P, L, I) with unique joins, unique meets, and nondegeneracy",
+    "point-line duality by transposing incidence data",
+    "Fano plane as the seven-point smallest finite projective plane",
+    "finite projective plane order n with n + 1 points per line and n^2 + n + 1 total points and lines"
+  ],
+  "implementation notes": "Notebook code is chapter-local. It avoids the generic render_chapter_visuals helper and writes only the chapter artifact subtree.",
+  "library routing table": [
+    {
+      "concept": "central projection and vanishing point",
+      "fallback": "static SVG generated from the same coordinates",
+      "library": "numpy and matplotlib",
+      "representation": "synthetic perspective diagram plus residual checks",
+      "why": "precise 2D incidence drawings with labelled residuals"
+    },
+    {
+      "concept": "parameter variation in the viewpoint",
+      "fallback": "saved PNG perspective diagram and JSON residuals",
+      "library": "plotly",
+      "representation": "interactive HTML lab",
+      "why": "moving the eye point is easier to inspect as a slider than as several static panels"
+    },
+    {
+      "concept": "axiom and theorem dependencies",
+      "fallback": "markdown dependency table",
+      "library": "networkx and matplotlib",
+      "representation": "directed proof dependency graph",
+      "why": "the uniform-count proof is a dependency argument, not a metric picture"
+    },
+    {
+      "concept": "Fano incidence and duality",
+      "fallback": "plain CSV table",
+      "library": "pandas, numpy, matplotlib",
+      "representation": "finite incidence table and matrix transpose",
+      "why": "finite projective planes are most testable as point-line tables"
+    }
+  ],
+  "proof-visualization strategy": "Use a NetworkX dependency graph for Lemma 2.1 through Theorem 2.2 and a finite model checker for the Fano plane.",
+  "risks": [
+    "The curved Fano line is a drawing convention for an abstract incidence line, not a Euclidean circle theorem.",
+    "The perspective lab is synthetic and uses no scanned or source-page images."
+  ],
+  "source span read": "printed pages 35-46; PDF pages 57-68; sections 2.1-2.3",
   "visual sequence": [
     {
-      "artifact_filename": "visual-route-map.png",
-      "concept": "perspective drawing as incidence data",
-      "expected_observation": "The same point-line incidences remain readable after the layout changes.",
-      "learner_inspection_target": "For Chapter 2, inspect perspective drawing as incidence data by identifying which objects instantiate perspective drawings.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
-      "order": 1,
-      "representation": "incidence diagram",
-      "validation_target": "dot products for incident point-line pairs vanish"
+      "artifact": "figures/perspective-incidence-projection.png",
+      "concept": "perspective drawings as incidence",
+      "learner inspection target": "line images pass through the same vanishing point while point-line residuals stay zero",
+      "validation": "maximum projected point-line residual and vanishing residual"
     },
     {
-      "artifact_filename": "incidence-configuration.png",
-      "concept": "projective plane axiom dependency map",
-      "expected_observation": "The same point-line incidences remain readable after the layout changes.",
-      "learner_inspection_target": "For Chapter 2, inspect projective plane axiom dependency map by identifying which objects instantiate perspective drawings.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
-      "order": 2,
-      "representation": "incidence diagram",
-      "validation_target": "dot products for incident point-line pairs vanish"
+      "artifact": "figures/line-at-infinity-completion.png",
+      "concept": "Euclidean completion by ideal points",
+      "learner inspection target": "each parallel class receives exactly one ideal point on the horizon line",
+      "validation": "ideal points satisfy the horizon incidence equation"
     },
     {
-      "artifact_filename": "invariant-reparametrization-check.png",
-      "concept": "point-line duality diagram",
-      "expected_observation": "The same point-line incidences remain readable after the layout changes.",
-      "learner_inspection_target": "For Chapter 2, inspect point-line duality diagram by identifying which objects instantiate perspective drawings.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
-      "order": 3,
-      "representation": "incidence diagram",
-      "validation_target": "dot products for incident point-line pairs vanish"
+      "artifact": "figures/axiom-duality-proof-dependencies.png",
+      "concept": "incidence axioms and finite-count proof flow",
+      "learner inspection target": "A1 and A2 are dual; A3 prevents collapse; finite counts depend on the lemmas",
+      "validation": "dependency graph is acyclic after excluding the duality mirror arrow"
     },
     {
-      "artifact_filename": "parameter-lab.html",
-      "concept": "Fano plane incidence table",
-      "expected_observation": "The same point-line incidences remain readable after the layout changes.",
-      "learner_inspection_target": "For Chapter 2, inspect fano plane incidence table by identifying which objects instantiate perspective drawings.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
-      "order": 4,
-      "representation": "incidence diagram",
-      "validation_target": "dot products for incident point-line pairs vanish"
+      "artifact": "figures/fano-plane-smallest-model.png",
+      "concept": "smallest finite projective plane",
+      "learner inspection target": "four starting points force three diagonal points and the final three-point line",
+      "validation": "seven lines, seven points, three points per line, three lines per point"
     },
     {
-      "artifact_filename": "visual-observation-targets.csv",
-      "concept": "finite-plane sanity checks",
-      "expected_observation": "The same point-line incidences remain readable after the layout changes.",
-      "learner_inspection_target": "For Chapter 2, inspect finite-plane sanity checks by identifying which objects instantiate perspective drawings.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
-      "order": 5,
-      "representation": "incidence diagram",
-      "validation_target": "dot products for incident point-line pairs vanish"
+      "artifact": "figures/duality-incidence-transpose.png",
+      "concept": "point-line duality as a table transpose",
+      "learner inspection target": "row and column counts agree and pair uniqueness survives transposition",
+      "validation": "unique line per point pair and unique point per line pair"
     }
   ]
 }

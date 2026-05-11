@@ -28,6 +28,12 @@ def save_html(text:str,root:str|Path,category:str='html',filename:str='view.html
 def image_stats(path:str|Path)->dict[str,Any]:
     r=Path(path); im=PILImage.open(r).convert('RGB'); arr=np.asarray(im,dtype=float)
     return {'path':r.as_posix(),'width':int(im.width),'height':int(im.height),'pixel_std':float(arr.std()),'file_size':int(r.stat().st_size)}
+def book_relative(path:str|Path)->str:
+    r=Path(path)
+    try:
+        return r.resolve().relative_to(BOOK_ROOT.resolve()).as_posix()
+    except ValueError:
+        return r.as_posix()
 def assert_artifacts(paths:Iterable[str|Path],min_size:int=256)->None:
     for item in paths:
         p=Path(item)
@@ -38,5 +44,5 @@ def display_artifact(path:str|Path,width:int|str|None=None,height:int|None=None)
     r=Path(path); suf=r.suffix.lower()
     if suf in {'.png','.jpg','.jpeg','.gif','.webp'}: return display(Image(filename=str(r),width=width,height=height))
     if suf=='.svg': return display(HTML(r.read_text(encoding='utf-8')))
-    if suf in {'.html','.htm'}: return display(IFrame(src=str(r),width=width or '100%',height=height or 420))
-    link=escape(r.as_posix(),quote=True); return display(HTML(f'<a href="{link}">{link}</a>'))
+    if suf in {'.html','.htm'}: return display(IFrame(src=book_relative(r),width=width or '100%',height=height or 420))
+    link=escape(book_relative(r),quote=True); return display(HTML(f'<a href="{link}">{link}</a>'))

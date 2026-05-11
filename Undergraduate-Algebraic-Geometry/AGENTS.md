@@ -27,7 +27,7 @@
     ## Course Structure
 
     ```text
-    Undergraduate Algebraic Geometry/
+    Undergraduate-Algebraic-Geometry/
       00-book-index.ipynb
       AGENTS.md
       artifacts/
@@ -92,6 +92,14 @@
     displayed inline or linked from the notebook, and final checks should assert that
     files exist and are nonempty.
 
+    ## Worker Boundaries
+
+    Assign one worker to one canonical notebook, one helper module, or one script task.
+    Chapter workers should read their source span, refresh or consume a visualization
+    storyboard, and edit only the assigned chapter folder, its artifact subtree, and
+    explicitly assigned chapter helpers. Shared utility changes belong to utility
+    workers.
+
     ## Geometry Stack
 
     Use the shared `uv` environment at the workspace root. Prefer installed libraries:
@@ -107,11 +115,11 @@
     Run from `D:\Geometry`:
 
     ```powershell
-    uv run python "Undergraduate Algebraic Geometry/scripts/build_uag_course_indexes.py"
-    uv run python -m compileall -q "Undergraduate Algebraic Geometry/utils" "Undergraduate Algebraic Geometry/scripts"
-    uv run python "Undergraduate Algebraic Geometry/scripts/audit_uag_notebooks.py" --min-words 1200 --min-code-cells 5
-    uv run python "Undergraduate Algebraic Geometry/scripts/audit_uag_visuals.py"
-    uv run python "Undergraduate Algebraic Geometry/scripts/validate_uag_course.py" --limit 3 --timeout 300
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/build_uag_course_indexes.py"
+    uv run python -m compileall -q "Undergraduate-Algebraic-Geometry/utils" "Undergraduate-Algebraic-Geometry/scripts"
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/audit_uag_notebooks.py" --min-words 1200 --min-code-cells 5
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/audit_uag_visuals.py"
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/validate_uag_course.py" --limit 3 --timeout 300
     git diff --check
     ```
 

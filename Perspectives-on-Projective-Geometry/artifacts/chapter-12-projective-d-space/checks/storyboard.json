@@ -1,74 +1,152 @@
 {
-  "chapter goal": "How do joins and meets generalize once the objects are points, planes, and lines in higher dimension?",
-  "computational checks": [
-    "cross-ratio invariance under a projective reparametrization",
-    "join/meet incidence for generated homogeneous points",
-    "artifact existence and nonzero size",
-    "mode-specific conic or hyperbolic numeric check when relevant"
+  "chapter goal": "Build a working RP^d/RP^3 calculus where points, lines, planes, joins, meets, and elements at infinity are all handled by labeled homogeneous coordinates.",
+  "source span read": "Perspectives on Projective Geometry, Chapter 12, sections 12.1-12.6; printed pages 209-226; PDF pages 231-248. Source map checked in AGENTS.md and ppg_inventory.py.",
+  "concept inventory": [
+    "RP^3 as nonzero vectors in R^4 modulo nonzero scalar multiples.",
+    "Affine R^3 chart w=1 and the plane at infinity w=0.",
+    "Point-plane incidence as one homogeneous scalar equation.",
+    "Planes through three points and points from three planes by signed 3x3 minors.",
+    "Lines in RP^3 represented by six 2x2 minors with labels 12, 13, 14, 23, 24, 34.",
+    "Line coordinates are decomposable exactly when the Grassmann-Pluecker relation l12*l34 - l13*l24 + l14*l23 = 0 holds.",
+    "Universal join and meet use subset labels Lambda(d,k), not positional vector entries.",
+    "Join/meet zero outputs detect dependence or incidence: point on line, point on plane, coplanar points, coincident planes, or parallel planes meeting at infinity.",
+    "A line at infinity can be obtained by joining two infinite points or by meeting two parallel finite planes."
   ],
-  "gaps": "Proof-heavy material in Chapter 12 is represented by space diagrams, determinant/cross-ratio checks, or small parameter experiments rather than copied text.",
-  "implementation notes": {
-    "artifact_root": "artifacts/chapter-12-projective-d-space",
-    "chapter_folder": "part-02-working-and-playing-with-geometry/chapter-12-projective-d-space",
-    "helpers": [
-      "utils.artifacts",
-      "utils.projective",
-      "utils.conics",
-      "utils.cayley_klein",
-      "utils.chapter_visuals"
-    ]
-  },
-  "source span read": "sections 12.1-12.6; printed pages 209-226; PDF pages 231-248",
+  "library routing table": [
+    {
+      "concept": "RP^3 chart plus plane at infinity",
+      "representation": "interactive 3D Plotly scene with finite points, direction rays, an affine plane, and the plane-at-infinity proxy",
+      "library": "plotly",
+      "why this library": "RP^3 and line/plane incidence need 3D inspection and camera rotation; standalone HTML keeps the lab durable after execution.",
+      "fallback": "Matplotlib 3D PNG with fixed camera"
+    },
+    {
+      "concept": "six-coordinate line representation",
+      "representation": "labeled static diagram linking two finite points, their 2x2 minors, and the finite/infinite split of labels",
+      "library": "matplotlib, numpy",
+      "why this library": "A labeled 2D explanatory panel is more readable than a dense 3D plot for the six coordinates.",
+      "fallback": "Markdown table plus numeric vector display"
+    },
+    {
+      "concept": "Grassmann-Pluecker decomposability",
+      "representation": "symbolic exact check and numeric residual table for a true line, a perturbed non-line vector, and an infinite line",
+      "library": "sympy, pandas",
+      "why this library": "The relation is an algebraic identity, so exact symbolic arithmetic and a compact table expose the invariant directly.",
+      "fallback": "Pure numpy residuals"
+    },
+    {
+      "concept": "universal join/meet",
+      "representation": "dependency/lattice diagram of ranks 0..4 and allowed operations in RP^3",
+      "library": "networkx, matplotlib",
+      "why this library": "The chapter changes from positional vectors to subset labels; a graph of rank movement makes the algebraic bookkeeping inspectable.",
+      "fallback": "Markdown operation table"
+    },
+    {
+      "concept": "projection lab",
+      "representation": "camera-projection HTML that projects a 3D line and a point at infinity to an image plane",
+      "library": "plotly, numpy",
+      "why this library": "Projective d-space motivates matrix transformations and projection; an inspectable 3D scene shows finite and infinite objects together.",
+      "fallback": "Static projection PNG"
+    }
+  ],
   "visual sequence": [
     {
-      "artifact_filename": "visual-route-map.png",
-      "concept": "elements at infinity in 3-space",
-      "expected_observation": "Affine charts hide infinity, while homogeneous rays keep finite and infinite elements in one model.",
-      "learner_inspection_target": "For Chapter 12, inspect elements at infinity in 3-space by identifying which objects instantiate elements at infinity.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
       "order": 1,
-      "representation": "3D homogeneous coordinate scene",
-      "validation_target": "homogeneous projection and incidence computations are finite"
+      "concept": "RP^3 affine chart and infinity",
+      "representation": "interactive 3D scene",
+      "artifact filename": "html/rp3-affine-chart-and-infinity.html",
+      "learner inspection target": "Rotate the scene and compare finite points w=1 with direction points w=0; the latter live on the plane-at-infinity proxy.",
+      "validation/invariant": "finite points dehomogenize; infinite points raise the expected chart exception and have zero w-coordinate."
     },
     {
-      "artifact_filename": "homogeneous-space-model.png",
-      "concept": "point-plane incidence",
-      "expected_observation": "Affine charts hide infinity, while homogeneous rays keep finite and infinite elements in one model.",
-      "learner_inspection_target": "For Chapter 12, inspect point-plane incidence by identifying which objects instantiate elements at infinity.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
       "order": 2,
-      "representation": "3D homogeneous coordinate scene",
-      "validation_target": "homogeneous projection and incidence computations are finite"
+      "concept": "point-plane incidence and point/plane duality",
+      "representation": "static incidence panel",
+      "artifact filename": "figures/point-plane-incidence-duality.png",
+      "learner inspection target": "Check which finite points lie on the plane, which fail the scalar equation, and how transformed planes preserve incidence.",
+      "validation/invariant": "plane dot point is zero for incident points and remains zero after applying T to points and inverse-transpose to planes."
     },
     {
-      "artifact_filename": "invariant-reparametrization-check.png",
-      "concept": "line in RP3 as two-plane data",
-      "expected_observation": "Affine charts hide infinity, while homogeneous rays keep finite and infinite elements in one model.",
-      "learner_inspection_target": "For Chapter 12, inspect line in rp3 as two-plane data by identifying which objects instantiate elements at infinity.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
       "order": 3,
-      "representation": "3D homogeneous coordinate scene",
-      "validation_target": "homogeneous projection and incidence computations are finite"
+      "concept": "Pluecker six-coordinate line",
+      "representation": "labeled line-coordinate panel",
+      "artifact filename": "figures/pluecker-six-coordinate-line.png",
+      "learner inspection target": "Read each label as a 2x2 minor and identify the three labels that vanish for a line at infinity in the standard embedding.",
+      "validation/invariant": "line computed from two different point pairs on the same line is a scalar multiple."
     },
     {
-      "artifact_filename": "parameter-lab.html",
-      "concept": "universal join-meet lattice",
-      "expected_observation": "Affine charts hide infinity, while homogeneous rays keep finite and infinite elements in one model.",
-      "learner_inspection_target": "For Chapter 12, inspect universal join-meet lattice by identifying which objects instantiate elements at infinity.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
       "order": 4,
-      "representation": "3D homogeneous coordinate scene",
-      "validation_target": "homogeneous projection and incidence computations are finite"
+      "concept": "Grassmann-Pluecker relation",
+      "representation": "symbolic/numeric residual table",
+      "artifact filename": "tables/pluecker-residuals.csv",
+      "learner inspection target": "Compare decomposable and perturbed six-vectors; only decomposable vectors have zero relation residual.",
+      "validation/invariant": "l12*l34 - l13*l24 + l14*l23 equals zero for joins of two points and nonzero for the perturbed vector."
     },
     {
-      "artifact_filename": "visual-observation-targets.csv",
-      "concept": "projection sanity check",
-      "expected_observation": "Affine charts hide infinity, while homogeneous rays keep finite and infinite elements in one model.",
-      "learner_inspection_target": "For Chapter 12, inspect projection sanity check by identifying which objects instantiate elements at infinity.",
-      "library": "numpy, matplotlib, local projective/conic/Cayley-Klein helpers, and self-contained HTML",
       "order": 5,
-      "representation": "3D homogeneous coordinate scene",
-      "validation_target": "homogeneous projection and incidence computations are finite"
+      "concept": "universal join and meet",
+      "representation": "rank-labeled operation lattice",
+      "artifact filename": "figures/universal-join-meet-lattice.png",
+      "learner inspection target": "Track how join increases rank and meet decreases dual rank, including number-valued incidence tests.",
+      "validation/invariant": "computed operation ranks match the RP^3 join/meet table."
+    },
+    {
+      "order": 6,
+      "concept": "parallel planes and line at infinity",
+      "representation": "static construction diagram",
+      "artifact filename": "figures/parallel-planes-line-at-infinity.png",
+      "learner inspection target": "Compare the meet of two parallel planes with the join of two infinite direction points.",
+      "validation/invariant": "both constructions return proportional line coordinates with labels 14, 24, and 34 equal to zero."
+    },
+    {
+      "order": 7,
+      "concept": "RP^3 projection lab",
+      "representation": "interactive projection scene plus JSON check",
+      "artifact filename": "html/rp3-projection-lab.html",
+      "learner inspection target": "Move from 3D object coordinates to a projective image plane and inspect when a spatial direction becomes a vanishing point.",
+      "validation/invariant": "projected image points satisfy homogeneous scaling and a line projects to a line."
     }
+  ],
+  "artifact plan": [
+    "artifacts/chapter-12-projective-d-space/figures/point-plane-incidence-duality.png",
+    "artifacts/chapter-12-projective-d-space/figures/pluecker-six-coordinate-line.png",
+    "artifacts/chapter-12-projective-d-space/figures/universal-join-meet-lattice.png",
+    "artifacts/chapter-12-projective-d-space/figures/parallel-planes-line-at-infinity.png",
+    "artifacts/chapter-12-projective-d-space/html/rp3-affine-chart-and-infinity.html",
+    "artifacts/chapter-12-projective-d-space/html/rp3-projection-lab.html",
+    "artifacts/chapter-12-projective-d-space/tables/pluecker-residuals.csv",
+    "artifacts/chapter-12-projective-d-space/tables/visual-observation-targets.csv",
+    "artifacts/chapter-12-projective-d-space/checks/visual-checks.json",
+    "artifacts/chapter-12-projective-d-space/checks/final-sanity.json"
+  ],
+  "computational checks": [
+    "Exact SymPy expansion of the Grassmann-Pluecker relation for p join q.",
+    "Numeric residuals for a decomposable line, a same-line resampling, an infinite line, and a perturbed six-vector.",
+    "Point-plane incidence and incidence preservation under T and inverse-transpose(T).",
+    "Line-plane meet returns a point on both the line and plane.",
+    "Meet of parallel planes is proportional to join of two infinite direction points.",
+    "Universal join/meet rank labels match the RP^3 operation table.",
+    "Projection lab maps collinear 3D points to collinear image points.",
+    "All chapter artifacts exist under the assigned subtree and have nonzero size."
+  ],
+  "proof-visualization strategy": "Use labeled exterior-coordinate panels and a rank lattice instead of copied proof text. The notebook scaffolds the multilinearity/antisymmetry proof idea by recomputing a line from two different point pairs and by showing the decomposability residual before and after perturbation.",
+  "implementation notes": [
+    "Do not edit shared utilities; implement small chapter-local functions inside the notebook.",
+    "Keep paths relative to BOOK_ROOT and write only the assigned chapter artifact subtree.",
+    "Use Plotly for the 3D RP^3 and projection labs, Matplotlib/NetworkX for labeled static diagrams, SymPy for exact identities, and pandas for check tables.",
+    "Display every artifact near the concept it teaches; final sanity checks reload JSON/CSV artifacts and assert invariants."
+  ],
+  "risks": [
+    "Plotly HTML is durable, but static PNG export from Plotly may require optional browser/kaleido support; avoid requiring it.",
+    "Projective objects are scale classes, so all numeric equality checks must compare proportional representatives or residuals, not raw coordinate equality.",
+    "Remove stale template artifacts so the revised notebook relies only on the chapter-specific RP^3, Pluecker-line, and join/meet checks."
+  ],
+  "acceptance criteria": [
+    "Notebook contains title, source span, chapter goal, computational translation guide, concept sections, applied lab, takeaways, and final sanity checks.",
+    "Notebook text and artifacts explicitly include RP^d/RP^3, points, planes, lines, six Pluecker coordinates, Grassmann-Pluecker relation, and universal join/meet.",
+    "At least five concept-named artifacts are generated under artifacts/chapter-12-projective-d-space.",
+    "Checks assert Pluecker relation, incidence/join/meet behavior, RP^3 projection behavior, artifact existence, and nonzero artifact size.",
+    "The canonical notebook executes with nbclient from the chapter folder or course root.",
+    "Scoped git diff --check passes for the assigned notebook and artifact subtree."
   ]
 }

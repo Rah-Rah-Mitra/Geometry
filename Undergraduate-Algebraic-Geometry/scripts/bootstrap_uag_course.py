@@ -497,7 +497,7 @@ def agents_text() -> str:
     ## Course Structure
 
     ```text
-    Undergraduate Algebraic Geometry/
+    Undergraduate-Algebraic-Geometry/
       00-book-index.ipynb
       AGENTS.md
       artifacts/
@@ -554,6 +554,14 @@ def agents_text() -> str:
     displayed inline or linked from the notebook, and final checks should assert that
     files exist and are nonempty.
 
+    ## Worker Boundaries
+
+    Assign one worker to one canonical notebook, one helper module, or one script task.
+    Chapter workers should read their source span, refresh or consume a visualization
+    storyboard, and edit only the assigned chapter folder, its artifact subtree, and
+    explicitly assigned chapter helpers. Shared utility changes belong to utility
+    workers.
+
     ## Geometry Stack
 
     Use the shared `uv` environment at the workspace root. Prefer installed libraries:
@@ -569,11 +577,11 @@ def agents_text() -> str:
     Run from `D:\\Geometry`:
 
     ```powershell
-    uv run python "Undergraduate Algebraic Geometry/scripts/build_uag_course_indexes.py"
-    uv run python -m compileall -q "Undergraduate Algebraic Geometry/utils" "Undergraduate Algebraic Geometry/scripts"
-    uv run python "Undergraduate Algebraic Geometry/scripts/audit_uag_notebooks.py" --min-words 1200 --min-code-cells 5
-    uv run python "Undergraduate Algebraic Geometry/scripts/audit_uag_visuals.py"
-    uv run python "Undergraduate Algebraic Geometry/scripts/validate_uag_course.py" --limit 3 --timeout 300
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/build_uag_course_indexes.py"
+    uv run python -m compileall -q "Undergraduate-Algebraic-Geometry/utils" "Undergraduate-Algebraic-Geometry/scripts"
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/audit_uag_notebooks.py" --min-words 1200 --min-code-cells 5
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/audit_uag_visuals.py"
+    uv run python "Undergraduate-Algebraic-Geometry/scripts/validate_uag_course.py" --limit 3 --timeout 300
     git diff --check
     ```
 
@@ -645,20 +653,24 @@ def artifacts_py() -> str:
         return path
 
 
-    def save_plotly_html(figure: Any, root: str | Path, category: str, filename: str, *, include_plotlyjs: str = "cdn") -> Path:
+def save_plotly_html(figure: Any, root: str | Path, category: str, filename: str, *, include_plotlyjs: str | bool = True) -> Path:
         path = artifact_path(root, category, filename)
         figure.write_html(str(path), include_plotlyjs=include_plotlyjs, full_html=True)
         return path
 
 
-    def image_stats(path: str | Path) -> dict[str, Any]:
-        resolved = Path(path)
-        image = PILImage.open(resolved).convert("RGB")
-        arr = np.asarray(image, dtype=float)
-        return {
-            "path": resolved.as_posix(),
-            "width": int(image.width),
-            "height": int(image.height),
+def image_stats(path: str | Path) -> dict[str, Any]:
+    resolved = Path(path)
+    image = PILImage.open(resolved).convert("RGB")
+    arr = np.asarray(image, dtype=float)
+    try:
+        artifact_path = resolved.resolve().relative_to(BOOK_ROOT).as_posix()
+    except ValueError:
+        artifact_path = resolved.name
+    return {
+        "path": artifact_path,
+        "width": int(image.width),
+        "height": int(image.height),
             "pixel_std": float(arr.std()),
             "file_size": int(resolved.stat().st_size),
         }
@@ -1707,9 +1719,17 @@ def notebook_cells(entry: dict[str, object]) -> list[object]:
     from pathlib import Path
     import sys
 
-    here = Path.cwd().resolve()
-    candidates = [here, *here.parents]
-    BOOK_ROOT = next(path for path in candidates if path.name == "Undergraduate Algebraic Geometry" and (path / "AGENTS.md").exists())
+    def find_book_root(start: Path) -> Path:
+        for candidate in [start.resolve(), *start.resolve().parents]:
+            if (
+                (candidate / "AGENTS.md").exists()
+                and (candidate / "scripts" / "validate_uag_course.py").exists()
+                and (candidate / "utils").exists()
+            ):
+                return candidate
+        raise RuntimeError("Could not locate Undergraduate-Algebraic-Geometry course root")
+
+    BOOK_ROOT = find_book_root(Path.cwd())
     ARTIFACT_ROOT = BOOK_ROOT / "artifacts"
     if str(BOOK_ROOT) not in sys.path:
         sys.path.insert(0, str(BOOK_ROOT))

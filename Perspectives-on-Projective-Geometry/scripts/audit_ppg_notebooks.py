@@ -21,7 +21,12 @@ def stats(path: Path) -> dict[str, object]:
         "code_cells": sum(cell.cell_type == "code" for cell in nb.cells),
         "display": "display_artifact(" in code,
         "markdown_images": markdown.count("!["),
-        "render": "render_chapter_visuals(" in code,
+        "visual_generation": (
+            "render_chapter_visuals(" in code
+            or "save_fig(" in code
+            or ".write_html(" in code
+            or "save_html(" in code
+        ),
         "setup": "BOOK_ROOT" in code and "ARTIFACT_ROOT" in code,
         "takeaways": "Takeaways" in markdown,
         "applied_lab": "Applied Lab" in markdown,
@@ -52,7 +57,7 @@ def main() -> None:
             failures.append(f"{path.relative_to(BOOK_ROOT)} has only {item['code_cells']} code cells")
         if item["markdown_images"] < 3:
             failures.append(f"{path.relative_to(BOOK_ROOT)} has too few direct markdown artifact images")
-        for key in ["display", "render", "setup", "takeaways", "applied_lab", "sanity"]:
+        for key in ["display", "visual_generation", "setup", "takeaways", "applied_lab", "sanity"]:
             if not item[key]:
                 failures.append(f"{path.relative_to(BOOK_ROOT)} missing {key}")
         storyboard = inv.artifact_root(chapter) / "checks" / "storyboard.json"

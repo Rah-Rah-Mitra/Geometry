@@ -1,0 +1,21 @@
+
+<!doctype html>
+<meta charset="utf-8">
+<title>Projective arithmetic lab</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#fffdf7;color:#243040}.wrap{padding:16px;max-width:980px;margin:auto}.controls{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;margin-bottom:10px}label{font-size:13px;font-weight:700}input{width:100%}svg{width:100%;height:410px;border:1px solid #d8cdb9;background:white}.axis{stroke:#243040;stroke-width:2}.helper{stroke:#6f5bd7;stroke-width:2;fill:none}.product{stroke:#2e8b57;stroke-width:2;fill:none}.sum{stroke:#1f77b4;stroke-width:2;fill:none}.result{fill:#c74343;font-weight:700}.pt{fill:#243040}text{font-size:12px}
+</style>
+<div class="wrap"><div class="controls">
+<label>a <input id="a" type="range" min="0.2" max="2.4" step="0.05" value="1.2"></label>
+<label>b <input id="b" type="range" min="0.2" max="2.4" step="0.05" value="1.8"></label>
+<label>addition helper height <input id="h" type="range" min="0.4" max="2.5" step="0.05" value="1.1"></label>
+<label>y-axis unit <input id="u" type="range" min="0.4" max="1.8" step="0.05" value="0.9"></label>
+</div><svg id="svg" viewBox="0 0 900 410" role="img" aria-label="Projective arithmetic construction lab"></svg><p id="readout"></p></div>
+<script>
+const svg=document.getElementById('svg');const inputs=['a','b','h','u'].map(id=>document.getElementById(id));const readout=document.getElementById('readout');
+function sx(x){return 65+115*x} function sy(y){return 350-115*y}
+function line(x1,y1,x2,y2,cls){const e=document.createElementNS('http://www.w3.org/2000/svg','line');e.setAttribute('x1',sx(x1));e.setAttribute('y1',sy(y1));e.setAttribute('x2',sx(x2));e.setAttribute('y2',sy(y2));e.setAttribute('class',cls);svg.appendChild(e)}
+function point(x,y,label,cls='pt'){const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',sx(x));c.setAttribute('cy',sy(y));c.setAttribute('r',4);c.setAttribute('class',cls);svg.appendChild(c);const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',sx(x)+6);t.setAttribute('y',sy(y)-6);t.textContent=label;t.setAttribute('class',cls);svg.appendChild(t)}
+function render(){const a=+document.getElementById('a').value,b=+document.getElementById('b').value,h=+document.getElementById('h').value,u=+document.getElementById('u').value;svg.innerHTML='';line(-0.2,0,5.2,0,'axis');line(0,-0.2,0,3.0,'axis');line(0,h,5.0,h,'helper');line(a,0,0,h,'sum');line(b,0,b,h,'sum');line(b,h,a+b,0,'sum');line(1,0,0,u,'product');line(b,0,0,u*b,'product');line(a,0,0,u,'product');line(0,u*b,a*b,0,'product');point(0,0,'O');point(1,0,'1');point(a,0,'a');point(b,0,'b');point(a+b,0,'a+b','result');point(a*b,0,'ab','result');point(0,u,'1y');readout.textContent=`a + b = ${(a+b).toFixed(2)} and ab = ${(a*b).toFixed(2)}. Move h or the y-axis unit: the construction path changes while the endpoint remains tied to the same formula.`}
+inputs.forEach(el=>el.addEventListener('input',render));render();
+</script>

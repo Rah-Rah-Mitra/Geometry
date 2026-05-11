@@ -357,7 +357,7 @@ ENTRIES = [
         "topic": "chapter-11",
         "family": "applications",
         "printed": "231-278",
-        "pdf": "248-295",
+        "pdf": "234-281",
         "focus": "Clustering, Voronoi diagrams, robust centers, SVM geometry, kernels, graphical models, mean-field approximation, belief propagation, CCCP, boosting, Bayesian duality, RBMs, and contrastive divergence.",
         "concepts": [
             "Bregman centers explain several clustering updates",

@@ -12,6 +12,15 @@ if str(BOOK_ROOT) not in sys.path:
 
 from utils.validation import png_stats
 
+GENERIC_ARTIFACT_NAMES = {
+    "visual_spine.png",
+    "proof_state.png",
+    "invariant_heatmap.png",
+    "construction_or_model.png",
+    "algebraic_check.png",
+    "interactive_invariant_lab.html",
+}
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -24,6 +33,14 @@ def main() -> None:
     for chapter in inv.CHAPTERS:
         root = BOOK_ROOT / "artifacts" / chapter["artifact"]
         pngs = sorted((root / "figures").glob("*.png"))
+        generic_artifacts = [
+            path for path in root.rglob("*") if path.is_file() and path.name in GENERIC_ARTIFACT_NAMES
+        ]
+        if generic_artifacts:
+            failures.append(
+                f"{root.relative_to(BOOK_ROOT)} still has generic scaffold artifacts: "
+                + ", ".join(path.name for path in generic_artifacts)
+            )
         if len(pngs) < 5:
             failures.append(f"{root.relative_to(BOOK_ROOT)} has only {len(pngs)} PNG figures")
         for path in pngs:

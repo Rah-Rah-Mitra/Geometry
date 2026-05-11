@@ -2125,9 +2125,9 @@ CHECKS = {entry['checks']!r}
 SEED = {entry['number']}
 artifact_paths = []
 '''
-    concept_map = '''
+    concept_map = f'''
 fig = concept_map_figure(ENTRY_TITLE, CONCEPTS, VISUALS)
-concept_map_path = save_matplotlib(fig, TOPIC, "figures", "concept-map.png")
+concept_map_path = save_matplotlib(fig, TOPIC, "figures", "{slugify(entry['title'])}-concept-route-map.png")
 plt.close(fig)
 artifact_paths.append(concept_map_path)
 display_artifact(concept_map_path, width=820)
@@ -2139,9 +2139,9 @@ plt.close(fig)
 artifact_paths.append(storyboard_gallery_path)
 display_artifact(storyboard_gallery_path, width=820)
 '''
-    geometry_scene = '''
+    geometry_scene = f'''
 fig = geometry_scene_figure(MODE, ENTRY_TITLE, SEED)
-geometry_scene_path = save_matplotlib(fig, TOPIC, "figures", "geometry-scene.png")
+geometry_scene_path = save_matplotlib(fig, TOPIC, "figures", "{slugify(entry['title'])}-construction-scene.png")
 plt.close(fig)
 artifact_paths.append(geometry_scene_path)
 display_artifact(geometry_scene_path, width=820)

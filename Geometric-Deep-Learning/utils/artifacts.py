@@ -15,6 +15,15 @@ BOOK_ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_ROOT = BOOK_ROOT / "artifacts"
 
 
+def book_relative(path: str | Path) -> str:
+    """Return a stable book-local path when an artifact lives inside this course."""
+    resolved = Path(path).resolve()
+    try:
+        return resolved.relative_to(BOOK_ROOT).as_posix()
+    except ValueError:
+        return Path(path).as_posix()
+
+
 def slugify(value: str) -> str:
     """Convert a label into a stable lowercase path segment."""
     slug = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip().lower())
@@ -135,7 +144,7 @@ def display_artifact(path: str | Path, *, width: int | str | None = None, height
             return display(IFrame(src=str(resolved), width=width or "100%", height=height))
         return display(HTML(resolved.read_text(encoding="utf-8")))
 
-    link = escape(resolved.as_posix(), quote=True)
+    link = escape(book_relative(resolved), quote=True)
     return display(HTML(f'<a href="{link}">{link}</a>'))
 
 
@@ -149,6 +158,5 @@ def assert_artifacts(paths: list[str | Path], *, min_bytes: int = 100) -> dict[s
         size = path.stat().st_size
         if size < min_bytes:
             raise AssertionError(f"Artifact too small: {path} ({size} bytes)")
-        sizes[path.as_posix()] = size
+        sizes[book_relative(path)] = size
     return sizes
-

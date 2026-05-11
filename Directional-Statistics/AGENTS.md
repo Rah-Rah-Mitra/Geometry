@@ -72,12 +72,12 @@
         Run from `D:\Geometry`:
 
         ```powershell
-        uv run python "Directional Statistics/scripts/build_dirstats_course_indexes.py"
-        uv run python -m compileall -q "Directional Statistics/utils" "Directional Statistics/scripts"
-        uv run python "Directional Statistics/scripts/audit_dirstats_notebooks.py" --min-words 1200 --min-code-cells 5
-        uv run python "Directional Statistics/scripts/audit_dirstats_visuals.py"
-        uv run python "Directional Statistics/scripts/audit_dirstats_artifacts.py"
-        uv run python "Directional Statistics/scripts/validate_dirstats_course.py" --limit 8 --timeout 300
+        uv run python "Directional-Statistics/scripts/build_dirstats_course_indexes.py"
+        uv run python -m compileall -q "Directional-Statistics/utils" "Directional-Statistics/scripts"
+        uv run python "Directional-Statistics/scripts/audit_dirstats_notebooks.py" --min-words 1200 --min-code-cells 5
+        uv run python "Directional-Statistics/scripts/audit_dirstats_visuals.py"
+        uv run python "Directional-Statistics/scripts/audit_dirstats_artifacts.py"
+        uv run python "Directional-Statistics/scripts/validate_dirstats_course.py" --limit 8 --timeout 300
         git diff --check
         ```
 

@@ -61,7 +61,10 @@ def main() -> None:
             data = json.loads(raw)
             if not data.get("all_files_exist"):
                 failures.append(f"{visual_checks.relative_to(BOOK_ROOT)} reports missing files")
-            if data.get("cross_ratio_error", 1) > 1e-9:
+            cross_ratio_error = data.get("cross_ratio_error")
+            if cross_ratio_error is None:
+                cross_ratio_error = data.get("numeric_checks", {}).get("complex_cross_ratio_residual", 1)
+            if cross_ratio_error > 1e-9:
                 failures.append(f"{visual_checks.relative_to(BOOK_ROOT)} cross-ratio check is too large")
     print(f"Audited {total} visual artifacts across {len(inv.CHAPTERS)} chapters.")
     if failures:

@@ -311,7 +311,7 @@ def save_matplotlib(fig: Any, topic: str, *parts: str, dpi: int = 160) -> Path:
 
 def save_plotly_html(fig: Any, topic: str, *parts: str) -> Path:
     path = ensure_parent(artifact_path(topic, *parts))
-    fig.write_html(str(path), include_plotlyjs="cdn", full_html=True)
+    fig.write_html(str(path), include_plotlyjs=True, full_html=True)
     return path
 
 
@@ -1672,6 +1672,12 @@ def generate_initial_artifacts() -> None:
 
 
 def main() -> None:
+    if "--force-bootstrap" not in sys.argv:
+        raise SystemExit(
+            "Refusing to overwrite the hand-authored MVG course. "
+            "Pass --force-bootstrap only when rebuilding a fresh scaffold."
+        )
+    sys.argv.remove("--force-bootstrap")
     write_course_files()
     build_indexes()
     generate_initial_artifacts()

@@ -118,5 +118,5 @@ def display_artifact(path: str | Path, *, width: int | str | None = None, height
         if height:
             return display(IFrame(src=str(resolved), width=width or "100%", height=height))
         return display(HTML(resolved.read_text(encoding="utf-8")))
-    link = escape(resolved.as_posix(), quote=True)
+    link = escape(book_relative(resolved), quote=True)
     return display(HTML(f'<a href="{link}">{link}</a>'))

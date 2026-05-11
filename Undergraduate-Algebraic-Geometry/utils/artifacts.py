@@ -60,7 +60,7 @@ def save_matplotlib(figure: Any, root: str | Path, category: str, filename: str,
     return path
 
 
-def save_plotly_html(figure: Any, root: str | Path, category: str, filename: str, *, include_plotlyjs: str = "cdn") -> Path:
+def save_plotly_html(figure: Any, root: str | Path, category: str, filename: str, *, include_plotlyjs: str | bool = True) -> Path:
     path = artifact_path(root, category, filename)
     figure.write_html(str(path), include_plotlyjs=include_plotlyjs, full_html=True)
     return path
@@ -70,8 +70,12 @@ def image_stats(path: str | Path) -> dict[str, Any]:
     resolved = Path(path)
     image = PILImage.open(resolved).convert("RGB")
     arr = np.asarray(image, dtype=float)
+    try:
+        artifact_path = resolved.resolve().relative_to(BOOK_ROOT).as_posix()
+    except ValueError:
+        artifact_path = resolved.name
     return {
-        "path": resolved.as_posix(),
+        "path": artifact_path,
         "width": int(image.width),
         "height": int(image.height),
         "pixel_std": float(arr.std()),

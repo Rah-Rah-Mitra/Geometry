@@ -41,7 +41,7 @@ def save_matplotlib(fig: Any, topic: str, *parts: str, dpi: int = 160) -> Path:
 
 def save_plotly_html(fig: Any, topic: str, *parts: str) -> Path:
     path = ensure_parent(artifact_path(topic, *parts))
-    fig.write_html(str(path), include_plotlyjs="cdn", full_html=True)
+    fig.write_html(str(path), include_plotlyjs=True, full_html=True)
     return path
 
 

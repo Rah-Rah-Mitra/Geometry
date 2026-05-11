@@ -20,9 +20,28 @@ def stats(path: Path) -> dict[str, object]:
         "words": len(re.findall(r"[A-Za-z][A-Za-z0-9'-]*", markdown)),
         "code_cells": sum(cell.cell_type == "code" for cell in nb.cells),
         "display": code.count("display_artifact("),
-        "render": "render_chapter_visuals(" in code,
+        "direct_visual_generation": any(
+            marker in code
+            for marker in [
+                "savefig(",
+                ".write_html(",
+                "save_html(",
+                "save_json(",
+                "save_table(",
+            ]
+        ),
+        "legacy_scaffold": "render_chapter_visuals(" in code or "from utils.chapter_visuals import" in code,
         "setup": "BOOK_ROOT" in code and "ARTIFACT_ROOT" in code,
         "takeaways": "Takeaways" in markdown,
+        "sanity": (
+            "final-sanity.json" in code
+            or "final_sanity" in code
+            or "sanity" in code.lower()
+            or "Final sanity" in markdown
+            or "final checks" in markdown.lower()
+            or "artifact_manifest" in code
+            or "artifact-manifest" in code
+        ),
         "crop": "crop" in code.lower() or "screenshot" in code.lower(),
     }
 
@@ -49,9 +68,11 @@ def main() -> None:
             failures.append(f"{path.relative_to(BOOK_ROOT)} has only {item['code_cells']} code cells")
         if item["display"] < 4:
             failures.append(f"{path.relative_to(BOOK_ROOT)} displays too few artifacts")
-        for key in ["render", "setup", "takeaways"]:
+        for key in ["direct_visual_generation", "setup", "takeaways", "sanity"]:
             if not item[key]:
                 failures.append(f"{path.relative_to(BOOK_ROOT)} missing {key}")
+        if item["legacy_scaffold"]:
+            failures.append(f"{path.relative_to(BOOK_ROOT)} still uses legacy render_chapter_visuals scaffold")
         if item["crop"]:
             failures.append(f"{path.relative_to(BOOK_ROOT)} appears to reference crops/screenshots")
     print(f"Audited {len(inv.CHAPTERS)} canonical notebooks.")
