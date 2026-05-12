@@ -24,8 +24,8 @@ def audit_visuals(book_root: Path = BOOK_ROOT) -> dict[str, object]:
     for path in discover_notebooks(book_root):
         stats = notebook_stats(path, book_root)
         notebook_reports.append(stats.__dict__)
-        if stats.visual_builder_calls < 1:
-            findings.append({"check": "missing-visual-builder", "path": stats.path, "message": "Notebook does not call a visual builder."})
+        if stats.visual_generation_calls < 1:
+            findings.append({"check": "missing-visual-generation", "path": stats.path, "message": "Notebook does not generate or build visual artifacts."})
         if stats.display_artifact_calls < 1:
             findings.append({"check": "missing-display-artifact", "path": stats.path, "message": "Notebook does not display generated artifacts inline."})
     image_reports = []

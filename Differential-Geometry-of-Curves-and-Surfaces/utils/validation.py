@@ -38,13 +38,27 @@ def notebook_stats(path: Path, book_root: Path = BOOK_ROOT) -> dict[str, Any]:
     markdown = ["".join(cell.get("source", "")) for cell in nb.cells if cell.cell_type == "markdown"]
     code = ["".join(cell.get("source", "")) for cell in nb.cells if cell.cell_type == "code"]
     source = "\n".join(markdown + code)
+    direct_visual_calls = sum(
+        source.count(token)
+        for token in (
+            "save_matplotlib(",
+            "save_plotly_html(",
+            ".write_html(",
+            ".savefig(",
+            "plt.subplots(",
+            "go.Figure(",
+        )
+    )
+    visual_builder_calls = source.count("build_unit_visuals(")
     return {
         "path": path.relative_to(book_root).as_posix(),
         "markdown_words": sum(len(text.split()) for text in markdown),
         "markdown_cells": len(markdown),
         "code_cells": len(code),
         "display_artifact_calls": source.count("display_artifact("),
-        "visual_builder_calls": source.count("build_unit_visuals("),
+        "visual_builder_calls": visual_builder_calls,
+        "direct_visual_calls": direct_visual_calls,
+        "visual_generation_calls": visual_builder_calls + direct_visual_calls,
         "final_sanity_refs": source.count("final-sanity.json"),
         "stale_paths": [pattern for pattern in STALE_PATH_PATTERNS if pattern in source],
     }

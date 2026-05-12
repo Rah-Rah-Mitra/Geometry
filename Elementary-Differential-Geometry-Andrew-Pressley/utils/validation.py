@@ -23,6 +23,8 @@ class NotebookStats:
     code_cells: int
     display_artifact_calls: int
     visual_builder_calls: int
+    direct_visual_calls: int
+    visual_generation_calls: int
 
 
 def discover_notebooks(book_root: Path = BOOK_ROOT, *, canonical_only: bool = True) -> list[Path]:
@@ -38,13 +40,28 @@ def notebook_stats(path: Path, book_root: Path = BOOK_ROOT) -> NotebookStats:
     markdown = ["".join(cell.get("source", "")) for cell in nb.cells if cell.cell_type == "markdown"]
     code = ["".join(cell.get("source", "")) for cell in nb.cells if cell.cell_type == "code"]
     joined_code = "\n".join(code)
+    visual_builder_calls = joined_code.count("build_visual_storyboard") + joined_code.count("build_unit_visuals")
+    direct_visual_calls = sum(
+        joined_code.count(token)
+        for token in (
+            "save_fig(",
+            "save_matplotlib(",
+            "save_plotly_html(",
+            ".write_html(",
+            ".savefig(",
+            "plt.subplots(",
+            "go.Figure(",
+        )
+    )
     return NotebookStats(
         path=path.relative_to(book_root).as_posix(),
         markdown_words=sum(len(source.split()) for source in markdown),
         markdown_cells=len(markdown),
         code_cells=len(code),
         display_artifact_calls=joined_code.count("display_artifact"),
-        visual_builder_calls=joined_code.count("build_visual_storyboard") + joined_code.count("build_unit_visuals"),
+        visual_builder_calls=visual_builder_calls,
+        direct_visual_calls=direct_visual_calls,
+        visual_generation_calls=visual_builder_calls + direct_visual_calls,
     )
 
 

@@ -28,7 +28,7 @@ def main() -> None:
         if item["markdown_words"] < args.min_words
         or item["code_cells"] < args.min_code_cells
         or item["display_artifact_calls"] < 1
-        or item["visual_builder_calls"] < 1
+        or item["visual_generation_calls"] < 1
         or item["final_sanity_refs"] < 1
         or item["stale_paths"]
     ]
@@ -42,7 +42,7 @@ def main() -> None:
         for item in failing:
             print(
                 f"- {item['path']}: {item['markdown_words']} words, {item['code_cells']} code cells, "
-                f"display calls={item['display_artifact_calls']}, visual builders={item['visual_builder_calls']}, "
+                f"display calls={item['display_artifact_calls']}, visual generation={item['visual_generation_calls']}, "
                 f"final sanity refs={item['final_sanity_refs']}, stale_paths={item['stale_paths']}"
             )
         raise SystemExit(1)
