@@ -24,7 +24,7 @@ transport, and geometric statistics.
 | Implemented | A book folder exists in this repo with notebook scaffolding or canonical notebooks. |
 | Planned | The book is part of the roadmap, but no folder exists yet. |
 
-Last updated: 2026-05-01
+Last updated: 2026-05-16
 
 ## What Each Notebook Course Entails
 
@@ -44,9 +44,15 @@ that make the geometry inspectable.
 
 | Course | Status | What the notebooks cover |
 | --- | --- | --- |
+| [A Course in Metric Geometry](./A-Course-in-Metric-Geometry) | Implemented | Metric spaces, length spaces, constructions, curvature bounds, Gromov hyperbolicity, convergence, and Alexandrov spaces. |
 | [A Mathematical Introduction to Robotic Manipulation](./A-Mathematical-Introduction-to-Robotic-Manipulation) | Implemented | Rigid-body motion, twists, wrenches, robot kinematics, dynamics, grasping, multifingered manipulation, nonholonomic motion, and Lie-theoretic robotics labs. |
+| [Algebraic Geometry](./Algebraic-Geometry) | Implemented | Varieties, schemes, cohomology, curves, surfaces, sheaves, and projective algebraic geometry. |
+| [An Introduction to Contact Topology](./An-Introduction-to-Contact-Topology) | Implemented | Contact manifolds, contact structures, knots in contact 3-manifolds, characteristic foliations, and contact-topology diagnostics. |
 | [Basic Topology](./Basic-Topology) | Implemented | Euler characteristic, continuity, compactness, connectedness, quotient spaces, fundamental groups, triangulations, surfaces, simplicial homology, degree, Lefschetz number, knots, and covering spaces. |
+| [Complex Geometry: An Introduction](./Complex-Geometry-An-Introduction) | Implemented | Holomorphic functions, complex manifolds, vector bundles, Kahler manifolds, sheaves, line bundles, and ddbar-formality intuition. |
 | [Computational Geometry: Algorithms and Applications](./Computational-Geometry-Algorithms-and-Applications) | Implemented | Convex hulls, sweep-line algorithms, triangulations, Voronoi diagrams, arrangements, range search, motion planning, quadtrees, visibility, and robust geometric predicates. |
+| [Computational Topology: An Introduction](./Computational-Topology-An-Introduction) | Implemented | Graphs, surfaces, complexes, homology, persistence, algorithms, and data-driven topological summaries. |
+| [Convex Analysis](./Convex-Analysis) | Implemented | Convex sets and functions, separation, conjugacy, duality, optimization, minimax, Lagrange multipliers, and convex programs. |
 | [Differential Geometry of Curves and Surfaces](./Differential-Geometry-of-Curves-and-Surfaces) | Implemented | Curves, regular surfaces, first fundamental forms, Gauss maps, Gaussian curvature, geodesics, intrinsic surface geometry, Gauss-Bonnet intuition, and global surface diagnostics. |
 | [Differential Geometry: From Elastic Curves to Willmore Surfaces](./Differential-Geometry-From-Elastic-Curves-to-Willmore-Surfaces) | Implemented | Curves, reparametrization, curvature, variational calculus, surface metrics, Stokes' theorem, Gauss-Bonnet, minimal surfaces, CMC surfaces, and Willmore energy. |
 | [Directional Statistics](./Directional-Statistics) | Implemented | Circular and spherical data, von Mises and Fisher models, uniformity tests, regression, shape analysis, special functions, and executable replacements for statistical tables. |
@@ -57,18 +63,31 @@ that make the geometry inspectable.
 | [Fundamentals of Computer Graphics](./Fundamentals-of-Computer-Graphics) | Implemented | Ray tracing, rasterization, transformations, sampling, materials, animation, color, perception, tone mapping, implicit modeling, games, and visualization workflows. |
 | [Geometric Algebra for Computer Science](./Geometric-Algebra-for-Computer-Science) | Implemented | Blades, products, meets and joins, rotors, homogeneous and conformal models, geometric differentiation, implementation issues, and graphics/vision applications. |
 | [Geometric Deep Learning](./Geometric-Deep-Learning) | Implemented | Representation learning, high-dimensional generalization, geometric priors, graphs, groups, grids, manifolds, gauges, equivariant models, applications, and historical lineage. |
+| [Geometric Group Theory: An Introduction](./Geometric-Group-Theory-An-Introduction) | Implemented | Cayley graphs, word metrics, quasi-isometries, growth, amenability, hyperbolic spaces, boundaries, and group actions. |
+| [Geometric Measure Theory](./Geometric-Measure-Theory) | Implemented | Multilinear algebra, measure and integration, differentiation theory, rectifiability, currents, area, and measure-theoretic geometry. |
 | [Geometric Tools for Computer Graphics](./Geometric-Tools-for-Computer-Graphics) | Implemented | Vectors, matrices, transformations, distance and intersection queries, curves, surfaces, meshes, spatial data structures, and practical geometry algorithms for graphics. |
 | [Geometry: A Metric Approach with Models](./Geometry-A-Metric-Approach-with-Models) | Implemented | Incidence and metric geometry, betweenness, plane separation, angle measure, neutral geometry, parallels, hyperbolic and Euclidean models, area, and isometries. |
 | [Geometry I](./Geometry-I) | Implemented | Group actions, affine and projective spaces, barycenters, cross-ratios, complexification, Euclidean affine and vector geometry, triangles, spheres, circles, and convexity. |
 | [Geometry II](./Geometry-II) | Implemented | Polytopes, quadratic forms, projective and affine quadrics, conics, sphere geometry, elliptic and hyperbolic geometry, and spaces of spheres. |
 | [Geometry with an Introduction to Cosmic Topology](./Geometry-with-an-Introduction-to-Cosmic-Topology) | Implemented | Complex coordinates, transformations, Mobius geometry, hyperbolic and elliptic models, surface geometry, quotient spaces, cosmic topology, and universe-shape diagnostics. |
+| [Hodge Theory and Complex Algebraic Geometry](./Hodge-Theory-and-Complex-Algebraic-Geometry) | Implemented | Compact Kahler manifolds, Hodge structures, Kahler identities, hard Lefschetz, variations, and complex algebraic geometry. |
 | [Ideals, Varieties, and Algorithms](./Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra) | Implemented | Polynomial ideals, affine varieties, Grobner bases, elimination, robotics, theorem proving, invariant theory, projective algebraic geometry, and dimension. |
 | [Information Geometry and Its Applications](./Information-Geometry-and-Its-Applications) | Implemented | Divergence functions, dually flat geometry, exponential and mixture families, alpha geometry, dual connections, statistical inference, EM, semiparametrics, time series, ML, natural gradients, and signal processing. |
 | [Introduction to Geometry](./Introduction-to-Geometry) | Implemented | Classical Euclidean geometry, symmetry, coordinates, complex numbers, Platonic solids, affine and projective geometry, hyperbolic geometry, curves, surfaces, topology, and four-dimensional geometry. |
+| [Introduction to Symplectic Topology](./Introduction-to-Symplectic-Topology) | Implemented | Symplectic manifolds, Hamiltonian dynamics, moment maps, symplectic reduction, and global symplectic invariants. |
+| [J-holomorphic Curves and Symplectic Topology](./J-Holomorphic-Curves-and-Symplectic-Topology) | Implemented | Pseudoholomorphic curves, compactness, gluing, moduli spaces, Gromov-Witten-style checks, and symplectic topology. |
+| [Lectures on Symplectic Geometry](./Lectures-on-Symplectic-Geometry) | Implemented | Symplectic forms, Darboux and Moser arguments, cotangent bundles, Hamiltonian actions, moment maps, reduction, and toric manifolds. |
 | [Mathematical Foundations of Geometric Deep Learning](./Mathematical-Foundations-of-Geometric-Deep-Learning) | Implemented | Algebraic structures, metric and analytical geometry, vector calculus, topology, differential geometry, functional analysis, spectral theory, graph theory, and message-passing foundations. |
+| [Mathematical Methods of Classical Mechanics](./Mathematical-Methods-of-Classical-Mechanics) | Implemented | Variational principles, Lagrangian and Hamiltonian mechanics, symplectic geometry, canonical transformations, rigid bodies, and perturbation ideas. |
+| [Methods of Information Geometry](./Methods-of-Information-Geometry) | Implemented | Statistical manifolds, tangent and tensor fields, Riemannian metrics, affine connections, dual flatness, information theory, and convexity. |
+| [Metric Spaces of Non-Positive Curvature](./Metric-Spaces-of-Non-Positive-Curvature) | Implemented | CAT(0) spaces, geodesic metric spaces, comparison geometry, group actions, boundaries, and non-positive curvature diagnostics. |
 | [Modern Robotics](./Modern-Robotics) | Implemented | Screw theory, configuration spaces, rigid-body motions, forward and inverse kinematics, velocity kinematics, dynamics, trajectory generation, motion planning, control, grasping, and mobile robots. |
 | [Multiple View Geometry in Computer Vision](./Multiple-View-Geometry-in-Computer-Vision) | Implemented | Projective transformations, camera models, calibration, epipolar geometry, fundamental and trifocal tensors, structure computation, homographies, auto-calibration, cheirality, degeneracies, and estimation appendices. |
+| [Nonparametric Inference on Manifolds](./Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces) | Implemented | Manifold data, Frechet means, nonparametric inference, bootstrap methods, shape spaces, image analysis, and machine vision applications. |
+| [Optimal Transport: Old and New](./Optimal-Transport-Old-and-New) | Implemented | Monge-Kantorovich transport, Wasserstein geometry, duality, PDE, probability, curvature, and executable transport examples. |
 | [Perspectives on Projective Geometry](./Perspectives-on-Projective-Geometry) | Implemented | Pappus configurations, projective planes, homogeneous coordinates, cross-ratios, bracket algebra, conics, diagram techniques, Cayley-Klein geometries, complex projective lines, and hyperbolic models. |
+| [Principles of Algebraic Geometry](./Principles-of-Algebraic-Geometry) | Implemented | Complex algebraic varieties, Riemann surfaces, algebraic curves, divisors, sheaves, surfaces, and Hodge-flavored methods. |
+| [Statistics on Special Manifolds](./Statistics-on-Special-Manifolds) | Implemented | Special manifolds, population distributions, decompositions, Jacobians, distributional problems, Stiefel and Grassmann data, and matrix-valued samples. |
 | [The Four Pillars of Geometry](./The-Four-Pillars-of-Geometry) | Implemented | Euclidean construction and axioms, linear algebra, projective geometry, transformation groups, and non-Euclidean geometry. |
 | [Topology](./Topology) | Implemented | Set theory, topological spaces, continuity, connectedness, compactness, countability and separation axioms, Tychonoff, metrization, function spaces, Baire spaces, fundamental groups, plane separation, van Kampen, surfaces, and covering spaces. |
 | [Undergraduate Algebraic Geometry](./Undergraduate-Algebraic-Geometry) | Implemented | Conics, cubics, group law, affine varieties, coordinate rings, projective and birational geometry, tangent spaces, dimension, and the 27 lines on a cubic surface. |
@@ -187,26 +206,26 @@ topology, information geometry, statistics on manifolds, and optimal transport.
 
 | Book | Status | Planned notebook purpose |
 | --- | --- | --- |
-| Robin Hartshorne, *Algebraic Geometry* | Planned | A graduate algebraic geometry course on schemes, sheaves, cohomology, curves, and surfaces. |
-| Griffiths and Harris, *Principles of Algebraic Geometry* | Planned | A complex-manifold and projective-variety course on Riemann surfaces, algebraic curves, surfaces, and Hodge-flavored methods. |
-| Daniel Huybrechts, *Complex Geometry: An Introduction* | Planned | A modern bridge course through complex manifolds, Hermitian and Kahler geometry, sheaves, and line bundles. |
-| Claire Voisin, *Hodge Theory and Complex Algebraic Geometry I-II* | Planned | An advanced course on Hodge structures, Kahler identities, hard Lefschetz, and complex algebraic geometry. |
-| McDuff and Salamon, *Introduction to Symplectic Topology* | Planned | A standard symplectic geometry/topology course on symplectic manifolds, Hamiltonian dynamics, and global symplectic invariants. |
-| Ana Cannas da Silva, *Lectures on Symplectic Geometry* | Planned | A faster introductory symplectic course emphasizing examples, moment maps, and geometric mechanics. |
-| V. I. Arnold, *Mathematical Methods of Classical Mechanics* | Planned | A geometric mechanics course linking flows, Lie groups, symplectic geometry, Hamiltonian systems, and classical mechanics. |
-| Hansjorg Geiges, *An Introduction to Contact Topology* | Planned | A contact topology course focused on contact manifolds, especially in dimension three, and their relation to symplectic geometry. |
-| McDuff and Salamon, *J-holomorphic Curves and Symplectic Topology* | Planned | A research-level course on pseudoholomorphic curves, compactness, gluing, and quantum-flavored symplectic topology. |
-| Rockafellar, *Convex Analysis* | Planned | A convex analysis course on convex sets/functions, duality, optimization, minimax, Lagrange multipliers, and convex programs. |
-| Burago, Burago, and Ivanov, *A Course in Metric Geometry* | Planned | A metric geometry course on length spaces, curvature bounds, Gromov hyperbolicity, convergence, and Alexandrov spaces. |
-| Bridson and Haefliger, *Metric Spaces of Non-Positive Curvature* | Planned | A CAT(0) and non-positive curvature course for metric spaces and groups acting geometrically on them. |
-| Clara Loh, *Geometric Group Theory: An Introduction* | Planned | A first geometric group theory course on Cayley graphs, quasi-isometries, group actions, and hyperbolic groups. |
-| Federer, *Geometric Measure Theory* | Planned | A geometric analysis course on rectifiability, currents, area, and measure-theoretic treatment of geometric objects. |
-| Edelsbrunner and Harer, *Computational Topology: An Introduction* | Planned | A computational topology course on complexes, algorithms, persistent homology, and data-driven topological summaries. |
-| Amari and Nagaoka, *Methods of Information Geometry* | Planned | A mathematical information geometry course on statistical manifolds, dual affine connections, information theory, and convexity. |
+| Robin Hartshorne, *Algebraic Geometry* | [Implemented](./Algebraic-Geometry) | A graduate algebraic geometry course on schemes, sheaves, cohomology, curves, and surfaces. |
+| Griffiths and Harris, *Principles of Algebraic Geometry* | [Implemented](./Principles-of-Algebraic-Geometry) | A complex-manifold and projective-variety course on Riemann surfaces, algebraic curves, surfaces, and Hodge-flavored methods. |
+| Daniel Huybrechts, *Complex Geometry: An Introduction* | [Implemented](./Complex-Geometry-An-Introduction) | A modern bridge course through complex manifolds, Hermitian and Kahler geometry, sheaves, and line bundles. |
+| Claire Voisin, *Hodge Theory and Complex Algebraic Geometry I-II* | [Implemented](./Hodge-Theory-and-Complex-Algebraic-Geometry) | An advanced course on Hodge structures, Kahler identities, hard Lefschetz, and complex algebraic geometry. |
+| McDuff and Salamon, *Introduction to Symplectic Topology* | [Implemented](./Introduction-to-Symplectic-Topology) | A standard symplectic geometry/topology course on symplectic manifolds, Hamiltonian dynamics, and global symplectic invariants. |
+| Ana Cannas da Silva, *Lectures on Symplectic Geometry* | [Implemented](./Lectures-on-Symplectic-Geometry) | A faster introductory symplectic course emphasizing examples, moment maps, and geometric mechanics. |
+| V. I. Arnold, *Mathematical Methods of Classical Mechanics* | [Implemented](./Mathematical-Methods-of-Classical-Mechanics) | A geometric mechanics course linking flows, Lie groups, symplectic geometry, Hamiltonian systems, and classical mechanics. |
+| Hansjorg Geiges, *An Introduction to Contact Topology* | [Implemented](./An-Introduction-to-Contact-Topology) | A contact topology course focused on contact manifolds, especially in dimension three, and their relation to symplectic geometry. |
+| McDuff and Salamon, *J-holomorphic Curves and Symplectic Topology* | [Implemented](./J-Holomorphic-Curves-and-Symplectic-Topology) | A research-level course on pseudoholomorphic curves, compactness, gluing, and quantum-flavored symplectic topology. |
+| Rockafellar, *Convex Analysis* | [Implemented](./Convex-Analysis) | A convex analysis course on convex sets/functions, duality, optimization, minimax, Lagrange multipliers, and convex programs. |
+| Burago, Burago, and Ivanov, *A Course in Metric Geometry* | [Implemented](./A-Course-in-Metric-Geometry) | A metric geometry course on length spaces, curvature bounds, Gromov hyperbolicity, convergence, and Alexandrov spaces. |
+| Bridson and Haefliger, *Metric Spaces of Non-Positive Curvature* | [Implemented](./Metric-Spaces-of-Non-Positive-Curvature) | A CAT(0) and non-positive curvature course for metric spaces and groups acting geometrically on them. |
+| Clara Loh, *Geometric Group Theory: An Introduction* | [Implemented](./Geometric-Group-Theory-An-Introduction) | A first geometric group theory course on Cayley graphs, quasi-isometries, group actions, and hyperbolic groups. |
+| Federer, *Geometric Measure Theory* | [Implemented](./Geometric-Measure-Theory) | A geometric analysis course on rectifiability, currents, area, and measure-theoretic treatment of geometric objects. |
+| Edelsbrunner and Harer, *Computational Topology: An Introduction* | [Implemented](./Computational-Topology-An-Introduction) | A computational topology course on complexes, algorithms, persistent homology, and data-driven topological summaries. |
+| Amari and Nagaoka, *Methods of Information Geometry* | [Implemented](./Methods-of-Information-Geometry) | A mathematical information geometry course on statistical manifolds, dual affine connections, information theory, and convexity. |
 | Shun-ichi Amari, *Information Geometry and Its Applications* | [Implemented](./Information-Geometry-and-Its-Applications) | An application-facing graduate path through information-geometric methods in inference, optimization, neural networks, and signal processing. |
-| Chikuse, *Statistics on Special Manifolds* | Planned | A statistics-on-manifolds course for Stiefel and Grassmann data, orientations, subspaces, and matrix-valued samples. |
-| Bhattacharya and Bhattacharya, *Nonparametric Inference on Manifolds* | Planned | A manifold statistics course on nonparametric inference, shape spaces, image analysis, and machine vision applications. |
-| Villani, *Optimal Transport: Old and New* | Planned | A graduate optimal transport course on Monge-Kantorovich transport, Wasserstein geometry, PDE, probability, and curvature. |
+| Chikuse, *Statistics on Special Manifolds* | [Implemented](./Statistics-on-Special-Manifolds) | A statistics-on-manifolds course for Stiefel and Grassmann data, orientations, subspaces, and matrix-valued samples. |
+| Bhattacharya and Bhattacharya, *Nonparametric Inference on Manifolds* | [Implemented](./Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces) | A manifold statistics course on nonparametric inference, shape spaces, image analysis, and machine vision applications. |
+| Villani, *Optimal Transport: Old and New* | [Implemented](./Optimal-Transport-Old-and-New) | A graduate optimal transport course on Monge-Kantorovich transport, Wasserstein geometry, PDE, probability, and curvature. |
 | Bronstein, Bruna, Cohen, and Velickovic, *Geometric Deep Learning* | [Implemented](./Geometric-Deep-Learning) | A geometric machine learning course on graphs, manifolds, groups, gauges, equivariance, and learned geometric priors. |
 
 ## Suggested Reading Spine
