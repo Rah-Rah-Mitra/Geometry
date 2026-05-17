@@ -98,4 +98,3 @@ def display_artifact(path: Path, *, width: int = 760, height: int = 520) -> None
         display(Markdown(f"`{relative_to_book(candidate)}`"))
     else:
         display(Markdown(f"[{candidate.name}]({candidate.as_posix()})"))
-

@@ -35,9 +35,14 @@ def execute_notebook(path: Path, timeout: int) -> None:
         nb,
         timeout=timeout,
         kernel_name="python3",
+        shutdown_kernel="immediate",
         resources={"metadata": {"path": str(path.parent)}},
     )
-    client.execute()
+    try:
+        client.execute()
+    finally:
+        if getattr(client, "km", None) is not None:
+            client._cleanup_kernel()
 
 
 def main() -> None:

@@ -34,7 +34,7 @@ Extraction method: pdftotext table-of-contents extraction.
 | Chapter 2 | `chapter-02-homology` | 97-184 | Simplicial and singular homology, exact sequences, excision, cellular homology, and Euler characteristic. |
 | Chapter 3 | `chapter-03-cohomology` | 185-336 | Cup products, Poincare duality, universal coefficients, Kunneth ideas, and characteristic computations. |
 | Chapter 4 | `chapter-04-homotopy-theory` | 337-518 | Homotopy groups, fibrations, obstruction ideas, spectral sequence orientation, and stable phenomena. |
-| Appendix A | `appendix-a-appendix` | 519-539 | Auxiliary algebraic and point-set tools used throughout the topology chapters. |
+| Appendix A | `appendix-a-appendix` | 519-532 | Auxiliary algebraic and point-set tools used throughout the topology chapters. |
 
 Backmatter notes: bibliography 533-538; index 539-553.
 

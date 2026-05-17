@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import io
 import re
 from html import escape
 from pathlib import Path
@@ -44,7 +45,25 @@ def save_json(data: Any, unit: str, kind: str | None, filename: str = "data.json
 
 def save_matplotlib(figure: Any, unit: str, kind: str | None, filename: str, *, dpi: int = 160, root: str | Path = ARTIFACT_ROOT, **kwargs: Any) -> Path:
     path = artifact_path(unit, kind, filename, root)
-    figure.savefig(path, dpi=dpi, bbox_inches="tight", **kwargs)
+    save_kwargs = {"dpi": dpi, **kwargs}
+    save_kwargs.setdefault("bbox_inches", "tight")
+    save_kwargs.setdefault("format", path.suffix.lower().lstrip(".") or "png")
+
+    def render_bytes(render_kwargs: dict[str, Any]) -> bytes:
+        buffer = io.BytesIO()
+        figure.savefig(buffer, **render_kwargs)
+        return buffer.getvalue()
+
+    try:
+        image_bytes = render_bytes(save_kwargs)
+    except OSError:
+        if save_kwargs.get("bbox_inches") != "tight":
+            raise
+        # Tight bboxes can fail for text-heavy Matplotlib artists on Windows.
+        fallback_kwargs = dict(save_kwargs)
+        fallback_kwargs["bbox_inches"] = None
+        image_bytes = render_bytes(fallback_kwargs)
+    path.write_bytes(image_bytes)
     return path
 
 

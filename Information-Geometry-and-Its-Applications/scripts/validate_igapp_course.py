@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
+import time
 from pathlib import Path
 
 import nbformat
@@ -13,6 +14,7 @@ from nbclient import NotebookClient
 import igapp_inventory as inventory
 
 BOOK_ROOT = Path(__file__).resolve().parents[1]
+ARTIFACT_ROOT = BOOK_ROOT / "artifacts"
 
 if sys.platform.startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -20,6 +22,29 @@ if sys.platform.startswith("win"):
 
 def expected_paths() -> list[Path]:
     return [BOOK_ROOT / entry["part"] / entry["folder"] / entry["notebook"] for entry in inventory.ENTRIES]
+
+
+def strip_trailing_whitespace(path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    cleaned = "\n".join(line.rstrip() for line in text.splitlines())
+    if text:
+        cleaned += "\n"
+    if cleaned != text:
+        for attempt in range(3):
+            try:
+                path.write_text(cleaned, encoding="utf-8")
+                break
+            except OSError:
+                if attempt == 2:
+                    return
+                time.sleep(0.2)
+
+
+def clean_html_artifacts() -> None:
+    if not ARTIFACT_ROOT.exists():
+        return
+    for path in ARTIFACT_ROOT.rglob("*.html"):
+        strip_trailing_whitespace(path)
 
 
 def notebook_paths(all_notebooks: bool, limit: int | None, include_indexes: bool) -> list[Path]:
@@ -47,8 +72,13 @@ def notebook_paths(all_notebooks: bool, limit: int | None, include_indexes: bool
 
 def execute_notebook(path: Path, timeout: int) -> None:
     nb = nbformat.read(path, as_version=4)
-    client = NotebookClient(nb, timeout=timeout, kernel_name="python3", resources={"metadata": {"path": str(path.parent)}})
-    client.execute()
+    client = NotebookClient(nb, timeout=timeout, kernel_name="python3", shutdown_kernel="immediate", resources={"metadata": {"path": str(path.parent)}})
+    try:
+        client.execute()
+    finally:
+        if getattr(client, "km", None) is not None:
+            client._cleanup_kernel()
+    clean_html_artifacts()
 
 
 def main() -> None:

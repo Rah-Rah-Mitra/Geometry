@@ -31,13 +31,13 @@ Extraction method: pdftotext table-of-contents extraction.
 | --- | --- | ---: | --- |
 | Chapter 1 | `chapter-01-euclidean-spaces` | 3-47 | Smooth functions, derivations, tangent vectors, exterior algebra, and differential forms on Euclidean space. |
 | Chapter 2 | `chapter-02-manifolds` | 48-85 | Topological and smooth manifolds, atlases, smooth maps, quotients, and projective examples. |
-| Chapter 3 | `chapter-03-the-tangent-space` | 86-142 | Tangent spaces, differentials, curves, immersions, submersions, and rank diagnostics. |
-| Chapter 4 | `chapter-04-lie-groups-and-lie-algebras` | 143-184 | Matrix groups, Lie algebras, exponential maps, actions, and invariant vector fields. |
-| Chapter 5 | `chapter-05-differential-forms` | 185-250 | Forms on manifolds, pullbacks, exterior derivative, interior product, and Lie derivative. |
-| Chapter 6 | `chapter-06-integration` | 251-318 | Orientations, integration of forms, partitions of unity, Stokes theorem, and densities. |
-| Chapter 7 | `chapter-07-de-rham-theory` | 319-339 | Closed and exact forms, Mayer-Vietoris, homotopy invariance, degree, and de Rham cohomology. |
+| Chapter 3 | `chapter-03-the-tangent-space` | 86-163 | Tangent spaces, differentials, submanifolds, rank theorems, tangent bundles, partitions of unity, vector fields, flows, Lie brackets, and pushforwards. |
+| Chapter 4 | `chapter-04-lie-groups-and-lie-algebras` | 164-189 | Matrix Lie groups, Lie subgroups, matrix exponential, determinant differential, left-invariant vector fields, Lie algebras, brackets, and Lie algebra homomorphisms. |
+| Chapter 5 | `chapter-05-differential-forms` | 190-235 | Forms on manifolds, cotangent bundle, pullbacks, wedge products, invariant forms, exterior derivative, restriction, Lie derivative, and interior multiplication. |
+| Chapter 6 | `chapter-06-integration` | 236-273 | Orientations, manifolds with boundary, boundary orientation, integration of forms, Stokes theorem, line integrals, and Green's theorem. |
+| Chapter 7 | `chapter-07-de-rham-theory` | 274-316 | De Rham cohomology, exact and Mayer-Vietoris sequences, homotopy invariance, cohomology computations, degree-style invariants, and cochain homotopies. |
 
-Backmatter notes: brief introduction 1-2; references 395-396; index 397-430.
+Backmatter notes: brief introduction 1-2; appendices A-E 317-359; selected solutions 361-385; list of notations 387-393; references 395-396; index 397-430. Canonical notebooks cover the seven main chapters.
 
 ## Notebook Shape
 

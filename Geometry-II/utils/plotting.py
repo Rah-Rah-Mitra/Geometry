@@ -105,4 +105,3 @@ def save_figure(fig, path: Path) -> Path:
     result = save_matplotlib(fig, path)
     plt.close(fig)
     return result
-

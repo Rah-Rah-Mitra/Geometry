@@ -30,8 +30,8 @@ GENERIC_NOTEBOOK_PHRASES = (
 REQUIRED_STANDALONE_MARKERS = {
     "source_coverage": ("source-coverage.json", "## Source Coverage"),
     "visual_storyboard": ("visual-storyboard.json", "## Visualization Storyboard"),
-    "library_routing": ("## Library Routing", "library routing"),
-    "final_sanity": ("final-sanity.json", "final_sanity"),
+    "library_routing": ("## Library Routing", "library routing", "library-routing.json"),
+    "final_sanity": ("final-sanity.json", "final_sanity", "## Final Sanity Checks"),
 }
 
 

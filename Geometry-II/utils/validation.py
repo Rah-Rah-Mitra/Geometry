@@ -74,4 +74,3 @@ def ensure_one_canonical_per_chapter(book_root: Path = BOOK_ROOT) -> list[str]:
         if not (folder / "00-index.ipynb").exists():
             findings.append(f"{folder.name} is missing 00-index.ipynb")
     return findings
-

@@ -166,4 +166,3 @@ def oriented_circle_vector(center: tuple[float, float], radius: float) -> np.nda
 def circle_orthogonality(c1: tuple[float, float], r1: float, c2: tuple[float, float], r2: float) -> float:
     center_gap = float(np.linalg.norm(np.asarray(c1, dtype=float) - np.asarray(c2, dtype=float)) ** 2)
     return center_gap - r1 * r1 - r2 * r2
-

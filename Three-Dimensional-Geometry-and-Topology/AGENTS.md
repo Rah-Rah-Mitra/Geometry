@@ -32,7 +32,7 @@ Extraction method: pdftotext table-of-contents extraction.
 | Chapter 1 | `chapter-01-what-is-a-manifold` | 3-42 | Polygons and surfaces, hyperbolic surfaces, totality of surfaces, and examples of three-manifolds. |
 | Chapter 2 | `chapter-02-hyperbolic-geometry-and-its-friends` | 43-108 | Negatively curved surfaces, inversive models, hyperboloid and Klein models, hyperbolic computations, isometries, complex coordinates, and three-sphere geometry. |
 | Chapter 3 | `chapter-03-geometric-manifolds` | 109-208 | Geometric structures, triangulations, gluings, developing maps, completeness, discrete groups, bundles, connections, contact structures, model geometries, PL manifolds, and smoothings. |
-| Chapter 4 | `chapter-04-the-structure-of-discrete-groups` | 209-229 | Small generators, Euclidean manifolds, crystallographic groups, elliptic three-manifolds, thick-thin decomposition, Teichmuller space, and fibered geometries. |
+| Chapter 4 | `chapter-04-the-structure-of-discrete-groups` | 209-288 | Small generators, Euclidean manifolds, crystallographic groups, elliptic three-manifolds, thick-thin decomposition, Teichmuller space, and fibered geometries. |
 
 Backmatter notes: glossary 289-294; bibliography 295-300; index 301-322.
 

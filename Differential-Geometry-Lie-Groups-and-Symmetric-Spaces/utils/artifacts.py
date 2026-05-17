@@ -63,12 +63,16 @@ def assert_artifacts(paths: Iterable[Path], *, min_bytes: int = 64) -> None:
 def display_artifact(path: Path, *, width: int = 760, height: int = 520) -> None:
     from IPython.display import HTML, Image, Markdown, display
     candidate = Path(path)
+    try:
+        link_path = candidate.resolve().relative_to(find_book_root(candidate.parent).resolve()).as_posix()
+    except Exception:
+        link_path = candidate.as_posix()
     suffix = candidate.suffix.lower()
     if suffix in {".png", ".jpg", ".jpeg"}:
         display(Image(filename=str(candidate), width=width))
     elif suffix in {".html", ".htm"}:
-        display(HTML(f'<iframe src="{candidate.as_posix()}" width="{width}" height="{height}"></iframe>'))
+        display(HTML(f'<iframe src="{link_path}" width="{width}" height="{height}"></iframe>'))
     elif suffix == ".json":
         display(Markdown(f"`{candidate.name}`"))
     else:
-        display(Markdown(f"[{candidate.name}]({candidate.as_posix()})"))
+        display(Markdown(f"[{candidate.name}]({link_path})"))

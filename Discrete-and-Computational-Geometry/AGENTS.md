@@ -36,7 +36,7 @@ Extraction method: pdftotext table-of-contents extraction.
 | Chapter 5 | `chapter-05-shape-recovery` | 136-169 | Medial axes, alpha shapes, reconstruction, and sampling conditions. |
 | Chapter 6 | `chapter-06-polygonal-chains` | 170-198 | Linkages, chains, configuration spaces, unfolding, and motion constraints. |
 | Chapter 7 | `chapter-07-polyhedra` | 199-252 | Polyhedral surfaces, Euler characteristic, unfolding, rigidity, and three-dimensional constructions. |
-| Appendix A | `appendix-a-computational-complexity` | 253-273 | Asymptotic analysis, reductions, algorithm classes, and geometric algorithm complexity. |
+| Appendix A | `appendix-a-computational-complexity` | 253-258 | Asymptotic analysis, reductions, algorithm classes, and geometric algorithm complexity. |
 
 Backmatter notes: index 259-281.
 

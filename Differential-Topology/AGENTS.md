@@ -34,7 +34,7 @@ Extraction method: pdftotext table-of-contents extraction.
 | Chapter 3 | `chapter-03-oriented-intersection-theory` | 94-150 | Orientation, oriented intersection number, Lefschetz fixed point theorem, vector fields, Poincare-Hopf, Hopf degree, and Euler characteristic. |
 | Chapter 4 | `chapter-04-integration-on-manifolds` | 151-201 | Exterior algebra, differential forms, integration, exterior derivative, form cohomology, Stokes theorem, mappings, and Gauss-Bonnet. |
 | Appendix 1 | `appendix-1-measure-zero-and-sard-s-theorem` | 202-207 | Measure-zero sets, Sard theorem proof scaffolding, and critical value diagnostics. |
-| Appendix 2 | `appendix-2-classification-of-compact-one-manifolds` | 208-228 | Compact one-manifold classification via interval and circle models. |
+| Appendix 2 | `appendix-2-classification-of-compact-one-manifolds` | 208-211 | Compact one-manifold classification via interval and circle models. |
 
 Backmatter notes: bibliography 212-216; index 217-236.
 

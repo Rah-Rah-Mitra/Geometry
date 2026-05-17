@@ -17,6 +17,15 @@ def fingerprints(paths: list[Path]) -> list[dict[str, object]]:
             if len(normalized.split()) >= 55:
                 by_hash.setdefault(hashlib.sha256(normalized.encode()).hexdigest(), []).append(relative(path))
     return [{"finding": "repeated long markdown cell", "paths": sorted(set(v)), "sha256": k} for k, v in by_hash.items() if len(set(v)) > 1]
+
+def code_fingerprints(paths: list[Path]) -> list[dict[str, object]]:
+    by_hash: dict[str, list[str]] = {}
+    for path in paths:
+        for source in code_sources(path):
+            normalized = " ".join(source.split())
+            if len(normalized) >= 250 or normalized.count(";") + normalized.count("\n") >= 5:
+                by_hash.setdefault(hashlib.sha256(normalized.encode()).hexdigest(), []).append(relative(path))
+    return [{"finding": "repeated long code cell", "paths": sorted(set(v)), "sha256": k} for k, v in by_hash.items() if len(set(v)) > 1]
 def main() -> None:
     p = argparse.ArgumentParser(); p.add_argument("--json", action="store_true"); p.add_argument("--min-words", type=int, default=900); p.add_argument("--min-code-cells", type=int, default=5); args = p.parse_args()
     notebooks = canonical_notebooks(BOOK_ROOT); items = [stats(path) for path in notebooks]; findings = []
@@ -25,7 +34,7 @@ def main() -> None:
         if item["code_cells"] < args.min_code_cells: findings.append({**item, "finding": "below code-cell threshold"})
         for marker in ["has_setup", "has_sanity", "has_takeaways", "has_storyboard", "has_lab", "has_source_span", "has_library_routing", "has_display_calls"]:
             if not item[marker]: findings.append({**item, "finding": f"missing required marker: {marker}"})
-    findings.extend({"path": "", "finding": f} for f in ensure_one_canonical_per_unit(BOOK_ROOT)); findings.extend(fingerprints(notebooks))
+    findings.extend({"path": "", "finding": f} for f in ensure_one_canonical_per_unit(BOOK_ROOT)); findings.extend(fingerprints(notebooks)); findings.extend(code_fingerprints(notebooks))
     report = {"notebook_count": len(items), "finding_count": len(findings), "findings": findings, "stats": items}
     print(json.dumps(report, indent=2) if args.json else f"Audited {len(items)} canonical notebooks; findings={len(findings)}")
     if findings: raise SystemExit(1)

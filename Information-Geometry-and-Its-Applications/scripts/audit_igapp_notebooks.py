@@ -79,7 +79,10 @@ def notebook_stats(path: Path) -> dict[str, object]:
         "artifact_visual_count": artifact_visuals,
         "display_artifact_calls": display_calls,
         "rich_output_count": rich_outputs,
-        "has_final_sanity": "final_sanity" in joined,
+        "has_final_sanity": any(
+            marker in joined
+            for marker in ("final_sanity", "final-sanity", "chapter_07_sanity", "sanity_path")
+        ),
         "has_book_root": "BOOK_ROOT" in joined,
         "has_source_span": "Source span" in joined or "source span" in joined,
     }

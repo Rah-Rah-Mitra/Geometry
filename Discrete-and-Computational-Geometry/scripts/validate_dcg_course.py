@@ -16,7 +16,7 @@ def execute(path: Path, timeout: int) -> None:
     NotebookClient(nb, timeout=timeout, kernel_name="python3", resources={"metadata": {"path": str(path.parent)}}).execute()
     nbformat.write(nb, path)
 def main() -> None:
-    p = argparse.ArgumentParser(); p.add_argument("--all", action="store_true"); p.add_argument("--limit", type=int, default=4); p.add_argument("--timeout", type=int, default=300); args = p.parse_args()
+    p = argparse.ArgumentParser(); p.add_argument("--all", action="store_true"); p.add_argument("--limit", type=int, default=None); p.add_argument("--timeout", type=int, default=300); args = p.parse_args()
     failures = []; paths = selected(args.all, args.limit)
     for i, path in enumerate(paths, 1):
         print(f"[{i}/{len(paths)}] {relative(path)}")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from html import escape
 from pathlib import Path
 from typing import Any
@@ -85,7 +86,28 @@ def save_plotly_html(
 ) -> Path:
     path = artifact_path(topic, slug, filename, root)
     figure.write_html(path, include_plotlyjs=include_plotlyjs, full_html=full_html, **kwargs)
+    strip_trailing_whitespace(path, strict=False)
     return path
+
+
+def strip_trailing_whitespace(path: str | Path, *, strict: bool = True) -> Path:
+    p = Path(path)
+    text = p.read_text(encoding="utf-8")
+    cleaned = "\n".join(line.rstrip() for line in text.splitlines())
+    if text:
+        cleaned += "\n"
+    if cleaned != text:
+        for attempt in range(3):
+            try:
+                p.write_text(cleaned, encoding="utf-8")
+                break
+            except OSError:
+                if attempt == 2:
+                    if strict:
+                        raise
+                    break
+                time.sleep(0.2)
+    return p
 
 
 def save_image(image: Any, topic: str, slug: str | None, filename: str = "image.png", *, root: str | Path = ARTIFACT_ROOT) -> Path:

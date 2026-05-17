@@ -34,7 +34,7 @@ Extraction method: pdftotext table-of-contents extraction.
 | Chapter 3 | `chapter-03-lie-groups` | 82-137 | Lie groups, Lie algebras, homomorphisms, subgroups, coverings, exponential map, adjoint representation, and homogeneous manifolds. |
 | Chapter 4 | `chapter-04-integration-on-manifolds` | 138-162 | Orientation, integration on manifolds, de Rham cohomology, and Stokes-style constructions. |
 | Chapter 5 | `chapter-05-sheaves-cohomology-and-the-de-rham-theorem` | 163-219 | Sheaves, cochain complexes, axiomatic sheaf cohomology, classical cohomology theories, de Rham theorem, products, and supports. |
-| Chapter 6 | `chapter-06-the-hodge-theorem` | 220-240 | Laplace-Beltrami operator, Hodge theorem, calculus estimates, elliptic operators, periodic reduction, and ellipticity. |
+| Chapter 6 | `chapter-06-the-hodge-theorem` | 220-259 | Laplace-Beltrami operator, Hodge theorem, calculus estimates, elliptic operators, periodic reduction, ellipticity, and exercises before the bibliography. |
 
 Backmatter notes: bibliography 260-263; notation index 264-266; index 267-283.
 

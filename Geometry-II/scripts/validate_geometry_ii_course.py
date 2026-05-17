@@ -47,8 +47,18 @@ def paths(smoke: bool, all_notebooks: bool, limit: int | None) -> list[Path]:
 
 def execute(path: Path, timeout: int) -> None:
     nb = nbformat.read(path, as_version=4)
-    client = NotebookClient(nb, timeout=timeout, kernel_name="python3", resources={"metadata": {"path": str(path.parent)}})
-    client.execute()
+    client = NotebookClient(
+        nb,
+        timeout=timeout,
+        kernel_name="python3",
+        shutdown_kernel="immediate",
+        resources={"metadata": {"path": str(path.parent)}},
+    )
+    try:
+        client.execute()
+    finally:
+        if getattr(client, "km", None) is not None:
+            client._cleanup_kernel()
 
 
 def main() -> None:

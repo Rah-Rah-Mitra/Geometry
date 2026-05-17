@@ -13,10 +13,15 @@ def selected(all_notebooks: bool, limit: int | None) -> list[Path]:
     return paths[:limit] if limit is not None else paths
 def execute(path: Path, timeout: int) -> None:
     nb = nbformat.read(path, as_version=4)
-    NotebookClient(nb, timeout=timeout, kernel_name="python3", resources={"metadata": {"path": str(path.parent)}}).execute()
+    client = NotebookClient(nb, timeout=timeout, kernel_name="python3", shutdown_kernel="immediate", resources={"metadata": {"path": str(path.parent)}})
+    try:
+        client.execute()
+    finally:
+        if getattr(client, "km", None) is not None:
+            client._cleanup_kernel()
     nbformat.write(nb, path)
 def main() -> None:
-    p = argparse.ArgumentParser(); p.add_argument("--all", action="store_true"); p.add_argument("--limit", type=int, default=4); p.add_argument("--timeout", type=int, default=300); args = p.parse_args()
+    p = argparse.ArgumentParser(); p.add_argument("--all", action="store_true"); p.add_argument("--limit", type=int, default=None); p.add_argument("--timeout", type=int, default=300); args = p.parse_args()
     failures = []; paths = selected(args.all, args.limit)
     for i, path in enumerate(paths, 1):
         print(f"[{i}/{len(paths)}] {relative(path)}")
