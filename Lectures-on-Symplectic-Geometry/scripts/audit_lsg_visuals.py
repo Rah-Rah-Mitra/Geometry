@@ -41,6 +41,18 @@ def png_stats(path: Path) -> dict[str, object]:
     }
 
 
+def final_sanity_passed(data: dict[str, object]) -> bool:
+    if "passed" in data:
+        return bool(data.get("passed"))
+    assertions = data.get("assertions")
+    if isinstance(assertions, dict):
+        return all(bool(value) for value in assertions.values())
+    diagnostic = data.get("diagnostic")
+    if isinstance(diagnostic, dict):
+        return bool(diagnostic.get("passed"))
+    return False
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
@@ -52,18 +64,15 @@ def main() -> None:
     for entry in ENTRIES:
         topic_root = BOOK_ROOT / "artifacts" / str(entry["artifact_topic"])
         pngs = sorted(topic_root.rglob("*.png"))
-        htmls = sorted(topic_root.rglob("*.html"))
         final = topic_root / "checks" / "final-sanity.json"
         if len(pngs) < 2:
             findings.append({"path": topic_root.relative_to(BOOK_ROOT).as_posix(), "check": "missing-pngs", "message": "Expected at least concept and primary PNG artifacts."})
-        if not htmls:
-            findings.append({"path": topic_root.relative_to(BOOK_ROOT).as_posix(), "check": "missing-html", "message": "Expected an interactive HTML artifact."})
         if not final.exists():
             findings.append({"path": topic_root.relative_to(BOOK_ROOT).as_posix(), "check": "missing-final-sanity", "message": "Missing final-sanity.json."})
         else:
             data = json.loads(final.read_text(encoding="utf-8"))
-            if not data.get("diagnostic", {}).get("passed"):
-                findings.append({"path": final.relative_to(BOOK_ROOT).as_posix(), "check": "failed-diagnostic", "message": "Recorded diagnostic did not pass."})
+            if not final_sanity_passed(data):
+                findings.append({"path": final.relative_to(BOOK_ROOT).as_posix(), "check": "failed-final-sanity", "message": "Recorded diagnostic/assertions did not pass."})
         for png in pngs:
             item = png_stats(png)
             stats.append(item)

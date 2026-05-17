@@ -16,7 +16,8 @@ if str(BOOK_ROOT) not in sys.path:
 
 from utils.validation import artifact_topics, canonical_notebooks, code_sources, image_stats, relative  # noqa: E402
 
-VISUAL_SAVE_CALLS = {"save_matplotlib", "save_plotly_html"}
+VISUAL_SAVE_CALLS = {"save_matplotlib", "save_plotly_html", "savefig", "write_html"}
+GENERIC_ARTIFACT_NAMES = {"primary-visual.png", "interactive-lab.html"}
 
 
 def call_name(node: ast.Call) -> str | None:
@@ -61,6 +62,7 @@ def main() -> None:
     parser.add_argument("--min-width", type=int, default=64)
     parser.add_argument("--min-height", type=int, default=64)
     parser.add_argument("--blank-stddev", type=float, default=1.0)
+    parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
 
     findings = []
@@ -80,6 +82,15 @@ def main() -> None:
         pngs = sorted(topic_root.rglob("*.png")) if topic_root.exists() else []
         if not pngs:
             findings.append({"check": "missing-topic-png", "path": relative(topic_root, BOOK_ROOT)})
+        if args.strict:
+            for generic_name in GENERIC_ARTIFACT_NAMES:
+                generic_path = topic_root / ("figures" if generic_name.endswith(".png") else "html") / generic_name
+                if generic_path.exists():
+                    findings.append({"check": "generic-artifact-name", "path": relative(generic_path, BOOK_ROOT)})
+            if not list((topic_root / "checks").glob("*source-coverage.json")):
+                findings.append({"check": "missing-source-coverage", "path": relative(topic_root / "checks", BOOK_ROOT)})
+            if not (topic_root / "checks" / "final-sanity.json").exists():
+                findings.append({"check": "missing-final-sanity", "path": relative(topic_root / "checks", BOOK_ROOT)})
         for png in pngs:
             item = image_stats(png)
             item["sha256"] = sha256(png)
@@ -115,4 +126,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

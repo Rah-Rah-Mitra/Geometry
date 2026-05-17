@@ -1,0 +1,74 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Riemann-Hurwitz Branching Explorer</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; color: #1f2933; }
+  .wrap { max-width: 820px; }
+  svg { width: 100%; height: 300px; border: 1px solid #ccd4dd; background: #fbfcfe; }
+  .formula { font-size: 18px; margin: 14px 0; }
+  input { width: 360px; }
+  .branch { fill: #b4493a; }
+  .sheet { stroke: #0c735f; stroke-width: 3; fill: none; }
+  .base { stroke: #333; stroke-width: 2; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Hyperelliptic Riemann-Hurwitz Explorer</h1>
+<label>genus g: <input id="g" type="range" min="1" max="8" value="3" step="1" /></label>
+<span id="gval"></span>
+<div class="formula" id="formula"></div>
+<svg id="svg" viewBox="0 0 820 300" role="img" aria-label="two sheet branch cover"></svg>
+<p>The check is 2g-2 = 2(-2) + (2g+2). The branch count grows by two when the genus grows by one.</p>
+</div>
+<script>
+const slider = document.getElementById('g');
+const svg = document.getElementById('svg');
+const formula = document.getElementById('formula');
+const gval = document.getElementById('gval');
+function path(y0, amp) {
+  let d = '';
+  for (let i = 0; i <= 160; i++) {
+    const x = 40 + i * (740 / 160);
+    const y = y0 + amp * Math.sin(i / 160 * Math.PI * 5);
+    d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+  }
+  return d;
+}
+function draw() {
+  const g = Number(slider.value);
+  const b = 2 * g + 2;
+  gval.textContent = g;
+  formula.textContent = `branch points = ${b}; 2g-2 = ${2*g-2}; right side = -4 + ${b} = ${-4+b}`;
+  svg.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+  for (const d of [path(90, 14), path(205, -14)]) {
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('class', 'sheet');
+    svg.appendChild(p);
+  }
+  const base = document.createElementNS(ns, 'line');
+  base.setAttribute('x1', 40); base.setAttribute('x2', 780);
+  base.setAttribute('y1', 148); base.setAttribute('y2', 148);
+  base.setAttribute('class', 'base'); svg.appendChild(base);
+  for (let k = 0; k < b; k++) {
+    const x = 70 + k * (680 / Math.max(1, b - 1));
+    const branch = document.createElementNS(ns, 'circle');
+    branch.setAttribute('cx', x); branch.setAttribute('cy', 148); branch.setAttribute('r', 6);
+    branch.setAttribute('class', 'branch'); svg.appendChild(branch);
+    const join = document.createElementNS(ns, 'line');
+    join.setAttribute('x1', x); join.setAttribute('x2', x);
+    join.setAttribute('y1', 103); join.setAttribute('y2', 193);
+    join.setAttribute('stroke', '#b4493a'); join.setAttribute('stroke-width', '1.2');
+    join.setAttribute('opacity', '0.65'); svg.appendChild(join);
+  }
+}
+slider.addEventListener('input', draw);
+draw();
+</script>
+</body>
+</html>

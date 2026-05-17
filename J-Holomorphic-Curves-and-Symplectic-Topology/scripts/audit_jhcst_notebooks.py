@@ -1,4 +1,4 @@
-"""Audit JHCST notebooks for standalone depth and structure."""
+"""Audit JHCST notebooks for standalone, source-grounded teaching quality."""
 
 from __future__ import annotations
 
@@ -14,6 +14,37 @@ if str(BOOK_ROOT) not in sys.path:
 from utils.validation import discover_canonical_notebooks, notebook_stats  # noqa: E402
 
 
+def failure_reasons(item: dict[str, object], min_words: int, min_code_cells: int) -> list[str]:
+    reasons: list[str] = []
+    if int(item["markdown_words"]) < min_words:
+        reasons.append(f"markdown_words<{min_words}")
+    if int(item["code_cells"]) < min_code_cells:
+        reasons.append(f"code_cells<{min_code_cells}")
+    if int(item["display_artifact_calls"]) < 2:
+        reasons.append("display_artifact_calls<2")
+    if int(item["visual_generation_calls"]) < 2:
+        reasons.append("visual_generation_calls<2")
+    if int(item["assert_artifact_calls"]) < 3:
+        reasons.append("assert_artifact_calls<3")
+    if not bool(item["has_applied_lab"]):
+        reasons.append("missing_applied_lab")
+    if not bool(item["has_takeaways"]):
+        reasons.append("missing_takeaways")
+    missing_markers = [
+        name
+        for name, present in dict(item.get("required_markers", {})).items()
+        if not bool(present)
+    ]
+    if missing_markers:
+        reasons.append("missing_markers:" + ",".join(missing_markers))
+    generic_hits = list(item.get("generic_phrase_hits", []))
+    if generic_hits:
+        reasons.append(f"generic_scaffold_phrases:{len(generic_hits)}")
+    if item["stale_paths"]:
+        reasons.append("stale_paths")
+    return reasons
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", action="store_true")
@@ -22,18 +53,13 @@ def main() -> None:
     args = parser.parse_args()
 
     stats = [notebook_stats(path, BOOK_ROOT) for path in discover_canonical_notebooks(BOOK_ROOT)]
-    failing = [
-        item
-        for item in stats
-        if item["markdown_words"] < args.min_words
-        or item["code_cells"] < args.min_code_cells
-        or item["display_artifact_calls"] < 2
-        or item["visual_generation_calls"] < 2
-        or item["assert_artifact_calls"] < 1
-        or not item["has_applied_lab"]
-        or not item["has_takeaways"]
-        or item["stale_paths"]
-    ]
+    failing = []
+    for item in stats:
+        reasons = failure_reasons(item, args.min_words, args.min_code_cells)
+        if reasons:
+            item = dict(item)
+            item["failure_reasons"] = reasons
+            failing.append(item)
     report = {"notebook_count": len(stats), "failing_count": len(failing), "failing": failing, "stats": stats}
     if args.json:
         print(json.dumps(report, indent=2))
@@ -45,7 +71,7 @@ def main() -> None:
             print(
                 f"- {item['path']}: {item['markdown_words']} words, {item['code_cells']} code cells, "
                 f"display calls={item['display_artifact_calls']}, visual generation={item['visual_generation_calls']}, "
-                f"assert calls={item['assert_artifact_calls']}, stale_paths={item['stale_paths']}"
+                f"assert calls={item['assert_artifact_calls']}, reasons={item['failure_reasons']}"
             )
         raise SystemExit(1)
     print("All canonical notebooks meet the configured standalone structure thresholds.")

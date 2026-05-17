@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,20 @@ STALE_PATH_PATTERNS = (
     "D:\\Geometry\\utils",
     "/mnt/d/Geometry/utils",
 )
+GENERIC_NOTEBOOK_PHRASES = (
+    "The graph below is a compact proof-state diagram.",
+    "This section builds a small model for one core mechanism",
+    "The ledger records the chapter vocabulary as computational objects",
+    "The intended workflow is to change one parameter",
+    "If the visual impression and the invariant check disagree",
+    "The final cell asserts that the generated figures, ledgers, and JSON checks exist",
+)
+REQUIRED_STANDALONE_MARKERS = {
+    "source_coverage": ("source-coverage.json", "## Source Coverage"),
+    "visual_storyboard": ("visual-storyboard.json", "## Visualization Storyboard"),
+    "library_routing": ("## Library Routing", "library routing"),
+    "final_sanity": ("final-sanity.json", "final_sanity"),
+}
 
 
 def discover_canonical_notebooks(book_root: Path = BOOK_ROOT) -> list[Path]:
@@ -34,6 +49,11 @@ def notebook_stats(path: Path, book_root: Path = BOOK_ROOT) -> dict[str, Any]:
     markdown = ["".join(cell.get("source", "")) for cell in nb.cells if cell.cell_type == "markdown"]
     code = ["".join(cell.get("source", "")) for cell in nb.cells if cell.cell_type == "code"]
     source = "\n".join(markdown + code)
+    normalized_markdown_hashes = [
+        hashlib.sha256(" ".join(text.lower().split()).encode("utf-8")).hexdigest()[:16]
+        for text in markdown
+        if text.strip()
+    ]
     direct_visual_calls = sum(
         source.count(token)
         for token in (
@@ -56,6 +76,12 @@ def notebook_stats(path: Path, book_root: Path = BOOK_ROOT) -> dict[str, Any]:
         "assert_artifact_calls": source.count("assert_artifact("),
         "has_applied_lab": "## Applied Lab" in source,
         "has_takeaways": "## Takeaways" in source,
+        "generic_phrase_hits": [phrase for phrase in GENERIC_NOTEBOOK_PHRASES if phrase in source],
+        "required_markers": {
+            name: any(marker in source for marker in markers)
+            for name, markers in REQUIRED_STANDALONE_MARKERS.items()
+        },
+        "markdown_hashes": normalized_markdown_hashes,
         "stale_paths": [pattern for pattern in STALE_PATH_PATTERNS if pattern in source],
     }
 

@@ -1,0 +1,71 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Constant curvature normal-coordinate lab</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 24px; color: #1f2933; }
+  .wrap { max-width: 920px; }
+  canvas { width: 860px; height: 420px; border: 1px solid #cbd5df; background: #fff; }
+  .row { display: flex; gap: 18px; align-items: center; margin: 12px 0 18px; }
+  input[type=range] { width: 360px; }
+  .readout { font-variant-numeric: tabular-nums; font-weight: 650; }
+  .note { color: #52606d; max-width: 820px; line-height: 1.45; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Normal-coordinate metric lab</h1>
+  <div class="row">
+    <label for="k">curvature k</label>
+    <input id="k" type="range" min="-1.5" max="1.5" value="0" step="0.01" />
+    <span class="readout" id="readout"></span>
+  </div>
+  <canvas id="plot" width="860" height="420"></canvas>
+  <p class="note">The blue curve is S_k(r), the coefficient in ds^2 = dr^2 + S_k(r)^2 dtheta^2. The gray diagonal is the Euclidean value r. Positive curvature pulls the curve below r before the first conjugate scale; negative curvature pushes it above r. The side readout uses two radial sides a=b=0.9 and angle 1.1 radians.</p>
+</div>
+<script>
+function S(k, r) {
+  if (Math.abs(k) < 1e-9) return r;
+  if (k > 0) { const q = Math.sqrt(k); return Math.sin(q*r)/q; }
+  const q = Math.sqrt(-k); return Math.sinh(q*r)/q;
+}
+function modelSide(k, a, b, theta) {
+  if (Math.abs(k) < 1e-9) return Math.sqrt(a*a + b*b - 2*a*b*Math.cos(theta));
+  if (k > 0) {
+    const q = Math.sqrt(k);
+    const z = Math.cos(q*a)*Math.cos(q*b) + Math.sin(q*a)*Math.sin(q*b)*Math.cos(theta);
+    return Math.acos(Math.max(-1, Math.min(1, z))) / q;
+  }
+  const q = Math.sqrt(-k);
+  const z = Math.cosh(q*a)*Math.cosh(q*b) - Math.sinh(q*a)*Math.sinh(q*b)*Math.cos(theta);
+  return Math.acosh(Math.max(1, z)) / q;
+}
+function draw() {
+  const slider = document.getElementById('k');
+  const k = Number(slider.value);
+  const side = modelSide(k, 0.9, 0.9, 1.1);
+  document.getElementById('readout').textContent = `k=${k.toFixed(2)}; model side=${side.toFixed(4)}`;
+  const canvas = document.getElementById('plot');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const left=58, right=28, top=24, bottom=46;
+  const W=canvas.width-left-right, H=canvas.height-top-bottom;
+  const rMax = 2.6, yMax = 4.2;
+  function px(r) { return left + W*r/rMax; }
+  function py(y) { return top + H - H*y/yMax; }
+  ctx.strokeStyle = '#d0d7de'; ctx.lineWidth = 1;
+  for (let i=0; i<=6; i++) { const yy=i*yMax/6; ctx.beginPath(); ctx.moveTo(left, py(yy)); ctx.lineTo(left+W, py(yy)); ctx.stroke(); }
+  for (let i=0; i<=6; i++) { const rr=i*rMax/6; ctx.beginPath(); ctx.moveTo(px(rr), top); ctx.lineTo(px(rr), top+H); ctx.stroke(); }
+  ctx.strokeStyle = '#808891'; ctx.setLineDash([7,5]); ctx.beginPath(); ctx.moveTo(px(0), py(0)); ctx.lineTo(px(rMax), py(rMax)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = '#1f77b4'; ctx.lineWidth = 3; ctx.beginPath();
+  for (let i=0; i<=360; i++) { const r=i*rMax/360; const y=S(k,r); if (i===0) ctx.moveTo(px(r),py(y)); else ctx.lineTo(px(r),py(y)); }
+  ctx.stroke();
+  ctx.fillStyle = '#1f2933'; ctx.font = '14px system-ui'; ctx.fillText('r', left+W-8, top+H+30); ctx.fillText('S_k(r)', 8, top+16);
+}
+document.getElementById('k').addEventListener('input', draw);
+draw();
+</script>
+</body>
+</html>

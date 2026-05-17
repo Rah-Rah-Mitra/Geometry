@@ -28,10 +28,18 @@ SMOKE_NAMES = {
     "11-quantum-cohomology.ipynb",
     "e-singularities-and-intersections.ipynb",
 }
+INDEX_NAMES = {"00-index.ipynb", "00-book-index.ipynb"}
 
 
-def notebook_paths(all_notebooks: bool, smoke: bool, limit: int | None) -> list[Path]:
+def notebook_paths(all_notebooks: bool, smoke: bool, include_indexes: bool, limit: int | None) -> list[Path]:
     paths = discover_canonical_notebooks(BOOK_ROOT)
+    if include_indexes:
+        index_paths = [
+            path
+            for path in sorted(BOOK_ROOT.rglob("*.ipynb"))
+            if path.name in INDEX_NAMES and BOOK_ROOT / "artifacts" not in path.parents
+        ]
+        paths = index_paths + paths
     if smoke:
         paths = [path for path in paths if path.name in SMOKE_NAMES]
     if limit is not None:
@@ -39,7 +47,7 @@ def notebook_paths(all_notebooks: bool, smoke: bool, limit: int | None) -> list[
     return paths
 
 
-def execute_notebook(path: Path, timeout: int) -> None:
+def execute_notebook(path: Path, timeout: int, write_executed: bool = False) -> None:
     nb = nbformat.read(path, as_version=4)
     client = NotebookClient(
         nb,
@@ -48,25 +56,28 @@ def execute_notebook(path: Path, timeout: int) -> None:
         resources={"metadata": {"path": str(path.parent)}},
     )
     client.execute()
-    nbformat.write(nb, path)
+    if write_executed:
+        nbformat.write(nb, path)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--include-indexes", action="store_true")
+    parser.add_argument("--write-executed", action="store_true")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--timeout", type=int, default=180)
     args = parser.parse_args()
 
-    paths = notebook_paths(args.all, args.smoke, args.limit)
+    paths = notebook_paths(args.all, args.smoke, args.include_indexes, args.limit)
     if not paths:
         raise SystemExit("no notebooks found")
     failures: list[tuple[Path, str]] = []
     for index, path in enumerate(paths, start=1):
         print(f"[{index}/{len(paths)}] {path.relative_to(BOOK_ROOT)}")
         try:
-            execute_notebook(path, args.timeout)
+            execute_notebook(path, args.timeout, write_executed=args.write_executed)
         except Exception as exc:
             failures.append((path, repr(exc)))
     if failures:

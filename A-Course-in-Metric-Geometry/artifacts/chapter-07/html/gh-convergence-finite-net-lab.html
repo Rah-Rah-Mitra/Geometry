@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Chapter 7 GH finite-net lab</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:18px;background:#f7f7f4;color:#1f2933}main{max-width:900px;margin:auto}canvas{background:white;border:1px solid #d4d4d0}label{display:block;margin:12px 0 6px}.row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}.panel{background:white;border:1px solid #ddd;padding:12px;border-radius:6px}.metric{font-family:Consolas,monospace;white-space:pre;font-size:12px}
+</style></head>
+<body><main>
+<h1>Finite nets on a circle</h1>
+<div class="row"><section class="panel"><canvas id="scene" width="420" height="420"></canvas><label>sample points: <span id="nOut">12</span></label><input id="n" type="range" min="4" max="48" step="1" value="12"></section><section class="panel"><p>Move the slider to watch an epsilon-net become denser. For the unit circle with intrinsic distance, equally spaced points give a simple upper bound <strong>pi/n</strong> for the Hausdorff distance from the circle to the net, hence for the Gromov-Hausdorff distance.</p><p id="bound"></p><div id="matrix" class="metric"></div></section></div>
+</main><script>
+const canvas=document.getElementById('scene'), ctx=canvas.getContext('2d'), slider=document.getElementById('n'), out=document.getElementById('nOut'), bound=document.getElementById('bound'), matrix=document.getElementById('matrix');
+function arcDist(i,j,n){let d=Math.abs(i-j)*2*Math.PI/n; return Math.min(d,2*Math.PI-d);}
+function draw(){const n=+slider.value; out.textContent=n; ctx.clearRect(0,0,420,420); ctx.save(); ctx.translate(210,210); ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,150,0,2*Math.PI); ctx.stroke(); ctx.fillStyle='#4C78A8'; for(let i=0;i<n;i++){let t=2*Math.PI*i/n; ctx.beginPath(); ctx.arc(150*Math.cos(t),150*Math.sin(t),4,0,2*Math.PI); ctx.fill();} ctx.strokeStyle='#E45756'; ctx.lineWidth=3; let gap=2*Math.PI/n; ctx.beginPath(); ctx.arc(0,0,170,-gap/2,gap/2); ctx.stroke(); ctx.restore(); bound.textContent='epsilon-net radius <= pi/n = '+(Math.PI/n).toFixed(4)+'. Diameter stays pi while the net radius tends to zero.'; let k=Math.min(n,6), txt='first '+k+' x '+k+' intrinsic distance matrix (arc length)\n'; for(let i=0;i<k;i++){let row=[]; for(let j=0;j<k;j++) row.push(arcDist(i,j,n).toFixed(2).padStart(5)); txt+=row.join(' ')+'\n';} matrix.textContent=txt;}
+slider.addEventListener('input', draw); draw();
+</script></body></html>

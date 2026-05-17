@@ -31,7 +31,16 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "chapter-01",
         "printed_span": "1-59",
         "pdf_span": "16-74",
-        "sections": "Affine and projective varieties; morphisms; rational maps; nonsingularity; curves; intersections",
+        "sections": [
+            {"number": "1", "title": "Affine Varieties", "printed_start": 1, "pdf_start": 16},
+            {"number": "2", "title": "Projective Varieties", "printed_start": 8, "pdf_start": 23},
+            {"number": "3", "title": "Morphisms", "printed_start": 14, "pdf_start": 29},
+            {"number": "4", "title": "Rational Maps", "printed_start": 24, "pdf_start": 39},
+            {"number": "5", "title": "Nonsingular Varieties", "printed_start": 31, "pdf_start": 46},
+            {"number": "6", "title": "Nonsingular Curves", "printed_start": 39, "pdf_start": 54},
+            {"number": "7", "title": "Intersections in Projective Space", "printed_start": 47, "pdf_start": 62},
+            {"number": "8", "title": "What Is Algebraic Geometry?", "printed_start": 55, "pdf_start": 70},
+        ],
         "focus": "Classical varieties as solution sets, the algebra-geometry dictionary, Zariski topology, rational maps, blowups, tangent spaces, and degree.",
         "visuals": [
             "Zariski topology versus Euclidean intuition through finite closed sets and dense opens",
@@ -58,7 +67,17 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "chapter-02",
         "printed_span": "60-200",
         "pdf_span": "75-215",
-        "sections": "Sheaves; schemes; morphisms; sheaves of modules; divisors; projective morphisms; differentials; formal schemes",
+        "sections": [
+            {"number": "1", "title": "Sheaves", "printed_start": 60, "pdf_start": 75},
+            {"number": "2", "title": "Schemes", "printed_start": 69, "pdf_start": 84},
+            {"number": "3", "title": "First Properties of Schemes", "printed_start": 82, "pdf_start": 97},
+            {"number": "4", "title": "Separated and Proper Morphisms", "printed_start": 95, "pdf_start": 110},
+            {"number": "5", "title": "Sheaves of Modules", "printed_start": 108, "pdf_start": 123},
+            {"number": "6", "title": "Divisors", "printed_start": 129, "pdf_start": 144},
+            {"number": "7", "title": "Projective Morphisms", "printed_start": 149, "pdf_start": 164},
+            {"number": "8", "title": "Differentials", "printed_start": 172, "pdf_start": 187},
+            {"number": "9", "title": "Formal Schemes", "printed_start": 190, "pdf_start": 205},
+        ],
         "focus": "Schemes as locally ringed spaces assembled from affine spectra, with nilpotents, generic points, sheaves, morphisms, divisors, differentials, and formal neighborhoods.",
         "visuals": [
             "Spec poset with generic points and specialization arrows",
@@ -85,7 +104,20 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "chapter-03",
         "printed_span": "201-292",
         "pdf_span": "216-307",
-        "sections": "Derived functors; sheaf cohomology; affine/projective computations; Ext; Serre duality; direct images; flat and smooth morphisms",
+        "sections": [
+            {"number": "1", "title": "Derived Functors", "printed_start": 202, "pdf_start": 217},
+            {"number": "2", "title": "Cohomology of Sheaves", "printed_start": 206, "pdf_start": 221},
+            {"number": "3", "title": "Cohomology of a Noetherian Affine Scheme", "printed_start": 213, "pdf_start": 228},
+            {"number": "4", "title": "Cech Cohomology", "printed_start": 218, "pdf_start": 233},
+            {"number": "5", "title": "The Cohomology of Projective Space", "printed_start": 225, "pdf_start": 240},
+            {"number": "6", "title": "Ext Groups and Sheaves", "printed_start": 233, "pdf_start": 248},
+            {"number": "7", "title": "The Serre Duality Theorem", "printed_start": 239, "pdf_start": 254},
+            {"number": "8", "title": "Higher Direct Images of Sheaves", "printed_start": 250, "pdf_start": 265},
+            {"number": "9", "title": "Flat Morphisms", "printed_start": 253, "pdf_start": 268},
+            {"number": "10", "title": "Smooth Morphisms", "printed_start": 268, "pdf_start": 283},
+            {"number": "11", "title": "The Theorem on Formal Functions", "printed_start": 276, "pdf_start": 291},
+            {"number": "12", "title": "The Semicontinuity Theorem", "printed_start": 281, "pdf_start": 296},
+        ],
         "focus": "Cohomology as a measurement of failed gluing, then as a computational engine for projective space, duality, direct images, semicontinuity, flatness, and smoothness.",
         "visuals": [
             "Cech cover graph with cochains and coboundary arrows",
@@ -112,7 +144,14 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "chapter-04",
         "printed_span": "293-355",
         "pdf_span": "308-370",
-        "sections": "Riemann-Roch; Hurwitz; embeddings; elliptic curves; canonical embeddings; classification in projective space",
+        "sections": [
+            {"number": "1", "title": "Riemann-Roch Theorem", "printed_start": 294, "pdf_start": 309},
+            {"number": "2", "title": "Hurwitz's Theorem", "printed_start": 299, "pdf_start": 314},
+            {"number": "3", "title": "Embeddings in Projective Space", "printed_start": 307, "pdf_start": 322},
+            {"number": "4", "title": "Elliptic Curves", "printed_start": 316, "pdf_start": 331},
+            {"number": "5", "title": "The Canonical Embedding", "printed_start": 340, "pdf_start": 355},
+            {"number": "6", "title": "Classification of Curves in P^3", "printed_start": 349, "pdf_start": 364},
+        ],
         "focus": "Nonsingular projective curves through divisors, Riemann-Roch, finite maps, ramification, elliptic group law, canonical maps, and projective models.",
         "visuals": [
             "Divisor abacus balancing degree, genus, and sections",
@@ -139,7 +178,14 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "chapter-05",
         "printed_span": "356-423",
         "pdf_span": "371-438",
-        "sections": "Geometry on a surface; ruled surfaces; monoidal transformations; cubic surfaces; birational transformations; classification",
+        "sections": [
+            {"number": "1", "title": "Geometry on a Surface", "printed_start": 357, "pdf_start": 372},
+            {"number": "2", "title": "Ruled Surfaces", "printed_start": 369, "pdf_start": 384},
+            {"number": "3", "title": "Monoidal Transformations", "printed_start": 386, "pdf_start": 401},
+            {"number": "4", "title": "The Cubic Surface in P^3", "printed_start": 395, "pdf_start": 410},
+            {"number": "5", "title": "Birational Transformations", "printed_start": 409, "pdf_start": 424},
+            {"number": "6", "title": "Classification of Surfaces", "printed_start": 421, "pdf_start": 436},
+        ],
         "focus": "Nonsingular projective surfaces through intersection forms, ruled surfaces, blowups, cubic-surface incidence, birational transformations, and classification invariants.",
         "visuals": [
             "Intersection-form grid for divisor classes on a blowup",
@@ -166,7 +212,13 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "appendix-a",
         "printed_span": "424-437",
         "pdf_span": "439-452",
-        "sections": "Chow rings; Chern classes; Riemann-Roch; complements",
+        "sections": [
+            {"number": "1", "title": "Intersection Theory", "printed_start": 425, "pdf_start": 440},
+            {"number": "2", "title": "Properties of the Chow Ring", "printed_start": 428, "pdf_start": 443},
+            {"number": "3", "title": "Chern Classes", "printed_start": 429, "pdf_start": 444},
+            {"number": "4", "title": "The Riemann-Roch Theorem", "printed_start": 431, "pdf_start": 446},
+            {"number": "5", "title": "Complements and Generalizations", "printed_start": 434, "pdf_start": 449},
+        ],
         "focus": "Intersection theory beyond surfaces: cycles, rational equivalence, Chow rings, Chern classes, and Riemann-Roch as a structured accounting system.",
         "visuals": [
             "Cycle dimension ladder and push-pull bookkeeping",
@@ -192,7 +244,13 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "appendix-b",
         "printed_span": "438-448",
         "pdf_span": "453-463",
-        "sections": "Analytic spaces; GAGA comparison; algebraicity criteria; Kahler manifolds; exponential sequence",
+        "sections": [
+            {"number": "1", "title": "The Associated Complex Analytic Space", "printed_start": 438, "pdf_start": 453},
+            {"number": "2", "title": "Comparison of the Algebraic and Analytic Categories", "printed_start": 440, "pdf_start": 455},
+            {"number": "3", "title": "When is a Compact Complex Manifold Algebraic?", "printed_start": 441, "pdf_start": 456},
+            {"number": "4", "title": "Kahler Manifolds", "printed_start": 445, "pdf_start": 460},
+            {"number": "5", "title": "The Exponential Sequence", "printed_start": 446, "pdf_start": 461},
+        ],
         "focus": "The bridge from algebraic varieties over the complex numbers to analytic spaces, comparison theorems, Kahler geometry, and the exponential sequence.",
         "visuals": [
             "Algebraic-to-analytic comparison ladder",
@@ -218,7 +276,12 @@ ENTRIES: list[dict[str, Any]] = [
         "artifact": "appendix-c",
         "printed_span": "449-458",
         "pdf_span": "464-473",
-        "sections": "Zeta functions; history; l-adic cohomology; cohomological interpretation",
+        "sections": [
+            {"number": "1", "title": "The Zeta Function and the Weil Conjectures", "printed_start": 449, "pdf_start": 464},
+            {"number": "2", "title": "History of Work on the Weil Conjectures", "printed_start": 451, "pdf_start": 466},
+            {"number": "3", "title": "The l-adic Cohomology", "printed_start": 453, "pdf_start": 468},
+            {"number": "4", "title": "Cohomological Interpretation of the Weil Conjectures", "printed_start": 454, "pdf_start": 469},
+        ],
         "focus": "Finite-field point counting, zeta functions, cohomological explanations, Frobenius eigenvalues, and the shape of the Weil conjectures.",
         "visuals": [
             "Finite-field point-count table for projective examples",
@@ -280,4 +343,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

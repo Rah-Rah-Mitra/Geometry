@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lecture 24 reduced Hamiltonian lab</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; padding: 18px; color: #263238; background: #fbfbf8; }
+  .wrap { display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: start; }
+  label { display:block; font-size: 13px; margin-bottom: 10px; }
+  input { width: 190px; }
+  canvas { border: 1px solid #9aa7ad; background: white; max-width: 100%; }
+  .metric { font-size: 13px; line-height: 1.45; margin-top: 12px; }
+  code { background: #eef3f2; padding: 1px 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section>
+    <label>moment level c<br><input id="level" type="range" min="-2" max="2" step="0.05" value="0.90"></label>
+    <div class="metric" id="readout"></div>
+    <p class="metric">Contours plot <code>H_red(x,p;c)=0.5(p^2+x^2)+0.18c^2+0.22cx</code>. The full trajectory still needs the suppressed coordinate from <code>dx_n/dt = partial H / partial xi_n</code>.</p>
+  </section>
+  <canvas id="plot" width="620" height="420"></canvas>
+</div>
+<script>
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+const slider = document.getElementById('level');
+const readout = document.getElementById('readout');
+const W = canvas.width, H = canvas.height;
+function sx(x){ return W*(x+2.6)/5.2; }
+function sy(y){ return H*(1-(y+2.1)/4.2); }
+function draw(){
+  const c = parseFloat(slider.value);
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle = '#d9e1df'; ctx.lineWidth = 1;
+  for(let v=-2; v<=2; v+=1){ ctx.beginPath(); ctx.moveTo(sx(-2.5), sy(v)); ctx.lineTo(sx(2.5), sy(v)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx(v), sy(-2)); ctx.lineTo(sx(v), sy(2)); ctx.stroke(); }
+  const levels = [0.35,0.65,1.0,1.4,1.9,2.5,3.2];
+  for(const L of levels){
+    ctx.strokeStyle = L < 1.1 ? '#2b7a78' : (L < 2.1 ? '#6d597a' : '#d9822b');
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    let first=true;
+    for(let t=0; t<=Math.PI*2+0.02; t+=0.02){
+      const center = -0.22*c;
+      const radius2 = 2*(L-0.18*c*c)+0.0484*c*c;
+      if(radius2 <= 0) continue;
+      const r = Math.sqrt(radius2);
+      const x = center + r*Math.cos(t);
+      const p = r*Math.sin(t);
+      if(first){ ctx.moveTo(sx(x), sy(p)); first=false; } else { ctx.lineTo(sx(x), sy(p)); }
+    }
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#25333a';
+  ctx.beginPath(); ctx.arc(sx(-0.22*c), sy(0), 5, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#42525a'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(sx(-2.5), sy(0)); ctx.lineTo(sx(2.5), sy(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sx(0), sy(-2)); ctx.lineTo(sx(0), sy(2)); ctx.stroke();
+  readout.innerHTML = `c = ${c.toFixed(2)}<br>equilibrium x = ${(-0.22*c).toFixed(3)}, p = 0<br>minimum H_red = ${(0.18*c*c - 0.0242*c*c).toFixed(3)}`;
+}
+slider.addEventListener('input', draw); draw();
+</script>
+</body>
+</html>

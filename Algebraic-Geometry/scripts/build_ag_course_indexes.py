@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import nbformat
-from nbformat.v4 import new_markdown_cell, new_notebook
+from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 
 import ag_inventory as inventory
 
@@ -13,9 +13,12 @@ import ag_inventory as inventory
 BOOK_ROOT = Path(__file__).resolve().parents[1]
 
 
-def write_markdown_notebook(path: Path, text: str) -> None:
+def write_notebook(path: Path, cells: list) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    nbformat.write(new_notebook(cells=[new_markdown_cell(text.strip() + "\n")]), path)
+    nb = new_notebook(cells=cells)
+    nb["metadata"]["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
+    nb["metadata"]["language_info"] = {"name": "python", "pygments_lexer": "ipython3"}
+    nbformat.write(nb, path)
 
 
 def ensure_inventory() -> None:
@@ -57,6 +60,10 @@ def build_book_index() -> str:
 
 
 def build_chapter_index(entry: dict) -> str:
+    section_lines = "\n".join(
+        f"- Section {item['number']}: {item['title']} (printed p. {item['printed_start']}; PDF p. {item['pdf_start']})"
+        for item in entry.get("sections", [])
+    )
     lines = [
         f"# {entry['label']}: {entry['title']}",
         "",
@@ -70,6 +77,10 @@ def build_chapter_index(entry: dict) -> str:
         "",
         entry["focus"],
         "",
+        "## Section Map",
+        "",
+        section_lines,
+        "",
         "## Visual Storyboard",
         "",
     ]
@@ -81,14 +92,37 @@ def build_chapter_index(entry: dict) -> str:
     return "\n".join(lines)
 
 
+def chapter_index_cells(entry: dict) -> list:
+    text = build_chapter_index(entry)
+    notebook = entry["notebook"]
+    artifact_root = f"../artifacts/{entry['artifact']}"
+    code = (
+        "from pathlib import Path\n"
+        f"notebook = Path('{notebook}')\n"
+        f"artifact_root = Path('{artifact_root}')\n"
+        "assert notebook.exists()\n"
+        "assert artifact_root.exists()\n"
+        "(notebook, artifact_root)\n"
+    )
+    return [new_markdown_cell(text.strip() + "\n"), new_code_cell(code)]
+
+
+def book_index_cells() -> list:
+    text = build_book_index()
+    code = "from pathlib import Path\nroot = Path.cwd()\nnotebooks = [\n"
+    for entry in inventory.ENTRIES:
+        code += f"    root / '{entry['folder']}' / '{entry['notebook']}',\n"
+    code += "]\nmissing = [path for path in notebooks if not path.exists()]\nassert not missing, missing\nlen(notebooks)\n"
+    return [new_markdown_cell(text.strip() + "\n"), new_code_cell(code)]
+
+
 def main() -> None:
     ensure_inventory()
-    write_markdown_notebook(BOOK_ROOT / "00-book-index.ipynb", build_book_index())
+    write_notebook(BOOK_ROOT / "00-book-index.ipynb", book_index_cells())
     for entry in inventory.ENTRIES:
-        write_markdown_notebook(BOOK_ROOT / entry["folder"] / "00-index.ipynb", build_chapter_index(entry))
+        write_notebook(BOOK_ROOT / entry["folder"] / "00-index.ipynb", chapter_index_cells(entry))
     print(f"Updated indexes for {len(inventory.ENTRIES)} Algebraic Geometry entries.")
 
 
 if __name__ == "__main__":
     main()
-
