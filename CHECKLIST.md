@@ -2,7 +2,7 @@
 
 Root-level checklist for the geometry notebook course roadmap. Implemented courses are linked to existing workspace folders; planned courses are roadmap items without folders yet.
 
-Last updated: 2026-05-01
+Last updated: 2026-05-17
 
 | Implemented / Planned | Checks Passed | Audited |
 | --- | --- | --- |
@@ -35,22 +35,22 @@ Last updated: 2026-05-01
 | &#9745; [Topology](./Topology) - Implemented | &#9745; | &#9745; |
 | &#9745; [Undergraduate Algebraic Geometry](./Undergraduate-Algebraic-Geometry) - Implemented | &#9745; | &#9745; |
 | &#9745; [Visual Differential Geometry and Forms](./Visual-Differential-Geometry-and-Forms) - Implemented | &#9745; | &#9745; |
-| &#9744; Devadoss and O'Rourke, *Discrete and Computational Geometry* - Planned | &#9744; | &#9744; |
-| &#9744; Joseph O'Rourke, *Computational Geometry in C* - Planned | &#9744; | &#9744; |
-| &#9744; Jiri Matousek, *Lectures on Discrete Geometry* - Planned | &#9744; | &#9744; |
+| &#9745; [Discrete and Computational Geometry](./Discrete-and-Computational-Geometry) - Implemented | &#9745; | &#9745; |
+| &#9745; [Computational Geometry in C](./Computational-Geometry-in-C) - Implemented | &#9745; | &#9745; |
+| &#9745; [Lectures on Discrete Geometry](./Lectures-on-Discrete-Geometry) - Implemented | &#9745; | &#9745; |
 | &#9744; John M. Lee, *Introduction to Topological Manifolds* - Planned | &#9744; | &#9744; |
-| &#9744; John M. Lee, *Introduction to Smooth Manifolds* - Planned | &#9744; | &#9744; |
-| &#9744; Guillemin and Pollack, *Differential Topology* - Planned | &#9744; | &#9744; |
-| &#9744; Frank Warner, *Foundations of Differentiable Manifolds and Lie Groups* - Planned | &#9744; | &#9744; |
-| &#9744; Allen Hatcher, *Algebraic Topology* - Planned | &#9744; | &#9744; |
-| &#9744; Bott and Tu, *Differential Forms in Algebraic Topology* - Planned | &#9744; | &#9744; |
-| &#9744; Dale Rolfsen, *Knots and Links* - Planned | &#9744; | &#9744; |
-| &#9744; William Thurston, *Three-Dimensional Geometry and Topology* - Planned | &#9744; | &#9744; |
-| &#9744; John M. Lee, *Introduction to Riemannian Manifolds* - Planned | &#9744; | &#9744; |
-| &#9744; Manfredo do Carmo, *Riemannian Geometry* - Planned | &#9744; | &#9744; |
-| &#9744; Kobayashi and Nomizu, *Foundations of Differential Geometry*, Vols. I-II - Planned | &#9744; | &#9744; |
-| &#9744; Besse, *Einstein Manifolds* - Planned | &#9744; | &#9744; |
-| &#9744; Helgason, *Differential Geometry, Lie Groups, and Symmetric Spaces* - Planned | &#9744; | &#9744; |
+| &#9745; [Introduction to Smooth Manifolds](./Introduction-to-Smooth-Manifolds) - Implemented | &#9745; | &#9745; |
+| &#9745; [Differential Topology](./Differential-Topology) - Implemented | &#9745; | &#9745; |
+| &#9745; [Foundations of Differentiable Manifolds and Lie Groups](./Foundations-of-Differentiable-Manifolds-and-Lie-Groups) - Implemented | &#9745; | &#9745; |
+| &#9745; [Algebraic Topology](./Algebraic-Topology) - Implemented | &#9745; | &#9745; |
+| &#9745; [Differential Forms in Algebraic Topology](./Differential-Forms-in-Algebraic-Topology) - Implemented | &#9745; | &#9745; |
+| &#9745; [Knots, Links and Their Invariants](./Knots-Links-and-Their-Invariants-An-Elementary-Course-in-Contemporary-Knot-Theory) - Implemented | &#9745; | &#9745; |
+| &#9745; [Three-Dimensional Geometry and Topology](./Three-Dimensional-Geometry-and-Topology) - Implemented | &#9745; | &#9745; |
+| &#9745; [Introduction to Riemannian Manifolds](./Introduction-to-Riemannian-Manifolds) - Implemented | &#9745; | &#9745; |
+| &#9745; [Riemannian Geometry](./Riemannian-Geometry) - Implemented | &#9745; | &#9745; |
+| &#9745; [Foundations of Differential Geometry, Vols. I-II](./Foundations-of-Differential-Geometry) - Implemented | &#9745; | &#9745; |
+| &#9745; [Einstein Manifolds](./Einstein-Manifolds) - Implemented | &#9745; | &#9745; |
+| &#9745; [Differential Geometry, Lie Groups, and Symmetric Spaces](./Differential-Geometry-Lie-Groups-and-Symmetric-Spaces) - Implemented | &#9745; | &#9745; |
 | &#9744; Robin Hartshorne, *Algebraic Geometry* - Planned | &#9744; | &#9744; |
 | &#9744; Griffiths and Harris, *Principles of Algebraic Geometry* - Planned | &#9744; | &#9744; |
 | &#9744; Daniel Huybrechts, *Complex Geometry: An Introduction* - Planned | &#9744; | &#9744; |

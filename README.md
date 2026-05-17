@@ -24,7 +24,7 @@ transport, and geometric statistics.
 | Implemented | A book folder exists in this repo with notebook scaffolding or canonical notebooks. |
 | Planned | The book is part of the roadmap, but no folder exists yet. |
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 ## What Each Notebook Course Entails
 
@@ -153,10 +153,10 @@ incidence, lattices, and robust computation.
 | --- | --- | --- |
 | Miles Reid, *Undergraduate Algebraic Geometry* | [Implemented](./Undergraduate-Algebraic-Geometry) | A first algebraic geometry course on conics, cubics, affine/projective varieties, singularities, dimension, and classical configurations. |
 | Cox, Little, and O'Shea, *Ideals, Varieties, and Algorithms* | [Implemented](./Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra) | A computational algebraic geometry course on Grobner bases, elimination, polynomial systems, robotics, theorem proving, and invariant theory. |
-| Devadoss and O'Rourke, *Discrete and Computational Geometry* | Planned | An undergraduate-friendly course on convex hulls, triangulations, Voronoi diagrams, pseudotriangulations, reconstruction, and geometric applications. |
+| Devadoss and O'Rourke, *Discrete and Computational Geometry* | [Implemented](./Discrete-and-Computational-Geometry) | An undergraduate-friendly course on convex hulls, triangulations, Voronoi diagrams, pseudotriangulations, reconstruction, and geometric applications. |
 | de Berg, van Kreveld, Overmars, and Schwarzkopf, *Computational Geometry: Algorithms and Applications* | [Implemented](./Computational-Geometry-Algorithms-and-Applications) | An algorithmic geometry course on data structures, arrangements, range searching, motion planning, and robustness. |
-| Joseph O'Rourke, *Computational Geometry in C* | Planned | An implementation-oriented geometry algorithms course for graphics, robotics, engineering design, and low-level geometric predicates. |
-| Jiri Matousek, *Lectures on Discrete Geometry* | Planned | A more advanced discrete geometry course on convexity, polytopes, arrangements, incidence theory, lattices, and Helly-type theorems. |
+| Joseph O'Rourke, *Computational Geometry in C* | [Implemented](./Computational-Geometry-in-C) | An implementation-oriented geometry algorithms course for graphics, robotics, engineering design, and low-level geometric predicates. |
+| Jiri Matousek, *Lectures on Discrete Geometry* | [Implemented](./Lectures-on-Discrete-Geometry) | A more advanced discrete geometry course on convexity, polytopes, arrangements, incidence theory, lattices, and Helly-type theorems. |
 
 ### Applied Geometry: Graphics, Robotics, Statistics, Information, and ML
 
@@ -184,18 +184,18 @@ low-dimensional topology.
 | Book | Status | Planned notebook purpose |
 | --- | --- | --- |
 | John M. Lee, *Introduction to Topological Manifolds* | Planned | A beginning graduate course on topological manifolds and the topology needed for geometry and algebraic topology. |
-| John M. Lee, *Introduction to Smooth Manifolds* | Planned | A core smooth-manifold course covering tangent spaces, bundles, tensors, forms, flows, Lie groups, foliations, and de Rham cohomology. |
-| Guillemin and Pollack, *Differential Topology* | Planned | A compact course on transversality, Sard's theorem, degree, intersection theory, and geometric applications. |
-| Frank Warner, *Foundations of Differentiable Manifolds and Lie Groups* | Planned | A compressed advanced course on differentiable manifolds, Lie groups, integration, de Rham theory, and Hodge theory. |
-| Allen Hatcher, *Algebraic Topology* | Planned | A standard graduate algebraic topology course on fundamental groups, homology, cohomology, and homotopy. |
-| Bott and Tu, *Differential Forms in Algebraic Topology* | Planned | A bridge course from differential geometry to algebraic topology through forms, de Rham theory, and characteristic ideas. |
-| Dale Rolfsen, *Knots and Links* | Planned | A knot theory and low-dimensional topology course built around diagrams, invariants, groups, and covering-space methods. |
-| William Thurston, *Three-Dimensional Geometry and Topology* | Planned | A geometry/topology course on surfaces, 3-manifolds, geometric structures, and the bridge to low-dimensional topology. |
-| John M. Lee, *Introduction to Riemannian Manifolds* | Planned | A modern Riemannian geometry course on metrics, connections, geodesics, curvature, submanifolds, Jacobi fields, and comparison ideas. |
-| Manfredo do Carmo, *Riemannian Geometry* | Planned | A compact classic graduate Riemannian course for curvature, geodesics, completeness, and global results. |
-| Kobayashi and Nomizu, *Foundations of Differential Geometry*, Vols. I-II | Planned | A reference-level course on connections, principal bundles, curvature, holonomy, homogeneous spaces, and complex/Hermitian geometry. |
-| Besse, *Einstein Manifolds* | Planned | A specialized Riemannian geometry course on Einstein metrics, curvature identities, and geometric analysis. |
-| Helgason, *Differential Geometry, Lie Groups, and Symmetric Spaces* | Planned | A Lie groups and symmetric spaces course connecting Riemannian geometry, homogeneous spaces, and representation-flavored geometry. |
+| John M. Lee, *Introduction to Smooth Manifolds* | [Implemented](./Introduction-to-Smooth-Manifolds) | A core smooth-manifold course covering tangent spaces, bundles, tensors, forms, flows, Lie groups, foliations, and de Rham cohomology. |
+| Guillemin and Pollack, *Differential Topology* | [Implemented](./Differential-Topology) | A compact course on transversality, Sard's theorem, degree, intersection theory, and geometric applications. |
+| Frank Warner, *Foundations of Differentiable Manifolds and Lie Groups* | [Implemented](./Foundations-of-Differentiable-Manifolds-and-Lie-Groups) | A compressed advanced course on differentiable manifolds, Lie groups, integration, de Rham theory, and Hodge theory. |
+| Allen Hatcher, *Algebraic Topology* | [Implemented](./Algebraic-Topology) | A standard graduate algebraic topology course on fundamental groups, homology, cohomology, and homotopy. |
+| Bott and Tu, *Differential Forms in Algebraic Topology* | [Implemented](./Differential-Forms-in-Algebraic-Topology) | A bridge course from differential geometry to algebraic topology through forms, de Rham theory, and characteristic ideas. |
+| A. B. Sossinsky, *Knots, Links and Their Invariants* | [Implemented](./Knots-Links-and-Their-Invariants-An-Elementary-Course-in-Contemporary-Knot-Theory) | A knot theory and low-dimensional topology course built around diagrams, invariants, groups, and covering-space methods. |
+| William Thurston, *Three-Dimensional Geometry and Topology* | [Implemented](./Three-Dimensional-Geometry-and-Topology) | A geometry/topology course on surfaces, 3-manifolds, geometric structures, and the bridge to low-dimensional topology. |
+| John M. Lee, *Introduction to Riemannian Manifolds* | [Implemented](./Introduction-to-Riemannian-Manifolds) | A modern Riemannian geometry course on metrics, connections, geodesics, curvature, submanifolds, Jacobi fields, and comparison ideas. |
+| Manfredo do Carmo, *Riemannian Geometry* | [Implemented](./Riemannian-Geometry) | A compact classic graduate Riemannian course for curvature, geodesics, completeness, and global results. |
+| Kobayashi and Nomizu, *Foundations of Differential Geometry*, Vols. I-II | [Implemented](./Foundations-of-Differential-Geometry) | A reference-level course on connections, principal bundles, curvature, holonomy, homogeneous spaces, and complex/Hermitian geometry. |
+| Besse, *Einstein Manifolds* | [Implemented](./Einstein-Manifolds) | A specialized Riemannian geometry course on Einstein metrics, curvature identities, and geometric analysis. |
+| Helgason, *Differential Geometry, Lie Groups, and Symmetric Spaces* | [Implemented](./Differential-Geometry-Lie-Groups-and-Symmetric-Spaces) | A Lie groups and symmetric spaces course connecting Riemannian geometry, homogeneous spaces, and representation-flavored geometry. |
 
 ### Graduate Algebraic, Complex, Symplectic, Metric, and Statistical Geometry
 
