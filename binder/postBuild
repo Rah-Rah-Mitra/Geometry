@@ -3,6 +3,7 @@ set -euo pipefail
 
 python -m ipykernel install --user --name geometry-course --display-name "Python (Geometry Course)"
 
+# Run import smoke test with per-module output for easier debugging.
 python - <<'PY'
 import importlib
 import sys
@@ -39,13 +40,26 @@ missing = []
 for module_name in required:
     try:
         importlib.import_module(module_name)
+        print(f"  ok  {module_name}")
     except Exception as exc:
         missing.append(f"{module_name}: {exc!r}")
+        print(f"  FAIL {module_name}: {exc!r}", file=sys.stderr)
 
 if missing:
-    print("Binder import smoke test failed:", file=sys.stderr)
-    print("\n".join(missing), file=sys.stderr)
+    print(f"\nBinder import smoke test FAILED ({len(missing)} missing):", file=sys.stderr)
     raise SystemExit(1)
 
-print(f"Binder import smoke test passed for {len(required)} modules.")
+print(f"\nBinder import smoke test passed ({len(required)} modules).")
 PY
+
+# Set pyvista to use the trame backend by default in every kernel startup.
+mkdir -p "${HOME}/.ipython/profile_default/startup"
+cat > "${HOME}/.ipython/profile_default/startup/00-pyvista-backend.py" <<'EOF'
+try:
+    import pyvista as pv
+    pv.global_theme.jupyter_backend = "trame"
+except Exception:
+    pass
+EOF
+
+echo "postBuild complete."
