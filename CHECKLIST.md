@@ -2,7 +2,7 @@
 
 Root-level checklist for the geometry notebook course roadmap. Implemented courses are linked to existing workspace folders; planned courses are roadmap items without folders yet.
 
-Last updated: 2026-05-17
+Last updated: 2026-05-19
 
 | Implemented / Planned | Checks Passed | Audited |
 | --- | --- | --- |
@@ -38,7 +38,7 @@ Last updated: 2026-05-17
 | &#9745; [Discrete and Computational Geometry](./Discrete-and-Computational-Geometry) - Implemented | &#9745; | &#9745; |
 | &#9745; [Computational Geometry in C](./Computational-Geometry-in-C) - Implemented | &#9745; | &#9745; |
 | &#9745; [Lectures on Discrete Geometry](./Lectures-on-Discrete-Geometry) - Implemented | &#9745; | &#9745; |
-| &#9744; John M. Lee, *Introduction to Topological Manifolds* - Planned | &#9744; | &#9744; |
+| &#9745; [John M. Lee, *Introduction to Topological Manifolds*](./Introduction-to-Topological-Manifolds) - Implemented | &#9745; | &#9745; |
 | &#9745; [Introduction to Smooth Manifolds](./Introduction-to-Smooth-Manifolds) - Implemented | &#9745; | &#9745; |
 | &#9745; [Differential Topology](./Differential-Topology) - Implemented | &#9745; | &#9745; |
 | &#9745; [Foundations of Differentiable Manifolds and Lie Groups](./Foundations-of-Differentiable-Manifolds-and-Lie-Groups) - Implemented | &#9745; | &#9745; |

@@ -2,7 +2,7 @@
 
 [![Launch Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Rah-Rah-Mitra/Geometry/main?urlpath=lab/tree/index.ipynb)
 
-This repository is a full interactive geometry curriculum: 65 implemented
+This repository is a full interactive geometry curriculum: 66 implemented
 notebook courses, more than 2,000 notebooks, and a large library of generated
 figures, HTML labs, computational experiments, and sanity checks. Open the
 Binder badge above to start in `index.ipynb`, the course atlas and guided
@@ -68,7 +68,7 @@ For local development, the root `pyproject.toml`, `requirements.txt`, and
 | Implemented | A book folder exists in this repo with notebook scaffolding or canonical notebooks. |
 | Planned | The book is part of the roadmap, but no folder exists yet. |
 
-Last updated: 2026-05-17
+Last updated: 2026-05-19
 
 ## What Each Notebook Course Entails
 
@@ -119,6 +119,7 @@ that make the geometry inspectable.
 | [Information Geometry and Its Applications](./Information-Geometry-and-Its-Applications) | Implemented | Divergence functions, dually flat geometry, exponential and mixture families, alpha geometry, dual connections, statistical inference, EM, semiparametrics, time series, ML, natural gradients, and signal processing. |
 | [Introduction to Geometry](./Introduction-to-Geometry) | Implemented | Classical Euclidean geometry, symmetry, coordinates, complex numbers, Platonic solids, affine and projective geometry, hyperbolic geometry, curves, surfaces, topology, and four-dimensional geometry. |
 | [Introduction to Symplectic Topology](./Introduction-to-Symplectic-Topology) | Implemented | Symplectic manifolds, Hamiltonian dynamics, moment maps, symplectic reduction, and global symplectic invariants. |
+| [Introduction to Topological Manifolds](./Introduction-to-Topological-Manifolds) | Implemented | A beginning graduate course on topological manifolds and the topology needed for geometry and algebraic topology. |
 | [J-holomorphic Curves and Symplectic Topology](./J-Holomorphic-Curves-and-Symplectic-Topology) | Implemented | Pseudoholomorphic curves, compactness, gluing, moduli spaces, Gromov-Witten-style checks, and symplectic topology. |
 | [Lectures on Symplectic Geometry](./Lectures-on-Symplectic-Geometry) | Implemented | Symplectic forms, Darboux and Moser arguments, cotangent bundles, Hamiltonian actions, moment maps, reduction, and toric manifolds. |
 | [Mathematical Foundations of Geometric Deep Learning](./Mathematical-Foundations-of-Geometric-Deep-Learning) | Implemented | Algebraic structures, metric and analytical geometry, vector calculus, topology, differential geometry, functional analysis, spectral theory, graph theory, and message-passing foundations. |
@@ -227,7 +228,7 @@ low-dimensional topology.
 
 | Book | Status | Planned notebook purpose |
 | --- | --- | --- |
-| John M. Lee, *Introduction to Topological Manifolds* | Planned | A beginning graduate course on topological manifolds and the topology needed for geometry and algebraic topology. |
+| John M. Lee, *Introduction to Topological Manifolds* | [Implemented](./Introduction-to-Topological-Manifolds) | A beginning graduate course on topological manifolds and the topology needed for geometry and algebraic topology. |
 | John M. Lee, *Introduction to Smooth Manifolds* | [Implemented](./Introduction-to-Smooth-Manifolds) | A core smooth-manifold course covering tangent spaces, bundles, tensors, forms, flows, Lie groups, foliations, and de Rham cohomology. |
 | Guillemin and Pollack, *Differential Topology* | [Implemented](./Differential-Topology) | A compact course on transversality, Sard's theorem, degree, intersection theory, and geometric applications. |
 | Frank Warner, *Foundations of Differentiable Manifolds and Lie Groups* | [Implemented](./Foundations-of-Differentiable-Manifolds-and-Lie-Groups) | A compressed advanced course on differentiable manifolds, Lie groups, integration, de Rham theory, and Hodge theory. |
