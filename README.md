@@ -1,11 +1,35 @@
-# Geometry Notebook Roadmap
+# Geometry Course Atlas
 
-This repository is a growing library of standalone, visualization-first geometry
-notebook courses. Each book folder turns a source text into an executable study
-path with original prose, generated diagrams, computational experiments,
-book-local artifacts, and sanity checks. The notebooks use source books for
-structure and topic orientation; they do not redistribute textbook prose,
-screenshots, page crops, or long exercise text.
+[![Launch Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Rah-Rah-Mitra/Geometry/main?urlpath=lab/tree/index.ipynb)
+
+This repository is a full interactive geometry curriculum: 65 implemented
+notebook courses, more than 2,000 notebooks, and a large library of generated
+figures, HTML labs, computational experiments, and sanity checks. Open the
+Binder badge above to start in `index.ipynb`, the course atlas and guided
+entrypoint.
+
+Each course folder turns a source text into an executable study path with
+original prose, generated diagrams, computational experiments, book-local
+artifacts, and checks. The notebooks use source books for structure and topic
+orientation; they do not redistribute textbook prose, screenshots, page crops,
+or long exercise text.
+
+Binder sessions are temporary. You can run and edit notebooks in the browser,
+but changes made inside Binder disappear when the session ends unless you save
+them outside the session. The first Binder launch can take several minutes
+because this repository intentionally keeps its full prebuilt artifact library.
+
+## Start Learning
+
+The fastest route is:
+
+1. Launch Binder from the badge above.
+2. Run the first check cell in `index.ipynb`.
+3. Choose a learning track or open any course from the full atlas table.
+4. Use each course's `00-book-index.ipynb` as the local map for chapters,
+   appendices, figures, labs, and checks.
+
+## Learning Paths
 
 The project is intentionally broad. Undergraduate geometry can stretch from
 Euclidean, affine, projective, and non-Euclidean geometry into differential
@@ -16,6 +40,26 @@ into separate ecosystems: manifolds, topology, Riemannian geometry, algebraic
 and complex geometry, symplectic/contact geometry, metric geometry, convex and
 discrete geometry, geometric group theory, geometric measure theory, optimal
 transport, and geometric statistics.
+
+| Track | Good starting points |
+| --- | --- |
+| Foundations and classical geometry | [The Four Pillars of Geometry](./The-Four-Pillars-of-Geometry), [Introduction to Geometry](./Introduction-to-Geometry), [Geometry I](./Geometry-I), [Geometry II](./Geometry-II), [Euclid and Beyond](./Euclid-and-Beyond) |
+| Topology, manifolds, and curvature | [Basic Topology](./Basic-Topology), [Topology](./Topology), [Introduction to Topological Manifolds](./Introduction-to-Topological-Manifolds), [Introduction to Smooth Manifolds](./Introduction-to-Smooth-Manifolds), [Visual Differential Geometry and Forms](./Visual-Differential-Geometry-and-Forms) |
+| Computational geometry, graphics, vision, and robotics | [Computational Geometry: Algorithms and Applications](./Computational-Geometry-Algorithms-and-Applications), [Discrete and Computational Geometry](./Discrete-and-Computational-Geometry), [Fundamentals of Computer Graphics](./Fundamentals-of-Computer-Graphics), [Multiple View Geometry in Computer Vision](./Multiple-View-Geometry-in-Computer-Vision), [Modern Robotics](./Modern-Robotics) |
+| Graduate geometry branches | [Introduction to Riemannian Manifolds](./Introduction-to-Riemannian-Manifolds), [A Course in Metric Geometry](./A-Course-in-Metric-Geometry), [Algebraic Geometry](./Algebraic-Geometry), [Hodge Theory and Complex Algebraic Geometry](./Hodge-Theory-and-Complex-Algebraic-Geometry), [Lectures on Symplectic Geometry](./Lectures-on-Symplectic-Geometry) |
+| Geometry for data, statistics, and machine learning | [Mathematical Foundations of Geometric Deep Learning](./Mathematical-Foundations-of-Geometric-Deep-Learning), [Geometric Deep Learning](./Geometric-Deep-Learning), [Directional Statistics](./Directional-Statistics), [Information Geometry and Its Applications](./Information-Geometry-and-Its-Applications), [Optimal Transport: Old and New](./Optimal-Transport-Old-and-New) |
+
+## Binder and Local Setup
+
+Binder is configured in [`binder/`](./binder), with a Python 3.11 JupyterLab
+environment, Linux visual-media packages, a named `Python (Geometry Course)`
+kernel, and an import smoke test. See [`BINDER.md`](./BINDER.md) for build notes,
+troubleshooting, and local repo2docker checks.
+
+For local development, the root `pyproject.toml`, `requirements.txt`, and
+`uv.lock` remain the source of the broader Python 3.13 lab environment.
+
+## Course Catalog and Roadmap
 
 ## Status Legend
 

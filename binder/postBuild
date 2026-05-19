@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+
+python -m ipykernel install --user --name geometry-course --display-name "Python (Geometry Course)"
+
+python - <<'PY'
+import importlib
+import sys
+
+required = [
+    "IPython",
+    "cv2",
+    "gudhi",
+    "imageio",
+    "ipywidgets",
+    "matplotlib",
+    "nbclient",
+    "nbconvert",
+    "nbformat",
+    "networkx",
+    "numpy",
+    "ot",
+    "pandas",
+    "persim",
+    "PIL",
+    "plotly",
+    "pyriemann",
+    "pyvista",
+    "ripser",
+    "scipy",
+    "shapely",
+    "skimage",
+    "sklearn",
+    "statsmodels",
+    "sympy",
+    "torch",
+    "torchvision",
+    "trimesh",
+]
+
+missing = []
+for module_name in required:
+    try:
+        importlib.import_module(module_name)
+    except Exception as exc:
+        missing.append(f"{module_name}: {exc!r}")
+
+if missing:
+    print("Binder import smoke test failed:", file=sys.stderr)
+    print("\n".join(missing), file=sys.stderr)
+    raise SystemExit(1)
+
+print(f"Binder import smoke test passed for {len(required)} modules.")
+PY
