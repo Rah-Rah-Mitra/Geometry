@@ -1,12 +1,13 @@
 # Geometry Course Atlas
 
-[![Launch Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Rah-Rah-Mitra/Geometry/main?urlpath=lab/tree/index.ipynb)
-
-This repository is a full interactive geometry curriculum: 66 implemented
+This repository is a full interactive geometry curriculum: 65 implemented
 notebook courses, more than 2,000 notebooks, and a large library of generated
-figures, HTML labs, computational experiments, and sanity checks. Open the
-Binder badge above to start in `index.ipynb`, the course atlas and guided
-entrypoint.
+figures, HTML labs, computational experiments, and sanity checks.
+
+The atlas is now designed as a readable static course source first, with
+notebook execution layered on top through launch options. Use the generated
+[`course-manifest.json`](./course-manifest.json) as the source of truth for
+course paths, runtime profiles, launch links, tags, and future portal data.
 
 Each course folder turns a source text into an executable study path with
 original prose, generated diagrams, computational experiments, book-local
@@ -14,20 +15,20 @@ artifacts, and checks. The notebooks use source books for structure and topic
 orientation; they do not redistribute textbook prose, screenshots, page crops,
 or long exercise text.
 
-Binder sessions are temporary. You can run and edit notebooks in the browser,
-but changes made inside Binder disappear when the session ends unless you save
-them outside the session. The first Binder launch can take several minutes
-because this repository intentionally keeps its full prebuilt artifact library.
-
 ## Start Learning
 
 The fastest route is:
 
-1. Launch Binder from the badge above.
-2. Run the first check cell in `index.ipynb`.
-3. Choose a learning track or open any course from the full atlas table.
-4. Use each course's `00-book-index.ipynb` as the local map for chapters,
+1. Open [`index.ipynb`](./index.ipynb) or a course `00-book-index.ipynb`.
+2. Choose a learning track or open any course from the full atlas table.
+3. Use each course's `00-book-index.ipynb` as the local map for chapters,
    appendices, figures, labs, and checks.
+4. Run notebooks in Colab by following the manifest links, use JupyterLite for
+   compatible lightweight notebooks, or install one of the local runtime
+   profiles in [`requirements/`](./requirements).
+
+See [`RUNTIME.md`](./RUNTIME.md) for Colab setup cells, runtime profiles,
+JupyterLite compatibility notes, and local setup guidance.
 
 ## Learning Paths
 
@@ -49,15 +50,30 @@ transport, and geometric statistics.
 | Graduate geometry branches | [Introduction to Riemannian Manifolds](./Introduction-to-Riemannian-Manifolds), [A Course in Metric Geometry](./A-Course-in-Metric-Geometry), [Algebraic Geometry](./Algebraic-Geometry), [Hodge Theory and Complex Algebraic Geometry](./Hodge-Theory-and-Complex-Algebraic-Geometry), [Lectures on Symplectic Geometry](./Lectures-on-Symplectic-Geometry) |
 | Geometry for data, statistics, and machine learning | [Mathematical Foundations of Geometric Deep Learning](./Mathematical-Foundations-of-Geometric-Deep-Learning), [Geometric Deep Learning](./Geometric-Deep-Learning), [Directional Statistics](./Directional-Statistics), [Information Geometry and Its Applications](./Information-Geometry-and-Its-Applications), [Optimal Transport: Old and New](./Optimal-Transport-Old-and-New) |
 
-## Binder and Local Setup
+## Runtime and Portal Setup
 
-Binder is configured in [`binder/`](./binder), with a Python 3.11 JupyterLab
-environment, Linux visual-media packages, a named `Python (Geometry Course)`
-kernel, and an import smoke test. See [`BINDER.md`](./BINDER.md) for build notes,
-troubleshooting, and local repo2docker checks.
+The root project remains the source of truth for notebooks, generated artifacts,
+course metadata, and runtime profiles. The course manifest is generated with:
+
+```bash
+python scripts/build_course_manifest.py
+python scripts/build_course_manifest.py --check
+```
 
 For local development, the root `pyproject.toml`, `requirements.txt`, and
 `uv.lock` remain the source of the broader Python 3.13 lab environment.
+Install smaller course-specific stacks from [`requirements/`](./requirements)
+when you do not need the full lab.
+
+The planned public portal should live in a separate `Geometry-Web` repository:
+a small Next.js/TypeScript app deployed on Vercel that consumes
+`course-manifest.json` instead of parsing every notebook during deployment.
+
+## License Status
+
+Repository-wide licensing is still pending an explicit code/content license
+decision. Until a license file is added, do not assume reuse terms beyond normal
+GitHub viewing and contribution workflows.
 
 ## Course Catalog and Roadmap
 
