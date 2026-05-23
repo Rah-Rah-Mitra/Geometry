@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometry Lecture — Slide Templates</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <script src="deck-stage.js"></script>
+  <style>
+    body { margin: 0; background: #000; }
+
+    /* ---- Base slide ---- */
+    .slide {
+      width: 1920px; height: 1080px; position: relative; overflow: hidden;
+      font-family: var(--font-sans); color: var(--slide-ink);
+      background: var(--slide-bg);
+    }
+    .slide-pad {
+      padding: var(--slide-margin-top) var(--slide-margin-side) var(--slide-margin-bottom);
+      height: 100%; display: flex; flex-direction: column;
+    }
+
+    /* ---- Subtle background patterns ---- */
+    .pat-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(to right, rgba(30,58,138,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30,58,138,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .pat-circles {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.04;
+    }
+    .pat-triangles {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.035;
+    }
+
+    /* ---- Title accent bar ---- */
+    .title-rule {
+      width: 64px; height: 4px; border-radius: 2px;
+      background: var(--slide-accent); margin-top: 16px;
+    }
+    .title-rule--blue { background: var(--slide-blue); }
+    .title-rule--teal { background: var(--slide-teal); }
+
+    /* ---- Math boxes ---- */
+    .mbox {
+      padding: 28px 32px 28px 36px; border-radius: var(--radius-lg);
+      border-left: var(--math-rule-width) solid; margin: 20px 0;
+    }
+    .mbox-label {
+      font-size: 20px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: 8px;
+    }
+    .mbox-title {
+      font-size: var(--type-body); font-weight: 600; margin-bottom: 12px;
+    }
+    .mbox-body {
+      font-family: var(--font-math); font-size: 28px; line-height: 1.6;
+      color: var(--slide-ink);
+    }
+    .mbox--def { background: var(--math-definition-bg); border-left-color: var(--math-definition-rule); }
+    .mbox--def .mbox-label { color: var(--math-definition-rule); }
+    .mbox--thm { background: var(--math-theorem-bg); border-left-color: var(--math-theorem-rule); }
+    .mbox--thm .mbox-label { color: var(--math-theorem-rule); }
+    .mbox--proof { background: var(--math-proof-bg); border-left-color: var(--math-proof-rule); }
+    .mbox--proof .mbox-label { color: var(--math-proof-rule); }
+    .mbox--ex { background: var(--math-example-bg); border-left-color: var(--math-example-rule); }
+    .mbox--ex .mbox-label { color: var(--math-example-rule); }
+    .mbox--warn { background: var(--math-warning-bg); border-left-color: var(--math-warning-rule); }
+    .mbox--warn .mbox-label { color: var(--math-warning-rule); }
+    .mbox--exer { background: var(--math-exercise-bg); border-left-color: var(--math-exercise-rule); }
+    .mbox--exer .mbox-label { color: var(--math-exercise-rule); }
+    .mbox--rem { background: var(--math-remark-bg); border-left-color: var(--math-remark-rule); }
+    .mbox--rem .mbox-label { color: var(--math-remark-rule); }
+
+    /* ---- Helpers ---- */
+    .math { font-family: var(--font-math); font-style: italic; }
+    .mono { font-family: var(--font-mono); }
+    .text-accent { color: var(--slide-accent); }
+    .text-blue { color: var(--slide-blue); }
+    .text-teal { color: var(--slide-teal); }
+    .text-muted { color: var(--slide-muted); }
+    .text-dimmed { color: var(--slide-dimmed); }
+    .center { text-align: center; }
+    .flex-grow { flex: 1; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; flex: 1; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 48px; flex: 1; }
+
+    .diagram-placeholder {
+      border: 2px dashed var(--slide-border); border-radius: var(--radius-lg);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--slide-dimmed); font-size: 22px; font-weight: 600;
+      min-height: 200px; background: var(--slide-bg-alt);
+    }
+
+    /* ---- Section divider ---- */
+    .section-slide {
+      background: var(--slide-bg-alt); display: flex; align-items: center; justify-content: center;
+    }
+    .section-inner { text-align: center; }
+
+    /* ---- Numbered steps ---- */
+    .steps { display: flex; flex-direction: column; gap: 20px; }
+    .step { display: flex; gap: 20px; align-items: flex-start; }
+    .step-num {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center; font-size: 22px; font-weight: 700;
+      background: var(--slide-accent); color: #fff;
+    }
+    .step-text { font-size: 26px; line-height: 1.55; padding-top: 6px; }
+
+    /* ---- Footer / page number ---- */
+    .slide-footer {
+      position: absolute; bottom: 24px; left: var(--slide-margin-side); right: var(--slide-margin-side);
+      display: flex; justify-content: space-between; font-size: 18px; color: var(--slide-dimmed);
+    }
+
+    /* ---- Bullet list ---- */
+    .bullet-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+    .bullet-list li {
+      font-size: 26px; line-height: 1.55; padding-left: 32px; position: relative;
+    }
+    .bullet-list li::before {
+      content: ''; position: absolute; left: 0; top: 12px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--slide-accent);
+    }
+  </style>
+</head>
+<body>
+  <deck-stage>
+
+    <!-- ====== SLIDE 01: TITLE SLIDE ====== -->
+    <section data-screen-label="01 Title">
+      <div class="slide">
+        <div class="pat-grid"></div>
+        <svg class="pat-circles" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="1600" cy="300" r="260" stroke="#1E3A8A" stroke-width="1" fill="none"/>
+          <circle cx="1600" cy="300" r="180" stroke="#1E3A8A" stroke-width="0.7" fill="none"/>
+          <circle cx="1600" cy="300" r="100" stroke="#1E3A8A" stroke-width="0.5" fill="none"/>
+          <line x1="1340" y1="300" x2="1860" y2="300" stroke="#1E3A8A" stroke-width="0.5"/>
+          <line x1="1600" y1="40" x2="1600" y2="560" stroke="#1E3A8A" stroke-width="0.5"/>
+        </svg>
+        <div class="slide-pad" style="justify-content: center;">
+          <div style="max-width: 1100px;">
+            <div style="font-size: 20px; font-weight: 600; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0.06em;">Geometry Atlas · Lecture Series</div>
+            <h1 style="margin-top: 24px; font-size: 64px; font-weight: 700; line-height: 1.1; color: var(--slide-ink); letter-spacing: -0.02em;">The Four Pillars<br>of Geometry</h1>
+            <div class="title-rule" style="width: 80px; height: 5px;"></div>
+            <p style="margin-top: 28px; font-size: 30px; line-height: 1.5; color: var(--slide-muted); max-width: 700px;">Straightedge constructions, Euclid's axioms, coordinate methods, and transformation groups in a unified framework.</p>
+            <div style="margin-top: 48px; font-size: 22px; color: var(--slide-dimmed);">
+              <span style="font-weight: 600; color: var(--slide-ink);">Instructor Name</span>
+              <span style="margin: 0 16px; opacity: 0.4;">|</span>
+              Department of Mathematics
+              <span style="margin: 0 16px; opacity: 0.4;">|</span>
+              Spring 2026
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>Geometry Atlas</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 02: SECTION DIVIDER ====== -->
+    <section data-screen-label="02 Section Divider">
+      <div class="slide section-slide">
+        <div class="pat-grid"></div>
+        <div class="section-inner">
+          <div style="font-size: 20px; font-weight: 600; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0.06em;">Part I</div>
+          <h2 style="margin-top: 20px; font-size: 56px; font-weight: 700; color: var(--slide-accent); letter-spacing: -0.01em;">Euclidean Construction<br>and Axioms</h2>
+          <div class="title-rule" style="margin: 20px auto 0;"></div>
+          <p style="margin-top: 24px; font-size: 26px; color: var(--slide-muted);">Chapters 1–2 · Compass-and-straightedge primitives through Euclid's parallel postulate</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 03: DEFINITION ====== -->
+    <section data-screen-label="03 Definition">
+      <div class="slide">
+        <div class="pat-grid"></div>
+        <div class="slide-pad">
+          <h2 style="font-size: 44px; font-weight: 700; color: var(--slide-ink);">Metric Spaces</h2>
+          <div class="title-rule title-rule--blue"></div>
+
+          <div style="margin-top: 40px; flex: 1; display: flex; flex-direction: column; gap: 24px;">
+            <div class="mbox mbox--def">
+              <div class="mbox-label">Definition 3.1</div>
+              <div class="mbox-title">Metric Space</div>
+              <div class="mbox-body">
+                A <em>metric space</em> is a pair (<span class="math">X</span>, <span class="math">d</span>) where <span class="math">X</span> is a set and <span class="math">d : X × X → ℝ</span> is a function satisfying, for all <span class="math">x, y, z ∈ X</span>:
+              </div>
+            </div>
+
+            <ul class="bullet-list" style="margin-left: 36px;">
+              <li><strong>Positivity:</strong> <span class="math">d(x, y) ≥ 0</span>, with equality iff <span class="math">x = y</span></li>
+              <li><strong>Symmetry:</strong> <span class="math">d(x, y) = d(y, x)</span></li>
+              <li><strong>Triangle inequality:</strong> <span class="math">d(x, z) ≤ d(x, y) + d(y, z)</span></li>
+            </ul>
+          </div>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Metric Spaces</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 04: THEOREM + PROOF ====== -->
+    <section data-screen-label="04 Theorem & Proof">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 44px; font-weight: 700; color: var(--slide-ink);">The Pythagorean Theorem</h2>
+          <div class="title-rule"></div>
+
+          <div style="margin-top: 36px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div class="mbox mbox--thm">
+                <div class="mbox-label">Theorem 2.4</div>
+                <div class="mbox-body">
+                  In a right triangle with legs <span class="math">a</span>, <span class="math">b</span> and hypotenuse <span class="math">c</span>:<br>
+                  <span style="display: block; text-align: center; margin-top: 12px; font-size: 36px;"><span class="math">a² + b² = c²</span></span>
+                </div>
+              </div>
+              <div class="mbox mbox--proof">
+                <div class="mbox-label">Proof Sketch</div>
+                <div class="mbox-body" style="font-size: 24px;">
+                  <div class="steps">
+                    <div class="step">
+                      <div class="step-num" style="background: var(--math-proof-rule); width: 36px; height: 36px; font-size: 18px;">1</div>
+                      <div class="step-text" style="font-size: 24px;">Construct squares on each side of the triangle</div>
+                    </div>
+                    <div class="step">
+                      <div class="step-num" style="background: var(--math-proof-rule); width: 36px; height: 36px; font-size: 18px;">2</div>
+                      <div class="step-text" style="font-size: 24px;">Apply area-preserving shear transformations</div>
+                    </div>
+                    <div class="step">
+                      <div class="step-num" style="background: var(--math-proof-rule); width: 36px; height: 36px; font-size: 18px;">3</div>
+                      <div class="step-text" style="font-size: 24px;">Equate the dissected regions &nbsp;∎</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="diagram-placeholder" style="height: 100%;">
+                Geometric diagram<br>Right triangle with squares on each side
+              </div>
+            </div>
+          </div>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Euclidean Geometry</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 05: EXAMPLE ====== -->
+    <section data-screen-label="05 Worked Example">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 44px; font-weight: 700; color: var(--slide-ink);">Perpendicular Bisector Construction</h2>
+          <div class="title-rule title-rule--teal"></div>
+
+          <div style="margin-top: 36px;" class="two-col">
+            <div>
+              <div class="mbox mbox--ex">
+                <div class="mbox-label">Example 1.2</div>
+                <div class="mbox-body" style="font-style: normal;">
+                  <p style="font-family: var(--font-sans); font-size: 26px; line-height: 1.6;">Given two points <span class="math">A</span> and <span class="math">B</span>, construct the perpendicular bisector using compass and straightedge.</p>
+                </div>
+              </div>
+
+              <div style="margin-top: 24px;">
+                <div class="steps">
+                  <div class="step">
+                    <div class="step-num" style="background: var(--slide-teal);">1</div>
+                    <div class="step-text">Draw circle centered at <span class="math">A</span> with radius <span class="math">|AB|</span></div>
+                  </div>
+                  <div class="step">
+                    <div class="step-num" style="background: var(--slide-teal);">2</div>
+                    <div class="step-text">Draw circle centered at <span class="math">B</span> with radius <span class="math">|AB|</span></div>
+                  </div>
+                  <div class="step">
+                    <div class="step-num" style="background: var(--slide-teal);">3</div>
+                    <div class="step-text">Connect the two intersection points <span class="math">P</span> and <span class="math">Q</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="diagram-placeholder" style="height: 100%;">
+                Construction diagram<br>Two intersecting circles with bisector line
+              </div>
+            </div>
+          </div>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Straightedge and Compass</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 06: TWO-COLUMN COMPARISON ====== -->
+    <section data-screen-label="06 Comparison">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 44px; font-weight: 700; color: var(--slide-ink);">Euclidean vs. Hyperbolic Geometry</h2>
+          <div class="title-rule"></div>
+
+          <div style="margin-top: 36px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div style="padding: 28px; border-radius: var(--radius-lg); background: var(--math-theorem-bg); border: 1px solid rgba(30,58,138,0.1);">
+                <div style="font-size: 24px; font-weight: 700; color: var(--slide-accent); margin-bottom: 16px;">Euclidean</div>
+                <ul class="bullet-list">
+                  <li>Parallel postulate holds</li>
+                  <li>Angle sum of triangle = <span class="math">π</span></li>
+                  <li>Curvature <span class="math">K = 0</span></li>
+                  <li>Similar triangles exist at every scale</li>
+                </ul>
+              </div>
+              <div class="diagram-placeholder" style="flex: 1;">Euclidean plane diagram</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div style="padding: 28px; border-radius: var(--radius-lg); background: var(--math-example-bg); border: 1px solid rgba(15,118,110,0.1);">
+                <div style="font-size: 24px; font-weight: 700; color: var(--slide-teal); margin-bottom: 16px;">Hyperbolic</div>
+                <ul class="bullet-list">
+                  <li style="--bullet-color: var(--slide-teal);">Infinitely many parallels through a point</li>
+                  <li>Angle sum of triangle &lt; <span class="math">π</span></li>
+                  <li>Curvature <span class="math">K &lt; 0</span></li>
+                  <li>No similar triangles (AAA ⟹ congruence)</li>
+                </ul>
+              </div>
+              <div class="diagram-placeholder" style="flex: 1;">Poincaré disk model</div>
+            </div>
+          </div>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Non-Euclidean Geometry</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 07: FORMULA SHOWCASE ====== -->
+    <section data-screen-label="07 Key Formula">
+      <div class="slide">
+        <div class="pat-grid"></div>
+        <div class="slide-pad" style="justify-content: center; align-items: center; text-align: center;">
+          <div style="font-size: 20px; font-weight: 600; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0.06em;">Gauss-Bonnet Theorem</div>
+          <h2 style="margin-top: 16px; font-size: 44px; font-weight: 700; color: var(--slide-ink);">Total Curvature of a Surface</h2>
+          <div class="title-rule" style="margin: 16px auto 0;"></div>
+
+          <div style="margin-top: 48px; padding: 40px 64px; border-radius: var(--radius-xl); background: var(--math-theorem-bg); border: 1px solid rgba(30,58,138,0.08);">
+            <div style="font-family: var(--font-math); font-size: 52px; font-style: italic; color: var(--slide-ink); line-height: 1.4;">
+              ∫∫<sub style="font-size: 28px;">M</sub> K dA + ∫<sub style="font-size: 28px;">∂M</sub> κ<sub style="font-size: 28px;">g</sub> ds = 2πχ(M)
+            </div>
+          </div>
+
+          <p style="margin-top: 36px; font-size: 26px; line-height: 1.6; color: var(--slide-muted); max-width: 900px;">
+            The total Gaussian curvature of a compact surface <span class="math">M</span> plus the geodesic curvature along its boundary equals <span class="math">2π</span> times the Euler characteristic.
+          </p>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Differential Geometry</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 08: WARNING / COMMON MISTAKE ====== -->
+    <section data-screen-label="08 Warning">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 44px; font-weight: 700; color: var(--slide-ink);">Common Mistakes</h2>
+          <div class="title-rule" style="background: var(--slide-amber);"></div>
+
+          <div style="margin-top: 36px; display: flex; flex-direction: column; gap: 24px;">
+            <div class="mbox mbox--warn">
+              <div class="mbox-label">⚠ Common Mistake</div>
+              <div class="mbox-title">Assuming the parallel postulate in hyperbolic space</div>
+              <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 26px; line-height: 1.6;">
+                In hyperbolic geometry, through any point not on a line, there are <em>infinitely many</em> lines that do not intersect the given line. Using the Euclidean parallel postulate here leads to contradictions.
+              </div>
+            </div>
+
+            <div class="mbox mbox--rem">
+              <div class="mbox-label">Remark</div>
+              <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 24px; line-height: 1.6; color: var(--slide-muted);">
+                Always verify which axiom system is in play before applying parallelism arguments. In elliptic geometry, <em>no</em> parallel lines exist at all.
+              </div>
+            </div>
+          </div>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Non-Euclidean Geometry</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 09: EXERCISE ====== -->
+    <section data-screen-label="09 Exercise">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 44px; font-weight: 700; color: var(--slide-ink);">Exercises</h2>
+          <div class="title-rule" style="background: var(--slide-violet);"></div>
+
+          <div style="margin-top: 36px; display: flex; flex-direction: column; gap: 20px;">
+            <div class="mbox mbox--exer">
+              <div class="mbox-label">Exercise 3.1 <span style="font-size: 16px; font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7; margin-left: 8px;">★☆☆ Basic</span></div>
+              <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 26px; line-height: 1.6;">
+                Prove that the Euclidean distance function <span class="math">d(P, Q) = √[(x₂ − x₁)² + (y₂ − y₁)²]</span> satisfies all three metric space axioms.
+              </div>
+            </div>
+
+            <div class="mbox mbox--exer">
+              <div class="mbox-label">Exercise 3.2 <span style="font-size: 16px; font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7; margin-left: 8px;">★★☆ Intermediate</span></div>
+              <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 26px; line-height: 1.6;">
+                Show that the taxicab metric <span class="math">d₁(P, Q) = |x₂ − x₁| + |y₂ − y₁|</span> defines a valid metric. Sketch the unit "circle" under this metric.
+              </div>
+            </div>
+
+            <div class="mbox mbox--exer">
+              <div class="mbox-label">Exercise 3.3 <span style="font-size: 16px; font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7; margin-left: 8px;">★★★ Advanced</span></div>
+              <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 26px; line-height: 1.6;">
+                Prove that every isometry of the Euclidean plane can be factored as a composition of at most three reflections.
+              </div>
+            </div>
+          </div>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Metric Spaces</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== SLIDE 10: SUMMARY ====== -->
+    <section data-screen-label="10 Summary">
+      <div class="slide">
+        <div class="pat-grid"></div>
+        <svg class="pat-triangles" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="1500,900 1700,750 1600,1000" stroke="#1E3A8A" stroke-width="1" fill="none"/>
+          <polygon points="1550,850 1650,780 1620,920" stroke="#1E3A8A" stroke-width="0.7" fill="none"/>
+        </svg>
+        <div class="slide-pad">
+          <h2 style="font-size: 44px; font-weight: 700; color: var(--slide-ink);">Summary</h2>
+          <div class="title-rule"></div>
+
+          <div style="margin-top: 36px;" class="three-col">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div style="font-size: 22px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Key Definitions</div>
+              <ul class="bullet-list">
+                <li style="font-size: 24px;">Metric space (<span class="math">X</span>, <span class="math">d</span>)</li>
+                <li style="font-size: 24px;">Isometry: distance-preserving map</li>
+                <li style="font-size: 24px;">Geodesic: locally shortest path</li>
+              </ul>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div style="font-size: 22px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Key Theorems</div>
+              <ul class="bullet-list">
+                <li style="font-size: 24px;">Pythagorean theorem</li>
+                <li style="font-size: 24px;">Three reflections theorem</li>
+                <li style="font-size: 24px;">Gauss-Bonnet theorem</li>
+              </ul>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div style="font-size: 22px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Next Lecture</div>
+              <ul class="bullet-list">
+                <li style="font-size: 24px;">Projective geometry</li>
+                <li style="font-size: 24px;">Homogeneous coordinates</li>
+                <li style="font-size: 24px;">Cross-ratio invariant</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="margin-top: auto; padding: 28px 32px; border-radius: var(--radius-lg); background: var(--slide-bg-alt); border: 1px solid var(--slide-border-light);">
+            <div style="font-size: 24px; color: var(--slide-muted);">
+              <strong style="color: var(--slide-ink);">Reading:</strong> Chapters 3–4 · 
+              <strong style="color: var(--slide-ink);">Exercises:</strong> 3.1–3.3, 4.1–4.2 · 
+              <strong style="color: var(--slide-ink);">Next:</strong> Wednesday, Projective Planes
+            </div>
+          </div>
+
+          <div class="slide-footer">
+            <span>Geometry Atlas · Summary</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </deck-stage>
+</body>
+</html>

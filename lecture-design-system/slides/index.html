@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometry Lecture — Slide Templates</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <script src="deck-stage.js"></script>
+  <style>
+    body { margin: 0; background: #000; }
+    .slide {
+      width: 1920px; height: 1080px; position: relative; overflow: hidden;
+      font-family: var(--font-sans); color: var(--slide-ink); background: var(--slide-bg);
+    }
+    .slide-pad {
+      padding: var(--slide-margin-top) var(--slide-margin-side) var(--slide-margin-bottom);
+      height: 100%; display: flex; flex-direction: column;
+    }
+    .pat-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(to right, rgba(30,58,138,0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30,58,138,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .pat-circles { position: absolute; inset: 0; pointer-events: none; opacity: 0.04; }
+    .pat-triangles { position: absolute; inset: 0; pointer-events: none; opacity: 0.035; }
+    .title-rule { width: 64px; height: 4px; border-radius: 2px; background: var(--slide-accent); margin-top: 12px; }
+    .title-rule--blue { background: var(--slide-blue); }
+    .title-rule--teal { background: var(--slide-teal); }
+    .mbox {
+      padding: 22px 28px 22px 32px; border-radius: var(--radius-lg);
+      border-left: var(--math-rule-width) solid; margin: 12px 0;
+    }
+    .mbox-label { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .mbox-title { font-size: 26px; font-weight: 600; margin-bottom: 8px; color: var(--slide-ink); }
+    .mbox-body { font-family: var(--font-math); font-size: 26px; line-height: 1.55; color: var(--slide-ink); }
+    .mbox--def { background: var(--math-definition-bg); border-left-color: var(--math-definition-rule); }
+    .mbox--def .mbox-label { color: var(--math-definition-rule); }
+    .mbox--thm { background: var(--math-theorem-bg); border-left-color: var(--math-theorem-rule); }
+    .mbox--thm .mbox-label { color: var(--math-theorem-rule); }
+    .mbox--proof { background: var(--math-proof-bg); border-left-color: var(--math-proof-rule); }
+    .mbox--proof .mbox-label { color: var(--math-proof-rule); }
+    .mbox--ex { background: var(--math-example-bg); border-left-color: var(--math-example-rule); }
+    .mbox--ex .mbox-label { color: var(--math-example-rule); }
+    .mbox--warn { background: var(--math-warning-bg); border-left-color: var(--math-warning-rule); }
+    .mbox--warn .mbox-label { color: var(--math-warning-rule); }
+    .mbox--exer { background: var(--math-exercise-bg); border-left-color: var(--math-exercise-rule); }
+    .mbox--exer .mbox-label { color: var(--math-exercise-rule); }
+    .mbox--rem { background: var(--math-remark-bg); border-left-color: var(--math-remark-rule); }
+    .mbox--rem .mbox-label { color: var(--math-remark-rule); }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .text-accent { color: var(--slide-accent); }
+    .text-blue { color: var(--slide-blue); }
+    .text-teal { color: var(--slide-teal); }
+    .text-muted { color: var(--slide-muted); }
+    .text-dimmed { color: var(--slide-dimmed); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; flex: 1; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; flex: 1; }
+    .section-slide { background: var(--slide-bg-alt); display: flex; align-items: center; justify-content: center; }
+    .section-inner { text-align: center; max-width: 1200px; }
+    .steps { display: flex; flex-direction: column; gap: 14px; }
+    .step { display: flex; gap: 16px; align-items: flex-start; }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff;
+    }
+    .step-text { font-size: 24px; line-height: 1.5; padding-top: 4px; }
+    .slide-footer {
+      position: absolute; bottom: 24px; left: var(--slide-margin-side); right: var(--slide-margin-side);
+      display: flex; justify-content: space-between; font-size: 18px; color: var(--slide-dimmed);
+    }
+    .bullet-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .bullet-list li { font-size: 24px; line-height: 1.5; padding-left: 28px; position: relative; }
+    .bullet-list li::before {
+      content: ''; position: absolute; left: 0; top: 10px;
+      width: 8px; height: 8px; border-radius: 50%; background: var(--slide-accent);
+    }
+    .kp { display: flex; gap: 10px; align-items: baseline; margin-bottom: 8px; }
+    .kp-marker { font-weight: 700; font-size: 22px; color: var(--slide-accent); flex-shrink: 0; }
+    .kp-text { font-size: 24px; line-height: 1.5; }
+    .formula-row {
+      display: flex; align-items: center; justify-content: center; gap: 24px;
+      padding: 20px 32px; border-radius: var(--radius-lg);
+      background: var(--slide-bg-alt); border: 1px solid var(--slide-border-light); margin: 10px 0;
+    }
+    .formula-big { font-family: var(--font-math); font-size: 36px; font-style: italic; color: var(--slide-ink); }
+    .formula-xl { font-family: var(--font-math); font-size: 44px; font-style: italic; color: var(--slide-ink); }
+    .table-grid { display: grid; font-size: 22px; border: 1px solid var(--slide-border); border-radius: var(--radius-lg); overflow: hidden; }
+    .table-grid .th { background: var(--slide-bg-alt); font-weight: 700; padding: 12px 16px; border-bottom: 2px solid var(--slide-border); }
+    .table-grid .td { padding: 10px 16px; border-bottom: 1px solid var(--slide-border-light); }
+    .table-grid .td:last-child, .table-grid .th:last-child { border-bottom: none; }
+    .highlight-box {
+      padding: 16px 24px; border-radius: var(--radius-lg);
+      background: var(--math-theorem-bg); border: 1px solid rgba(30,58,138,0.08);
+    }
+    .tag-sm {
+      display: inline-block; padding: 3px 10px; border-radius: 4px;
+      font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage>
+
+    <!-- ====== 01: TITLE ====== -->
+    <section data-screen-label="01 Title">
+      <div class="slide">
+        <div class="pat-grid"></div>
+        <svg class="pat-circles" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="1580" cy="340" r="280" stroke="#1E3A8A" stroke-width="1" fill="none"/>
+          <circle cx="1580" cy="340" r="190" stroke="#1E3A8A" stroke-width="0.7" fill="none"/>
+          <circle cx="1580" cy="340" r="110" stroke="#1E3A8A" stroke-width="0.5" fill="none"/>
+          <line x1="1300" y1="340" x2="1860" y2="340" stroke="#1E3A8A" stroke-width="0.5"/>
+          <line x1="1580" y1="60" x2="1580" y2="620" stroke="#1E3A8A" stroke-width="0.5"/>
+          <path d="M1580 340 L1720 200" stroke="#1E3A8A" stroke-width="0.5"/>
+          <path d="M1580 340 L1440 480" stroke="#1E3A8A" stroke-width="0.5"/>
+        </svg>
+        <div class="slide-pad" style="justify-content: center;">
+          <div style="max-width: 1100px;">
+            <div style="font-size: 20px; font-weight: 600; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0.06em;">Geometry Atlas · Undergraduate Lecture 7</div>
+            <h1 style="margin-top: 20px; font-size: 62px; font-weight: 700; line-height: 1.08; color: var(--slide-ink); letter-spacing: -0.02em;">Isometries and the<br>Three Reflections Theorem</h1>
+            <div class="title-rule" style="width: 80px; height: 5px;"></div>
+            <p style="margin-top: 24px; font-size: 28px; line-height: 1.5; color: var(--slide-muted); max-width: 780px;">Every distance-preserving map of the Euclidean plane is a composition of at most three reflections. We classify isometries, prove the factorization, and connect it to the structure of the orthogonal group O(2).</p>
+            <div style="margin-top: 32px; display: flex; gap: 32px; font-size: 22px; color: var(--slide-dimmed);">
+              <div><strong style="color: var(--slide-ink);">Prerequisites</strong>&ensp; Chapters 1–3 (coordinates, distance, line equations)</div>
+              <div><strong style="color: var(--slide-ink);">Source</strong>&ensp; Stillwell, <em>Four Pillars</em> §3.6–3.8</div>
+            </div>
+            <div style="margin-top: 16px; display: flex; gap: 10px;">
+              <span class="tag-sm" style="background: var(--math-definition-bg); color: var(--math-definition-rule);">4 Definitions</span>
+              <span class="tag-sm" style="background: var(--math-theorem-bg); color: var(--math-theorem-rule);">2 Theorems</span>
+              <span class="tag-sm" style="background: var(--math-example-bg); color: var(--math-example-rule);">3 Examples</span>
+              <span class="tag-sm" style="background: var(--math-exercise-bg); color: var(--math-exercise-rule);">5 Exercises</span>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer"><span>Geometry Atlas</span></div>
+      </div>
+    </section>
+
+    <!-- ====== 02: SECTION DIVIDER — with roadmap ====== -->
+    <section data-screen-label="02 Section Divider">
+      <div class="slide section-slide">
+        <div class="pat-grid"></div>
+        <div class="section-inner">
+          <div style="font-size: 20px; font-weight: 600; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0.06em;">Part II · Linear Algebra Methods</div>
+          <h2 style="margin-top: 16px; font-size: 54px; font-weight: 700; color: var(--slide-accent); letter-spacing: -0.01em;">Coordinates and Isometries</h2>
+          <div class="title-rule" style="margin: 16px auto 0;"></div>
+          <div style="margin-top: 32px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: left; max-width: 1100px; margin-left: auto; margin-right: auto;">
+            <div style="padding: 20px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--slide-border-light);">
+              <div style="font-size: 16px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">§3.1–3.2</div>
+              <div style="font-size: 20px; font-weight: 600; color: var(--slide-ink);">Coordinate Plane</div>
+              <div style="font-size: 18px; color: var(--slide-muted); margin-top: 6px;">Distance formula, line equations, slope, perpendicularity</div>
+            </div>
+            <div style="padding: 20px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--slide-border-light);">
+              <div style="font-size: 16px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">§3.3–3.4</div>
+              <div style="font-size: 20px; font-weight: 600; color: var(--slide-ink);">Circle–Line Intersections</div>
+              <div style="font-size: 18px; color: var(--slide-muted); margin-top: 6px;">Radical axes, power of a point, constructibility</div>
+            </div>
+            <div style="padding: 20px; border-radius: var(--radius-lg); background: var(--math-theorem-bg); border: 2px solid var(--slide-accent);">
+              <div style="font-size: 16px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">§3.6–3.8 ← Today</div>
+              <div style="font-size: 20px; font-weight: 600; color: var(--slide-ink);">Isometry Classification</div>
+              <div style="font-size: 18px; color: var(--slide-muted); margin-top: 6px;">Reflections, rotations, translations, glide reflections</div>
+            </div>
+            <div style="padding: 20px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--slide-border-light); opacity: 0.6;">
+              <div style="font-size: 16px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">§4.1–4.3</div>
+              <div style="font-size: 20px; font-weight: 600; color: var(--slide-ink);">Vectors &amp; Inner Products</div>
+              <div style="font-size: 18px; color: var(--slide-muted); margin-top: 6px;">Cauchy-Schwarz, rotation matrices, complex numbers</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 03: DEFINITION — dense, multi-definition ====== -->
+    <section data-screen-label="03 Definition">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Isometries of the Plane</h2>
+          <div class="title-rule title-rule--blue"></div>
+
+          <div style="margin-top: 28px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="mbox mbox--def" style="margin: 0;">
+                <div class="mbox-label">Definition 3.6</div>
+                <div class="mbox-body">
+                  An <em>isometry</em> of <span class="math">ℝ²</span> is a map <span class="math">f : ℝ² → ℝ²</span> satisfying<br>
+                  <span style="display: block; text-align: center; margin: 8px 0; font-size: 30px;"><span class="math">d(f(P), f(Q)) = d(P, Q)</span></span>
+                  for all points <span class="math">P, Q ∈ ℝ²</span>. Equivalently, <span class="math">f</span> preserves the Euclidean distance.
+                </div>
+              </div>
+              <div class="mbox mbox--def" style="margin: 0;">
+                <div class="mbox-label">Definition 3.7</div>
+                <div class="mbox-body">
+                  The <em>reflection</em> in a line <span class="math">ℓ</span> maps each point <span class="math">P</span> to <span class="math">P′</span> such that <span class="math">ℓ</span> is the perpendicular bisector of <span class="math">PP′</span>. In coordinates, reflection in the <span class="math">x</span>-axis:<br>
+                  <span style="display: block; text-align: center; margin: 8px 0; font-size: 30px;"><span class="math">σ(x, y) = (x, −y)</span></span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="font-size: 22px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Four Types of Isometry</div>
+              <div class="table-grid" style="grid-template-columns: 140px 1fr 1fr;">
+                <div class="th">Type</div><div class="th">Fixed Points</div><div class="th">Orientation</div>
+                <div class="td" style="font-weight: 600;">Translation</div><div class="td">None (unless identity)</div><div class="td" style="color: var(--slide-teal); font-weight: 600;">Preserves</div>
+                <div class="td" style="font-weight: 600;">Rotation</div><div class="td">Exactly one center</div><div class="td" style="color: var(--slide-teal); font-weight: 600;">Preserves</div>
+                <div class="td" style="font-weight: 600;">Reflection</div><div class="td">Entire mirror line</div><div class="td" style="color: var(--slide-amber); font-weight: 600;">Reverses</div>
+                <div class="td" style="font-weight: 600; border-bottom: none;">Glide refl.</div><div class="td" style="border-bottom: none;">None</div><div class="td" style="color: var(--slide-amber); font-weight: 600; border-bottom: none;">Reverses</div>
+              </div>
+              <div class="mbox mbox--rem" style="margin: 0; padding: 14px 20px 14px 24px;">
+                <div class="mbox-label" style="font-size: 16px;">Key Insight</div>
+                <div class="mbox-body" style="font-size: 22px; font-family: var(--font-sans); font-style: normal; color: var(--slide-muted);">
+                  Orientation-preserving isometries form a subgroup of index 2 in Isom(<span class="math">ℝ²</span>), isomorphic to the semidirect product <span class="math">ℝ² ⋊ SO(2)</span>.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Isometries</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 04: THEOREM + PROOF — Three Reflections ====== -->
+    <section data-screen-label="04 Theorem & Proof">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Three Reflections Theorem</h2>
+          <div class="title-rule"></div>
+
+          <div style="margin-top: 24px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="mbox mbox--thm" style="margin: 0;">
+                <div class="mbox-label">Theorem 3.8</div>
+                <div class="mbox-body">
+                  Every isometry of <span class="math">ℝ²</span> is a composition of at most <strong>three</strong> reflections. Specifically:<br>
+                  <span style="font-size: 24px; line-height: 1.7; display: block; margin-top: 8px;">
+                  — <strong>1 reflection</strong> → reflection<br>
+                  — <strong>2 reflections</strong> in intersecting lines → rotation by <span class="math">2θ</span><br>
+                  — <strong>2 reflections</strong> in parallel lines → translation by <span class="math">2d</span><br>
+                  — <strong>3 reflections</strong> → glide reflection
+                  </span>
+                </div>
+              </div>
+              <div class="mbox mbox--proof" style="margin: 0;">
+                <div class="mbox-label">Proof Outline</div>
+                <div class="mbox-body" style="font-size: 22px; font-family: var(--font-sans); font-style: normal;">
+                  <div class="steps">
+                    <div class="step">
+                      <div class="step-num" style="background: var(--math-proof-rule);">1</div>
+                      <div class="step-text" style="font-size: 22px;">An isometry is determined by the images of three non-collinear points <span class="math">A, B, C</span></div>
+                    </div>
+                    <div class="step">
+                      <div class="step-num" style="background: var(--math-proof-rule);">2</div>
+                      <div class="step-text" style="font-size: 22px;">If <span class="math">f(A) ≠ A</span>, reflect in the perpendicular bisector of <span class="math">A f(A)</span> to fix <span class="math">A</span></div>
+                    </div>
+                    <div class="step">
+                      <div class="step-num" style="background: var(--math-proof-rule);">3</div>
+                      <div class="step-text" style="font-size: 22px;">Repeat for <span class="math">B</span> (preserving <span class="math">A</span>), then <span class="math">C</span>. At most 3 reflections needed &ensp;∎</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Two reflections = rotation</div>
+              <svg viewBox="0 0 560 340" style="width: 100%; background: var(--slide-bg-alt); border-radius: 8px; border: 1px solid var(--slide-border-light);" xmlns="http://www.w3.org/2000/svg">
+                <line x1="280" y1="20" x2="280" y2="320" stroke="#1E3A8A" stroke-width="2" stroke-dasharray="6 4"/>
+                <line x1="280" y1="170" x2="520" y2="40" stroke="#0F766E" stroke-width="2" stroke-dasharray="6 4"/>
+                <text x="270" y="335" font-size="16" fill="#1E3A8A" font-weight="600" text-anchor="end" font-family="Source Sans 3, sans-serif">ℓ₁</text>
+                <text x="530" y="40" font-size="16" fill="#0F766E" font-weight="600" font-family="Source Sans 3, sans-serif">ℓ₂</text>
+                <circle cx="280" cy="170" r="5" fill="#1E3A8A"/>
+                <text x="290" y="190" font-size="16" fill="#475569" font-weight="600" font-family="Source Sans 3, sans-serif">O (center)</text>
+                <path d="M 280 120 A 50 50 0 0 1 320 145" stroke="#B45309" stroke-width="2.5" fill="none"/>
+                <text x="335" y="128" font-size="16" fill="#B45309" font-weight="700" font-family="Source Sans 3, sans-serif">θ</text>
+                <circle cx="200" cy="100" r="6" fill="#2563EB"/>
+                <text x="186" y="92" font-size="16" fill="#2563EB" font-weight="600" font-family="Source Sans 3, sans-serif">P</text>
+                <circle cx="360" cy="100" r="6" fill="#94A3B8"/>
+                <text x="370" y="95" font-size="16" fill="#94A3B8" font-weight="600" font-family="Source Sans 3, sans-serif">σ₁(P)</text>
+                <circle cx="340" cy="240" r="6" fill="#0F766E"/>
+                <text x="350" y="260" font-size="16" fill="#0F766E" font-weight="600" font-family="Source Sans 3, sans-serif">σ₂∘σ₁(P) = R₂θ(P)</text>
+                <path d="M 200 100 Q 280 60 360 100" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arr)"/>
+                <path d="M 360 100 Q 380 170 340 240" stroke="#0F766E" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arr2)"/>
+                <defs>
+                  <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8"/></marker>
+                  <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0F766E"/></marker>
+                </defs>
+              </svg>
+              <div class="formula-row">
+                <span class="formula-big"><span class="math">σ</span><sub style="font-size: 20px;">ℓ₂</sub> ∘ <span class="math">σ</span><sub style="font-size: 20px;">ℓ₁</sub> = <span class="math">R</span><sub style="font-size: 20px;">O, 2θ</sub></span>
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Isometries</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 05: WORKED EXAMPLE — concrete computation ====== -->
+    <section data-screen-label="05 Worked Example">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Worked Example: Reflection Formula</h2>
+          <div class="title-rule title-rule--teal"></div>
+
+          <div style="margin-top: 24px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="mbox mbox--ex" style="margin: 0;">
+                <div class="mbox-label">Example 3.2</div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 24px;">
+                  Find the reflection of <span class="math">P = (5, 1)</span> in the line <span class="math">ℓ : y = 2x</span>.
+                </div>
+              </div>
+
+              <div style="font-size: 22px; font-weight: 700; color: var(--slide-teal); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px;">Solution</div>
+
+              <div class="steps">
+                <div class="step">
+                  <div class="step-num" style="background: var(--slide-teal);">1</div>
+                  <div class="step-text" style="font-size: 22px;">Direction of <span class="math">ℓ</span>: <span class="math">û = (1, 2)/√5</span>. Normal: <span class="math">n̂ = (2, −1)/√5</span></div>
+                </div>
+                <div class="step">
+                  <div class="step-num" style="background: var(--slide-teal);">2</div>
+                  <div class="step-text" style="font-size: 22px;">Signed distance: <span class="math">δ = P · n̂ = (5·2 + 1·(−1))/√5 = 9/√5</span></div>
+                </div>
+                <div class="step">
+                  <div class="step-num" style="background: var(--slide-teal);">3</div>
+                  <div class="step-text" style="font-size: 22px;">Reflection: <span class="math">P′ = P − 2δ n̂ = (5, 1) − (18/5)(2, −1)/√5 · √5</span></div>
+                </div>
+              </div>
+
+              <div class="formula-row" style="margin-top: 8px;">
+                <span style="font-size: 20px; color: var(--slide-dimmed); font-weight: 600;">Result:</span>
+                <span class="formula-big" style="color: var(--slide-teal);"><span class="math">P′ = (−7/5, 17/5) = (−1.4, 3.4)</span></span>
+              </div>
+
+              <div class="mbox mbox--rem" style="margin: 0; padding: 12px 18px 12px 22px;">
+                <div class="mbox-body" style="font-size: 20px; font-family: var(--font-sans); font-style: normal; color: var(--slide-muted);">
+                  <strong>Check:</strong> Midpoint <span class="math">M = (1.8, 2.2)</span> lies on <span class="math">y = 2x</span> ✓ &ensp;and&ensp; <span class="math">PP′ ⊥ ℓ</span> since slope of <span class="math">PP′ = −1/2</span> ✓
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <svg viewBox="0 0 500 420" style="width: 100%; background: var(--slide-bg-alt); border-radius: 8px; border: 1px solid var(--slide-border-light);" xmlns="http://www.w3.org/2000/svg">
+                <!-- axes -->
+                <line x1="50" y1="380" x2="470" y2="380" stroke="#CBD5E1" stroke-width="1.5"/>
+                <line x1="80" y1="400" x2="80" y2="30" stroke="#CBD5E1" stroke-width="1.5"/>
+                <!-- grid -->
+                <line x1="80" y1="300" x2="470" y2="300" stroke="#E2E8F0" stroke-width="0.7"/>
+                <line x1="80" y1="220" x2="470" y2="220" stroke="#E2E8F0" stroke-width="0.7"/>
+                <line x1="80" y1="140" x2="470" y2="140" stroke="#E2E8F0" stroke-width="0.7"/>
+                <line x1="160" y1="30" x2="160" y2="400" stroke="#E2E8F0" stroke-width="0.7"/>
+                <line x1="240" y1="30" x2="240" y2="400" stroke="#E2E8F0" stroke-width="0.7"/>
+                <line x1="320" y1="30" x2="320" y2="400" stroke="#E2E8F0" stroke-width="0.7"/>
+                <line x1="400" y1="30" x2="400" y2="400" stroke="#E2E8F0" stroke-width="0.7"/>
+                <!-- line y=2x -->
+                <line x1="80" y1="380" x2="270" y2="0" stroke="#1E3A8A" stroke-width="2.5"/>
+                <text x="275" y="18" font-size="18" fill="#1E3A8A" font-weight="700" font-family="STIX Two Text, serif" font-style="italic">ℓ : y = 2x</text>
+                <!-- P -->
+                <circle cx="480" cy="300" r="7" fill="#2563EB"/>
+                <text x="446" y="290" font-size="18" fill="#2563EB" font-weight="700" font-family="Source Sans 3, sans-serif">P(5, 1)</text>
+                <!-- P' -->
+                <circle cx="52" cy="108" r="7" fill="#0F766E"/>
+                <text x="70" y="100" font-size="18" fill="#0F766E" font-weight="700" font-family="Source Sans 3, sans-serif">P′(−1.4, 3.4)</text>
+                <!-- midpoint -->
+                <circle cx="224" cy="204" r="5" fill="#B45309"/>
+                <text x="234" y="198" font-size="16" fill="#B45309" font-weight="600" font-family="Source Sans 3, sans-serif">M(1.8, 2.2)</text>
+                <!-- PP' dashed -->
+                <line x1="480" y1="300" x2="52" y2="108" stroke="#64748B" stroke-width="1.5" stroke-dasharray="6 4"/>
+                <!-- axis labels -->
+                <text x="460" y="398" font-size="14" fill="#94A3B8" font-weight="600" font-family="Source Sans 3, sans-serif">x</text>
+                <text x="64" y="40" font-size="14" fill="#94A3B8" font-weight="600" font-family="Source Sans 3, sans-serif">y</text>
+              </svg>
+              <div class="highlight-box" style="padding: 14px 20px;">
+                <div style="font-size: 20px; font-weight: 700; color: var(--slide-accent); margin-bottom: 6px;">General Formula</div>
+                <div style="font-family: var(--font-math); font-size: 24px; font-style: italic; color: var(--slide-ink);">
+                  σ<sub>ℓ</sub>(P) = P − 2(P · n̂)n̂ &ensp;where&ensp; n̂ ⊥ ℓ,&ensp; |n̂| = 1
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Isometries</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 06: COMPARISON — Euclidean vs Hyperbolic (dense) ====== -->
+    <section data-screen-label="06 Comparison">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Euclidean vs. Hyperbolic vs. Spherical</h2>
+          <div class="title-rule"></div>
+
+          <div style="margin-top: 24px; flex: 1;">
+            <div class="table-grid" style="grid-template-columns: 180px 1fr 1fr 1fr; font-size: 21px;">
+              <div class="th">Property</div><div class="th" style="color: var(--slide-accent);">Euclidean <span class="math" style="font-size: 18px;">K = 0</span></div><div class="th" style="color: var(--slide-teal);">Hyperbolic <span class="math" style="font-size: 18px;">K &lt; 0</span></div><div class="th" style="color: var(--slide-violet);">Spherical <span class="math" style="font-size: 18px;">K &gt; 0</span></div>
+
+              <div class="td" style="font-weight: 700;">Model</div><div class="td"><span class="math">ℝ²</span> with standard metric</div><div class="td">Poincaré disk <span class="math">𝔻²</span> or upper half-plane <span class="math">ℍ²</span></div><div class="td">Unit sphere <span class="math">S²</span> ⊂ <span class="math">ℝ³</span></div>
+
+              <div class="td" style="font-weight: 700;">Parallels</div><div class="td">Exactly 1 through <span class="math">P ∉ ℓ</span></div><div class="td">Infinitely many through <span class="math">P ∉ ℓ</span></div><div class="td">None — all geodesics meet</div>
+
+              <div class="td" style="font-weight: 700;">Angle sum <span class="math">△</span></div><div class="td"><span class="math">α + β + γ = π</span></div><div class="td"><span class="math">α + β + γ &lt; π</span></div><div class="td"><span class="math">α + β + γ &gt; π</span></div>
+
+              <div class="td" style="font-weight: 700;">Area of <span class="math">△</span></div><div class="td">½ |<span class="math">b × h</span>| (no curvature term)</div><div class="td"><span class="math">π − (α + β + γ)</span> · |<span class="math">K</span>|⁻¹</div><div class="td"><span class="math">(α + β + γ) − π</span> · <span class="math">R²</span></div>
+
+              <div class="td" style="font-weight: 700;">Isometry group</div><div class="td"><span class="math">ℝ² ⋊ O(2)</span></div><div class="td"><span class="math">PSL(2, ℝ)</span></div><div class="td"><span class="math">O(3)</span></div>
+
+              <div class="td" style="font-weight: 700; border-bottom: none;">Similar <span class="math">△</span></div><div class="td" style="border-bottom: none;">Exist at every scale</div><div class="td" style="border-bottom: none;">AAA ⟹ congruence</div><div class="td" style="border-bottom: none;">AAA ⟹ congruence</div>
+            </div>
+
+            <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+              <div class="formula-row" style="flex-direction: column; gap: 4px;">
+                <span style="font-size: 16px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Euclidean distance</span>
+                <span class="formula-big" style="font-size: 28px;"><span class="math">d = √[(Δx)² + (Δy)²]</span></span>
+              </div>
+              <div class="formula-row" style="flex-direction: column; gap: 4px;">
+                <span style="font-size: 16px; font-weight: 700; color: var(--slide-teal); text-transform: uppercase; letter-spacing: 0.04em;">Hyperbolic distance</span>
+                <span class="formula-big" style="font-size: 28px;"><span class="math">d = arcosh(1 + 2|z−w|²/((1−|z|²)(1−|w|²)))</span></span>
+              </div>
+              <div class="formula-row" style="flex-direction: column; gap: 4px;">
+                <span style="font-size: 16px; font-weight: 700; color: var(--slide-violet); text-transform: uppercase; letter-spacing: 0.04em;">Spherical distance</span>
+                <span class="formula-big" style="font-size: 28px;"><span class="math">d = R · arccos(p⃗ · q⃗)</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Non-Euclidean Geometry</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 07: KEY FORMULA — Graduate level (Gauss-Bonnet) ====== -->
+    <section data-screen-label="07 Key Formula">
+      <div class="slide">
+        <div class="pat-grid"></div>
+        <div class="slide-pad">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <span class="tag-sm" style="background: var(--math-theorem-bg); color: var(--math-theorem-rule);">Graduate</span>
+            <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Gauss-Bonnet Theorem</h2>
+          </div>
+          <div class="title-rule"></div>
+
+          <div style="margin-top: 24px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div class="mbox mbox--thm" style="margin: 0;">
+                <div class="mbox-label">Theorem (Gauss-Bonnet, Global Form)</div>
+                <div class="mbox-body" style="text-align: center; padding: 12px 0;">
+                  <span style="font-size: 42px; display: block; margin-bottom: 12px;">
+                    <span class="math">∫∫<sub style="font-size: 24px;">M</sub> K dA &ensp;+&ensp; ∫<sub style="font-size: 24px;">∂M</sub> κ<sub style="font-size: 24px;">g</sub> ds &ensp;=&ensp; 2πχ(M)</span>
+                  </span>
+                </div>
+              </div>
+
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Term-by-term</div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="kp"><span class="kp-marker">K</span><span class="kp-text">Gaussian curvature — product of principal curvatures <span class="math">κ₁κ₂</span></span></div>
+                <div class="kp"><span class="kp-marker">κ<sub>g</sub></span><span class="kp-text">Geodesic curvature of the boundary curve</span></div>
+                <div class="kp"><span class="kp-marker">χ(M)</span><span class="kp-text">Euler characteristic = <span class="math">V − E + F</span> &ensp;(topological invariant)</span></div>
+              </div>
+
+              <div class="mbox mbox--rem" style="margin: 0; padding: 12px 18px 12px 22px;">
+                <div class="mbox-body" style="font-size: 20px; font-family: var(--font-sans); font-style: normal; color: var(--slide-muted);">
+                  For a closed surface (<span class="math">∂M = ∅</span>), the boundary integral vanishes and total curvature is determined purely by topology.
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-teal); text-transform: uppercase; letter-spacing: 0.04em;">Consequences</div>
+              <div class="table-grid" style="grid-template-columns: 140px 80px 1fr;">
+                <div class="th">Surface</div><div class="th"><span class="math">χ</span></div><div class="th">∫∫ <span class="math">K dA</span></div>
+                <div class="td" style="font-weight: 600;">Sphere</div><div class="td">2</div><div class="td"><span class="math">4π</span> &ensp;(constant <span class="math">K = 1/R²</span>)</div>
+                <div class="td" style="font-weight: 600;">Torus</div><div class="td">0</div><div class="td"><span class="math">0</span> &ensp;(positive and negative <span class="math">K</span> cancel)</div>
+                <div class="td" style="font-weight: 600; border-bottom: none;">Genus-<span class="math">g</span></div><div class="td" style="border-bottom: none;"><span class="math">2−2g</span></div><div class="td" style="border-bottom: none;"><span class="math">2π(2 − 2g)</span></div>
+              </div>
+              <div class="mbox mbox--ex" style="margin: 0; padding: 14px 20px 14px 24px;">
+                <div class="mbox-label" style="font-size: 16px;">Example — Geodesic Triangle on <span class="math">S²</span></div>
+                <div class="mbox-body" style="font-size: 22px; font-family: var(--font-sans); font-style: normal;">
+                  A triangle with angles <span class="math">π/2, π/2, π/2</span> encloses 1/8 of the sphere.<br>
+                  Area = <span class="math">R²(α + β + γ − π) = R² · π/2</span>.<br>
+                  The <strong>angular excess</strong> <span class="math">π/2</span> equals <span class="math">∫∫ K dA</span> over the triangle.
+                </div>
+              </div>
+              <div class="mbox mbox--warn" style="margin: 0; padding: 12px 18px 12px 22px;">
+                <div class="mbox-label" style="font-size: 16px;">Caveat</div>
+                <div class="mbox-body" style="font-size: 20px; font-family: var(--font-sans); font-style: normal; color: var(--slide-muted);">
+                  Gauss-Bonnet requires <span class="math">M</span> compact and oriented. For non-orientable surfaces, use <span class="math">πχ(M)</span> instead of <span class="math">2πχ(M)</span>.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Differential Geometry</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 08: WARNING — dense pitfalls ====== -->
+    <section data-screen-label="08 Warning">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Pitfalls in Coordinate Geometry</h2>
+          <div class="title-rule" style="background: var(--slide-amber);"></div>
+
+          <div style="margin-top: 24px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div class="mbox mbox--warn" style="margin: 0;">
+                <div class="mbox-label">Pitfall 1 — Slope of Vertical Lines</div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 23px; line-height: 1.55;">
+                  <span class="math">m = (y₂ − y₁)/(x₂ − x₁)</span> is <strong>undefined</strong> when <span class="math">x₁ = x₂</span>. Never write "slope = ∞" in proofs — use the parametric form <span class="math">(x₁, t)</span> or homogeneous coordinates <span class="math">[a : b : c]</span> instead.
+                </div>
+              </div>
+              <div class="mbox mbox--warn" style="margin: 0;">
+                <div class="mbox-label">Pitfall 2 — Angle Between Lines</div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 23px; line-height: 1.55;">
+                  <span class="math">tan θ = |m₁ − m₂| / (1 + m₁m₂)</span> fails when <span class="math">m₁m₂ = −1</span> (perpendicular lines, denominator zero). <strong>Correct approach:</strong> use the dot product <span class="math">cos θ = (û · v̂)</span> which works universally.
+                </div>
+              </div>
+              <div class="mbox mbox--warn" style="margin: 0;">
+                <div class="mbox-label">Pitfall 3 — Isometry ≠ Linear Map</div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 23px; line-height: 1.55;">
+                  Translations are isometries but <strong>not linear</strong>: <span class="math">T(0⃗) ≠ 0⃗</span>. Isometries are <em>affine</em> maps of the form <span class="math">f(x) = Ax + b</span> where <span class="math">A ∈ O(2)</span>. Confusing "linear" and "affine" breaks arguments about fixed points.
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-teal); text-transform: uppercase; letter-spacing: 0.04em;">Correct Patterns</div>
+              <div class="highlight-box" style="display: flex; flex-direction: column; gap: 12px; padding: 20px 24px;">
+                <div>
+                  <div style="font-size: 18px; font-weight: 700; color: var(--slide-accent); margin-bottom: 4px;">Lines via dot product (always works)</div>
+                  <div style="font-family: var(--font-math); font-size: 24px; font-style: italic;">n⃗ · (P − P₀) = 0 &ensp;where&ensp; n⃗ = (a, b)</div>
+                </div>
+                <div style="border-top: 1px solid var(--slide-border-light); padding-top: 12px;">
+                  <div style="font-size: 18px; font-weight: 700; color: var(--slide-accent); margin-bottom: 4px;">Angle via arctan2 (handles all quadrants)</div>
+                  <div style="font-family: var(--font-math); font-size: 24px; font-style: italic;">θ = atan2(det[û, v̂], û · v̂)</div>
+                </div>
+                <div style="border-top: 1px solid var(--slide-border-light); padding-top: 12px;">
+                  <div style="font-size: 18px; font-weight: 700; color: var(--slide-accent); margin-bottom: 4px;">Isometry decomposition</div>
+                  <div style="font-family: var(--font-math); font-size: 24px; font-style: italic;">f(x) = Ax + b, &ensp;A ∈ O(2), &ensp;b ∈ ℝ²</div>
+                </div>
+              </div>
+              <div class="mbox mbox--rem" style="margin: 0; padding: 12px 18px 12px 22px;">
+                <div class="mbox-body" style="font-size: 20px; font-family: var(--font-sans); font-style: normal; color: var(--slide-muted);">
+                  <strong>Rule of thumb:</strong> If a formula has a denominator, ask "when is it zero?" and handle that case separately or choose a formulation that avoids division.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Coordinate Geometry</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 09: EXERCISE — tiered difficulty ====== -->
+    <section data-screen-label="09 Exercise">
+      <div class="slide">
+        <div class="slide-pad">
+          <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Problem Set 3 — Isometries</h2>
+          <div class="title-rule" style="background: var(--slide-violet);"></div>
+
+          <div style="margin-top: 24px;" class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-violet); text-transform: uppercase; letter-spacing: 0.04em;">Undergraduate</div>
+              <div class="mbox mbox--exer" style="margin: 0; padding: 16px 22px 16px 26px;">
+                <div class="mbox-label" style="font-size: 16px;">Exercise 3.1 <span style="font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7;">★☆☆</span></div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 22px; line-height: 1.55;">
+                  Reflect <span class="math">P = (3, 7)</span> in the line <span class="math">y = x</span>. Verify that <span class="math">d(O, P) = d(O, P′)</span> and that the midpoint lies on <span class="math">y = x</span>.
+                </div>
+              </div>
+              <div class="mbox mbox--exer" style="margin: 0; padding: 16px 22px 16px 26px;">
+                <div class="mbox-label" style="font-size: 16px;">Exercise 3.2 <span style="font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7;">★☆☆</span></div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 22px; line-height: 1.55;">
+                  Show that the composition of reflections in <span class="math">y = 0</span> and <span class="math">y = 3</span> is a translation by <span class="math">(0, 6)</span>. What is the general formula for two parallel mirrors distance <span class="math">d</span> apart?
+                </div>
+              </div>
+              <div class="mbox mbox--exer" style="margin: 0; padding: 16px 22px 16px 26px;">
+                <div class="mbox-label" style="font-size: 16px;">Exercise 3.3 <span style="font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7;">★★☆</span></div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 22px; line-height: 1.55;">
+                  Prove: the composition of reflections in two lines meeting at angle <span class="math">θ</span> at point <span class="math">O</span> equals rotation <span class="math">R<sub>O, 2θ</sub></span>. <em>Hint:</em> use the matrix forms.
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Graduate</div>
+              <div class="mbox mbox--exer" style="margin: 0; padding: 16px 22px 16px 26px; border-left-color: var(--slide-accent); background: var(--math-theorem-bg);">
+                <div class="mbox-label" style="font-size: 16px; color: var(--slide-accent);">Exercise 3.4 <span style="font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7;">★★★</span></div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 22px; line-height: 1.55;">
+                  Prove the three reflections theorem: every isometry <span class="math">f</span> of <span class="math">ℝ²</span> factors as <span class="math">σ₃ ∘ σ₂ ∘ σ₁</span> (or fewer). Show the bound is tight by exhibiting a glide reflection that requires exactly 3.
+                </div>
+              </div>
+              <div class="mbox mbox--exer" style="margin: 0; padding: 16px 22px 16px 26px; border-left-color: var(--slide-accent); background: var(--math-theorem-bg);">
+                <div class="mbox-label" style="font-size: 16px; color: var(--slide-accent);">Exercise 3.5 <span style="font-weight: 500; text-transform: none; letter-spacing: 0; opacity: 0.7;">★★★</span></div>
+                <div class="mbox-body" style="font-style: normal; font-family: var(--font-sans); font-size: 22px; line-height: 1.55;">
+                  The isometry group Isom(<span class="math">ℝ²</span>) ≅ <span class="math">ℝ² ⋊ O(2)</span>. Identify the subgroup structure: show that translations form a normal subgroup, and the quotient is <span class="math">O(2)</span>. What are the conjugacy classes?
+                </div>
+              </div>
+              <div class="highlight-box" style="padding: 14px 20px; margin-top: 4px;">
+                <div style="font-size: 20px; font-weight: 600; color: var(--slide-accent); margin-bottom: 6px;">Hints &amp; References</div>
+                <div style="font-size: 20px; color: var(--slide-muted); line-height: 1.5;">
+                  <strong>3.1–3.3:</strong> Stillwell §3.6, use the formula <span class="math">σ<sub>ℓ</sub>(P) = P − 2(P·n̂)n̂</span><br>
+                  <strong>3.4:</strong> Follow the proof outline on slide 4; show glide reflection = <span class="math">T<sub>v</sub> ∘ σ<sub>ℓ</sub></span> with <span class="math">v ∥ ℓ</span><br>
+                  <strong>3.5:</strong> Artin, <em>Algebra</em> Ch. 5; compute <span class="math">(b, A)(c, B)(b, A)⁻¹</span> in the semidirect product
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Problem Set 3</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 10: SUMMARY — information-dense recap ====== -->
+    <section data-screen-label="10 Summary">
+      <div class="slide">
+        <div class="pat-grid"></div>
+        <div class="slide-pad">
+          <h2 style="font-size: 42px; font-weight: 700; color: var(--slide-ink);">Lecture 7 — Summary</h2>
+          <div class="title-rule"></div>
+
+          <div style="margin-top: 24px;" class="three-col">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-blue); text-transform: uppercase; letter-spacing: 0.04em;">Definitions</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-blue);">D1</span><span class="kp-text"><strong>Isometry</strong> — distance-preserving map <span class="math">f : ℝ² → ℝ²</span></span></div>
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-blue);">D2</span><span class="kp-text"><strong>Reflection</strong> <span class="math">σ<sub>ℓ</sub>(P) = P − 2(P·n̂)n̂</span></span></div>
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-blue);">D3</span><span class="kp-text"><strong>Orientation</strong> — det <span class="math">A = +1</span> (preserves) or <span class="math">−1</span> (reverses)</span></div>
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-blue);">D4</span><span class="kp-text"><strong>Glide reflection</strong> — translation ∥ mirror followed by reflection</span></div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em;">Key Results</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="kp"><span class="kp-marker">T1</span><span class="kp-text"><strong>Three Reflections Thm:</strong> every isometry = ≤ 3 reflections</span></div>
+                <div class="kp"><span class="kp-marker">T2</span><span class="kp-text"><strong>Classification:</strong> identity, translation, rotation, reflection, glide refl. — exhaustive</span></div>
+                <div class="kp"><span class="kp-marker">C1</span><span class="kp-text">2 reflections in intersecting lines at angle <span class="math">θ</span> → rotation by <span class="math">2θ</span></span></div>
+                <div class="kp"><span class="kp-marker">C2</span><span class="kp-text">2 reflections in parallel lines distance <span class="math">d</span> → translation by <span class="math">2d</span></span></div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 20px; font-weight: 700; color: var(--slide-teal); text-transform: uppercase; letter-spacing: 0.04em;">Connections</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-teal);">→</span><span class="kp-text">Isom(<span class="math">ℝ²</span>) ≅ <span class="math">ℝ² ⋊ O(2)</span> — semidirect product structure</span></div>
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-teal);">→</span><span class="kp-text">Generalizes to <span class="math">ℝⁿ</span>: every isometry = ≤ <span class="math">n + 1</span> reflections</span></div>
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-teal);">→</span><span class="kp-text">In Ch. 7: same structure for spherical (<span class="math">O(3)</span>) and hyperbolic (<span class="math">PSL(2,ℝ)</span>)</span></div>
+                <div class="kp"><span class="kp-marker" style="color: var(--slide-teal);">→</span><span class="kp-text">Wallpaper groups: 17 distinct symmetry groups of <span class="math">ℝ²</span> — classify via isometry types</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div style="padding: 18px 24px; border-radius: var(--radius-lg); background: var(--slide-bg-alt); border: 1px solid var(--slide-border-light);">
+              <div style="font-size: 18px; font-weight: 700; color: var(--slide-ink); margin-bottom: 4px;">Reading</div>
+              <div style="font-size: 20px; color: var(--slide-muted);">Stillwell §3.6–3.8, §4.1–4.3<br>Artin Ch. 5 (graduate)</div>
+            </div>
+            <div style="padding: 18px 24px; border-radius: var(--radius-lg); background: var(--slide-bg-alt); border: 1px solid var(--slide-border-light);">
+              <div style="font-size: 18px; font-weight: 700; color: var(--slide-ink); margin-bottom: 4px;">Problem Set</div>
+              <div style="font-size: 20px; color: var(--slide-muted);">Exercises 3.1–3.3 (UG) due Friday<br>Exercises 3.4–3.5 (Grad) due next Wed</div>
+            </div>
+            <div style="padding: 18px 24px; border-radius: var(--radius-lg); background: var(--slide-bg-alt); border: 1px solid var(--slide-border-light);">
+              <div style="font-size: 18px; font-weight: 700; color: var(--slide-ink); margin-bottom: 4px;">Next Lecture</div>
+              <div style="font-size: 20px; color: var(--slide-muted);">Vectors, inner products, rotation matrices, and the connection to complex multiplication</div>
+            </div>
+          </div>
+          <div class="slide-footer"><span>Geometry Atlas · Lecture 7 Summary</span></div>
+        </div>
+      </div>
+    </section>
+
+  </deck-stage>
+</body>
+</html>

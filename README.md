@@ -100,6 +100,17 @@ the source PDF open. That means each chapter should translate the book's ideas
 into diagrams, equations, small simulations, numeric checks, and applied labs
 that make the geometry inspectable.
 
+## Lecture Slide Design System
+
+The shared lecture-slide assets live in
+[`lecture-design-system`](./lecture-design-system). Use it for chapter-specific
+HTML decks, slide typography, semantic math boxes, `deck-stage.js`, and reusable
+SVG visualization patterns. Companion decks should live beside course artifacts
+as `<course>/artifacts/<chapter-or-unit>/slides/<chapter-id>-lecture.html`,
+with optional PDF/PPTX exports created only after the authored HTML deck passes
+QC. The repo-local Codex skill entry point is
+`.codex/skills/geometry-lecture-design/SKILL.md`.
+
 ## Implemented Courses
 
 | Course | Status | What the notebooks cover |

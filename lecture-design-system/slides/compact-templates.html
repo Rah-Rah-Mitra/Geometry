@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compact Lecture Slides — Template Set</title>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <script src="deck-stage.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <style>
+    body { margin: 0; background: #000; }
+
+    /* ============================================================
+       COMPACT SLIDE BASE
+       Tighter margins, no header/footer, maximum content area.
+       ============================================================ */
+    .sl {
+      width: 1920px; height: 1080px; position: relative; overflow: hidden;
+      font-family: var(--font-sans); color: var(--slide-ink); background: var(--slide-bg);
+      box-sizing: border-box;
+    }
+    .sl-pad {
+      padding: 56px 72px 48px;
+      height: 100%; box-sizing: border-box;
+      display: flex; flex-direction: column;
+    }
+
+    /* ============================================================
+       SLIDE TITLE — compact, no decorative rule
+       ============================================================ */
+    .sl-title {
+      font-family: var(--font-sans);
+      font-size: 42px; font-weight: 700; line-height: 1.15;
+      color: var(--slide-ink); margin: 0 0 20px 0;
+    }
+    .sl-title--accent { color: var(--slide-accent); }
+
+    /* ============================================================
+       CONTENT AREA — fills remaining space
+       ============================================================ */
+    .sl-content { flex: 1; display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+    /* ============================================================
+       TWO COLUMN with side annotation gutter
+       Main column ~70%, side column ~30% for diagrams/notes
+       ============================================================ */
+    .sl-grid { display: grid; gap: 40px; flex: 1; min-height: 0; }
+    .sl-grid--70-30 { grid-template-columns: 1fr 340px; }
+    .sl-grid--60-40 { grid-template-columns: 1fr 1fr; }
+    .sl-grid--50-50 { grid-template-columns: 1fr 1fr; }
+
+    /* ============================================================
+       MATH ENVIRONMENT BOXES — compact academic style
+       Tighter padding, smaller labels, no excessive rounding
+       ============================================================ */
+    .env {
+      padding: 16px 20px 16px 24px;
+      border-left: 3px solid;
+      border-radius: 3px;
+      margin: 0;
+    }
+    .env-head {
+      font-family: var(--font-sans);
+      font-size: 22px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .env-body {
+      font-family: var(--font-sans);
+      font-size: 26px; line-height: 1.55;
+      color: var(--slide-ink);
+    }
+    .env-body .math-il { font-family: var(--font-math); font-style: italic; }
+
+    /* Definition */
+    .env--def { background: var(--math-definition-bg); border-left-color: var(--math-definition-rule); }
+    .env--def .env-head { color: var(--math-definition-rule); }
+
+    /* Theorem / Proposition */
+    .env--thm { background: var(--math-theorem-bg); border-left-color: var(--math-theorem-rule); }
+    .env--thm .env-head { color: var(--math-theorem-rule); }
+
+    /* Proof */
+    .env--proof { background: var(--math-proof-bg); border-left-color: var(--math-proof-rule); }
+    .env--proof .env-head { color: var(--math-proof-rule); }
+
+    /* Example */
+    .env--ex { background: var(--math-example-bg); border-left-color: var(--math-example-rule); }
+    .env--ex .env-head { color: var(--math-example-rule); }
+
+    /* Warning */
+    .env--warn { background: var(--math-warning-bg); border-left-color: var(--math-warning-rule); }
+    .env--warn .env-head { color: var(--math-warning-rule); }
+
+    /* Exercise */
+    .env--exer { background: var(--math-exercise-bg); border-left-color: var(--math-exercise-rule); }
+    .env--exer .env-head { color: var(--math-exercise-rule); }
+
+    /* Note / Remark — very subtle */
+    .env--note { background: var(--math-remark-bg); border-left-color: var(--math-remark-rule); }
+    .env--note .env-head { color: var(--slide-muted); }
+
+    /* ============================================================
+       SIDE NOTE — small margin annotation
+       ============================================================ */
+    .side-note {
+      font-family: var(--font-sans);
+      font-size: 20px; line-height: 1.45;
+      color: var(--slide-muted);
+      padding: 12px 16px;
+      background: var(--math-warning-bg);
+      border-left: 3px solid var(--slide-amber);
+      border-radius: 3px;
+    }
+    .side-note strong { color: var(--slide-amber); }
+    .side-note--remark {
+      background: var(--math-remark-bg);
+      border-left-color: var(--math-remark-rule);
+    }
+    .side-note--remark strong { color: var(--slide-muted); }
+
+    /* ============================================================
+       BULLET LISTS — ▶ triangle style
+       ============================================================ */
+    .bl { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .bl li {
+      font-size: 26px; line-height: 1.5; padding-left: 32px; position: relative;
+    }
+    .bl li::before {
+      content: '▶'; position: absolute; left: 0; top: 0;
+      font-size: 16px; color: var(--slide-accent);
+      line-height: 1.5; /* align with text at 26px */
+      display: flex; align-items: center; height: 39px; /* 26 * 1.5 */
+    }
+    /* Sub-items with dash */
+    .bl li ul { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-direction: column; gap: 4px; }
+    .bl li ul li { font-size: 24px; padding-left: 24px; }
+    .bl li ul li::before {
+      content: '–'; font-size: 24px; color: var(--slide-muted);
+      height: 36px; /* 24 * 1.5 */
+    }
+
+    /* ============================================================
+       NUMBERED SUB-ITEMS — (1), (2), (3) style
+       ============================================================ */
+    .num-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: numlist; }
+    .num-list li {
+      font-size: 26px; line-height: 1.5; padding-left: 36px; position: relative;
+      counter-increment: numlist;
+    }
+    .num-list li::before {
+      content: '(' counter(numlist) ')';
+      position: absolute; left: 0; top: 0;
+      font-size: 24px; font-weight: 600; color: var(--slide-muted);
+    }
+
+    /* ============================================================
+       PROOF STRUCTURE — (⇒) / (⇐) cases
+       ============================================================ */
+    .proof-block { display: flex; flex-direction: column; gap: 10px; }
+    .proof-case { padding-left: 32px; position: relative; font-size: 24px; line-height: 1.55; }
+    .proof-case::before {
+      position: absolute; left: 0; top: 0;
+      font-weight: 700; font-size: 22px; color: var(--slide-accent);
+    }
+    .proof-case--fwd::before { content: '(⇒)'; }
+    .proof-case--bwd::before { content: '(⇐)'; }
+    .proof-case--case1::before { content: '▶'; font-size: 16px; }
+    .proof-case--case2::before { content: '▶'; font-size: 16px; }
+    .proof-therefore {
+      font-size: 24px; line-height: 1.55;
+      padding-left: 32px;
+    }
+    .proof-therefore::before { content: '∴ '; font-weight: 700; color: var(--slide-accent); }
+    .qed { float: right; font-size: 20px; color: var(--slide-muted); }
+
+    /* ============================================================
+       DISPLAY MATH — centered formula
+       ============================================================ */
+    .disp-math {
+      font-family: var(--font-math); font-style: italic;
+      font-size: 30px; text-align: center;
+      padding: 10px 0; color: var(--slide-ink);
+    }
+    .disp-math--lg { font-size: 36px; }
+    .disp-math--sm { font-size: 26px; }
+
+    /* ============================================================
+       INLINE DIAGRAM — small floating set/venn figure
+       ============================================================ */
+    .fig-inline {
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      border-radius: 4px; padding: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ============================================================
+       TABLE — truth tables, identity tables
+       ============================================================ */
+    .tbl { width: 100%; border-collapse: collapse; font-size: 24px; }
+    .tbl th {
+      text-align: left; font-weight: 700; padding: 10px 16px;
+      border-bottom: 2px solid var(--slide-border);
+      background: var(--slide-bg-alt); color: var(--slide-ink);
+    }
+    .tbl td {
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--slide-border-light);
+    }
+    .tbl tr:last-child td { border-bottom: none; }
+    .tbl--compact th, .tbl--compact td { padding: 6px 12px; font-size: 22px; }
+    .tbl .t { color: var(--slide-teal); font-weight: 600; }
+    .tbl .f { color: var(--slide-muted); }
+
+    /* ============================================================
+       QUESTION CALLOUT — encourages engagement
+       ============================================================ */
+    .question-box {
+      padding: 16px 20px;
+      background: var(--math-exercise-bg);
+      border-left: 3px solid var(--slide-violet);
+      border-radius: 3px;
+      font-size: 26px; line-height: 1.5;
+      color: var(--slide-ink);
+    }
+    .question-box strong { color: var(--slide-violet); }
+
+    /* ============================================================
+       IDENTITY TABLE — two-column duality (union | intersection)
+       ============================================================ */
+    .id-tbl { width: 100%; border-collapse: collapse; font-size: 24px; }
+    .id-tbl th {
+      text-align: left; font-weight: 700; padding: 10px 20px;
+      border-bottom: 2px solid var(--slide-border);
+      color: var(--slide-accent);
+    }
+    .id-tbl td {
+      padding: 8px 20px;
+      border-bottom: 1px solid var(--slide-border-light);
+      font-family: var(--font-math); font-style: italic; font-size: 26px;
+    }
+    .id-tbl td:first-child {
+      font-family: var(--font-sans); font-style: normal; font-weight: 600;
+      color: var(--slide-ink); width: 200px;
+    }
+    .id-tbl tr:last-child td { border-bottom: none; }
+
+    /* ============================================================
+       SLOGAN / HIGHLIGHT — inline emphasized text
+       ============================================================ */
+    .slogan {
+      font-size: 24px; font-weight: 600; font-style: italic;
+      color: var(--slide-accent);
+      padding: 8px 16px;
+      background: var(--math-theorem-bg);
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    /* ============================================================
+       SET BUBBLE — tiny inline element diagram
+       ============================================================ */
+    .set-bubble {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      border: 1.5px solid var(--slide-border);
+      font-size: 20px; color: var(--slide-muted);
+      background: var(--slide-bg-alt);
+    }
+
+    /* ============================================================
+       TITLE SLIDE — chapter opener (compact academic)
+       ============================================================ */
+    .title-slide {
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .title-inner { max-width: 1400px; }
+    .title-chapter {
+      font-size: 28px; font-weight: 600; color: var(--slide-accent);
+      letter-spacing: 0.02em; margin-bottom: 12px;
+    }
+    .title-main {
+      font-size: 64px; font-weight: 700; line-height: 1.1;
+      color: var(--slide-ink); letter-spacing: -0.01em;
+    }
+    .title-meta {
+      font-size: 24px; color: var(--slide-muted); margin-top: 28px;
+      line-height: 1.6;
+    }
+
+    /* ============================================================
+       PLAN SLIDE — outline with symbol markers
+       ============================================================ */
+    .plan-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .plan-list > li {
+      font-size: 26px; line-height: 1.5; padding-left: 32px; position: relative;
+    }
+    .plan-list > li::before {
+      content: '▶'; position: absolute; left: 0; top: 0;
+      font-size: 15px; color: var(--slide-accent);
+      display: flex; align-items: center; height: 39px;
+    }
+    .plan-list > li > ul {
+      list-style: none; padding: 0; margin: 2px 0 0; display: flex; flex-direction: column; gap: 2px;
+    }
+    .plan-list > li > ul > li {
+      font-size: 24px; padding-left: 24px; position: relative; color: var(--slide-muted);
+    }
+    .plan-list > li > ul > li::before {
+      content: '–'; position: absolute; left: 4px; top: 0;
+      font-size: 24px; color: var(--slide-border);
+    }
+    .plan-sym {
+      font-family: var(--font-math); font-style: italic;
+      color: var(--slide-blue); font-weight: 400;
+    }
+
+    /* Subtle grid background pattern */
+    .pat-subtle {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(to right, rgba(30,58,138,0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30,58,138,0.02) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* KaTeX overrides for slide scale */
+    .katex { font-size: 1em !important; }
+    .katex-display { margin: 8px 0 !important; }
+  </style>
+</head>
+<body>
+  <deck-stage>
+
+    <!-- ====== 01: TITLE — Chapter Opener ====== -->
+    <section data-screen-label="01 Title">
+      <div class="sl title-slide">
+        <div class="pat-subtle"></div>
+        <div class="title-inner">
+          <div class="title-chapter">Chapter 4: Sets</div>
+          <div class="title-main">Sets</div>
+          <div class="title-meta">
+            CS1231 Discrete Structures<br>
+            Wong Tin Lok<br>
+            National University of Singapore<br>
+            2024/25 Semester 1
+          </div>
+          <!-- Small contextual diagram -->
+          <svg viewBox="0 0 360 200" width="360" style="margin-top: 32px; opacity: 0.85;" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="120" cy="100" rx="100" ry="75" fill="none" stroke="#1E3A8A" stroke-width="1.5" opacity="0.3"/>
+            <ellipse cx="240" cy="100" rx="100" ry="75" fill="none" stroke="#0F766E" stroke-width="1.5" opacity="0.3"/>
+            <text x="70" y="90" font-size="16" fill="#1E3A8A" font-family="Source Sans 3, sans-serif" font-weight="600">philosophy</text>
+            <text x="60" y="120" font-size="14" fill="#475569" font-family="Source Sans 3, sans-serif">ontology</text>
+            <text x="60" y="140" font-size="14" fill="#475569" font-family="Source Sans 3, sans-serif">cognitive science</text>
+            <text x="250" y="80" font-size="16" fill="#0F766E" font-family="Source Sans 3, sans-serif" font-weight="600">maths</text>
+            <text x="250" y="105" font-size="14" fill="#475569" font-family="Source Sans 3, sans-serif">calculus</text>
+            <text x="250" y="125" font-size="14" fill="#475569" font-family="Source Sans 3, sans-serif">combinatorics</text>
+            <text x="155" y="75" font-size="16" fill="#2563EB" font-family="Source Sans 3, sans-serif" font-weight="700">cs</text>
+            <text x="140" y="105" font-size="14" fill="#475569" font-family="Source Sans 3, sans-serif">programming</text>
+            <text x="152" y="140" font-size="18" fill="#B45309" font-family="Source Sans 3, sans-serif" font-weight="700">set</text>
+            <text x="140" y="158" font-size="13" fill="#475569" font-family="Source Sans 3, sans-serif">theory</text>
+            <text x="170" y="55" font-size="16" fill="#475569" font-family="Source Sans 3, sans-serif">?</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 02: PLAN — Dense Outline ====== -->
+    <section data-screen-label="02 Plan">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Plan</h2>
+          <div class="sl-grid sl-grid--70-30">
+            <div>
+              <ul class="plan-list">
+                <li>membership <span class="plan-sym">∈</span></li>
+                <li>ways to specify sets
+                  <ul>
+                    <li>the set of all …</li>
+                    <li>roster notation</li>
+                    <li>set-builder notation</li>
+                    <li>replacement notation</li>
+                    <li>the unique set that satisfies a property</li>
+                  </ul>
+                </li>
+                <li>set equality <span class="plan-sym">=</span></li>
+                <li>inclusion <span class="plan-sym">⊆</span></li>
+                <li>power sets <span class="plan-sym">𝒫</span></li>
+                <li>unions <span class="plan-sym">∪</span>, intersections <span class="plan-sym">∩</span>, complements <span class="plan-sym">‾</span></li>
+                <li>set identities and their proofs</li>
+                <li>Venn diagrams</li>
+                <li style="color: var(--slide-muted);">(extra) Russell's Paradox</li>
+              </ul>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 20px; justify-content: center;">
+              <!-- Venn diagram thumbnail -->
+              <svg viewBox="0 0 280 200" width="280" style="align-self: center;" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="260" height="180" rx="4" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+                <text x="255" y="28" font-size="14" fill="#64748B" font-family="Source Sans 3, sans-serif" font-weight="600">U</text>
+                <circle cx="115" cy="105" r="60" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="1.5"/>
+                <circle cx="175" cy="105" r="60" fill="rgba(15,118,110,0.08)" stroke="#0F766E" stroke-width="1.5"/>
+                <text x="90" y="110" font-size="20" fill="#2563EB" font-family="Source Sans 3, sans-serif" font-weight="700">A</text>
+                <text x="185" y="110" font-size="20" fill="#0F766E" font-family="Source Sans 3, sans-serif" font-weight="700">B</text>
+              </svg>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                <span class="set-bubble"><span class="plan-sym">1</span></span>
+                <span class="set-bubble"><span class="plan-sym">2, 3</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 03: DEFINITION — with side warning ====== -->
+    <section data-screen-label="03 Definition (Sets)">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Sets</h2>
+          <div class="sl-grid sl-grid--70-30">
+            <div class="sl-content">
+              <div style="font-size: 26px; line-height: 1.55; margin-bottom: 8px;">
+                <strong>Why sets?</strong>
+              </div>
+              <ul class="bl">
+                <li>The language of sets is an important part of modern mathematical discourse.</li>
+                <li>Sets are interesting mathematical objects.</li>
+                <li>For this course, they provide a topic on which we practise writing and understanding proofs.</li>
+              </ul>
+
+              <div class="env env--def" style="margin-top: 12px;">
+                <div class="env-head">Definition 4.1.1</div>
+                <div class="env-body">
+                  <ol class="num-list">
+                    <li>A <em>set</em> is an unordered collection of objects.</li>
+                    <li>These objects are called the <em>members</em> or <em>elements</em> of the set.</li>
+                    <li>Write <span class="math-il">x ∈ A</span> for <em>x is an element of A</em>;<br>
+                        <span class="math-il">x ∉ A</span> for <em>x is not an element of A</em>.</li>
+                    <li>We may read <span class="math-il">x ∈ A</span> also as "x is in A" or "A contains x (as an element)".</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px; padding-top: 200px;">
+              <div class="side-note">
+                <strong>Warning 4.1.2.</strong> Some use "contains" for the subset relation, but we do not.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 04: ROSTER NOTATION — with inline diagrams ====== -->
+    <section data-screen-label="04 Roster Notation">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Specifying a Set by Listing Out All Its Elements</h2>
+          <div class="sl-content">
+            <div class="env env--def">
+              <div class="env-head">Definition 4.1.3 (roster notation)</div>
+              <div class="env-body">
+                <ol class="num-list">
+                  <li>The set whose only elements are <span class="math-il">x₁, x₂, …, xₙ</span> is denoted <span class="math-il">{x₁, x₂, …, xₙ}</span>.</li>
+                  <li>The set whose only elements are <span class="math-il">x₁, x₂, x₃, …</span> is denoted <span class="math-il">{x₁, x₂, x₃, …}</span>.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="env env--note">
+              <div class="env-head">Note 4.1.4</div>
+              <div class="env-body">
+                For all objects <span class="math-il">x₁, x₂, …, xₙ, z</span>,<br>
+                <span style="display: inline-block; margin: 4px 0 0 24px;"><span class="math-il">z ∈ {x₁, x₂, …, xₙ}</span> ⟺ <span class="math-il">z</span> appears in the list <span class="math-il">x₁, x₂, …, xₙ</span>.</span>
+              </div>
+            </div>
+
+            <div class="sl-grid sl-grid--60-40" style="flex: 1;">
+              <div>
+                <div class="env env--ex" style="margin-bottom: 12px;">
+                  <div class="env-head">Example 4.1.5</div>
+                  <div class="env-body" style="font-size: 24px;">
+                    <ol class="num-list">
+                      <li style="font-size: 24px;">The only elements of <span class="math-il">A = {1, 5, 6, 3, 3, 3}</span> are 1, 5, 6 and 3.<br>
+                          So <span class="math-il">6 ∈ A</span> but <span class="math-il">7 ∉ A</span>.</li>
+                      <li style="font-size: 24px;">The only elements of <span class="math-il">B = {0, 2, 4, 6, 8, …}</span> are the non-negative even integers.<br>
+                          So <span class="math-il">4 ∈ B</span> but <span class="math-il">5 ∉ B</span>.</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px; justify-content: center; align-items: center;">
+                <!-- Set bubble diagrams -->
+                <svg viewBox="0 0 200 80" width="200" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="100" cy="40" rx="90" ry="35" fill="rgba(37,99,235,0.06)" stroke="#2563EB" stroke-width="1.2"/>
+                  <text x="30" y="45" font-size="18" fill="#111827" font-family="STIX Two Text, serif" font-style="italic">1, 5, 6,</text>
+                  <text x="115" y="45" font-size="18" fill="#111827" font-family="STIX Two Text, serif" font-style="italic">3, 3, 3</text>
+                </svg>
+                <svg viewBox="0 0 200 80" width="200" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="100" cy="40" rx="90" ry="35" fill="rgba(15,118,110,0.06)" stroke="#0F766E" stroke-width="1.2"/>
+                  <text x="22" y="45" font-size="18" fill="#111827" font-family="STIX Two Text, serif" font-style="italic">0, 2, 4, 6, 8, …</text>
+                </svg>
+
+                <div class="question-box" style="font-size: 24px; margin-top: 8px; width: 100%;">
+                  <strong>Question</strong><br>
+                  What are the elements of {2, 3, …}?<br>All integers <span class="math-il">x ⩾ 2</span>?
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 05: SET-BUILDER NOTATION — with universe diagram ====== -->
+    <section data-screen-label="05 Set-Builder Notation">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Specifying a Set by Describing Its Elements</h2>
+          <div class="sl-grid sl-grid--70-30">
+            <div class="sl-content">
+              <div class="env env--def">
+                <div class="env-head">Definition 4.1.6 (set-builder notation)</div>
+                <div class="env-body">
+                  Let <span class="math-il">U</span> be a set and <span class="math-il">P(x)</span> be a predicate over <span class="math-il">U</span>. Then the set of all elements <span class="math-il">x ∈ U</span> such that <span class="math-il">P(x)</span> is true is denoted<br>
+                  <span style="display: block; text-align: center; margin: 8px 0; font-size: 30px; font-family: var(--font-math); font-style: italic;">{x ∈ U : P(x)}</span>
+                  This is read as "the set of all x in U such that P(x)".
+                </div>
+              </div>
+
+              <div class="env env--note">
+                <div class="env-head">Note 4.1.7</div>
+                <div class="env-body" style="font-size: 24px;">
+                  For all objects <span class="math-il">z</span>,&ensp;
+                  <span class="math-il">z ∈ {x ∈ U : P(x)}</span> ⟺ <span class="math-il">z ∈ U</span> and <span class="math-il">P(z)</span> is true.
+                </div>
+              </div>
+
+              <div class="env env--ex">
+                <div class="env-head">Example 4.1.8</div>
+                <div class="env-body" style="font-size: 24px;">
+                  <ol class="num-list">
+                    <li style="font-size: 24px;">The elements of <span class="math-il">C = {x ∈ ℤ<sub>⩾0</sub> : x is even}</span> are the non-negative even integers. So <span class="math-il">6 ∈ C</span> but <span class="math-il">7 ∉ C</span>.</li>
+                    <li style="font-size: 24px;">The elements of <span class="math-il">D = {x ∈ ℤ : x is a prime number}</span> are the prime integers. So <span class="math-il">7 ∈ D</span> but <span class="math-il">9 ∉ D</span>.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: flex-start; padding-top: 24px;">
+              <!-- Universe diagram -->
+              <svg viewBox="0 0 260 220" width="260" style="align-self: center;" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="240" height="200" rx="6" fill="rgba(30,58,138,0.03)" stroke="#CBD5E1" stroke-width="1.5"/>
+                <text x="230" y="30" font-size="16" fill="#64748B" font-family="Source Sans 3, sans-serif" font-weight="700">U</text>
+                <ellipse cx="130" cy="120" rx="80" ry="55" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="1.5"/>
+                <text x="85" y="105" font-size="14" fill="#2563EB" font-family="Source Sans 3, sans-serif" font-weight="600">those x</text>
+                <text x="80" y="122" font-size="14" fill="#2563EB" font-family="Source Sans 3, sans-serif" font-weight="600">satisfying P(x)</text>
+                <text x="40" y="50" font-size="13" fill="#94A3B8" font-family="Source Sans 3, sans-serif">those x</text>
+                <text x="40" y="66" font-size="13" fill="#94A3B8" font-family="Source Sans 3, sans-serif">satisfying ¬P(x)</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 06: SET EQUALITY — compact examples + proof ====== -->
+    <section data-screen-label="06 Set Equality">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Equality of Sets: Examples</h2>
+          <div class="sl-content">
+            <div class="sl-grid sl-grid--60-40">
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="env env--ex" style="padding: 12px 20px 12px 24px;">
+                  <div class="env-head">Example 4.1.13</div>
+                  <div class="env-body">
+                    <span class="math-il">{1, 5, 6, 3, 3, 3} = {1, 5, 6, 3} = {1, 3, 5, 6}</span>.
+                  </div>
+                </div>
+
+                <div class="slogan">Slogan 4.1.14.&ensp; Order and repetition do not matter.</div>
+
+                <div class="env env--ex" style="padding: 12px 20px 12px 24px;">
+                  <div class="env-head">Example 4.1.15</div>
+                  <div class="env-body" style="font-size: 24px;">
+                    <span class="math-il">{y² : y is an odd integer} = {x ∈ ℤ : x = y² for some odd integer y} = {1², 3², 5², …}</span>.
+                  </div>
+                </div>
+
+                <div class="env env--ex" style="padding: 12px 20px 12px 24px;">
+                  <div class="env-head">Example 4.1.16</div>
+                  <div class="env-body">
+                    <span class="math-il">{x ∈ ℤ : x² = 1} = {1, −1}</span>.
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="env env--proof">
+                  <div class="env-head">Proof</div>
+                  <div class="env-body" style="font-size: 22px; font-family: var(--font-sans); font-style: normal;">
+                    <div class="proof-block">
+                      <div class="proof-case proof-case--fwd" style="font-size: 22px;">
+                        Take any <span class="math-il">z ∈ {x ∈ ℤ : x² = 1}</span>. Then <span class="math-il">z ∈ ℤ</span> and <span class="math-il">z² = 1</span>. So<br>
+                        <span style="margin-left: 12px;"><span class="math-il">z² − 1 = (z − 1)(z + 1) = 0</span>.</span><br>
+                        <span class="proof-therefore" style="padding-left: 0;">z − 1 = 0 or z + 1 = 0.</span><br>
+                        <span class="proof-therefore" style="padding-left: 0;">z = 1 or z = −1.</span><br>
+                        This means <span class="math-il">z ∈ {1, −1}</span>.
+                      </div>
+                      <div class="proof-case proof-case--bwd" style="font-size: 22px;">
+                        Take any <span class="math-il">z ∈ {1, −1}</span>. Then <span class="math-il">z = 1</span> or <span class="math-il">z = −1</span>. In either case, <span class="math-il">z ∈ ℤ</span> and <span class="math-il">z² = 1</span>. So <span class="math-il">z ∈ {x ∈ ℤ : x² = 1}</span>.<span class="qed">∎</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 07: EMPTY SET — theorem + proof ====== -->
+    <section data-screen-label="07 Empty Set">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">The Empty Set</h2>
+          <div class="sl-content">
+            <div class="env env--thm">
+              <div class="env-head">Theorem 4.1.18</div>
+              <div class="env-body">
+                There exists a unique set with no element, i.e.,
+                <ul class="bl" style="margin-top: 6px;">
+                  <li>there is a set with no element; and <span style="color: var(--slide-muted); font-size: 22px;">(existence)</span></li>
+                  <li>for all sets <span class="math-il">A, B</span>, if both <span class="math-il">A</span> and <span class="math-il">B</span> have no element, then <span class="math-il">A = B</span>. <span style="color: var(--slide-muted); font-size: 22px;">(uniqueness)</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="env env--proof" style="flex: 1;">
+              <div class="env-head">Proof</div>
+              <div class="env-body" style="font-family: var(--font-sans); font-style: normal; font-size: 24px;">
+                <div class="proof-block">
+                  <div>
+                    <strong style="color: var(--slide-accent);">▶ (existence)</strong>&ensp; The set <span class="math-il">{}</span> has no element.
+                  </div>
+                  <div style="margin-top: 12px;">
+                    <strong style="color: var(--slide-accent);">▶ (uniqueness)</strong>&ensp; Let <span class="math-il">A, B</span> be sets with no element. Then vacuously,
+                    <div class="disp-math disp-math--sm">∀z (z ∈ A ⇒ z ∈ B) &ensp;and&ensp; ∀z (z ∈ B ⇒ z ∈ A)</div>
+                    because the hypotheses in the implications are never true. So <span class="math-il">A = B</span>.<span class="qed">∎</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="env env--def" style="padding: 12px 20px 12px 24px;">
+              <div class="env-head">Definition 4.1.19</div>
+              <div class="env-body">
+                The set with no element is called the <em>empty set</em>. It is denoted by <span class="math-il" style="font-size: 30px;">∅</span>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 08: INCLUSION — definition + examples ====== -->
+    <section data-screen-label="08 Inclusion">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Inclusion of Sets</h2>
+          <div class="sl-grid sl-grid--60-40">
+            <div class="sl-content">
+              <div class="env env--def">
+                <div class="env-head">Definition 4.2.1</div>
+                <div class="env-body">
+                  Let <span class="math-il">A, B</span> be sets. Call <span class="math-il">A</span> a <em>subset</em> of <span class="math-il">B</span>, and write <span class="math-il">A ⊆ B</span>, if
+                  <div class="disp-math">∀z (z ∈ A ⇒ z ∈ B).</div>
+                  Alternatively, we may say that <span class="math-il">B</span> <em>includes</em> <span class="math-il">A</span>, and write <span class="math-il">B ⊇ A</span>.
+                </div>
+              </div>
+
+              <div class="env env--ex" style="padding: 12px 20px 12px 24px;">
+                <div class="env-head">Example 4.2.3 and Example 4.2.6</div>
+                <div class="env-body" style="font-size: 24px;">
+                  <ol class="num-list">
+                    <li style="font-size: 24px;"><span class="math-il">{1, 5, 2} ⊊ {5, 2, 1, 44}</span>&ensp; but &ensp;<span class="math-il">{1, 55, 2} ⊄ {2, 1, 4}</span>.</li>
+                    <li style="font-size: 24px;"><span class="math-il">ℕ ⊆ ℤ ⊆ ℚ ⊆ ℝ ⊆ ℂ</span>.&ensp; All these inclusions are proper.</li>
+                  </ol>
+                </div>
+              </div>
+
+              <div class="env env--note" style="padding: 12px 20px 12px 24px;">
+                <div class="env-head">Remark 4.2.4</div>
+                <div class="env-body" style="font-size: 24px;">
+                  <ol class="num-list">
+                    <li style="font-size: 24px;"><span class="math-il">A ⊄ B</span> ⟺ <span class="math-il">∃z (z ∈ A and z ∉ B)</span>.</li>
+                    <li style="font-size: 24px;"><span class="math-il">A = B</span> ⟺ <span class="math-il">A ⊆ B</span> and <span class="math-il">B ⊆ A</span>.</li>
+                    <li style="font-size: 24px;"><span class="math-il">A ⊆ A</span>.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="env env--def" style="padding: 12px 20px 12px 24px;">
+                <div class="env-head">Definition 4.2.5</div>
+                <div class="env-body" style="font-size: 23px;">
+                  Call <span class="math-il">A</span> a <em>proper subset</em> of <span class="math-il">B</span>, write <span class="math-il">A ⊊ B</span>, if <span class="math-il">A ⊆ B</span> and <span class="math-il">A ≠ B</span>.
+                </div>
+              </div>
+
+              <div class="side-note--remark side-note">
+                <strong>Note 4.2.2.</strong> We avoid using the symbol ⊂ because it may have different meanings to different people.
+              </div>
+
+              <!-- Subset diagram -->
+              <div class="fig-inline" style="flex: 1;">
+                <svg viewBox="0 0 260 180" width="260" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="140" cy="90" rx="110" ry="75" fill="rgba(15,118,110,0.05)" stroke="#0F766E" stroke-width="1.5"/>
+                  <ellipse cx="110" cy="95" rx="60" ry="45" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="1.5"/>
+                  <text x="80" y="100" font-size="18" fill="#2563EB" font-family="Source Sans 3, sans-serif" font-weight="700">A</text>
+                  <text x="200" y="70" font-size="18" fill="#0F766E" font-family="Source Sans 3, sans-serif" font-weight="700">B</text>
+                  <text x="130" y="25" font-size="16" fill="#64748B" font-family="Source Sans 3, sans-serif" font-weight="600">A ⊆ B</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 09: BOOLEAN OPERATIONS — triple definition ====== -->
+    <section data-screen-label="09 Boolean Operations">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Boolean Operations</h2>
+          <div class="sl-content">
+            <div class="env env--def">
+              <div class="env-head">Definition 4.3.1</div>
+              <div class="env-body" style="font-size: 24px;">
+                <div style="display: grid; grid-template-columns: 1fr 200px; gap: 12px 32px; align-items: start;">
+                  <div>
+                    <strong>(1)</strong>&ensp; The <em>union</em> of <span class="math-il">A</span> and <span class="math-il">B</span>: &ensp;
+                    <span class="math-il" style="font-size: 28px;">A ∪ B = {x : x ∈ A or x ∈ B}</span>
+                  </div>
+                  <svg viewBox="0 0 160 100" width="140" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="50" r="35" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="1"/>
+                    <circle cx="100" cy="50" r="35" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="1"/>
+                    <text x="42" y="55" font-size="14" fill="#1E3A8A" font-family="Source Sans 3" font-weight="700">A</text>
+                    <text x="108" y="55" font-size="14" fill="#1E3A8A" font-family="Source Sans 3" font-weight="700">B</text>
+                  </svg>
+                  <div>
+                    <strong>(2)</strong>&ensp; The <em>intersection</em> of <span class="math-il">A</span> and <span class="math-il">B</span>: &ensp;
+                    <span class="math-il" style="font-size: 28px;">A ∩ B = {x : x ∈ A and x ∈ B}</span>
+                  </div>
+                  <svg viewBox="0 0 160 100" width="140" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="50" r="35" fill="none" stroke="#CBD5E1" stroke-width="1"/>
+                    <circle cx="100" cy="50" r="35" fill="none" stroke="#CBD5E1" stroke-width="1"/>
+                    <clipPath id="clipA"><circle cx="60" cy="50" r="35"/></clipPath>
+                    <circle cx="100" cy="50" r="35" fill="rgba(37,99,235,0.15)" clip-path="url(#clipA)"/>
+                    <text x="42" y="55" font-size="14" fill="#1E3A8A" font-family="Source Sans 3" font-weight="700">A</text>
+                    <text x="108" y="55" font-size="14" fill="#1E3A8A" font-family="Source Sans 3" font-weight="700">B</text>
+                  </svg>
+                  <div>
+                    <strong>(3)</strong>&ensp; The <em>complement</em> of <span class="math-il">B</span> in <span class="math-il">A</span>: &ensp;
+                    <span class="math-il" style="font-size: 28px;">A \ B = {x : x ∈ A and x ∉ B}</span>
+                  </div>
+                  <svg viewBox="0 0 160 100" width="140" xmlns="http://www.w3.org/2000/svg">
+                    <clipPath id="clipNotB"><rect x="0" y="0" width="160" height="100"/><circle cx="100" cy="50" r="35"/></clipPath>
+                    <circle cx="60" cy="50" r="35" fill="rgba(37,99,235,0.15)" clip-path="url(#clipNotB)" clip-rule="evenodd"/>
+                    <circle cx="60" cy="50" r="35" fill="none" stroke="#2563EB" stroke-width="1"/>
+                    <circle cx="100" cy="50" r="35" fill="none" stroke="#CBD5E1" stroke-width="1"/>
+                    <text x="32" y="55" font-size="14" fill="#1E3A8A" font-family="Source Sans 3" font-weight="700">A</text>
+                    <text x="108" y="55" font-size="14" fill="#1E3A8A" font-family="Source Sans 3" font-weight="700">B</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="sl-grid sl-grid--60-40" style="flex: 1;">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="env env--note" style="padding: 12px 20px 12px 24px;">
+                  <div class="env-head" style="font-size: 20px;">Convention 4.3.2</div>
+                  <div class="env-body" style="font-size: 23px;">
+                    When working in a context where <span class="math-il">U</span> is a fixed <em>universal set</em> including all sets one considers.
+                  </div>
+                </div>
+                <div class="env env--def" style="padding: 12px 20px 12px 24px;">
+                  <div class="env-head" style="font-size: 20px;">Definition 4.3.3</div>
+                  <div class="env-body" style="font-size: 23px;">
+                    The <em>complement</em> of <span class="math-il">B</span>:&ensp;
+                    <span class="math-il" style="font-size: 26px;">B̄ = Bᶜ = U \ B</span>.
+                  </div>
+                </div>
+              </div>
+              <div class="fig-inline">
+                <svg viewBox="0 0 220 160" width="220" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="10" y="10" width="200" height="140" rx="4" fill="rgba(37,99,235,0.06)" stroke="#CBD5E1" stroke-width="1.5"/>
+                  <circle cx="120" cy="85" r="40" fill="white" stroke="#2563EB" stroke-width="1.5"/>
+                  <text x="192" y="28" font-size="14" fill="#64748B" font-family="Source Sans 3" font-weight="700">U</text>
+                  <text x="112" y="90" font-size="18" fill="#2563EB" font-family="Source Sans 3" font-weight="700">B</text>
+                  <text x="35" y="45" font-size="16" fill="#1E3A8A" font-family="Source Sans 3" font-weight="600">B̄</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 10: SET IDENTITIES TABLE — dual columns ====== -->
+    <section data-screen-label="10 Set Identities">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Set Identities <span style="font-size: 28px; font-weight: 400; color: var(--slide-muted);">(Theorem 4.3.5)</span></h2>
+          <div class="sl-content" style="font-size: 24px; color: var(--slide-muted); margin-bottom: 4px;">
+            For all sets <span class="math-il">A, B, C</span> in a context where <span class="math-il">U</span> is the universal set, the following hold.
+          </div>
+          <div class="sl-content" style="flex: 1;">
+            <table class="id-tbl">
+              <thead>
+                <tr>
+                  <th style="width: 200px;"></th>
+                  <th><span style="color: var(--slide-blue);">∪ form</span></th>
+                  <th><span style="color: var(--slide-teal);">∩ form</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Commutativity</td><td>A ∪ B = B ∪ A</td><td>A ∩ B = B ∩ A</td></tr>
+                <tr><td>Associativity</td><td>(A ∪ B) ∪ C = A ∪ (B ∪ C)</td><td>(A ∩ B) ∩ C = A ∩ (B ∩ C)</td></tr>
+                <tr><td>Distributivity</td><td>A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C)</td><td>A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C)</td></tr>
+                <tr><td>Idempotence</td><td>A ∪ A = A</td><td>A ∩ A = A</td></tr>
+                <tr><td>Absorption</td><td>A ∪ (A ∩ B) = A</td><td>A ∩ (A ∪ B) = A</td></tr>
+                <tr><td>De Morgan's Laws</td><td style="color: var(--slide-amber);">A ∪ B̄ = Ā ∩ B̄</td><td style="color: var(--slide-amber);">A ∩ B̄ = Ā ∪ B̄</td></tr>
+                <tr><td>Identities</td><td>A ∪ ∅ = A</td><td>A ∩ U = A</td></tr>
+                <tr><td>Annihilators</td><td>A ∪ U = U</td><td>A ∩ ∅ = ∅</td></tr>
+                <tr><td>Complement</td><td>A ∪ Ā = U</td><td>A ∩ Ā = ∅</td></tr>
+                <tr><td>Double Complement</td><td colspan="2" style="text-align: center;">(Ā̄) = A</td></tr>
+                <tr><td>Top and bottom</td><td>∅̄ = U</td><td>Ū = ∅</td></tr>
+                <tr><td>Set difference</td><td colspan="2" style="text-align: center;">A \ B = A ∩ B̄</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 11: TRUTH TABLE PROOF ====== -->
+    <section data-screen-label="11 Truth Table Proof">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Proving Set Identities Using Truth Tables</h2>
+          <div class="sl-content">
+            <div style="font-size: 24px; line-height: 1.5; margin-bottom: 8px;">
+              One of De Morgan's Laws. Work in the universal set <span class="math-il">U</span>. For all sets <span class="math-il">A, B</span>,
+              <div class="disp-math" style="margin: 6px 0;">
+                <span style="color: var(--slide-accent); font-weight: 600;">A ∪ B̄ = Ā ∩ B̄</span>
+              </div>
+            </div>
+
+            <div class="env env--proof" style="flex: 1;">
+              <div class="env-head">Proof #1</div>
+              <div class="env-body" style="font-family: var(--font-sans); font-style: normal; font-size: 22px;">
+                <div style="margin-bottom: 10px;">The rows in the following table list all the possibilities for an element <span class="math-il">x ∈ U</span>:</div>
+                <table class="tbl tbl--compact" style="font-size: 22px;">
+                  <thead>
+                    <tr>
+                      <th><span class="math-il">x ∈ A</span></th>
+                      <th><span class="math-il">x ∈ B</span></th>
+                      <th><span class="math-il">x ∈ A ∪ B</span></th>
+                      <th style="color: var(--slide-accent);"><span class="math-il">x ∈ A ∪ B̄</span></th>
+                      <th><span class="math-il">x ∈ Ā</span></th>
+                      <th><span class="math-il">x ∈ B̄</span></th>
+                      <th style="color: var(--slide-accent);"><span class="math-il">x ∈ Ā ∩ B̄</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td class="t">T</td><td class="t">T</td><td class="t">T</td><td class="f">F</td><td class="f">F</td><td class="f">F</td><td class="f">F</td></tr>
+                    <tr><td class="t">T</td><td class="f">F</td><td class="t">T</td><td class="f">F</td><td class="f">F</td><td class="t">T</td><td class="f">F</td></tr>
+                    <tr><td class="f">F</td><td class="t">T</td><td class="t">T</td><td class="f">F</td><td class="t">T</td><td class="f">F</td><td class="f">F</td></tr>
+                    <tr><td class="f">F</td><td class="f">F</td><td class="f">F</td><td class="t">T</td><td class="t">T</td><td class="t">T</td><td class="t">T</td></tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 10px;">
+                  Since the columns under "<span class="math-il">x ∈ A ∪ B̄</span>" and "<span class="math-il">x ∈ Ā ∩ B̄</span>" are the same, for any <span class="math-il">x ∈ U</span>,
+                  <span class="math-il">x ∈ A ∪ B̄</span> ⟺ <span class="math-il">x ∈ Ā ∩ B̄</span>. So <span class="math-il">A ∪ B̄ = Ā ∩ B̄</span>.<span class="qed">∎</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 12: DIRECT PROOF — chain of equivalences ====== -->
+    <section data-screen-label="12 Direct Proof">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Proving Set Identities Directly</h2>
+          <div class="sl-content">
+            <div style="font-size: 24px; line-height: 1.5; margin-bottom: 4px;">
+              One of De Morgan's Laws. Work in the universal set <span class="math-il">U</span>. For all sets <span class="math-il">A, B</span>,&ensp;
+              <span class="math-il" style="color: var(--slide-accent); font-weight: 600;">A ∪ B̄ = Ā ∩ B̄</span>.
+            </div>
+
+            <div class="env env--proof" style="flex: 1;">
+              <div class="env-head">Proof #2</div>
+              <div class="env-body" style="font-family: var(--font-sans); font-style: normal; font-size: 26px; line-height: 1.8;">
+                Let <span class="math-il">z ∈ U</span>. Then
+                <div style="margin: 12px 0 0 40px; display: flex; flex-direction: column; gap: 4px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div><span class="math-il" style="font-size: 28px; color: var(--slide-accent);">z ∈ A ∪ B̄</span></div>
+                    <div></div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>⟺ <span class="math-il">z ∉ A ∪ B</span></div>
+                    <div style="color: var(--slide-muted); font-size: 22px;">by the definition of  ̄· ;</div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>⟺ ¬(<span class="math-il">z ∈ A</span>) ∨ (<span class="math-il">z ∈ B</span>)</div>
+                    <div style="color: var(--slide-muted); font-size: 22px;">by the definition of ∪;</div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>⟺ (<span class="math-il">z ∉ A</span>) ∧ (<span class="math-il">z ∉ B</span>)</div>
+                    <div style="color: var(--slide-muted); font-size: 22px;">by De Morgan's Laws for propositions;</div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>⟺ (<span class="math-il">z ∈ Ā</span>) ∧ (<span class="math-il">z ∈ B̄</span>)</div>
+                    <div style="color: var(--slide-muted); font-size: 22px;">by the definition of  ̄· ;</div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>⟺ <span class="math-il" style="font-size: 28px; color: var(--slide-accent);">z ∈ Ā ∩ B̄</span></div>
+                    <div style="color: var(--slide-muted); font-size: 22px;">by the definition of ∩.<span class="qed" style="margin-left: 16px;">∎</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 13: RUSSELL'S PARADOX — focused question ====== -->
+    <section data-screen-label="13 Russell's Paradox">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Consternation <span style="font-size: 22px; font-weight: 400; color: var(--slide-muted); font-style: italic;">extra material</span></h2>
+          <div class="sl-grid sl-grid--60-40">
+            <div class="sl-content">
+              <div style="font-size: 24px; color: var(--slide-muted); font-style: italic; margin-bottom: 8px;">
+                "There is just one point where I have encountered a difficulty." — Russell (1902)
+              </div>
+              <div class="disp-math disp-math--lg" style="color: var(--slide-amber); margin-bottom: 12px;">
+                {x : x ∉ x} ?
+              </div>
+
+              <div class="env env--thm">
+                <div class="env-head">Theorem 4.4.3 (Russell 1901)</div>
+                <div class="env-body">
+                  There is no set <span class="math-il">R</span> such that
+                  <div class="disp-math">∀x (x ∈ R ⟺ x ∉ x). &ensp;&ensp;(∗)</div>
+                </div>
+              </div>
+
+              <div class="env env--proof" style="flex: 1;">
+                <div class="env-head">Proof (by contradiction)</div>
+                <div class="env-body" style="font-family: var(--font-sans); font-style: normal; font-size: 23px; line-height: 1.55;">
+                  Suppose <span class="math-il">R</span> is a set satisfying (∗). Applying (∗) to <span class="math-il">x = R</span> gives
+                  <div class="disp-math disp-math--sm">R ∈ R ⟺ R ∉ R. &ensp;&ensp;(†)</div>
+                  <div style="margin-top: 4px;">
+                    <strong style="color: var(--slide-accent);">▶ Case 1:</strong> assume <span class="math-il">R ∈ R</span>. Then <span class="math-il">R ∉ R</span> by the ⇒ part of (†). Contradiction.<br>
+                    <strong style="color: var(--slide-accent);">▶ Case 2:</strong> assume <span class="math-il">R ∉ R</span>. Then <span class="math-il">R ∈ R</span> by the ⇐ part of (†). Contradiction.
+                  </div>
+                  <div style="margin-top: 6px;">In either case, we get a contradiction.<span class="qed">∎</span></div>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 16px; justify-content: flex-end;">
+              <div class="env env--note" style="padding: 12px 16px;">
+                <div class="env-head" style="font-size: 18px;">Morals</div>
+                <div class="env-body" style="font-size: 22px; font-family: var(--font-sans); font-style: normal; color: var(--slide-muted);">
+                  <ul class="bl" style="gap: 4px;">
+                    <li style="font-size: 22px;">Some predicates do not correspond to any set.</li>
+                    <li style="font-size: 22px;">The set of all sets, if it exists, needs extreme care.</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="question-box" style="font-size: 22px;">
+                <strong>Question 4.4.4.</strong> Can you write a proof that does not mention contradiction?
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== 14: SUMMARY — dense recap ====== -->
+    <section data-screen-label="14 Summary">
+      <div class="sl">
+        <div class="sl-pad">
+          <h2 class="sl-title">Summary</h2>
+          <div class="sl-content">
+            <div style="font-size: 24px; line-height: 1.5; margin-bottom: 4px;">
+              Let <span class="math-il">A, B</span> be sets.
+            </div>
+            <div class="sl-grid sl-grid--60-40" style="flex: 1; gap: 32px;">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-blue);">Definition 4.1.1(3).</strong>&ensp; Write <span class="math-il">x ∈ A</span> for "x is an element of A".
+                </div>
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-accent);">Roster notation.</strong>&ensp; <span class="math-il">{x₁, x₂, …}</span>
+                </div>
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-accent);">Set-builder notation.</strong>&ensp; <span class="math-il">{x ∈ U : P(x)}</span> where <span class="math-il">P(x)</span> is a predicate over a set <span class="math-il">U</span>
+                </div>
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-accent);">Replacement notation.</strong>&ensp; <span class="math-il">{t(x) : x ∈ A}</span> where <span class="math-il">t(x)</span> is an object for each <span class="math-il">x ∈ A</span>
+                </div>
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-blue);">Definition 4.1.12.</strong>&ensp; <span class="math-il">A = B</span> ⟺ <span class="math-il">∀z (z ∈ A ⟺ z ∈ B)</span>.
+                </div>
+                <div class="slogan" style="font-size: 22px; padding: 6px 14px;">Slogan 4.1.14.&ensp; Order and repetition do not matter.</div>
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-blue);">Definition 4.1.19.</strong>&ensp; The empty set <span class="math-il">∅</span> is the unique set with no element.
+                </div>
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-blue);">Definition 4.2.12.</strong>&ensp; The power set <span class="math-il">𝒫(A)</span> of a set <span class="math-il">A</span> is the set of all subsets of <span class="math-il">A</span>.
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-blue);">Definition 4.2.1.</strong>&ensp; <span class="math-il">A ⊆ B</span> ⟺ <span class="math-il">∀z (z ∈ A ⇒ z ∈ B)</span>.
+                </div>
+                <div style="font-size: 23px; line-height: 1.55;">
+                  <strong style="color: var(--slide-blue);">Definition 4.2.5.</strong>&ensp; <span class="math-il">A ⊊ B</span> ⟺ <span class="math-il">A ⊆ B</span> and <span class="math-il">A ≠ B</span>.
+                </div>
+                <div style="border-top: 1px solid var(--slide-border-light); padding-top: 10px; margin-top: 4px;">
+                  <div style="font-size: 21px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px;">Definitions 4.3.1 and 4.3.3</div>
+                  <div style="font-size: 22px; line-height: 1.65; font-family: var(--font-math); font-style: italic;">
+                    A ∪ B = {x : (x ∈ A) ∨ (x ∈ B)}<br>
+                    A ∩ B = {x : (x ∈ A) ∧ (x ∈ B)}<br>
+                    A \ B = {x : (x ∈ A) ∧ (x ∉ B)}<br>
+                    B̄ = {x ∈ U : x ∉ B}
+                  </div>
+                </div>
+                <!-- Venn diagram thumbnail -->
+                <svg viewBox="0 0 240 140" width="200" style="align-self: center; margin-top: 8px;" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="8" y="8" width="224" height="124" rx="4" fill="none" stroke="#CBD5E1" stroke-width="1"/>
+                  <text x="218" y="24" font-size="12" fill="#64748B" font-family="Source Sans 3" font-weight="600">U</text>
+                  <circle cx="95" cy="72" r="40" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="1"/>
+                  <circle cx="145" cy="72" r="40" fill="rgba(15,118,110,0.08)" stroke="#0F766E" stroke-width="1"/>
+                  <text x="72" y="76" font-size="16" fill="#2563EB" font-family="Source Sans 3" font-weight="700">A</text>
+                  <text x="156" y="76" font-size="16" fill="#0F766E" font-family="Source Sans 3" font-weight="700">B</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </deck-stage>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>
