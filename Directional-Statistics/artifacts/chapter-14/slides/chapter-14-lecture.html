@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Directional Statistics - Chapter 14: Shape Analysis</title>
+  <meta name="course" content="Directional Statistics">
+  <meta name="chapter_id" content="chapter-14">
+  <meta name="chapter_title" content="Chapter 14: Shape Analysis">
+  <meta name="notebook_path" content="Directional-Statistics/part-03-general-sample-spaces-and-shape/chapter-14-shape-analysis/14-shape-analysis.ipynb">
+  <meta name="source_span" content="printed pages 303-348; PDF pages 317-361.">
+  <meta name="source_pdf" content="Directional-Statistics/Directional Statistics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400;1,600&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script id="deck-metadata" type="application/json">
+[
+  {
+    "course": "Directional Statistics",
+    "chapter_id": "chapter-14",
+    "chapter_title": "Chapter 14: Shape Analysis",
+    "notebook_path": "Directional-Statistics/part-03-general-sample-spaces-and-shape/chapter-14-shape-analysis/14-shape-analysis.ipynb",
+    "source_span": "printed pages 303-348; PDF pages 317-361.",
+    "source_pdf": "Directional-Statistics/Directional Statistics.pdf",
+    "design_system_version": "lecture-design-system-2026-05-23"
+  }
+]
+  </script>
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "title": "Shape Analysis",
+    "notes": "Open by reframing shape analysis as directional statistics after several quotient operations. The data begin as landmark coordinates, but the object of inference is not the drawing on the page. It is the configuration after translation, scale, and rotation have been treated as nuisance directions."
+  },
+  {
+    "slide": 2,
+    "title": "Lecture Route",
+    "notes": "Use the route slide to keep the chapter from becoming a catalog of methods. Every stop removes or models a specific geometric feature: centering removes location, normalization removes size, phase quotienting removes planar rotation, Procrustes summaries compare shapes, tangent coordinates approximate local variation, and complex directional families provide global models."
+  },
+  {
+    "slide": 3,
+    "title": "Landmarks As Complex Data",
+    "notes": "Establish the computational representation before any statistics appear. A planar landmark configuration is a complex vector, one entry per landmark. Similarity transformations move the entire vector in predictable ways, so the statistical task is to decide which parts of that movement are irrelevant to shape."
+  },
+  {
+    "slide": 4,
+    "title": "Helmert Preshape Pipeline",
+    "notes": "Explain the pipeline as a sequence of invariant filters. Subtracting the centroid and multiplying by a Helmert submatrix both remove the all-ones translation direction, while division by norm removes scale. The resulting preshape lies on a complex unit sphere, where rotations still act as a common phase."
+  },
+  {
+    "slide": 5,
+    "title": "Phase Orbits Are Shapes",
+    "notes": "Pause on the quotient because it is the conceptual hinge of the chapter. A preshape is one representative, but a shape is the entire circle of representatives obtained by common phase multiplication. Statistics on shape space must give the same answer anywhere along that orbit."
+  },
+  {
+    "slide": 6,
+    "title": "Procrustes Distance",
+    "notes": "Introduce Procrustes distance through the modulus of the complex inner product. The phase of the inner product tells how to align one preshape to the other, but its absolute value tells how close the shapes are after the best alignment. This is why the formula is invariant under separate similarity transformations."
+  },
+  {
+    "slide": 7,
+    "title": "Procrustes Mean",
+    "notes": "Describe the Procrustes mean as an averaging problem with alignment built in. Each observation is first rotated into the current frame, then the aligned representatives are averaged and renormalized. The mean is a shape class, so the displayed representative is only a convenient gauge."
+  },
+  {
+    "slide": 8,
+    "title": "Kendall Triangle Sphere",
+    "notes": "Use triangle shapes as the place where the quotient becomes visible. For three landmarks, complex projective shape space is an ordinary sphere under the Hopf coordinates. Flat triangles sit on an equator, mirror images live on opposite sides, and common phase rotations leave the plotted point fixed."
+  },
+  {
+    "slide": 9,
+    "title": "Tangent Shape Coordinates",
+    "notes": "Make the tangent approximation conditional rather than automatic. When shapes are concentrated near a Procrustes mean, aligned logarithmic residuals can be treated as horizontal tangent vectors. Horizontal means the vector changes shape rather than merely sliding along the phase orbit."
+  },
+  {
+    "slide": 10,
+    "title": "Shape PCA Modes",
+    "notes": "Interpret tangent PCA as a local deformation tool. Principal components in the tangent space should describe interpretable changes in landmark geometry, not translations, rotations, or scale. The notebook sample deliberately hides nuisance transformations so the recovery of deformation modes becomes a check on the geometry."
+  },
+  {
+    "slide": 11,
+    "title": "Complex Directional Models",
+    "notes": "Route model choice by sample space. Triangle shapes can be analyzed on the Kendall sphere, while general planar landmark shapes require phase-invariant models on complex projective space. Complex Bingham, Watson, and angular Gaussian families differ in how much anisotropy and robustness they allow."
+  },
+  {
+    "slide": 12,
+    "title": "Invariant Stress Test",
+    "notes": "Turn the applied lab into an acceptance test. Raw coordinate gaps change dramatically under separate similarity transformations, but Procrustes shape distance stays fixed to numerical precision. That contrast is the reason the quotient geometry is not optional preprocessing."
+  },
+  {
+    "slide": 13,
+    "title": "Notebook Checks",
+    "notes": "Use the check values as mathematical evidence. The Helmert matrix removes translation, preshapes have unit norm, Kendall coordinates stay on the sphere, tangent vectors are horizontal, and all named artifacts exist. These checks verify that the visuals and formulas refer to the same shape-space construction."
+  },
+  {
+    "slide": 14,
+    "title": "Common Failure Modes",
+    "notes": "Warn against the shortcuts that make shape analysis look easier than it is. Comparing raw coordinate arrays confuses pose with shape, averaging unaligned preshapes blurs rotations, using tangent PCA globally ignores curvature, and fitting a directional model before naming the quotient can put density on the wrong space."
+  },
+  {
+    "slide": 15,
+    "title": "Analysis Workflow",
+    "notes": "Present the workflow as an instructor-ready checklist. Start from the landmark registration convention, remove translation and scale, work with shape classes, choose Procrustes or tangent summaries according to concentration, then select complex directional models only when their symmetry matches the scientific question."
+  },
+  {
+    "slide": 16,
+    "title": "Takeaways",
+    "notes": "Close by tying the chapter back to the course. Shape analysis is directional statistics on quotient sample spaces. The successful analysis is not the one with the most elaborate model, but the one whose summaries, approximations, and diagnostics respect the invariances of the measured shapes."
+  }
+]
+  </script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #475569;
+      --dim: #64748B;
+      --accent: #1E3A8A;
+      --blue: #2563EB;
+      --teal: #0F766E;
+      --amber: #B45309;
+      --violet: #6D28D9;
+      --line: #CBD5E1;
+      --line-soft: #E2E8F0;
+      --soft: #F8FAFC;
+      --blue-soft: #EFF6FF;
+      --teal-soft: #F0FDFA;
+      --amber-soft: #FFFBEB;
+      --violet-soft: #F5F3FF;
+    }
+
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: #FFFFFF;
+      color: var(--ink);
+      font-family: var(--font-sans, 'Source Sans 3', Arial, sans-serif);
+      display: flex;
+      flex-direction: column;
+      padding: 70px 96px 54px;
+      border-top: 10px solid var(--accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.03) 1px, transparent 1px),
+        var(--soft);
+      background-size: 72px 72px;
+    }
+
+    .slide.shell {
+      background:
+        radial-gradient(circle at 82% 24%, rgba(37, 99, 235, 0.08), transparent 28%),
+        radial-gradient(circle at 12% 76%, rgba(15, 118, 110, 0.08), transparent 26%),
+        #FFFFFF;
+    }
+
+    .kicker {
+      color: var(--dim);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      color: var(--ink);
+      max-width: 1060px;
+    }
+
+    h2 {
+      font-size: 51px;
+      line-height: 1.1;
+      letter-spacing: 0;
+      color: var(--ink);
+    }
+
+    h3 {
+      font-size: 32px;
+      line-height: 1.18;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.33;
+    }
+
+    ul, ol {
+      margin: 0;
+      padding-left: 32px;
+    }
+
+    li + li {
+      margin-top: 9px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 30px;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 42px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid2.wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .grid2.wide-right {
+      grid-template-columns: 0.88fr 1.12fr;
+    }
+
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--blue);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 24px 28px;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    }
+
+    .panel.teal {
+      border-left-color: var(--teal);
+      background: var(--teal-soft);
+    }
+
+    .panel.indigo {
+      border-left-color: var(--accent);
+      background: #EEF2FF;
+    }
+
+    .panel.amber {
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .panel.violet {
+      border-left-color: var(--violet);
+      background: var(--violet-soft);
+    }
+
+    .panel.slate {
+      border-left-color: var(--dim);
+      background: var(--soft);
+    }
+
+    .label {
+      display: block;
+      color: var(--dim);
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .math {
+      font-family: var(--font-math, 'STIX Two Text', Georgia, serif);
+      font-size: 32px;
+      line-height: 1.25;
+    }
+
+    .formula {
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px 22px;
+      font-size: 34px;
+      line-height: 1.25;
+    }
+
+    .caption {
+      color: var(--dim);
+      font-size: 22px;
+      line-height: 1.32;
+    }
+
+    .callout {
+      font-size: 31px;
+      line-height: 1.28;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .visual-card {
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    }
+
+    .visual-card.tight {
+      padding: 14px;
+    }
+
+    .visual-card img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-height: 620px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .title-grid {
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 58px;
+      flex: 1;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .title-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      max-width: 870px;
+      margin-top: 32px;
+    }
+
+    .meta-pill {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 16px 18px;
+    }
+
+    .meta-pill b {
+      display: block;
+      color: var(--accent);
+      font-size: 20px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .meta-pill span {
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .route {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .route-card {
+      border: 1px solid var(--line);
+      border-top: 6px solid var(--blue);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 20px 18px;
+      min-height: 235px;
+    }
+
+    .route-card:nth-child(2) { border-top-color: var(--teal); }
+    .route-card:nth-child(3) { border-top-color: var(--amber); }
+    .route-card:nth-child(4) { border-top-color: var(--violet); }
+    .route-card:nth-child(5) { border-top-color: var(--accent); }
+    .route-card:nth-child(6) { border-top-color: var(--dim); }
+
+    .route-card b {
+      display: block;
+      color: var(--accent);
+      font-size: 27px;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .route-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.28;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .kpi {
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 19px 20px;
+    }
+
+    .kpi strong {
+      display: block;
+      color: var(--accent);
+      font-size: 33px;
+      line-height: 1.08;
+      margin-bottom: 6px;
+      font-family: var(--font-math, 'STIX Two Text', Georgia, serif);
+    }
+
+    .kpi span {
+      display: block;
+      color: var(--dim);
+      font-size: 20px;
+      line-height: 1.22;
+      font-weight: 600;
+    }
+
+    .asset-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      height: 238px;
+    }
+
+    .asset-strip figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #FFFFFF;
+      overflow: clip;
+      display: grid;
+      grid-template-rows: 1fr auto;
+    }
+
+    .asset-strip img {
+      width: 100%;
+      height: 178px;
+      object-fit: contain;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .asset-strip figcaption {
+      background: var(--soft);
+      border-top: 1px solid var(--line-soft);
+      color: var(--dim);
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 700;
+      padding: 9px 12px;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: clip;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #FFFFFF;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      text-align: left;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line-soft);
+      font-size: 24px;
+      line-height: 1.25;
+      vertical-align: top;
+    }
+
+    .mini-table th {
+      background: var(--soft);
+      color: var(--accent);
+      font-size: 21px;
+      text-transform: uppercase;
+    }
+
+    .mini-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 6px;
+      background: var(--blue-soft);
+      border: 1px solid rgba(37, 99, 235, 0.28);
+      color: var(--accent);
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 700;
+      padding: 8px 12px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    svg text {
+      font-family: 'Source Sans 3', Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="slide shell" data-label="Shape Analysis">
+    <div class="kicker">Directional Statistics | Chapter 14</div>
+    <div class="title-grid">
+      <div>
+        <h1>Shape Analysis As Directional Statistics</h1>
+        <div class="content" style="margin-top: 34px;">
+          <p class="callout">Landmark data become statistical objects only after nuisance location, scale, and rotation directions have been removed.</p>
+          <div class="title-meta">
+            <div class="meta-pill">
+              <b>Source Span</b>
+              <span>printed pages 303-348; PDF pages 317-361</span>
+            </div>
+            <div class="meta-pill">
+              <b>Notebook</b>
+              <span>14-shape-analysis.ipynb</span>
+            </div>
+            <div class="meta-pill">
+              <b>Sample Space</b>
+              <span>preshape sphere and complex projective shape space</span>
+            </div>
+            <div class="meta-pill">
+              <b>Main Tools</b>
+              <span>Procrustes means, tangent PCA, complex directional models</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="visual-card">
+        <svg viewBox="0 0 860 660" role="img" aria-label="Landmark shapes pass through quotient geometry">
+          <defs>
+            <marker id="titleArrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+              <path d="M0,0 L14,7 L0,14 Z" fill="#1E3A8A"/>
+            </marker>
+          </defs>
+          <rect x="52" y="72" width="222" height="174" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+          <path d="M112 188 L145 116 L204 135 L224 204 L156 215 Z" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="5"/>
+          <circle cx="112" cy="188" r="9" fill="#2563EB"/>
+          <circle cx="145" cy="116" r="9" fill="#2563EB"/>
+          <circle cx="204" cy="135" r="9" fill="#2563EB"/>
+          <circle cx="224" cy="204" r="9" fill="#2563EB"/>
+          <circle cx="156" cy="215" r="9" fill="#2563EB"/>
+          <text x="163" y="281" text-anchor="middle" font-size="28" font-weight="700" fill="#1E3A8A">raw landmarks</text>
+
+          <path d="M292 162 L390 162" stroke="#1E3A8A" stroke-width="5" marker-end="url(#titleArrow)"/>
+          <text x="340" y="132" text-anchor="middle" font-size="22" fill="#475569">center and normalize</text>
+
+          <circle cx="512" cy="164" r="90" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+          <ellipse cx="512" cy="164" rx="90" ry="24" fill="none" stroke="#94A3B8" stroke-width="3"/>
+          <ellipse cx="512" cy="164" rx="26" ry="90" fill="none" stroke="#CBD5E1" stroke-width="3"/>
+          <circle cx="565" cy="116" r="11" fill="#0F766E"/>
+          <circle cx="476" cy="202" r="8" fill="#0F766E"/>
+          <text x="512" y="281" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">preshape sphere</text>
+
+          <path d="M612 162 L708 162" stroke="#1E3A8A" stroke-width="5" marker-end="url(#titleArrow)"/>
+          <text x="660" y="132" text-anchor="middle" font-size="22" fill="#475569">quotient phase</text>
+
+          <rect x="60" y="402" width="740" height="172" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+          <path d="M132 488 C194 416, 302 416, 365 488 S536 560, 604 488 S735 420, 772 486" fill="none" stroke="#6D28D9" stroke-width="7"/>
+          <circle cx="365" cy="488" r="13" fill="#6D28D9"/>
+          <circle cx="604" cy="488" r="13" fill="#B45309"/>
+          <text x="430" y="456" text-anchor="middle" font-size="31" font-weight="700" fill="#1E3A8A">shape class [z]</text>
+          <text x="430" y="526" text-anchor="middle" font-size="24" fill="#475569">one observed shape is a phase orbit, not a fixed drawing</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Open by reframing shape analysis as directional statistics after several quotient operations. The data begin as landmark coordinates, but the object of inference is not the drawing on the page. It is the configuration after translation, scale, and rotation have been treated as nuisance directions.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Lecture Route">
+    <div class="kicker">Route</div>
+    <h2>Six Geometric Decisions Behind Shape Statistics</h2>
+    <div class="content">
+      <div class="route">
+        <div class="route-card">
+          <b>1. Register</b>
+          <span>Represent planar landmarks as a complex vector with a declared landmark order.</span>
+        </div>
+        <div class="route-card">
+          <b>2. Remove Pose</b>
+          <span>Center, Helmertize, and divide by size to reach the preshape sphere.</span>
+        </div>
+        <div class="route-card">
+          <b>3. Quotient Phase</b>
+          <span>Identify all representatives \(e^{i\theta}z\) as the same planar shape.</span>
+        </div>
+        <div class="route-card">
+          <b>4. Compare</b>
+          <span>Use Procrustes alignment, distance, and mean shapes as invariant summaries.</span>
+        </div>
+        <div class="route-card">
+          <b>5. Linearize</b>
+          <span>Use horizontal tangent coordinates only for concentrated shape samples.</span>
+        </div>
+        <div class="route-card">
+          <b>6. Model</b>
+          <span>Choose sphere, projective, or tangent models by the sample-space geometry.</span>
+        </div>
+      </div>
+      <div class="panel indigo">
+        <p class="callout">The chapter's statistical question is always paired with a geometric question: which transformations should leave the answer unchanged?</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use the route slide to keep the chapter from becoming a catalog of methods. Every stop removes or models a specific geometric feature: centering removes location, normalization removes size, phase quotienting removes planar rotation, Procrustes summaries compare shapes, tangent coordinates approximate local variation, and complex directional families provide global models.</aside>
+  </section>
+
+  <section class="slide" data-label="Landmarks As Complex Data">
+    <div class="kicker">Representation</div>
+    <h2>Planar Landmarks Form A Complex Vector</h2>
+    <div class="content">
+      <div class="grid2 wide-left">
+        <div class="stack">
+          <div class="panel">
+            <span class="label">Configuration</span>
+            <p>A landmark configuration with \(k\) planar points is stored as \(z_0=(x_1+iy_1,\ldots,x_k+iy_k)\in\mathbb{C}^k\).</p>
+          </div>
+          <div class="formula">
+            \(z_0 \mapsto a\,e^{i\phi} z_0 + b\mathbf{1}\), where \(a&gt;0\), \(\phi\in[0,2\pi)\), and \(b\in\mathbb{C}\).
+          </div>
+          <div class="panel amber">
+            <span class="label">Statistician's Choice</span>
+            <p>Translation, scale, and rotation may be nuisance transformations; landmark relabeling is not removed unless the scientific design says it should be.</p>
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Complex landmark vector and similarity transformation">
+            <defs>
+              <marker id="complexArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <line x1="95" y1="540" x2="370" y2="540" stroke="#CBD5E1" stroke-width="4"/>
+            <line x1="95" y1="540" x2="95" y2="230" stroke="#CBD5E1" stroke-width="4"/>
+            <text x="358" y="576" font-size="25" fill="#64748B">Re</text>
+            <text x="52" y="242" font-size="25" fill="#64748B">Im</text>
+            <path d="M155 448 L190 330 L292 365 L318 480 L217 504 Z" fill="rgba(37,99,235,0.13)" stroke="#2563EB" stroke-width="6"/>
+            <g fill="#2563EB">
+              <circle cx="155" cy="448" r="10"/><circle cx="190" cy="330" r="10"/><circle cx="292" cy="365" r="10"/><circle cx="318" cy="480" r="10"/><circle cx="217" cy="504" r="10"/>
+            </g>
+            <text x="236" y="188" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">one row of data</text>
+            <path d="M405 390 C462 336, 501 336, 552 390" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#complexArrow)"/>
+            <text x="478" y="320" text-anchor="middle" font-size="24" fill="#475569">similarity action</text>
+            <line x1="565" y1="540" x2="800" y2="540" stroke="#CBD5E1" stroke-width="4"/>
+            <line x1="565" y1="540" x2="565" y2="230" stroke="#CBD5E1" stroke-width="4"/>
+            <path d="M635 475 L662 349 L761 380 L781 495 L690 522 Z" fill="rgba(15,118,110,0.13)" stroke="#0F766E" stroke-width="6" transform="rotate(-20 708 438)"/>
+            <g fill="#0F766E" transform="rotate(-20 708 438)">
+              <circle cx="635" cy="475" r="10"/><circle cx="662" cy="349" r="10"/><circle cx="761" cy="380" r="10"/><circle cx="781" cy="495" r="10"/><circle cx="690" cy="522" r="10"/>
+            </g>
+            <text x="682" y="188" text-anchor="middle" font-size="30" font-weight="700" fill="#0F766E">same shape, new pose</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Establish the computational representation before any statistics appear. A planar landmark configuration is a complex vector, one entry per landmark. Similarity transformations move the entire vector in predictable ways, so the statistical task is to decide which parts of that movement are irrelevant to shape.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Helmert Preshape Pipeline">
+    <div class="kicker">Preshape Construction</div>
+    <h2>Center, Helmertize, Normalize</h2>
+    <div class="content">
+      <div class="grid2 wide-right">
+        <div class="visual-card tight">
+          <img src="../pipeline/landmark-centering-helmert-preshape.png" alt="Notebook artifact showing the landmark centering Helmertization and preshape pipeline">
+        </div>
+        <div class="stack">
+          <div class="panel">
+            <span class="label">Translation Filter</span>
+            <p>The Helmert submatrix \(H\) has orthonormal rows and satisfies \(H\mathbf{1}=0\), so common translations vanish.</p>
+          </div>
+          <div class="formula">
+            \(u=Hz_0,\qquad z=\dfrac{u}{\|u\|}\in S^{2k-3}\subset\mathbb{C}^{k-1}\)
+          </div>
+          <div class="panel teal">
+            <span class="label">Notebook Check</span>
+            <p>Helmert orthogonality error is approximately \(4.23\times 10^{-16}\), and the base preshape norm is \(1.0\).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Explain the pipeline as a sequence of invariant filters. Subtracting the centroid and multiplying by a Helmert submatrix both remove the all-ones translation direction, while division by norm removes scale. The resulting preshape lies on a complex unit sphere, where rotations still act as a common phase.</aside>
+  </section>
+
+  <section class="slide" data-label="Phase Orbits Are Shapes">
+    <div class="kicker">Quotient Geometry</div>
+    <h2>A Shape Is A Phase Orbit, Not A Drawing</h2>
+    <div class="content">
+      <div class="grid2">
+        <div class="stack">
+          <div class="formula">
+            \([z]=\{e^{i\theta}z:\theta\in[0,2\pi)\}\), so \(z\) and \(e^{i\theta}z\) represent the same planar shape.
+          </div>
+          <div class="panel indigo">
+            <span class="label">Sample Space</span>
+            <p>For \(k\) planar landmarks, preshapes lie on a complex unit sphere and shapes live in \(\mathbb{CP}^{k-2}\).</p>
+          </div>
+          <div class="panel amber">
+            <span class="label">Invariant Statistic</span>
+            <p>A valid shape statistic must be unchanged by common phase multiplication of every preshape representative.</p>
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Preshape orbit around a phase circle">
+            <defs>
+              <marker id="orbitArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#6D28D9"/>
+              </marker>
+            </defs>
+            <circle cx="430" cy="325" r="222" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+            <ellipse cx="430" cy="325" rx="222" ry="74" fill="none" stroke="#94A3B8" stroke-width="3"/>
+            <ellipse cx="430" cy="325" rx="74" ry="222" fill="none" stroke="#E2E8F0" stroke-width="3"/>
+            <path d="M247 388 C312 190, 540 164, 626 305 C694 419, 565 523, 395 487 C302 468, 236 437, 247 388 Z" fill="none" stroke="#6D28D9" stroke-width="7" stroke-dasharray="16 12" marker-end="url(#orbitArrow)"/>
+            <circle cx="612" cy="302" r="17" fill="#B45309"/>
+            <circle cx="348" cy="483" r="14" fill="#2563EB"/>
+            <circle cx="267" cy="378" r="14" fill="#0F766E"/>
+            <text x="612" y="266" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">z</text>
+            <text x="347" y="531" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">e^{i theta}z</text>
+            <text x="430" y="325" text-anchor="middle" font-size="34" font-weight="700" fill="#1E3A8A">same shape class</text>
+            <text x="430" y="369" text-anchor="middle" font-size="25" fill="#475569">one orbit inside preshape space</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Pause on the quotient because it is the conceptual hinge of the chapter. A preshape is one representative, but a shape is the entire circle of representatives obtained by common phase multiplication. Statistics on shape space must give the same answer anywhere along that orbit.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Procrustes Distance">
+    <div class="kicker">Comparison</div>
+    <h2>Procrustes Distance Uses The Best Phase Alignment</h2>
+    <div class="content">
+      <div class="grid2 wide-right">
+        <div class="visual-card tight">
+          <img src="../procrustes/procrustes-alignment-overlay.png" alt="Notebook artifact showing Procrustes alignment overlay before and after phase alignment">
+        </div>
+        <div class="stack">
+          <div class="formula">
+            \(d_P([z_1],[z_2])=\sqrt{1-|\langle z_1,z_2\rangle|^2}\)
+          </div>
+          <div class="panel">
+            <span class="label">Alignment</span>
+            <p>The optimal common phase makes \(\langle z_1,e^{i\theta}z_2\rangle\) real and nonnegative.</p>
+          </div>
+          <div class="grid2" style="gap: 18px; flex: initial;">
+            <div class="kpi">
+              <strong>0.04349</strong>
+              <span>Procrustes shape distance in the notebook sample</span>
+            </div>
+            <div class="kpi">
+              <strong>2.55e-15</strong>
+              <span>distance invariance error under pose changes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Introduce Procrustes distance through the modulus of the complex inner product. The phase of the inner product tells how to align one preshape to the other, but its absolute value tells how close the shapes are after the best alignment. This is why the formula is invariant under separate similarity transformations.</aside>
+  </section>
+
+  <section class="slide" data-label="Procrustes Mean">
+    <div class="kicker">Mean Shape</div>
+    <h2>A Mean Shape Is An Aligned Average On The Quotient</h2>
+    <div class="content">
+      <div class="grid2">
+        <div class="stack">
+          <div class="panel indigo">
+            <span class="label">Optimization View</span>
+            <p>Choose a shape class \([m]\) that minimizes total squared Procrustes distance to the sample.</p>
+          </div>
+          <div class="formula">
+            \(\widehat{[m]}=\arg\min_{[m]}\sum_i d_P([z_i],[m])^2\)
+          </div>
+          <div class="panel teal">
+            <span class="label">Algorithmic Loop</span>
+            <p>Align each preshape to the current mean representative, average the aligned preshapes, renormalize, and repeat.</p>
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Iterative Procrustes mean loop">
+            <defs>
+              <marker id="meanArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <circle cx="430" cy="325" r="108" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"/>
+            <text x="430" y="316" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">mean</text>
+            <text x="430" y="354" text-anchor="middle" font-size="24" fill="#475569">representative</text>
+            <g fill="#2563EB">
+              <circle cx="206" cy="194" r="13"/><circle cx="206" cy="456" r="13"/><circle cx="654" cy="194" r="13"/><circle cx="654" cy="456" r="13"/>
+            </g>
+            <text x="206" y="150" text-anchor="middle" font-size="26" font-weight="700" fill="#2563EB">z1</text>
+            <text x="206" y="505" text-anchor="middle" font-size="26" font-weight="700" fill="#2563EB">z2</text>
+            <text x="654" y="150" text-anchor="middle" font-size="26" font-weight="700" fill="#2563EB">z3</text>
+            <text x="654" y="505" text-anchor="middle" font-size="26" font-weight="700" fill="#2563EB">z4</text>
+            <path d="M238 206 C314 215, 360 247, 393 290" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#meanArrow)"/>
+            <path d="M238 444 C314 434, 360 403, 393 360" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#meanArrow)"/>
+            <path d="M622 206 C546 215, 500 247, 467 290" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#meanArrow)"/>
+            <path d="M622 444 C546 434, 500 403, 467 360" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#meanArrow)"/>
+            <path d="M430 180 C622 176, 733 260, 695 374 C662 472, 548 514, 430 510 C280 506, 145 445, 150 310 C153 221, 259 179, 430 180" fill="none" stroke="#0F766E" stroke-width="5" stroke-dasharray="15 12" marker-end="url(#meanArrow)"/>
+            <text x="430" y="604" text-anchor="middle" font-size="25" fill="#475569">align representatives &rarr; average &rarr; normalize &rarr; repeat</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Describe the Procrustes mean as an averaging problem with alignment built in. Each observation is first rotated into the current frame, then the aligned representatives are averaged and renormalized. The mean is a shape class, so the displayed representative is only a convenient gauge.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Kendall Triangle Sphere">
+    <div class="kicker">Triangle Shapes</div>
+    <h2>For Three Landmarks, The Quotient Is A Sphere</h2>
+    <div class="content">
+      <div class="grid2 wide-left">
+        <div class="stack">
+          <div class="formula">
+            \((x,y,z)=\left(2\operatorname{Re}(z_1\overline{z_2}),\, |z_1|^2-|z_2|^2,\, 2\operatorname{Im}(z_1\overline{z_2})\right)\)
+          </div>
+          <div class="panel">
+            <span class="label">Hopf/Kendall Coordinates</span>
+            <p>Common phase multiplication leaves all three coordinates unchanged, so the map belongs to shape space rather than pose space.</p>
+          </div>
+          <div class="panel teal">
+            <span class="label">Inspection Targets</span>
+            <p>Flat triangles land on the equator; mirror-image triangles cross hemispheres; equilateral shapes sit near opposite poles.</p>
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Kendall triangle shape sphere with special triangle landmarks">
+            <circle cx="430" cy="320" r="215" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="6"/>
+            <ellipse cx="430" cy="320" rx="215" ry="58" fill="rgba(180,83,9,0.08)" stroke="#B45309" stroke-width="4"/>
+            <ellipse cx="430" cy="320" rx="58" ry="215" fill="none" stroke="#CBD5E1" stroke-width="3"/>
+            <path d="M216 320 C308 253, 551 253, 644 320" fill="none" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10"/>
+            <circle cx="430" cy="120" r="15" fill="#2563EB"/>
+            <circle cx="430" cy="520" r="15" fill="#0F766E"/>
+            <circle cx="270" cy="320" r="13" fill="#B45309"/>
+            <circle cx="590" cy="320" r="13" fill="#B45309"/>
+            <circle cx="520" cy="228" r="13" fill="#6D28D9"/>
+            <text x="430" y="82" text-anchor="middle" font-size="25" font-weight="700" fill="#2563EB">equilateral up</text>
+            <text x="430" y="580" text-anchor="middle" font-size="25" font-weight="700" fill="#0F766E">equilateral down</text>
+            <text x="270" y="363" text-anchor="middle" font-size="23" font-weight="700" fill="#B45309">flat</text>
+            <text x="590" y="363" text-anchor="middle" font-size="23" font-weight="700" fill="#B45309">flat</text>
+            <text x="560" y="218" font-size="23" font-weight="700" fill="#6D28D9">right or skinny</text>
+            <text x="430" y="318" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">CP^1 as S^2</text>
+            <text x="430" y="356" text-anchor="middle" font-size="23" fill="#475569">the notebook artifact checks unit sphere norm</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use triangle shapes as the place where the quotient becomes visible. For three landmarks, complex projective shape space is an ordinary sphere under the Hopf coordinates. Flat triangles sit on an equator, mirror images live on opposite sides, and common phase rotations leave the plotted point fixed.</aside>
+  </section>
+
+  <section class="slide" data-label="Tangent Shape Coordinates">
+    <div class="kicker">Local Linearization</div>
+    <h2>Tangent Coordinates Are A Concentrated-Sample Approximation</h2>
+    <div class="content">
+      <div class="grid2">
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Tangent plane at a Procrustes mean shape">
+            <defs>
+              <marker id="tanArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"/>
+              </marker>
+            </defs>
+            <circle cx="395" cy="333" r="224" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+            <ellipse cx="395" cy="333" rx="224" ry="62" fill="none" stroke="#94A3B8" stroke-width="3"/>
+            <path d="M292 310 L620 190 L735 420 L407 542 Z" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="5"/>
+            <circle cx="428" cy="365" r="17" fill="#1E3A8A"/>
+            <text x="428" y="343" text-anchor="middle" font-size="25" font-weight="700" fill="#1E3A8A">mean</text>
+            <g stroke="#2563EB" stroke-width="4" fill="#2563EB">
+              <circle cx="385" cy="322" r="8"/><circle cx="457" cy="346" r="8"/><circle cx="476" cy="392" r="8"/><circle cx="405" cy="412" r="8"/><circle cx="446" cy="306" r="8"/>
+            </g>
+            <path d="M428 365 L548 310" stroke="#0F766E" stroke-width="6" marker-end="url(#tanArrow)"/>
+            <path d="M428 365 L356 460" stroke="#6D28D9" stroke-width="6" marker-end="url(#tanArrow)"/>
+            <text x="572" y="305" font-size="24" font-weight="700" fill="#0F766E">mode 1</text>
+            <text x="280" y="487" font-size="24" font-weight="700" fill="#6D28D9">mode 2</text>
+            <text x="545" y="575" text-anchor="middle" font-size="24" fill="#475569">horizontal tangent plane at the mean shape</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel">
+            <span class="label">Horizontal Residual</span>
+            <p>Align each preshape to the mean, take a logarithmic residual, then remove the vertical phase direction.</p>
+          </div>
+          <div class="formula">
+            \(v_i \in T_{\widehat{[m]}}\mathcal{S},\qquad \langle v_i,m\rangle=0\)
+          </div>
+          <div class="panel amber">
+            <span class="label">Regime Check</span>
+            <p>Use tangent coordinates only when the sample cloud is concentrated enough that curvature is a small local effect.</p>
+          </div>
+          <div class="kpi-row">
+            <div class="kpi">
+              <strong>42</strong>
+              <span>synthetic shapes in the notebook sample</span>
+            </div>
+            <div class="kpi">
+              <strong>0.565</strong>
+              <span>first tangent PCA variance ratio</span>
+            </div>
+            <div class="kpi">
+              <strong>0.103</strong>
+              <span>second tangent PCA variance ratio</span>
+            </div>
+            <div class="kpi">
+              <strong>2.95e-16</strong>
+              <span>max tangent orthogonality check</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make the tangent approximation conditional rather than automatic. When shapes are concentrated near a Procrustes mean, aligned logarithmic residuals can be treated as horizontal tangent vectors. Horizontal means the vector changes shape rather than merely sliding along the phase orbit.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Shape PCA Modes">
+    <div class="kicker">Local Variation</div>
+    <h2>Tangent PCA Should Recover Shape Deformations</h2>
+    <div class="content">
+      <div class="grid2 wide-right">
+        <div class="visual-card tight">
+          <img src="../tangent/tangent-shape-pca-modes.png" alt="Notebook artifact showing tangent shape PCA and deformation modes">
+        </div>
+        <div class="stack">
+          <div class="panel teal">
+            <span class="label">Teaching Target</span>
+            <p>Principal directions should alter the landmark geometry itself: bending, elongation, or local bulging, not a pose transformation.</p>
+          </div>
+          <div class="panel">
+            <span class="label">Why Alignment Matters</span>
+            <p>The notebook hides each synthetic shape under random translations, scales, and rotations before recovering deformation modes.</p>
+          </div>
+          <div class="formula">
+            tangent PCA: shape residuals \(\longrightarrow\) covariance \(\longrightarrow\) interpretable deformation paths
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Interpret tangent PCA as a local deformation tool. Principal components in the tangent space should describe interpretable changes in landmark geometry, not translations, rotations, or scale. The notebook sample deliberately hides nuisance transformations so the recovery of deformation modes becomes a check on the geometry.</aside>
+  </section>
+
+  <section class="slide" data-label="Complex Directional Models">
+    <div class="kicker">Model Families</div>
+    <h2>Model Choice Follows The Shape Space</h2>
+    <div class="content">
+      <div class="grid2 wide-right">
+        <div class="visual-card tight">
+          <img src="../models/complex-directional-model-routing.png" alt="Notebook artifact routing shape data to complex directional model families">
+        </div>
+        <div class="stack">
+          <div class="panel">
+            <span class="label">Triangle Shapes</span>
+            <p>Use the Kendall sphere and spherical directional tools when \(k=3\).</p>
+          </div>
+          <div class="panel indigo">
+            <span class="label">General Planar Shapes</span>
+            <p>Use phase-invariant families on \(\mathbb{CP}^{k-2}\): complex Bingham, complex Watson, and complex angular Gaussian models.</p>
+          </div>
+          <div class="panel amber">
+            <span class="label">Local Approximation</span>
+            <p>Tangent normal models are useful for tight clouds, but they are not global distributions on shape space.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Route model choice by sample space. Triangle shapes can be analyzed on the Kendall sphere, while general planar landmark shapes require phase-invariant models on complex projective space. Complex Bingham, Watson, and angular Gaussian families differ in how much anisotropy and robustness they allow.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Invariant Stress Test">
+    <div class="kicker">Applied Lab</div>
+    <h2>The Correct Distance Ignores Separate Similarity Transforms</h2>
+    <div class="content">
+      <div class="grid2">
+        <div class="stack">
+          <div class="kpi-row">
+            <div class="kpi">
+              <strong>8.376</strong>
+              <span>raw centered gap changes under pose</span>
+            </div>
+            <div class="kpi">
+              <strong>0.01019</strong>
+              <span>original shape distance</span>
+            </div>
+            <div class="kpi">
+              <strong>0.01019</strong>
+              <span>shape distance after pose changes</span>
+            </div>
+            <div class="kpi">
+              <strong>1.09e-14</strong>
+              <span>shape distance similarity error</span>
+            </div>
+          </div>
+          <div class="panel amber">
+            <span class="label">Lab Message</span>
+            <p>If a conclusion changes after translating, scaling, or rotating the drawings independently, it was measuring pose, not shape.</p>
+          </div>
+          <div class="formula">
+            raw arrays are coordinate-dependent; \(d_P([z_1],[z_2])\) is a shape-space statistic.
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Raw coordinates vary while shape distance remains stable">
+            <defs>
+              <marker id="stressArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <rect x="72" y="82" width="300" height="210" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+            <rect x="488" y="82" width="300" height="210" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+            <path d="M128 232 L170 126 L260 150 L306 248 L212 265 Z" fill="rgba(180,83,9,0.12)" stroke="#B45309" stroke-width="5"/>
+            <path d="M552 230 L600 122 L692 152 L732 250 L628 266 Z" fill="rgba(180,83,9,0.12)" stroke="#B45309" stroke-width="5" transform="rotate(18 642 194)"/>
+            <text x="222" y="330" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">raw gap moves</text>
+            <text x="638" y="330" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">same shapes, new pose</text>
+            <path d="M384 184 L470 184" stroke="#1E3A8A" stroke-width="5" marker-end="url(#stressArrow)"/>
+            <rect x="72" y="420" width="716" height="130" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+            <text x="430" y="475" text-anchor="middle" font-size="34" font-weight="700" fill="#0F766E">Procrustes distance stays fixed</text>
+            <text x="430" y="516" text-anchor="middle" font-size="25" fill="#475569">the quotient absorbs translation, scale, and rotation nuisance directions</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Turn the applied lab into an acceptance test. Raw coordinate gaps change dramatically under separate similarity transformations, but Procrustes shape distance stays fixed to numerical precision. That contrast is the reason the quotient geometry is not optional preprocessing.</aside>
+  </section>
+
+  <section class="slide" data-label="Notebook Checks">
+    <div class="kicker">Verification</div>
+    <h2>The Checks Are Mathematical Evidence, Not File Inventory</h2>
+    <div class="content">
+      <div class="grid2 wide-left">
+        <div class="stack">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Invariant</th>
+                <th>Notebook Evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Helmert rows remove translation</td>
+                <td>\(H\mathbf{1}\) error about \(2.00\times 10^{-16}\)</td>
+              </tr>
+              <tr>
+                <td>Preshapes have unit norm</td>
+                <td>base preshape norm \(=1.0\)</td>
+              </tr>
+              <tr>
+                <td>Hopf coordinates ignore phase</td>
+                <td>phase invariance error about \(2.54\times 10^{-16}\)</td>
+              </tr>
+              <tr>
+                <td>Tangent vectors are horizontal</td>
+                <td>max orthogonality about \(2.95\times 10^{-16}\)</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="panel teal">
+            <p>Six concept-named artifacts are present: pipeline, Procrustes overlay, Kendall sphere, tangent PCA, model routing PNG, and model routing JSON.</p>
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Invariant check dashboard">
+            <rect x="80" y="90" width="700" height="92" rx="12" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+            <text x="430" y="148" text-anchor="middle" font-size="32" font-weight="700" fill="#1E3A8A">shape-analysis-invariants.json</text>
+            <g>
+              <rect x="96" y="246" width="300" height="112" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="464" y="246" width="300" height="112" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="96" y="420" width="300" height="112" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <rect x="464" y="420" width="300" height="112" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <text x="246" y="298" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">Helmert</text>
+              <text x="246" y="332" text-anchor="middle" font-size="22" fill="#475569">orthonormal and centered</text>
+              <text x="614" y="298" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">Preshape</text>
+              <text x="614" y="332" text-anchor="middle" font-size="22" fill="#475569">unit norm</text>
+              <text x="246" y="472" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">Kendall sphere</text>
+              <text x="246" y="506" text-anchor="middle" font-size="22" fill="#475569">phase invariant</text>
+              <text x="614" y="472" text-anchor="middle" font-size="27" font-weight="700" fill="#6D28D9">Tangent PCA</text>
+              <text x="614" y="506" text-anchor="middle" font-size="22" fill="#475569">horizontal residuals</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use the check values as mathematical evidence. The Helmert matrix removes translation, preshapes have unit norm, Kendall coordinates stay on the sphere, tangent vectors are horizontal, and all named artifacts exist. These checks verify that the visuals and formulas refer to the same shape-space construction.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Common Failure Modes">
+    <div class="kicker">Pitfalls</div>
+    <h2>Four Ways Shape Analysis Goes Off Geometry</h2>
+    <div class="content">
+      <div class="grid2">
+        <div class="stack">
+          <div class="panel amber">
+            <span class="label">Pose As Shape</span>
+            <p>Comparing raw coordinate arrays lets translation, scale, or drawing angle drive the answer.</p>
+          </div>
+          <div class="panel amber">
+            <span class="label">Unaligned Averaging</span>
+            <p>Averaging preshapes without phase alignment blurs rotations into false deformation.</p>
+          </div>
+          <div class="panel amber">
+            <span class="label">Global Tangent PCA</span>
+            <p>A tangent plane is local. Spread-out shape samples need global shape-space methods.</p>
+          </div>
+          <div class="panel amber">
+            <span class="label">Wrong Density Space</span>
+            <p>A complex directional model must respect the phase quotient or it models representatives rather than shapes.</p>
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Failure modes for shape analysis">
+            <defs>
+              <marker id="failArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#B45309"/>
+              </marker>
+            </defs>
+            <circle cx="430" cy="325" r="224" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+            <ellipse cx="430" cy="325" rx="224" ry="64" fill="none" stroke="#CBD5E1" stroke-width="3"/>
+            <path d="M210 236 C324 128, 536 154, 640 256" fill="none" stroke="#2563EB" stroke-width="6"/>
+            <path d="M236 434 C332 540, 548 520, 632 410" fill="none" stroke="#0F766E" stroke-width="6"/>
+            <path d="M280 178 L608 506" stroke="#B45309" stroke-width="7" stroke-linecap="round"/>
+            <path d="M608 178 L280 506" stroke="#B45309" stroke-width="7" stroke-linecap="round"/>
+            <text x="430" y="315" text-anchor="middle" font-size="34" font-weight="700" fill="#B45309">wrong space</text>
+            <text x="430" y="357" text-anchor="middle" font-size="24" fill="#475569">statistics must survive the quotient</text>
+            <path d="M100 110 L238 198" stroke="#B45309" stroke-width="5" marker-end="url(#failArrow)"/>
+            <text x="86" y="95" font-size="24" font-weight="700" fill="#B45309">raw coordinates</text>
+            <path d="M760 540 L628 454" stroke="#B45309" stroke-width="5" marker-end="url(#failArrow)"/>
+            <text x="648" y="594" font-size="24" font-weight="700" fill="#B45309">global tangent shortcut</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Warn against the shortcuts that make shape analysis look easier than it is. Comparing raw coordinate arrays confuses pose with shape, averaging unaligned preshapes blurs rotations, using tangent PCA globally ignores curvature, and fitting a directional model before naming the quotient can put density on the wrong space.</aside>
+  </section>
+
+  <section class="slide" data-label="Analysis Workflow">
+    <div class="kicker">Workflow</div>
+    <h2>A Reusable Shape-Analysis Checklist</h2>
+    <div class="content">
+      <div class="grid2 wide-left">
+        <div class="stack">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Step</th>
+                <th>Geometry Question</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Register landmarks</td>
+                <td>Are corresponding landmarks scientifically comparable?</td>
+              </tr>
+              <tr>
+                <td>Construct preshapes</td>
+                <td>Have translation and scale been removed?</td>
+              </tr>
+              <tr>
+                <td>Work with \([z]\)</td>
+                <td>Does the statistic ignore the common phase?</td>
+              </tr>
+              <tr>
+                <td>Choose summaries</td>
+                <td>Is the sample concentrated enough for tangent coordinates?</td>
+              </tr>
+              <tr>
+                <td>Select a model</td>
+                <td>Does the density live on the same quotient space as the data?</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Shape analysis workflow from landmarks to report">
+            <defs>
+              <marker id="workArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <g>
+              <rect x="92" y="92" width="250" height="92" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="518" y="92" width="250" height="92" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="92" y="280" width="250" height="92" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+              <rect x="518" y="280" width="250" height="92" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <rect x="305" y="468" width="250" height="92" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <path d="M342 138 L504 138" stroke="#1E3A8A" stroke-width="5" marker-end="url(#workArrow)"/>
+              <path d="M643 184 L643 264" stroke="#1E3A8A" stroke-width="5" marker-end="url(#workArrow)"/>
+              <path d="M518 326 L356 326" stroke="#1E3A8A" stroke-width="5" marker-end="url(#workArrow)"/>
+              <path d="M217 372 C220 450, 262 510, 292 514" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#workArrow)"/>
+              <text x="217" y="148" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">landmarks</text>
+              <text x="643" y="148" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">preshapes</text>
+              <text x="217" y="336" text-anchor="middle" font-size="27" font-weight="700" fill="#1E3A8A">shape classes</text>
+              <text x="643" y="336" text-anchor="middle" font-size="27" font-weight="700" fill="#6D28D9">summaries</text>
+              <text x="430" y="524" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">model and report</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Present the workflow as an instructor-ready checklist. Start from the landmark registration convention, remove translation and scale, work with shape classes, choose Procrustes or tangent summaries according to concentration, then select complex directional models only when their symmetry matches the scientific question.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Takeaways">
+    <div class="kicker">Recap</div>
+    <h2>Shape Analysis Is Statistics On Quotient Sample Spaces</h2>
+    <div class="content">
+      <div class="grid2 wide-right">
+        <div class="stack">
+          <div class="panel">
+            <span class="label">Core Chain</span>
+            <p>Landmarks \(\rightarrow\) centered Helmert coordinates \(\rightarrow\) preshapes \(\rightarrow\) phase orbits \(\rightarrow\) shape-space statistics.</p>
+          </div>
+          <div class="panel teal">
+            <span class="label">Reliable Summaries</span>
+            <p>Procrustes distances and means use phase-invariant inner products; tangent PCA uses local horizontal coordinates.</p>
+          </div>
+          <div class="panel indigo">
+            <span class="label">Model Discipline</span>
+            <p>Sphere, complex projective, and tangent models are not interchangeable; each assumes a different sample space.</p>
+          </div>
+        </div>
+        <div class="visual-card">
+          <svg viewBox="0 0 860 650" role="img" aria-label="Concept map summarizing shape analysis">
+            <defs>
+              <marker id="recapArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <circle cx="430" cy="325" r="116" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5"/>
+            <text x="430" y="316" text-anchor="middle" font-size="29" font-weight="700" fill="#1E3A8A">shape</text>
+            <text x="430" y="354" text-anchor="middle" font-size="29" font-weight="700" fill="#1E3A8A">space</text>
+            <rect x="54" y="92" width="266" height="86" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+            <rect x="540" y="92" width="266" height="86" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+            <rect x="54" y="472" width="266" height="86" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+            <rect x="540" y="472" width="266" height="86" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+            <path d="M320 136 L365 246" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"/>
+            <path d="M540 136 L495 246" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"/>
+            <path d="M320 516 L365 404" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"/>
+            <path d="M540 516 L495 404" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"/>
+            <text x="187" y="146" text-anchor="middle" font-size="26" font-weight="700" fill="#2563EB">remove pose</text>
+            <text x="673" y="146" text-anchor="middle" font-size="26" font-weight="700" fill="#0F766E">compare shapes</text>
+            <text x="187" y="526" text-anchor="middle" font-size="26" font-weight="700" fill="#B45309">check invariants</text>
+            <text x="673" y="526" text-anchor="middle" font-size="26" font-weight="700" fill="#6D28D9">choose model</text>
+            <path d="M216 234 C334 170, 534 170, 648 234" fill="none" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="12 10"/>
+            <path d="M216 416 C334 482, 534 482, 648 416" fill="none" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="12 10"/>
+          </svg>
+        </div>
+      </div>
+      <div class="asset-strip">
+        <figure>
+          <img src="../pipeline/landmark-centering-helmert-preshape.png" alt="Preshape pipeline artifact thumbnail">
+          <figcaption>Preshape pipeline</figcaption>
+        </figure>
+        <figure>
+          <img src="../procrustes/procrustes-alignment-overlay.png" alt="Procrustes overlay artifact thumbnail">
+          <figcaption>Procrustes overlay</figcaption>
+        </figure>
+        <figure>
+          <img src="../models/complex-directional-model-routing.png" alt="Complex directional model routing artifact thumbnail">
+          <figcaption>Model routing</figcaption>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close by tying the chapter back to the course. Shape analysis is directional statistics on quotient sample spaces. The successful analysis is not the one with the most elaborate model, but the one whose summaries, approximations, and diagnostics respect the invariances of the measured shapes.</aside>
+  </section>
+</deck-stage>
+</body>
+</html>

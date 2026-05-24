@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computer Graphics in Games</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-22">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-22-computer-graphics-in-games/22-computer-graphics-in-games.ipynb">
+  <meta name="source_span" content="printed pages 623-644; PDF pages 640-661.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text fonts and KaTeX auto-render support are enabled.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open the lecture by treating game graphics as applied resource economics. A game renderer is not merely selecting algorithms; it is allocating frame time, memory, bandwidth, tool effort, and schedule risk while preserving playability. The chapter span gives us a compact tour from platform choice to production workflow."
+    },
+    {
+      "slide": 2,
+      "notes": "Use the budget exchange as the recurring diagnostic. Every graphics decision should name what it spends and what it saves. If a technique saves triangles but the missed budget is texture bandwidth, the frame may not improve. This framing keeps platforms, optimization, genre, and tools connected."
+    },
+    {
+      "slide": 3,
+      "notes": "Emphasize that a platform is a contract, not a brand label. The renderer inherits variance, API abstraction, input devices, certification rules, and resource ceilings. The same technique can be wise on a fixed console, risky on a browser target, and essential on a highly variable PC audience."
+    },
+    {
+      "slide": 4,
+      "notes": "Quality scaling belongs early because it is a design obligation on variable platforms. Resolution and antialiasing are simple user-facing knobs, while shadows, post effects, and texture tiers often require deeper pipeline support. The key is to scale visual cost without breaking game readability."
+    },
+    {
+      "slide": 5,
+      "notes": "Frame time turns responsiveness into arithmetic. A 30 fps target gives about 33.3 milliseconds, while 60 fps gives about 16.7 milliseconds for input, simulation, submission, and display work. Because many tasks overlap, the slowest active lane determines whether the frame deadline is missed."
+    },
+    {
+      "slide": 6,
+      "notes": "A command buffer is useful because it keeps the GPU fed, but it also moves player input farther from the displayed image. Fast games often sacrifice some throughput convenience to reduce latency. The right buffer depth depends on how painful starvation is compared with delayed feedback."
+    },
+    {
+      "slide": 7,
+      "notes": "Heterogeneous GPU resources explain why profiling must precede optimization. Pixel shading, texture fetch, bandwidth, and post processing can each become the limiting lane. Reducing a non-bottleneck lane may clean up code, but it does not change frame time until the bottleneck lane moves."
+    },
+    {
+      "slide": 8,
+      "notes": "Storage constraints are more than capacity limits. The hierarchy trades size against latency and bandwidth, so loading, streaming, texture access, and cache behavior shape graphics design. Games often spend engineering effort to stage assets near the processor that will consume them."
+    },
+    {
+      "slide": 9,
+      "notes": "Development resources are a first-class constraint. A shader feature that requires fragile tools, slow previews, or repeated artist handoffs may be more expensive than its runtime cost suggests. A production renderer succeeds only when artists can create, inspect, revise, and validate assets efficiently."
+    },
+    {
+      "slide": 10,
+      "notes": "Depth and visibility optimizations should be presented as early rejection mechanisms. If an expensive pixel shader never runs, the engine saves time without changing the visible image. A prepass spends simpler geometry work up front, so the value depends on whether pixel work is truly costly."
+    },
+    {
+      "slide": 11,
+      "notes": "Culling and level of detail are complementary. Frustum and occlusion culling remove objects from consideration, while LOD keeps visible objects but changes their representation. The numeric reduction is useful, but the visual contract is stricter: silhouettes, materials, and switching behavior must stay believable."
+    },
+    {
+      "slide": 12,
+      "notes": "Precomputed lighting is a classic game graphics bargain. It moves expensive global illumination out of the frame, but it favors static background geometry and fixed lighting assumptions. Dynamic characters and changing worlds need probes, approximations, or runtime shading because they cannot simply reuse one baked map."
+    },
+    {
+      "slide": 13,
+      "notes": "Genre changes the renderer because it changes what can be seen and how quickly the player notices delay. A fighting arena can spend detail on a tiny world. An open-world game must stream and cull. A strategy game budgets for many actors rather than two hero characters."
+    },
+    {
+      "slide": 14,
+      "notes": "The asset pipeline slide links runtime choices to authoring dependencies. Normal maps, shader parameters, lightmaps, rigs, and animations are not isolated files; they form a directed workflow. A late upstream change can invalidate many downstream approvals, so the graph is also a schedule model."
+    },
+    {
+      "slide": 15,
+      "notes": "The production timeline explains why pre-production tools matter. If the core team does not prepare the engine and pipeline before full production, many specialists can become blocked. Alpha, beta, and gold are not just labels; each stage changes the kind of graphics work that is still affordable."
+    },
+    {
+      "slide": 16,
+      "notes": "Close by asking students to defend an optimization as a measured tradeoff. The best quality setting is not the prettiest candidate in isolation; it is the highest-quality candidate that fits frame, memory, bandwidth, latency, and production constraints on the target platform and game type."
+    }
+  ]
+}
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 80px 80px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 64px;
+      line-height: 1.04;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      font-size: 52px;
+      line-height: 1.1;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 32px;
+      line-height: 1.18;
+      color: var(--slide-accent);
+      margin-bottom: 12px;
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.32;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 34px;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.25;
+      max-width: 1120px;
+      margin-top: 20px;
+    }
+
+    .meta-line {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      margin-top: 18px;
+    }
+
+    .rule {
+      width: 96px;
+      height: 6px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+      margin: 24px 0 28px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 34px;
+      align-items: stretch;
+    }
+
+    .two {
+      grid-template-columns: 0.98fr 1.02fr;
+    }
+
+    .two.wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .four {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      background: #fff;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 6px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 6px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 6px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 6px solid var(--slide-violet);
+    }
+
+    .label {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .diagram {
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      background: #F8FAFC;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .diagram svg {
+      width: 100%;
+      max-height: 100%;
+    }
+
+    .tight {
+      gap: 16px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .kpi {
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px 20px;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: 40px;
+      line-height: 1.05;
+      color: var(--slide-accent);
+      margin-bottom: 6px;
+    }
+
+    .kpi span {
+      display: block;
+      font-size: 22px;
+      color: var(--slide-muted);
+      line-height: 1.22;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.18;
+      color: var(--slide-ink);
+    }
+
+    .small {
+      font-size: 23px;
+      line-height: 1.28;
+      color: var(--slide-muted);
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.22;
+    }
+
+    .mini-table th {
+      color: var(--slide-accent);
+      font-size: 22px;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid #CBD5E1;
+    }
+
+    .mini-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #E2E8F0;
+      color: var(--slide-ink);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 6px;
+      padding: 7px 10px;
+    }
+
+    .footer-note {
+      font-size: 21px;
+      color: var(--slide-dimmed);
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Title">
+      <div class="content two wide-left">
+        <div class="stack" style="justify-content: center;">
+          <div class="eyebrow">Fundamentals of Computer Graphics - Chapter 22</div>
+          <h1>Computer Graphics in Games</h1>
+          <div class="rule"></div>
+          <p class="subtitle">Budgets, latency, platforms, optimization, game type, and production workflow as one renderer design problem.</p>
+          <p class="meta-line">Source span: printed pages 623-644; PDF pages 640-661.</p>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 780 560" role="img" aria-label="Game graphics budget gauges">
+            <rect x="64" y="64" width="652" height="402" rx="28" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+            <circle cx="230" cy="250" r="116" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+            <path d="M146 286 A92 92 0 0 1 311 208" fill="none" stroke="#0F766E" stroke-width="18" stroke-linecap="round"/>
+            <path d="M170 314 L230 250 L322 244" fill="none" stroke="#B45309" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="230" cy="250" r="13" fill="#1E3A8A"/>
+            <text x="230" y="410" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="30" font-weight="700" fill="#1E3A8A">Frame Time</text>
+            <g transform="translate(432 110)">
+              <rect x="0" y="0" width="210" height="54" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <rect x="0" y="82" width="260" height="54" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <rect x="0" y="164" width="178" height="54" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <rect x="0" y="246" width="236" height="54" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <text x="18" y="36" font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700" fill="#1E3A8A">Memory</text>
+              <text x="18" y="118" font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700" fill="#0F766E">Bandwidth</text>
+              <text x="18" y="200" font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700" fill="#B45309">Latency</text>
+              <text x="18" y="282" font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700" fill="#6D28D9">Artist Time</text>
+            </g>
+            <text x="390" y="512" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="28" fill="#475569">A playable frame is a negotiated budget.</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open the lecture by treating game graphics as applied resource economics. A game renderer is not merely selecting algorithms; it is allocating frame time, memory, bandwidth, tool effort, and schedule risk while preserving playability. The chapter span gives us a compact tour from platform choice to production workflow.</aside>
+    </section>
+
+    <section class="slide" data-label="Budget Exchange">
+      <div class="eyebrow">Core Lens</div>
+      <h2>Renderer Decisions Are Budget Transfers</h2>
+      <div class="content two">
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Budget transfer cycle">
+            <circle cx="410" cy="278" r="166" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+            <g font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700">
+              <rect x="296" y="38" width="228" height="72" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <text x="410" y="82" text-anchor="middle" fill="#1E3A8A">Frame Time</text>
+              <rect x="592" y="206" width="180" height="72" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <text x="682" y="250" text-anchor="middle" fill="#0F766E">Memory</text>
+              <rect x="514" y="450" width="210" height="72" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <text x="619" y="494" text-anchor="middle" fill="#B45309">Latency</text>
+              <rect x="96" y="450" width="226" height="72" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <text x="209" y="494" text-anchor="middle" fill="#6D28D9">Tool Effort</text>
+              <rect x="44" y="206" width="206" height="72" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="147" y="250" text-anchor="middle" fill="#1E3A8A">Bandwidth</text>
+            </g>
+            <path d="M410 116 C520 136 600 188 646 216" fill="none" stroke="#94A3B8" stroke-width="5"/>
+            <polygon points="646,216 626,216 638,199" fill="#94A3B8"/>
+            <path d="M674 284 C662 370 636 414 616 448" fill="none" stroke="#94A3B8" stroke-width="5"/>
+            <polygon points="616,448 612,427 632,437" fill="#94A3B8"/>
+            <path d="M502 486 C424 520 344 518 318 492" fill="none" stroke="#94A3B8" stroke-width="5"/>
+            <polygon points="318,492 340,489 331,509" fill="#94A3B8"/>
+            <path d="M206 448 C150 390 132 322 146 284" fill="none" stroke="#94A3B8" stroke-width="5"/>
+            <polygon points="146,284 154,304 132,300" fill="#94A3B8"/>
+            <path d="M214 206 C252 152 316 120 394 108" fill="none" stroke="#94A3B8" stroke-width="5"/>
+            <polygon points="394,108 376,121 374,99" fill="#94A3B8"/>
+            <text x="410" y="268" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="33" font-weight="700" fill="#111827">Spend Here</text>
+            <text x="410" y="308" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="33" font-weight="700" fill="#111827">Save There</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Decision Test</div>
+            <p>Name the resource saved, the resource spent, and the bottleneck that actually moves.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Examples</div>
+            <ul>
+              <li>Normal maps save geometry but spend texture memory and bandwidth.</li>
+              <li>Depth prepasses save pixel work but submit geometry twice.</li>
+              <li>Streaming saves memory but spends I/O scheduling and tool discipline.</li>
+            </ul>
+          </div>
+          <div class="panel amber">
+            <div class="label">Warning</div>
+            <p>An optimization that does not touch the limiting pool may be invisible to the frame rate.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the budget exchange as the recurring diagnostic. Every graphics decision should name what it spends and what it saves. If a technique saves triangles but the missed budget is texture bandwidth, the frame may not improve. This framing keeps platforms, optimization, genre, and tools connected.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Platforms">
+      <div class="eyebrow">22.1 Platforms</div>
+      <h2>A Platform Is A Resource Envelope</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Fixed Console</div>
+            <p>Predictable hardware and timing, stricter memory accounting, lower API abstraction, and certification pressure.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Variable PC</div>
+            <p>Broad customer reach and high ceilings, but the renderer must scale across unknown present and future machines.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Browser Or VM</div>
+            <p>Stable deployment and high abstraction, with lower native access and modest graphics expectations.</p>
+          </div>
+          <div class="panel violet">
+            <div class="label">Handheld Mobile</div>
+            <p>Capable hardware constrained by thermal behavior, power, memory pressure, bandwidth, and input form.</p>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Platform envelope radar chart">
+            <g transform="translate(410 285)">
+              <circle r="204" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <circle r="150" fill="none" stroke="#E2E8F0" stroke-width="3"/>
+              <circle r="96" fill="none" stroke="#E2E8F0" stroke-width="3"/>
+              <circle r="42" fill="none" stroke="#E2E8F0" stroke-width="3"/>
+              <line x1="0" y1="-220" x2="0" y2="220" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="-209" y1="-68" x2="209" y2="68" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="-129" y1="178" x2="129" y2="-178" stroke="#CBD5E1" stroke-width="3"/>
+              <polygon points="0,-172 118,-38 82,114 -92,126 -138,-45" fill="#2563EB" opacity="0.16" stroke="#2563EB" stroke-width="5"/>
+              <polygon points="0,-112 190,-62 168,232 -130,178 -86,-28" fill="#0F766E" opacity="0.16" stroke="#0F766E" stroke-width="5"/>
+              <polygon points="0,-72 62,-20 40,56 -56,76 -192,-62" fill="#B45309" opacity="0.18" stroke="#B45309" stroke-width="5"/>
+              <text x="0" y="-244" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="25" fill="#475569">GPU Capacity</text>
+              <text x="258" y="86" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="25" fill="#475569">Variance</text>
+              <text x="154" y="236" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="25" fill="#475569">Streaming</text>
+              <text x="-154" y="238" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="25" fill="#475569">Certification</text>
+              <text x="-268" y="86" text-anchor="middle" font-family="Source Sans 3, Arial, sans-serif" font-size="25" fill="#475569">Abstraction</text>
+            </g>
+            <g font-family="Source Sans 3, Arial, sans-serif" font-size="23" font-weight="700">
+              <rect x="58" y="42" width="24" height="24" fill="#2563EB" opacity="0.7"/>
+              <text x="94" y="63" fill="#1E3A8A">Fixed console</text>
+              <rect x="58" y="78" width="24" height="24" fill="#0F766E" opacity="0.7"/>
+              <text x="94" y="99" fill="#0F766E">Variable PC</text>
+              <rect x="58" y="114" width="24" height="24" fill="#B45309" opacity="0.75"/>
+              <text x="94" y="135" fill="#B45309">Browser or VM</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Emphasize that a platform is a contract, not a brand label. The renderer inherits variance, API abstraction, input devices, certification rules, and resource ceilings. The same technique can be wise on a fixed console, risky on a browser target, and essential on a highly variable PC audience.</aside>
+    </section>
+
+    <section class="slide" data-label="Quality Scaling">
+      <div class="eyebrow">Platform Variance</div>
+      <h2>Quality Knobs Make One Game Fit Many Machines</h2>
+      <div class="content two wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 900 570" role="img" aria-label="Quality settings sliders">
+            <rect x="58" y="60" width="780" height="402" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <text x="96" y="116" font-size="29" font-weight="700" fill="#1E3A8A">Graphics Settings</text>
+              <g transform="translate(98 158)">
+                <text x="0" y="0" font-size="25" fill="#475569">Resolution scale</text>
+                <line x1="260" y1="-8" x2="690" y2="-8" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>
+                <line x1="260" y1="-8" x2="560" y2="-8" stroke="#2563EB" stroke-width="10" stroke-linecap="round"/>
+                <circle cx="560" cy="-8" r="18" fill="#2563EB"/>
+              </g>
+              <g transform="translate(98 238)">
+                <text x="0" y="0" font-size="25" fill="#475569">Antialiasing</text>
+                <line x1="260" y1="-8" x2="690" y2="-8" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>
+                <line x1="260" y1="-8" x2="450" y2="-8" stroke="#0F766E" stroke-width="10" stroke-linecap="round"/>
+                <circle cx="450" cy="-8" r="18" fill="#0F766E"/>
+              </g>
+              <g transform="translate(98 318)">
+                <text x="0" y="0" font-size="25" fill="#475569">Shadow quality</text>
+                <line x1="260" y1="-8" x2="690" y2="-8" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>
+                <line x1="260" y1="-8" x2="612" y2="-8" stroke="#B45309" stroke-width="10" stroke-linecap="round"/>
+                <circle cx="612" cy="-8" r="18" fill="#B45309"/>
+              </g>
+              <g transform="translate(98 398)">
+                <text x="0" y="0" font-size="25" fill="#475569">Motion effects</text>
+                <line x1="260" y1="-8" x2="690" y2="-8" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>
+                <line x1="260" y1="-8" x2="350" y2="-8" stroke="#6D28D9" stroke-width="10" stroke-linecap="round"/>
+                <circle cx="350" cy="-8" r="18" fill="#6D28D9"/>
+              </g>
+              <rect x="126" y="492" width="250" height="44" rx="8" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="2"/>
+              <text x="251" y="522" text-anchor="middle" font-size="24" font-weight="700" fill="#1E3A8A">Minimum spec</text>
+              <rect x="426" y="492" width="288" height="44" rx="8" fill="#F0FDFA" stroke="#99F6E4" stroke-width="2"/>
+              <text x="570" y="522" text-anchor="middle" font-size="24" font-weight="700" fill="#0F766E">Recommended spec</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Scales Well</div>
+            <ul>
+              <li>Display resolution and upscaling</li>
+              <li>Antialiasing sample count</li>
+              <li>Shadow map resolution or cascade count</li>
+              <li>Optional post effects and texture tier</li>
+            </ul>
+          </div>
+          <div class="panel amber">
+            <div class="label">Design Constraint</div>
+            <p>Knobs must preserve gameplay readability, not just increase benchmark numbers.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Course Artifact Check</div>
+            <p>486 synthetic settings were swept; the chosen 60 fps setting fit both frame and memory budgets.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Quality scaling belongs early because it is a design obligation on variable platforms. Resolution and antialiasing are simple user-facing knobs, while shadows, post effects, and texture tiers often require deeper pipeline support. The key is to scale visual cost without breaking game readability.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Frame Budget">
+      <div class="eyebrow">22.2 Limited Resources</div>
+      <h2>Frame Rate Converts Graphics Into Deadlines</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Frame Arithmetic</div>
+            <p class="formula">\( t_{\mathrm{frame}} = 1000 / \mathrm{fps} \)</p>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi">
+              <strong>33.3 ms</strong>
+              <span>30 fps frame budget</span>
+            </div>
+            <div class="kpi">
+              <strong>16.7 ms</strong>
+              <span>60 fps frame budget</span>
+            </div>
+          </div>
+          <div class="panel teal">
+            <div class="label">Parallel Work</div>
+            <p>Input, simulation, animation, audio, networking, CPU submission, and GPU execution overlap but still meet one displayed frame deadline.</p>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Frame timeline lanes">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <line x1="124" y1="94" x2="734" y2="94" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="124" y1="314" x2="734" y2="314" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="84" y="102" font-size="26" font-weight="700" text-anchor="end" fill="#1E3A8A">30 fps</text>
+              <text x="84" y="322" font-size="26" font-weight="700" text-anchor="end" fill="#1E3A8A">60 fps</text>
+              <rect x="124" y="132" width="146" height="54" rx="7" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <rect x="278" y="132" width="176" height="54" rx="7" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <rect x="464" y="132" width="220" height="54" rx="7" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <rect x="124" y="212" width="246" height="54" rx="7" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <rect x="382" y="212" width="302" height="54" rx="7" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="197" y="167" text-anchor="middle" font-size="22" fill="#1E3A8A">Input</text>
+              <text x="366" y="167" text-anchor="middle" font-size="22" fill="#0F766E">Simulation</text>
+              <text x="574" y="167" text-anchor="middle" font-size="22" fill="#B45309">Submit</text>
+              <text x="247" y="247" text-anchor="middle" font-size="22" fill="#6D28D9">Audio and network</text>
+              <text x="533" y="247" text-anchor="middle" font-size="22" fill="#1E3A8A">GPU previous frame</text>
+              <rect x="124" y="352" width="110" height="54" rx="7" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <rect x="244" y="352" width="126" height="54" rx="7" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <rect x="380" y="352" width="150" height="54" rx="7" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <rect x="124" y="432" width="182" height="54" rx="7" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <rect x="318" y="432" width="212" height="54" rx="7" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="179" y="387" text-anchor="middle" font-size="22" fill="#1E3A8A">Input</text>
+              <text x="307" y="387" text-anchor="middle" font-size="22" fill="#0F766E">Sim</text>
+              <text x="455" y="387" text-anchor="middle" font-size="22" fill="#B45309">Submit</text>
+              <text x="215" y="467" text-anchor="middle" font-size="22" fill="#6D28D9">Audio</text>
+              <text x="424" y="467" text-anchor="middle" font-size="22" fill="#1E3A8A">GPU</text>
+              <text x="428" y="540" text-anchor="middle" font-size="26" fill="#475569">The deadline halves when the target doubles.</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Frame time turns responsiveness into arithmetic. A 30 fps target gives about 33.3 milliseconds, while 60 fps gives about 16.7 milliseconds for input, simulation, submission, and display work. Because many tasks overlap, the slowest active lane determines whether the frame deadline is missed.</aside>
+    </section>
+
+    <section class="slide" data-label="Command Buffer">
+      <div class="eyebrow">Processing Time</div>
+      <h2>Command Buffers Trade Starvation Against Latency</h2>
+      <div class="content two wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 900 570" role="img" aria-label="CPU GPU command buffer">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="58" y="86" width="194" height="124" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <text x="155" y="142" text-anchor="middle" font-size="32" font-weight="700" fill="#1E3A8A">CPU</text>
+              <text x="155" y="178" text-anchor="middle" font-size="24" fill="#475569">submit commands</text>
+              <rect x="646" y="86" width="194" height="124" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <text x="743" y="142" text-anchor="middle" font-size="32" font-weight="700" fill="#0F766E">GPU</text>
+              <text x="743" y="178" text-anchor="middle" font-size="24" fill="#475569">execute queue</text>
+              <rect x="318" y="92" width="258" height="70" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="447" y="137" text-anchor="middle" font-size="27" font-weight="700" fill="#1E3A8A">Frame N commands</text>
+              <rect x="318" y="176" width="258" height="70" rx="10" fill="#FFF7ED" stroke="#B45309" stroke-width="3"/>
+              <text x="447" y="221" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">Frame N+1 commands</text>
+              <path d="M252 148 L316 127" stroke="#94A3B8" stroke-width="6" fill="none"/>
+              <polygon points="316,127 296,123 303,142" fill="#94A3B8"/>
+              <path d="M578 127 L644 148" stroke="#94A3B8" stroke-width="6" fill="none"/>
+              <polygon points="644,148 622,153 629,133" fill="#94A3B8"/>
+              <rect x="92" y="352" width="720" height="48" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <rect x="92" y="352" width="232" height="48" rx="6" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <rect x="324" y="352" width="246" height="48" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <rect x="570" y="352" width="242" height="48" rx="6" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <text x="208" y="386" text-anchor="middle" font-size="23" fill="#1E3A8A">sample input</text>
+              <text x="447" y="386" text-anchor="middle" font-size="23" fill="#0F766E">queued work</text>
+              <text x="691" y="386" text-anchor="middle" font-size="23" fill="#B45309">display result</text>
+              <text x="452" y="462" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">More buffering: fewer stalls, more input-to-display delay</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel teal">
+            <div class="label">Benefit</div>
+            <p>A full queue prevents GPU starvation when CPU submission timing varies.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Cost</div>
+            <p>Commands generated from old input may appear one or more refreshes later.</p>
+          </div>
+          <div class="panel blue">
+            <div class="label">Fast Games</div>
+            <p>Latency-sensitive genres often prefer tighter queues and 60 fps targets.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">A command buffer is useful because it keeps the GPU fed, but it also moves player input farther from the displayed image. Fast games often sacrifice some throughput convenience to reduce latency. The right buffer depth depends on how painful starvation is compared with delayed feedback.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Bottlenecks">
+      <div class="eyebrow">Heterogeneous Resources</div>
+      <h2>The Bottleneck Lane Controls Frame Time</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Synthetic Chapter Check</div>
+            <p class="formula">\( t_{\mathrm{frame}} = \max(t_{\mathrm{CPU}}, t_{\mathrm{vertex}}, t_{\mathrm{pixel}}, t_{\mathrm{texture}}, t_{\mathrm{bandwidth}}) \)</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Observed Limit</div>
+            <p>Baseline frame time: 21.6 ms. The limiting pool is GPU programmable work, so a 60 fps target misses until that lane is reduced.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Useful Question</div>
+            <p>Which lane has the longest bar after synchronization and queueing are accounted for?</p>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Heterogeneous GPU bottleneck bars">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <text x="96" y="72" font-size="27" font-weight="700" fill="#475569">Resource lanes per frame</text>
+              <line x1="298" y1="102" x2="298" y2="482" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="596" y1="102" x2="596" y2="482" stroke="#B45309" stroke-width="4" stroke-dasharray="10 8"/>
+              <text x="596" y="78" text-anchor="middle" font-size="23" font-weight="700" fill="#B45309">16.7 ms</text>
+              <g font-size="24">
+                <text x="82" y="138" fill="#475569">CPU submit</text>
+                <rect x="298" y="112" width="210" height="34" rx="6" fill="#2563EB" opacity="0.78"/>
+                <text x="82" y="202" fill="#475569">Vertex</text>
+                <rect x="298" y="176" width="170" height="34" rx="6" fill="#0F766E" opacity="0.78"/>
+                <text x="82" y="266" fill="#475569">Pixel shader</text>
+                <rect x="298" y="240" width="384" height="34" rx="6" fill="#B45309" opacity="0.86"/>
+                <text x="696" y="266" font-weight="700" fill="#B45309">21.6</text>
+                <text x="82" y="330" fill="#475569">Texture fetch</text>
+                <rect x="298" y="304" width="248" height="34" rx="6" fill="#6D28D9" opacity="0.76"/>
+                <text x="82" y="394" fill="#475569">Bandwidth</text>
+                <rect x="298" y="368" width="204" height="34" rx="6" fill="#1E3A8A" opacity="0.72"/>
+                <text x="82" y="458" fill="#475569">Post effects</text>
+                <rect x="298" y="432" width="226" height="34" rx="6" fill="#0F766E" opacity="0.55"/>
+              </g>
+              <text x="446" y="526" text-anchor="middle" font-size="25" fill="#475569">Shortening the wrong lane leaves the maximum unchanged.</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Heterogeneous GPU resources explain why profiling must precede optimization. Pixel shading, texture fetch, bandwidth, and post processing can each become the limiting lane. Reducing a non-bottleneck lane may clean up code, but it does not change frame time until the bottleneck lane moves.</aside>
+    </section>
+
+    <section class="slide" data-label="Storage">
+      <div class="eyebrow">Storage, Latency, And Bandwidth</div>
+      <h2>Memory Budgets Are Hierarchies, Not Buckets</h2>
+      <div class="content two wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 900 570" role="img" aria-label="Game memory hierarchy">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <polygon points="450,50 770,492 130,492" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="308" y1="246" x2="592" y2="246" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="238" y1="344" x2="662" y2="344" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="188" y1="414" x2="712" y2="414" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="450" y="132" text-anchor="middle" font-size="29" font-weight="700" fill="#1E3A8A">On-chip cache</text>
+              <text x="450" y="222" text-anchor="middle" font-size="29" font-weight="700" fill="#2563EB">VRAM and RAM</text>
+              <text x="450" y="318" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">Hard drive or flash</text>
+              <text x="450" y="394" text-anchor="middle" font-size="29" font-weight="700" fill="#B45309">Optical or network delivery</text>
+              <text x="118" y="92" font-size="25" fill="#475569">small</text>
+              <text x="104" y="128" font-size="25" fill="#475569">fast</text>
+              <text x="706" y="470" font-size="25" fill="#475569">large</text>
+              <text x="706" y="506" font-size="25" fill="#475569">slow</text>
+              <path d="M116 140 L116 448" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="116,448 104,424 128,424" fill="#94A3B8"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Graphics Memory Pressure</div>
+            <p>Textures usually dominate, followed by geometry, animation data, buffers, and supporting game systems.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Mip Arithmetic</div>
+            <p class="formula">\(1 + 1/4 + 1/16 + \cdots \approx 4/3\)</p>
+            <p class="small">A 2048 RGBA base level is 16.0 MiB; the full mip chain in the artifact is about 1.333 times larger.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Latency Hiding</div>
+            <p>Shader math can cover some texture wait time, but only when there is enough independent work.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Storage constraints are more than capacity limits. The hierarchy trades size against latency and bandwidth, so loading, streaming, texture access, and cache behavior shape graphics design. Games often spend engineering effort to stage assets near the processor that will consume them.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Development Resources">
+      <div class="eyebrow">Development Resources</div>
+      <h2>A Runtime Feature Must Be Authorable</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel violet">
+            <div class="label">Limited Team Time</div>
+            <p>The cost of a technique includes programmers, tools engineers, technical artists, content artists, QA, and iteration time.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Artist Productivity</div>
+            <p>Most modern game visuals are asset heavy. Preview speed and failure clarity can determine final image quality.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Practical Rule</div>
+            <p>If the team cannot create and revise inputs reliably, the shader or renderer feature is not production ready.</p>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Feature authoring feedback loop">
+            <g font-family="Source Sans 3, Arial, sans-serif" font-size="25" font-weight="700">
+              <rect x="86" y="106" width="190" height="86" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <text x="181" y="158" text-anchor="middle" fill="#1E3A8A">Engine Code</text>
+              <rect x="332" y="106" width="190" height="86" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <text x="427" y="158" text-anchor="middle" fill="#0F766E">Tools</text>
+              <rect x="578" y="106" width="170" height="86" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <text x="663" y="158" text-anchor="middle" fill="#6D28D9">Assets</text>
+              <rect x="204" y="342" width="190" height="86" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <text x="299" y="394" text-anchor="middle" fill="#B45309">Preview</text>
+              <rect x="448" y="342" width="190" height="86" rx="12" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+              <text x="543" y="394" text-anchor="middle" fill="#1E3A8A">QA Signal</text>
+              <path d="M276 149 L330 149" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="330,149 308,137 308,161" fill="#94A3B8"/>
+              <path d="M522 149 L576 149" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="576,149 554,137 554,161" fill="#94A3B8"/>
+              <path d="M664 194 C654 268 610 318 548 342" fill="none" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="548,342 558,320 572,340" fill="#94A3B8"/>
+              <path d="M448 386 L396 386" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="396,386 418,374 418,398" fill="#94A3B8"/>
+              <path d="M302 342 C218 292 184 242 181 194" fill="none" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="181,194 169,216 193,216" fill="#94A3B8"/>
+              <text x="410" y="510" text-anchor="middle" font-size="27" fill="#475569">Good graphics systems shorten the revise-preview loop.</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Development resources are a first-class constraint. A shader feature that requires fragile tools, slow previews, or repeated artist handoffs may be more expensive than its runtime cost suggests. A production renderer succeeds only when artists can create, inspect, revise, and validate assets efficiently.</aside>
+    </section>
+
+    <section class="slide" data-label="Depth Optimization">
+      <div class="eyebrow">22.3 Optimization Techniques</div>
+      <h2>Reject Invisible Pixels Before They Run Expensive Shaders</h2>
+      <div class="content two wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 900 570" role="img" aria-label="Depth rejection and prepass">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="74" y="84" width="312" height="318" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <rect x="514" y="84" width="312" height="318" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="230" y="60" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">No early depth help</text>
+              <text x="670" y="60" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">Depth information first</text>
+              <rect x="126" y="190" width="210" height="126" fill="#2563EB" opacity="0.34"/>
+              <rect x="168" y="148" width="178" height="166" fill="#B45309" opacity="0.44"/>
+              <rect x="118" y="248" width="240" height="96" fill="#6D28D9" opacity="0.32"/>
+              <text x="230" y="456" text-anchor="middle" font-size="25" fill="#475569">Multiple hidden layers shade</text>
+              <rect x="566" y="190" width="210" height="126" fill="#2563EB" opacity="0.16"/>
+              <rect x="608" y="148" width="178" height="166" fill="#B45309" opacity="0.18"/>
+              <rect x="558" y="248" width="240" height="96" fill="#0F766E" opacity="0.52" stroke="#0F766E" stroke-width="4"/>
+              <text x="670" y="456" text-anchor="middle" font-size="25" fill="#475569">Nearest surface blocks work</text>
+              <path d="M402 250 L500 250" stroke="#94A3B8" stroke-width="7"/>
+              <polygon points="500,250 474,236 474,264" fill="#94A3B8"/>
+              <rect x="190" y="492" width="520" height="44" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+              <text x="450" y="522" text-anchor="middle" font-size="24" font-weight="700" fill="#1E3A8A">Spend simple depth work to save costly pixel work</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Depth Culling</div>
+            <p>Hierarchical depth hardware can skip pixel shaders on surfaces already known to be hidden.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Depth Prepass</div>
+            <p>Render opaque depth first without expensive color shading, then shade with stronger rejection.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Tradeoff</div>
+            <p>The method pays extra vertex and draw work, so it helps most when pixel work dominates.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Depth and visibility optimizations should be presented as early rejection mechanisms. If an expensive pixel shader never runs, the engine saves time without changing the visible image. A prepass spends simpler geometry work up front, so the value depends on whether pixel work is truly costly.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Culling And LOD">
+      <div class="eyebrow">Visibility And Level Of Detail</div>
+      <h2>The Fastest Object Is Not Submitted</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="kpi-grid">
+            <div class="kpi">
+              <strong>520</strong>
+              <span>objects in synthetic scene</span>
+            </div>
+            <div class="kpi">
+              <strong>227</strong>
+              <span>frustum survivors</span>
+            </div>
+            <div class="kpi">
+              <strong>207</strong>
+              <span>after occlusion culling</span>
+            </div>
+            <div class="kpi">
+              <strong>0.406M</strong>
+              <span>triangles after LOD</span>
+            </div>
+          </div>
+          <div class="panel teal">
+            <div class="label">LOD Contract</div>
+            <p>Reduce detail with distance or screen coverage while keeping silhouettes and material behavior stable.</p>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Frustum culling occlusion and LOD bands">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="78" y="62" width="660" height="446" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <circle cx="204" cy="432" r="22" fill="#1E3A8A"/>
+              <polygon points="204,432 316,126 668,184" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <path d="M204 432 C348 314 494 228 668 184" fill="none" stroke="#0F766E" stroke-width="4" stroke-dasharray="12 10"/>
+              <path d="M204 432 C294 358 382 294 486 252" fill="none" stroke="#B45309" stroke-width="4" stroke-dasharray="12 10"/>
+              <rect x="438" y="238" width="96" height="128" rx="8" fill="#475569" opacity="0.2" stroke="#475569" stroke-width="3"/>
+              <g>
+                <circle cx="330" cy="214" r="18" fill="#0F766E"/>
+                <circle cx="560" cy="226" r="14" fill="#0F766E"/>
+                <circle cx="620" cy="362" r="10" fill="#0F766E"/>
+                <circle cx="704" cy="114" r="12" fill="#CBD5E1"/>
+                <circle cx="286" cy="502" r="12" fill="#CBD5E1"/>
+                <circle cx="470" cy="330" r="14" fill="#B45309"/>
+                <circle cx="520" cy="342" r="12" fill="#B45309"/>
+                <circle cx="396" cy="168" r="16" fill="#0F766E"/>
+              </g>
+              <text x="204" y="472" text-anchor="middle" font-size="24" font-weight="700" fill="#1E3A8A">camera</text>
+              <text x="410" y="120" text-anchor="middle" font-size="24" font-weight="700" fill="#2563EB">frustum</text>
+              <text x="510" y="394" text-anchor="middle" font-size="24" font-weight="700" fill="#B45309">occluded</text>
+              <text x="576" y="292" text-anchor="middle" font-size="24" font-weight="700" fill="#0F766E">low LOD</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Culling and level of detail are complementary. Frustum and occlusion culling remove objects from consideration, while LOD keeps visible objects but changes their representation. The numeric reduction is useful, but the visual contract is stricter: silhouettes, materials, and switching behavior must stay believable.</aside>
+    </section>
+
+    <section class="slide" data-label="Precomputed Lighting">
+      <div class="eyebrow">Precompute When The World Allows It</div>
+      <h2>Static Backgrounds Can Store Expensive Lighting</h2>
+      <div class="content two wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 900 570" role="img" aria-label="Lightmap and dynamic foreground split">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="76" y="72" width="344" height="344" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <g opacity="0.95">
+                <rect x="104" y="100" width="72" height="72" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="2"/>
+                <rect x="176" y="100" width="72" height="72" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+                <rect x="248" y="100" width="72" height="72" fill="#FFFBEB" stroke="#FDE68A" stroke-width="2"/>
+                <rect x="320" y="100" width="72" height="72" fill="#F0FDFA" stroke="#99F6E4" stroke-width="2"/>
+                <rect x="104" y="172" width="72" height="72" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+                <rect x="176" y="172" width="72" height="72" fill="#F0FDFA" stroke="#99F6E4" stroke-width="2"/>
+                <rect x="248" y="172" width="72" height="72" fill="#FFF7ED" stroke="#FED7AA" stroke-width="2"/>
+                <rect x="320" y="172" width="72" height="72" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="2"/>
+                <rect x="104" y="244" width="72" height="72" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+                <rect x="176" y="244" width="72" height="72" fill="#F0FDFA" stroke="#99F6E4" stroke-width="2"/>
+                <rect x="248" y="244" width="72" height="72" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+                <rect x="320" y="244" width="72" height="72" fill="#FFFBEB" stroke="#FDE68A" stroke-width="2"/>
+                <rect x="104" y="316" width="72" height="72" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="2"/>
+                <rect x="176" y="316" width="72" height="72" fill="#FFFBEB" stroke="#FDE68A" stroke-width="2"/>
+                <rect x="248" y="316" width="72" height="72" fill="#F0FDFA" stroke="#99F6E4" stroke-width="2"/>
+                <rect x="320" y="316" width="72" height="72" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="2"/>
+              </g>
+              <text x="248" y="464" text-anchor="middle" font-size="27" font-weight="700" fill="#1E3A8A">background lightmap</text>
+              <rect x="532" y="100" width="276" height="286" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <circle cx="670" cy="180" r="50" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <line x1="670" y1="230" x2="670" y2="314" stroke="#1E3A8A" stroke-width="7" stroke-linecap="round"/>
+              <line x1="630" y1="264" x2="710" y2="264" stroke="#1E3A8A" stroke-width="7" stroke-linecap="round"/>
+              <line x1="670" y1="314" x2="626" y2="358" stroke="#1E3A8A" stroke-width="7" stroke-linecap="round"/>
+              <line x1="670" y1="314" x2="714" y2="358" stroke="#1E3A8A" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="606" cy="150" r="16" fill="#2563EB" opacity="0.7"/>
+              <circle cx="752" cy="168" r="16" fill="#0F766E" opacity="0.7"/>
+              <circle cx="742" cy="300" r="16" fill="#6D28D9" opacity="0.7"/>
+              <text x="670" y="464" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">dynamic object probes</text>
+              <path d="M424 244 L526 244" stroke="#94A3B8" stroke-width="7"/>
+              <polygon points="526,244 500,230 500,258" fill="#94A3B8"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel teal">
+            <div class="label">Background Geometry</div>
+            <p>Static scenery can use precomputed lighting stored as lightmaps or related data.</p>
+          </div>
+          <div class="panel blue">
+            <div class="label">Foreground Geometry</div>
+            <p>Characters and moving objects need dynamic shading, lighting probes, or other position-aware approximations.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Genre Dependency</div>
+            <p>Changing time of day and open worlds reduce how much lighting can be baked in advance.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Precomputed lighting is a classic game graphics bargain. It moves expensive global illumination out of the frame, but it favors static background geometry and fixed lighting assumptions. Dynamic characters and changing worlds need probes, approximations, or runtime shading because they cannot simply reuse one baked map.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Game Types">
+      <div class="eyebrow">22.4 Game Types</div>
+      <h2>Genre Predicts Camera, Content, And Latency Pressure</h2>
+      <div class="content two">
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Game type rendering choice map">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="86" y="74" width="620" height="390" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="148" y1="410" x2="650" y2="410" stroke="#475569" stroke-width="4"/>
+              <line x1="148" y1="410" x2="148" y2="126" stroke="#475569" stroke-width="4"/>
+              <polygon points="650,410 626,398 626,422" fill="#475569"/>
+              <polygon points="148,126 136,150 160,150" fill="#475569"/>
+              <text x="400" y="500" text-anchor="middle" font-size="25" fill="#475569">camera freedom and world span</text>
+              <text x="62" y="292" transform="rotate(-90 62 292)" text-anchor="middle" font-size="25" fill="#475569">visible actors</text>
+              <circle cx="204" cy="372" r="22" fill="#2563EB"/>
+              <text x="236" y="380" font-size="24" font-weight="700" fill="#1E3A8A">Fighting arena</text>
+              <circle cx="380" cy="302" r="22" fill="#0F766E"/>
+              <text x="412" y="310" font-size="24" font-weight="700" fill="#0F766E">FPS</text>
+              <circle cx="610" cy="270" r="24" fill="#B45309"/>
+              <text x="490" y="256" font-size="24" font-weight="700" fill="#B45309">Open world</text>
+              <circle cx="520" cy="166" r="28" fill="#6D28D9"/>
+              <text x="550" y="174" font-size="24" font-weight="700" fill="#6D28D9">RTS</text>
+              <circle cx="278" cy="338" r="20" fill="#64748B"/>
+              <text x="306" y="346" font-size="24" font-weight="700" fill="#475569">Puzzle</text>
+              <circle cx="342" cy="344" r="20" fill="#94A3B8"/>
+              <text x="370" y="352" font-size="24" font-weight="700" fill="#475569">2.5D</text>
+              <rect x="536" y="70" width="214" height="50" rx="8" fill="#FFFBEB" stroke="#FDE68A" stroke-width="2"/>
+              <text x="643" y="104" text-anchor="middle" font-size="23" font-weight="700" fill="#B45309">streaming pressure</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Small, Enclosed World</div>
+            <p>Spend more on local fidelity, fixed camera composition, and highly detailed hero objects.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Large Or Free World</div>
+            <p>Prioritize streaming, culling, LOD, memory residency, and lighting that tolerates change.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Latency Sensitive</div>
+            <p>Rhythm, fighting, and shooter experiences often spend visual budget to maintain faster feedback.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Genre changes the renderer because it changes what can be seen and how quickly the player notices delay. A fighting arena can spend detail on a tiny world. An open-world game must stream and cull. A strategy game budgets for many actors rather than two hero characters.</aside>
+    </section>
+
+    <section class="slide" data-label="Asset Pipeline">
+      <div class="eyebrow">22.5 Asset Creation</div>
+      <h2>Asset Pipelines Turn Graphics Ideas Into Dependencies</h2>
+      <div class="content two wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 900 570" role="img" aria-label="Asset pipeline dependency graph">
+            <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" font-weight="700">
+              <rect x="70" y="76" width="150" height="58" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <text x="145" y="113" text-anchor="middle" fill="#1E3A8A">Model</text>
+              <rect x="274" y="76" width="150" height="58" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <text x="349" y="113" text-anchor="middle" fill="#1E3A8A">UV Map</text>
+              <rect x="478" y="76" width="150" height="58" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <text x="553" y="113" text-anchor="middle" fill="#0F766E">Sculpt</text>
+              <rect x="682" y="76" width="150" height="58" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <text x="757" y="113" text-anchor="middle" fill="#0F766E">Bake</text>
+              <rect x="274" y="224" width="150" height="58" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <text x="349" y="261" text-anchor="middle" fill="#B45309">Textures</text>
+              <rect x="478" y="224" width="150" height="58" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="553" y="261" text-anchor="middle" fill="#1E3A8A">Shader</text>
+              <rect x="682" y="224" width="150" height="58" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="757" y="261" text-anchor="middle" fill="#1E3A8A">Import</text>
+              <rect x="172" y="372" width="150" height="58" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <text x="247" y="409" text-anchor="middle" fill="#6D28D9">Rig</text>
+              <rect x="376" y="372" width="150" height="58" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <text x="451" y="409" text-anchor="middle" fill="#6D28D9">Animate</text>
+              <rect x="580" y="372" width="150" height="58" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <text x="655" y="409" text-anchor="middle" fill="#B45309">Profile</text>
+              <path d="M220 105 L272 105" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="272,105 250,93 250,117" fill="#94A3B8"/>
+              <path d="M424 105 L476 105" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="476,105 454,93 454,117" fill="#94A3B8"/>
+              <path d="M628 105 L680 105" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="680,105 658,93 658,117" fill="#94A3B8"/>
+              <path d="M757 134 L757 222" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="757,222 745,200 769,200" fill="#94A3B8"/>
+              <path d="M424 253 L476 253" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="476,253 454,241 454,265" fill="#94A3B8"/>
+              <path d="M628 253 L680 253" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="680,253 658,241 658,265" fill="#94A3B8"/>
+              <path d="M145 134 C146 268 196 334 246 370" fill="none" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="246,370 223,363 239,346" fill="#94A3B8"/>
+              <path d="M322 401 L374 401" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="374,401 352,389 352,413" fill="#94A3B8"/>
+              <path d="M526 401 L578 401" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="578,401 556,389 556,413" fill="#94A3B8"/>
+              <path d="M757 282 C748 334 714 362 674 374" fill="none" stroke="#94A3B8" stroke-width="5"/>
+              <polygon points="674,374 692,356 700,380" fill="#94A3B8"/>
+              <text x="450" y="512" text-anchor="middle" font-size="27" fill="#475569">Normal-map workflows save triangles by spending pipeline structure.</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Topology Of Work</div>
+            <p>Modeling, UVs, detail sculpting, normal baking, shader assignment, lighting, import, and profiling form an acyclic dependency graph.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Late Changes</div>
+            <p>Changing a mesh can invalidate UVs, baked maps, shader bindings, rig weights, animations, and QA evidence.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Chapter Artifact</div>
+            <p>The generated workflow check found 24 nodes, 27 edges, and a 12-edge critical path.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The asset pipeline slide links runtime choices to authoring dependencies. Normal maps, shader parameters, lightmaps, rigs, and animations are not isolated files; they form a directed workflow. A late upstream change can invalidate many downstream approvals, so the graph is also a schedule model.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Production Timeline">
+      <div class="eyebrow">Game Production Process</div>
+      <h2>Graphics Work Changes Shape Across Production</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="label">Pre-Production</div>
+            <p>Core team prepares engine changes, tools, rendering experiments, and gameplay prototypes before the full team depends on them.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Full Production</div>
+            <p>Assets, levels, animation, lighting, effects, and engine refinements iterate together under schedule pressure.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Final Stage</div>
+            <p>Alpha, beta, gold, patches, and DLC shift attention from exploration to stability, performance, QA, and certification.</p>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Game production timeline">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <line x1="96" y1="270" x2="724" y2="270" stroke="#CBD5E1" stroke-width="8" stroke-linecap="round"/>
+              <g font-size="24" font-weight="700">
+                <circle cx="118" cy="270" r="20" fill="#2563EB"/>
+                <text x="118" y="326" text-anchor="middle" fill="#1E3A8A">Concept</text>
+                <circle cx="224" cy="270" r="20" fill="#0F766E"/>
+                <text x="224" y="326" text-anchor="middle" fill="#0F766E">Greenlight</text>
+                <circle cx="340" cy="270" r="20" fill="#6D28D9"/>
+                <text x="340" y="326" text-anchor="middle" fill="#6D28D9">Pre-prod</text>
+                <circle cx="464" cy="270" r="20" fill="#1E3A8A"/>
+                <text x="464" y="326" text-anchor="middle" fill="#1E3A8A">Production</text>
+                <circle cx="574" cy="270" r="20" fill="#B45309"/>
+                <text x="574" y="326" text-anchor="middle" fill="#B45309">Alpha</text>
+                <circle cx="654" cy="270" r="20" fill="#B45309"/>
+                <text x="654" y="326" text-anchor="middle" fill="#B45309">Beta</text>
+                <circle cx="724" cy="270" r="20" fill="#0F766E"/>
+                <text x="724" y="326" text-anchor="middle" fill="#0F766E">Gold</text>
+              </g>
+              <path d="M340 246 C330 142 406 100 492 128 C566 154 540 220 480 222" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="10 8"/>
+              <text x="430" y="92" text-anchor="middle" font-size="25" font-weight="700" fill="#475569">tool and engine readiness</text>
+              <path d="M654 238 C690 174 746 174 764 232" fill="none" stroke="#94A3B8" stroke-width="5"/>
+              <text x="714" y="158" text-anchor="middle" font-size="25" font-weight="700" fill="#475569">QA loop</text>
+              <path d="M724 292 C742 378 630 414 574 342" fill="none" stroke="#94A3B8" stroke-width="5"/>
+              <text x="666" y="442" text-anchor="middle" font-size="25" font-weight="700" fill="#475569">patch and DLC</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">The production timeline explains why pre-production tools matter. If the core team does not prepare the engine and pipeline before full production, many specialists can become blocked. Alpha, beta, and gold are not just labels; each stage changes the kind of graphics work that is still affordable.</aside>
+    </section>
+
+    <section class="slide" data-label="Profiling Close">
+      <div class="eyebrow">Synthesis</div>
+      <h2>Profile, Then Choose The Smallest Quality Concession</h2>
+      <div class="content two wide-left">
+        <div class="stack">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Target</th>
+                <th>Chosen Frame</th>
+                <th>Memory</th>
+                <th>Key Settings</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>30 fps</td>
+                <td>16.983 ms</td>
+                <td>1605 MB</td>
+                <td>4x AA, medium textures</td>
+              </tr>
+              <tr>
+                <td>60 fps</td>
+                <td>15.207 ms</td>
+                <td>1055 MB</td>
+                <td>2x AA, low textures</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="panel blue">
+            <div class="label">Procedure</div>
+            <ol>
+              <li>Measure frame, memory, bandwidth, latency, and quality.</li>
+              <li>Identify the missed constraint and the current bottleneck.</li>
+              <li>Adjust the cheapest visible knob that moves that constraint.</li>
+              <li>Verify on the target platform and game type.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 820 570" role="img" aria-label="Profiling decision path">
+            <g font-family="Source Sans 3, Arial, sans-serif" font-weight="700">
+              <rect x="110" y="66" width="600" height="76" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <text x="410" y="113" text-anchor="middle" font-size="30" fill="#1E3A8A">Measure the frame</text>
+              <rect x="110" y="186" width="600" height="76" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <text x="410" y="233" text-anchor="middle" font-size="30" fill="#B45309">Find the limiting resource</text>
+              <rect x="110" y="306" width="600" height="76" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <text x="410" y="353" text-anchor="middle" font-size="30" fill="#0F766E">Tune the relevant quality knob</text>
+              <rect x="110" y="426" width="600" height="76" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <text x="410" y="473" text-anchor="middle" font-size="30" fill="#6D28D9">Re-test on target hardware</text>
+              <path d="M410 144 L410 184" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="410,184 398,160 422,160" fill="#94A3B8"/>
+              <path d="M410 264 L410 304" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="410,304 398,280 422,280" fill="#94A3B8"/>
+              <path d="M410 384 L410 424" stroke="#94A3B8" stroke-width="6"/>
+              <polygon points="410,424 398,400 422,400" fill="#94A3B8"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <p class="footer-note">The chapter's practical habit: make the hidden tradeoff explicit, then verify that the measured bottleneck actually changed.</p>
+      <aside class="speaker-notes">Close by asking students to defend an optimization as a measured tradeoff. The best quality setting is not the prettiest candidate in isolation; it is the highest-quality candidate that fits frame, memory, bandwidth, latency, and production constraints on the target platform and game type.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

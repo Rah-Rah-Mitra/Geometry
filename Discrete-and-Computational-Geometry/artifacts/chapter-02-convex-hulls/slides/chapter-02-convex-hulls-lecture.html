@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 2: Convex Hulls</title>
+  <meta name="course" content="Discrete and Computational Geometry">
+  <meta name="chapter_id" content="chapter-02-convex-hulls">
+  <meta name="notebook_path" content="Discrete-and-Computational-Geometry/chapter-02-convex-hulls/02-convex-hulls.ipynb">
+  <meta name="source_span" content="printed pages 38-64">
+  <meta name="source_pdf" content="Discrete-and-Computational-Geometry/Discrete and Computational Geometry, 2nd Edition.pdf">
+  <meta name="design_system_version" content="geometry-lecture-design-system">
+  <meta name="math_support" content="STIX Two Math via local colors_and_type.css">
+  <link rel="stylesheet" href="colors_and_type.css">
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .sl {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      padding: 64px 88px 58px;
+    }
+    .soft { background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); }
+    .kicker { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; margin-bottom: 18px; }
+    h1 { font-size: 62px; line-height: 1.08; margin: 0; color: var(--slide-accent); }
+    h2 { font-size: 46px; line-height: 1.15; margin: 0 0 24px; color: var(--slide-ink); }
+    h3 { font-size: 28px; margin: 0 0 10px; color: var(--slide-accent); }
+    p, li { font-size: 27px; line-height: 1.42; }
+    .sub { font-size: 30px; color: var(--slide-muted); line-height: 1.35; max-width: 1160px; margin-top: 24px; }
+    .grid { display: grid; gap: 36px; height: 850px; align-items: stretch; }
+    .two { grid-template-columns: 1fr 1fr; }
+    .wide { grid-template-columns: 1.12fr 0.88fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .panel { border: 1px solid var(--slide-border-light); border-radius: 8px; background: #fff; padding: 26px 30px; box-sizing: border-box; }
+    .env { border-left: 5px solid var(--slide-blue); background: var(--math-definition-bg); border-radius: 6px; padding: 24px 28px; margin: 0 0 20px; }
+    .env.thm { border-left-color: var(--slide-accent); background: var(--math-theorem-bg); }
+    .env.ex { border-left-color: var(--slide-teal); background: var(--math-example-bg); }
+    .env.warn { border-left-color: var(--slide-amber); background: var(--math-warning-bg); }
+    .env.proof { border-left-color: var(--slide-border); background: var(--math-proof-bg); }
+    .env strong { display: block; font-size: 24px; color: var(--slide-accent); margin-bottom: 8px; }
+    .math { font-family: var(--font-math); font-size: 34px; line-height: 1.35; }
+    .small { font-size: 22px; color: var(--slide-muted); line-height: 1.35; }
+    .bullets { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+    .bullets li { padding-left: 30px; position: relative; }
+    .bullets li:before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--slide-teal); position: absolute; left: 0; top: 15px; }
+    .formula { font-family: var(--font-math); font-size: 42px; text-align: center; margin: 24px 0; color: var(--slide-accent); }
+    svg { width: 100%; height: 100%; display: block; }
+    .caption { font-size: 21px; color: var(--slide-dimmed); margin-top: 10px; }
+    .footer { position: absolute; left: 88px; right: 88px; bottom: 28px; display: flex; justify-content: space-between; color: var(--slide-dimmed); font-size: 20px; }
+    .speaker-notes { display: none; }
+    .pill { display: inline-block; border: 1px solid var(--slide-border); border-radius: 999px; padding: 6px 14px; font-size: 20px; color: var(--slide-muted); margin-right: 8px; }
+    .code { font-family: var(--font-mono); font-size: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 18px; }
+    .note-row { display: grid; grid-template-columns: 190px 1fr; gap: 22px; align-items: start; margin-bottom: 18px; }
+    .note-row b { color: var(--slide-accent); font-size: 24px; }
+    .note-row span { font-size: 25px; line-height: 1.35; color: var(--slide-muted); }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="sl soft" data-label="Title">
+    <div class="kicker">Discrete and Computational Geometry</div>
+    <h1>Convex Hulls</h1>
+    <p class="sub">Extreme points, support certificates, planar algorithms, lower bounds, divide-and-conquer tangents, and spatial hull surfaces.</p>
+    <div style="position:absolute;right:110px;top:122px;width:560px;height:560px">
+      <svg viewBox="0 0 560 560" aria-label="Point cloud with convex hull">
+        <defs>
+          <pattern id="gridA" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M 28 0 L 0 0 0 28" fill="none" stroke="#e2e8f0" stroke-width="1"/></pattern>
+        </defs>
+        <rect width="560" height="560" fill="url(#gridA)"/>
+        <polygon points="95,390 138,154 292,70 444,140 498,330 386,462 190,486" fill="#2563eb18" stroke="#1e3a8a" stroke-width="8"/>
+        <g fill="#0f766e"><circle cx="95" cy="390" r="9"/><circle cx="138" cy="154" r="9"/><circle cx="292" cy="70" r="9"/><circle cx="444" cy="140" r="9"/><circle cx="498" cy="330" r="9"/><circle cx="386" cy="462" r="9"/><circle cx="190" cy="486" r="9"/></g>
+        <g fill="#475569"><circle cx="220" cy="270" r="7"/><circle cx="330" cy="268" r="7"/><circle cx="285" cy="355" r="7"/><circle cx="242" cy="196" r="7"/><circle cx="392" cy="348" r="7"/><circle cx="168" cy="315" r="7"/></g>
+      </svg>
+    </div>
+    <div class="footer"><span>Chapter 2, printed pages 38-64</span><span>Notebook: 02-convex-hulls.ipynb</span></div>
+    <aside class="speaker-notes">Frame the lecture around one question: what information proves that a finite point set has a particular boundary? Emphasize that the chapter is both geometric and algorithmic. A convex hull is a shape, but in computation it is also a certificate made from extreme points, support lines, orientation tests, and eventually facets in three dimensions.</aside>
+  </section>
+
+  <section class="sl" data-label="Roadmap">
+    <h2>Lecture Roadmap</h2>
+    <div class="grid three">
+      <div class="panel"><h3>1. Object</h3><p>Convex sets, convex combinations, hull minimality, and extreme points.</p><div class="formula">conv(S)</div></div>
+      <div class="panel"><h3>2. Certificates</h3><p>Support lines and orientation predicates convert a picture into testable evidence.</p><div class="formula">orient(a,b,c)</div></div>
+      <div class="panel"><h3>3. Algorithms</h3><p>Incremental repair, gift wrapping, scan stacks, divide-and-conquer merges, and 3D facets.</p><div class="formula">O(nh), O(n log n)</div></div>
+    </div>
+    <aside class="speaker-notes">Use this roadmap to set expectations. The first block makes convexity inspectable; the middle block explains how algorithms search for the same boundary; the final block separates algorithmic upper bounds from lower-bound arguments and then changes the data structure when the hull becomes a surface in 3D.</aside>
+  </section>
+
+  <section class="sl" data-label="Convex Combinations">
+    <h2>Convex Hull As All Weighted Averages</h2>
+    <div class="grid wide">
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Convex combinations inside a triangle">
+          <polygon points="130,510 380,105 650,470" fill="#2563eb14" stroke="#2563eb" stroke-width="5"/>
+          <g stroke="#0f766e" stroke-width="2" opacity="0.45">
+            <path d="M180 430 L590 410"/><path d="M225 360 L545 350"/><path d="M270 290 L500 292"/><path d="M315 220 L455 235"/>
+            <path d="M190 450 L390 130"/><path d="M270 465 L415 150"/><path d="M350 475 L445 190"/><path d="M430 485 L475 235"/>
+          </g>
+          <g fill="#0f766e" opacity="0.85">
+            <circle cx="280" cy="390" r="5"/><circle cx="330" cy="335" r="5"/><circle cx="410" cy="315" r="5"/><circle cx="455" cy="380" r="5"/><circle cx="370" cy="245" r="5"/><circle cx="520" cy="430" r="5"/>
+          </g>
+          <g fill="#1e3a8a"><circle cx="130" cy="510" r="11"/><circle cx="380" cy="105" r="11"/><circle cx="650" cy="470" r="11"/></g>
+          <text x="100" y="552" font-size="26" fill="#1e3a8a">p1</text><text x="385" y="88" font-size="26" fill="#1e3a8a">p2</text><text x="660" y="486" font-size="26" fill="#1e3a8a">p3</text>
+        </svg>
+      </div>
+      <div>
+        <div class="env"><strong>Definition</strong><div class="math">conv(S) = { sum lambda_i p_i : lambda_i >= 0, sum lambda_i = 1 }</div></div>
+        <ul class="bullets">
+          <li>Every sampled weighted average stays inside the filled triangle.</li>
+          <li>The hull of a larger set is obtained by letting the anchors range over all input points.</li>
+          <li>Extreme points are the anchors that cannot be written using the others.</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="speaker-notes">Start with the two equivalent definitions. The intersection definition is useful for proving minimality, while the convex-combination definition is useful for computation and sampling. Ask students to identify which displayed points can have positive weight in a combination that lands near the middle of the blue region.</aside>
+  </section>
+
+  <section class="sl" data-label="Support Lines">
+    <h2>Support Lines Are Boundary Certificates</h2>
+    <div class="grid two">
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Support line touching convex hull">
+          <polygon points="120,438 172,188 342,118 596,170 642,410 482,520 246,526" fill="#2563eb16" stroke="#1e3a8a" stroke-width="5"/>
+          <line x1="55" y1="170" x2="705" y2="560" stroke="#b45309" stroke-width="6"/>
+          <path d="M110 398 C250 300 420 260 620 310" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 10"/>
+          <g fill="#0f766e"><circle cx="120" cy="438" r="9"/><circle cx="172" cy="188" r="9"/><circle cx="342" cy="118" r="9"/><circle cx="596" cy="170" r="9"/><circle cx="642" cy="410" r="9"/><circle cx="482" cy="520" r="9"/><circle cx="246" cy="526" r="9"/></g>
+          <text x="420" y="570" font-size="28" fill="#b45309">all points on one side</text>
+        </svg>
+      </div>
+      <div>
+        <div class="env thm"><strong>Certificate</strong><p>A line supports a finite set when the whole set lies in one closed halfplane and at least one input point lies on the line.</p></div>
+        <div class="note-row"><b>Local</b><span>A single support line justifies one exposed edge or vertex.</span></div>
+        <div class="note-row"><b>Global</b><span>A cyclic list of supported edges certifies the planar hull boundary.</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">The key teaching move here is to replace the vague phrase outside edge with a support-line certificate. A directed line supports the hull when all input points lie on one side and at least one hull point lies on the line. This is the local evidence used by gift wrapping and by tangent searches later in the lecture.</aside>
+  </section>
+
+  <section class="sl" data-label="Orientation Predicate">
+    <h2>The Orientation Predicate</h2>
+    <div class="grid wide">
+      <div>
+        <div class="env"><strong>Signed Area Test</strong><div class="math">orient(a,b,c) = sign((b-a)_x(c-a)_y - (b-a)_y(c-a)_x)</div></div>
+        <ul class="bullets">
+          <li>Positive: the triple makes a left turn.</li>
+          <li>Negative: the triple makes a right turn.</li>
+          <li>Zero: the points are collinear, so tie rules matter.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <svg viewBox="0 0 720 620" aria-label="Left and right orientation triples">
+          <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/></marker></defs>
+          <g transform="translate(40,30)">
+            <circle cx="90" cy="430" r="10" fill="#1e3a8a"/><circle cx="280" cy="260" r="10" fill="#1e3a8a"/><circle cx="460" cy="330" r="10" fill="#0f766e"/>
+            <path d="M90 430 L280 260 L460 330" fill="none" stroke="#2563eb" stroke-width="7" marker-end="url(#arr)"/>
+            <text x="250" y="150" font-size="34" fill="#0f766e">left turn</text>
+          </g>
+          <g transform="translate(40,70)" opacity="0.48">
+            <circle cx="90" cy="230" r="9" fill="#1e3a8a"/><circle cx="280" cy="400" r="9" fill="#1e3a8a"/><circle cx="460" cy="330" r="9" fill="#b45309"/>
+            <path d="M90 230 L280 400 L460 330" fill="none" stroke="#b45309" stroke-width="6"/>
+            <text x="250" y="505" font-size="30" fill="#b45309">right turn</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make the determinant feel like the primitive operation of the chapter. It is not just a formula; it is the orientation oracle that tells an algorithm whether a proposed boundary step is turning left, turning right, or becoming degenerate. Mention that robust implementations must decide how to handle nearly collinear triples.</aside>
+  </section>
+
+  <section class="sl" data-label="Algorithm Families">
+    <h2>Three Ways To Search For The Same Boundary</h2>
+    <div class="grid three">
+      <div class="panel"><h3>Incremental</h3><p>Insert one point, find visible old edges, splice in a new boundary chain.</p><div class="code">repair(hull, p)</div></div>
+      <div class="panel"><h3>Gift Wrapping</h3><p>Rotate a support line around the set until the next extreme point is certified.</p><div class="code">next = arg leftmost turn</div></div>
+      <div class="panel"><h3>Graham Scan</h3><p>Sort by angle, then maintain a stack that contains no right turns.</p><div class="code">while right_turn: pop()</div></div>
+    </div>
+    <aside class="speaker-notes">This slide contrasts three search strategies without changing the mathematical invariant. Incremental construction repairs a hull after inserting a point, gift wrapping rotates a support line to find the next extreme point, and Graham scan sorts first so that a stack can delete concavities as soon as they appear.</aside>
+  </section>
+
+  <section class="sl" data-label="Gift Wrapping">
+    <h2>Gift Wrapping: One Support Edge At A Time</h2>
+    <div class="grid wide">
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Gift wrapping sweep around points">
+          <polygon points="110,440 150,180 338,112 610,208 632,430 430,525 220,508" fill="#2563eb10" stroke="#cbd5e1" stroke-width="4"/>
+          <path d="M110 440 L150 180 L338 112" fill="none" stroke="#2563eb" stroke-width="8"/>
+          <line x1="58" y1="498" x2="222" y2="88" stroke="#b45309" stroke-width="5"/>
+          <path d="M150 180 A170 170 0 0 1 338 112" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="9 8"/>
+          <g fill="#475569"><circle cx="260" cy="330" r="8"/><circle cx="390" cy="265" r="8"/><circle cx="510" cy="360" r="8"/><circle cx="300" cy="445" r="8"/></g>
+          <g fill="#0f766e"><circle cx="110" cy="440" r="10"/><circle cx="150" cy="180" r="10"/><circle cx="338" cy="112" r="10"/><circle cx="610" cy="208" r="10"/><circle cx="632" cy="430" r="10"/><circle cx="430" cy="525" r="10"/><circle cx="220" cy="508" r="10"/></g>
+        </svg>
+      </div>
+      <div>
+        <div class="env ex"><strong>Invariant</strong><p>The current edge is supported: every input point lies to the same side of its directed line.</p></div>
+        <p class="formula">time: O(nh)</p>
+        <p>Each of the h hull vertices costs a scan over n candidate points.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">For gift wrapping, stress output sensitivity. If the hull has h vertices, the method does roughly one full scan of all n points per hull vertex. That can be excellent for small h, but it becomes quadratic on inputs where most points lie on the boundary.</aside>
+  </section>
+
+  <section class="sl" data-label="Graham Scan">
+    <h2>Graham Scan: Sort, Then Delete Concavities</h2>
+    <div class="grid two">
+      <div>
+        <div class="env thm"><strong>Stack Invariant</strong><p>After processing the angular prefix, the stack is the convex hull of the processed points in boundary order.</p></div>
+        <ul class="bullets">
+          <li>Choose a pivot with minimal vertical coordinate.</li>
+          <li>Sort remaining points by polar angle around the pivot.</li>
+          <li>Pop while the newest triple does not make the required turn.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Graham scan stack removes right turn">
+          <polyline points="120,500 220,210 355,300 500,145 642,430" fill="none" stroke="#cbd5e1" stroke-width="5"/>
+          <path d="M120 500 L220 210 L500 145 L642 430" fill="none" stroke="#2563eb" stroke-width="8"/>
+          <path d="M220 210 L355 300 L500 145" fill="none" stroke="#b45309" stroke-width="7" stroke-dasharray="12 10"/>
+          <text x="306" y="352" font-size="28" fill="#b45309">pop</text>
+          <g fill="#0f766e"><circle cx="120" cy="500" r="10"/><circle cx="220" cy="210" r="10"/><circle cx="500" cy="145" r="10"/><circle cx="642" cy="430" r="10"/></g>
+          <circle cx="355" cy="300" r="10" fill="#b45309"/>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">For Graham scan, the sorting step buys a very simple invariant: after each iteration the stack is the convex hull of the processed prefix in angular order. The pop operation is not a heuristic; it removes a point that has just been certified as non-extreme by a wrong turn.</aside>
+  </section>
+
+  <section class="sl" data-label="Incremental Repair">
+    <h2>Incremental Hulls Repair A Visible Chain</h2>
+    <div class="grid wide">
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Incremental hull visible chain">
+          <polygon points="150,460 190,170 470,112 620,340 450,520" fill="#2563eb12" stroke="#1e3a8a" stroke-width="5"/>
+          <circle cx="660" cy="138" r="12" fill="#b45309"/>
+          <path d="M190 170 L470 112 L620 340" fill="none" stroke="#b45309" stroke-width="8"/>
+          <path d="M190 170 L660 138 L620 340" fill="none" stroke="#0f766e" stroke-width="7"/>
+          <g stroke="#94a3b8" stroke-width="3" stroke-dasharray="7 8"><line x1="660" y1="138" x2="470" y2="112"/><line x1="660" y1="138" x2="520" y2="240"/></g>
+          <text x="614" y="108" font-size="26" fill="#b45309">new point</text>
+        </svg>
+      </div>
+      <div>
+        <div class="env proof"><strong>Proof Roadmap</strong><p>Old hull edges visible from the new point cannot remain boundary edges. The two transition vertices define tangents, and replacing the visible chain preserves convexity.</p></div>
+        <p class="small">If the inserted point lies inside the old hull, no visible edge exists and the hull is unchanged.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this as a proof sketch rather than a code lecture. When the new point is outside, the visible chain is exactly the portion of the old boundary that cannot remain exposed. The two tangent vertices are the transition points between visible and hidden boundary edges.</aside>
+  </section>
+
+  <section class="sl" data-label="Lower Bound">
+    <h2>Why Ordered Hull Output Has A Sorting Lower Bound</h2>
+    <div class="grid two">
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Reduction from sorting to hull">
+          <rect x="70" y="90" width="240" height="120" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+          <rect x="450" y="90" width="240" height="120" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="3"/>
+          <rect x="260" y="380" width="240" height="120" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+          <text x="122" y="160" font-size="32" fill="#2563eb">numbers</text>
+          <text x="500" y="160" font-size="32" fill="#1e3a8a">points</text>
+          <text x="318" y="450" font-size="32" fill="#0f766e">ordered hull</text>
+          <path d="M310 150 L450 150" stroke="#475569" stroke-width="5"/><path d="M570 210 L430 380" stroke="#475569" stroke-width="5"/><path d="M330 380 L190 210" stroke="#475569" stroke-width="5"/>
+          <text x="344" y="132" font-size="24" fill="#475569">encode</text><text x="502" y="316" font-size="24" fill="#475569">solve</text><text x="138" y="320" font-size="24" fill="#475569">read order</text>
+        </svg>
+      </div>
+      <div>
+        <div class="env warn"><strong>Model Statement</strong><p>In a comparison model, cyclic hull output can encode sorted order. Therefore a general ordered hull algorithm needs Omega(n log n) comparisons in the worst case.</p></div>
+        <p>Lower bounds are about every algorithm in a model, not about a slow implementation.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">The important distinction is model-based. A lower bound is not a complaint about a known algorithm; it says any comparison-based algorithm that outputs the hull in cyclic order can be forced to reveal enough information to sort. The reduction arrow means a fast hull solver would create a fast sorter.</aside>
+  </section>
+
+  <section class="sl" data-label="Divide And Conquer">
+    <h2>Divide-And-Conquer: Merge Two Hulls By Tangents</h2>
+    <div class="grid wide">
+      <div class="panel">
+        <svg viewBox="0 0 800 620" aria-label="Two hulls merged by common tangents">
+          <polygon points="90,410 150,185 320,132 365,330 245,505" fill="#2563eb12" stroke="#2563eb" stroke-width="5"/>
+          <polygon points="470,190 660,136 725,365 610,520 455,420" fill="#0f766e14" stroke="#0f766e" stroke-width="5"/>
+          <line x1="320" y1="132" x2="660" y2="136" stroke="#b45309" stroke-width="8"/>
+          <line x1="245" y1="505" x2="610" y2="520" stroke="#b45309" stroke-width="8"/>
+          <line x1="400" y1="60" x2="400" y2="560" stroke="#cbd5e1" stroke-width="4" stroke-dasharray="10 12"/>
+          <text x="340" y="118" font-size="25" fill="#b45309">upper tangent</text><text x="350" y="566" font-size="25" fill="#b45309">lower tangent</text>
+        </svg>
+      </div>
+      <div>
+        <div class="env thm"><strong>Merge Principle</strong><p>The outer boundary of the union is formed by two common tangents plus the two hull chains that face away from each other.</p></div>
+        <p class="formula">T(n) = 2T(n/2) + O(n)</p>
+        <p class="small">With presorted input by x-coordinate, the recurrence gives O(n log n).</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Divide-and-conquer is the constructive answer after the lower-bound discussion. Recursively solve left and right subsets, then replace the two facing chains by upper and lower common tangents. Point out that the difficult part of the merge is not drawing the bridge but proving when the bridge is supporting both hulls.</aside>
+  </section>
+
+  <section class="sl" data-label="Tangent Walk">
+    <h2>Tangent Finding Is A Local Walk</h2>
+    <div class="grid two">
+      <div>
+        <div class="env ex"><strong>Endpoint Correction</strong><p>If the candidate bridge is crossed by a neighboring hull edge, advance that endpoint around its hull until the line supports both sides.</p></div>
+        <ul class="bullets">
+          <li>Each correction is decided by an orientation sign.</li>
+          <li>Convexity prevents an endpoint from needing to cycle forever.</li>
+          <li>The same idea reappears in rotating calipers methods.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Tangent endpoint walk">
+          <polygon points="125,425 178,210 330,150 385,365 245,500" fill="#2563eb10" stroke="#2563eb" stroke-width="4"/>
+          <polygon points="450,180 640,128 700,342 595,505 468,420" fill="#0f766e10" stroke="#0f766e" stroke-width="4"/>
+          <line x1="330" y1="150" x2="595" y2="505" stroke="#94a3b8" stroke-width="5" stroke-dasharray="10 9"/>
+          <line x1="385" y1="365" x2="640" y2="128" stroke="#b45309" stroke-width="7"/>
+          <path d="M330 150 C370 220 392 285 385 365" fill="none" stroke="#1e3a8a" stroke-width="4" marker-end="url(#arr2)"/>
+          <defs><marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#1e3a8a"/></marker></defs>
+          <text x="250" y="310" font-size="25" fill="#1e3a8a">advance</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">This slide turns tangent finding into a local walk. If the candidate bridge is not supporting one side, move the endpoint on that hull. The walk terminates because each correction advances around a convex polygon. The same orientation predicate remains the only geometric test.</aside>
+  </section>
+
+  <section class="sl" data-label="3D Hulls">
+    <h2>In 3D, The Hull Boundary Is A Surface</h2>
+    <div class="grid wide">
+      <div class="panel">
+        <svg viewBox="0 0 780 620" aria-label="Spatial convex hull as polyhedral surface">
+          <polygon points="230,475 160,250 330,110 600,180 665,410 470,535" fill="#2563eb10" stroke="#1e3a8a" stroke-width="4"/>
+          <polygon points="160,250 330,110 470,300 230,475" fill="#2563eb22" stroke="#2563eb" stroke-width="4"/>
+          <polygon points="330,110 600,180 470,300" fill="#0f766e22" stroke="#0f766e" stroke-width="4"/>
+          <polygon points="600,180 665,410 470,535 470,300" fill="#b4530920" stroke="#b45309" stroke-width="4"/>
+          <polygon points="230,475 470,300 470,535" fill="#6d28d91b" stroke="#6d28d9" stroke-width="4"/>
+          <g fill="#111827"><circle cx="230" cy="475" r="8"/><circle cx="160" cy="250" r="8"/><circle cx="330" cy="110" r="8"/><circle cx="600" cy="180" r="8"/><circle cx="665" cy="410" r="8"/><circle cx="470" cy="535" r="8"/><circle cx="470" cy="300" r="8"/></g>
+        </svg>
+      </div>
+      <div>
+        <div class="env"><strong>Output Type Changes</strong><p>Planar hull: cyclic vertex list. Spatial hull: vertices, edges, and oriented faces forming a closed polyhedral surface.</p></div>
+        <p class="small">A facet is valid when its supporting plane has all input points on one side.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide to prevent a common misconception: the 3D hull is not a polygonal cycle with extra coordinates. Its boundary is a mesh of faces. The certificate changes from a cyclic vertex list to a set of oriented facets whose planes support all points.</aside>
+  </section>
+
+  <section class="sl" data-label="Euler Check">
+    <h2>Combinatorial Sanity Checks For Spatial Hulls</h2>
+    <div class="grid two">
+      <div>
+        <div class="env thm"><strong>Euler Check</strong><div class="math">V - E + F = 2</div></div>
+        <div class="env proof"><strong>Triangular Facets</strong><div class="math">3F = 2E</div><p>when every face is triangular and every edge is incident to two faces.</p></div>
+      </div>
+      <div class="panel">
+        <svg viewBox="0 0 760 620" aria-label="Face edge vertex ledger">
+          <circle cx="380" cy="310" r="185" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+          <path d="M270 460 L215 270 L380 145 L555 265 L505 465 Z" fill="#2563eb12" stroke="#2563eb" stroke-width="5"/>
+          <path d="M215 270 L505 465 M380 145 L270 460 M555 265 L270 460" stroke="#94a3b8" stroke-width="4"/>
+          <text x="150" y="120" font-size="34" fill="#1e3a8a">V</text><text x="370" y="80" font-size="34" fill="#1e3a8a">E</text><text x="585" y="120" font-size="34" fill="#1e3a8a">F</text>
+          <text x="238" y="552" font-size="32" fill="#0f766e">closed sphere-like boundary</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Euler's formula is a sanity check on the combinatorics of a convex polyhedron. It does not by itself prove the hull is correct, but it catches inconsistent face-edge-vertex bookkeeping. For triangular facets, the relation 3F = 2E is another useful check when every face is a triangle and every edge is shared by two faces.</aside>
+  </section>
+
+  <section class="sl" data-label="Takeaways">
+    <h2>What The Chapter Adds To The Toolkit</h2>
+    <div class="grid two">
+      <div class="panel">
+        <h3>Geometric Evidence</h3>
+        <ul class="bullets">
+          <li>Extreme points identify the boundary.</li>
+          <li>Support lines and planes justify exposure.</li>
+          <li>Orientation signs make the evidence computable.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Algorithmic Evidence</h3>
+        <ul class="bullets">
+          <li>Upper bounds come from explicit strategies.</li>
+          <li>Lower bounds come from information forced in a model.</li>
+          <li>Spatial hulls require face-level bookkeeping.</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close the lecture by aligning all algorithms with the evidence they maintain. Extreme points answer what belongs on the boundary; support lines and planes answer why it is exposed; orientation predicates answer how we test it; complexity results answer how much information must be discovered.</aside>
+  </section>
+
+  <section class="sl soft" data-label="Notebook Lab">
+    <h2>Notebook Lab Prompts</h2>
+    <div class="grid three">
+      <div class="panel"><h3>Move A Point</h3><p>Slide one point from inside the hull to outside it. Which certificates change?</p></div>
+      <div class="panel"><h3>Reverse A Reduction</h3><p>Explain why a reduction arrow has direction and why reversing it changes the claim.</p></div>
+      <div class="panel"><h3>Count A Surface</h3><p>For a small 3D hull, verify V - E + F and explain any failed count.</p></div>
+    </div>
+    <div class="footer"><span>Artifacts are local to this slides directory.</span><span>End of Chapter 2 lecture</span></div>
+    <aside class="speaker-notes">Invite students to use the notebook as a laboratory rather than a static reading. Moving a point from inside to outside the hull is the fastest way to see which certificates change. The exercise also tests whether they understand reduction directions and the difference between planar and spatial output.</aside>
+  </section>
+</deck-stage>
+
+<script id="speaker-notes" type="application/json">
+{
+  "metadata": {
+    "course": "Discrete and Computational Geometry",
+    "chapter_id": "chapter-02-convex-hulls",
+    "notebook_path": "Discrete-and-Computational-Geometry/chapter-02-convex-hulls/02-convex-hulls.ipynb",
+    "source_span": "printed pages 38-64",
+    "source_pdf": "Discrete-and-Computational-Geometry/Discrete and Computational Geometry, 2nd Edition.pdf",
+    "design_system_version": "geometry-lecture-design-system"
+  },
+  "notes": [
+    "Frame the lecture around one question: what information proves that a finite point set has a particular boundary? Emphasize that the chapter is both geometric and algorithmic. A convex hull is a shape, but in computation it is also a certificate made from extreme points, support lines, orientation tests, and eventually facets in three dimensions.",
+    "Use this roadmap to set expectations. The first block makes convexity inspectable; the middle block explains how algorithms search for the same boundary; the final block separates algorithmic upper bounds from lower-bound arguments and then changes the data structure when the hull becomes a surface in 3D.",
+    "Start with the two equivalent definitions. The intersection definition is useful for proving minimality, while the convex-combination definition is useful for computation and sampling. Ask students to identify which displayed points can have positive weight in a combination that lands near the middle of the blue region.",
+    "The key teaching move here is to replace the vague phrase outside edge with a support-line certificate. A directed line supports the hull when all input points lie on one side and at least one hull point lies on the line. This is the local evidence used by gift wrapping and by tangent searches later in the lecture.",
+    "Make the determinant feel like the primitive operation of the chapter. It is not just a formula; it is the orientation oracle that tells an algorithm whether a proposed boundary step is turning left, turning right, or becoming degenerate. Mention that robust implementations must decide how to handle nearly collinear triples.",
+    "This slide contrasts three search strategies without changing the mathematical invariant. Incremental construction repairs a hull after inserting a point, gift wrapping rotates a support line to find the next extreme point, and Graham scan sorts first so that a stack can delete concavities as soon as they appear.",
+    "For gift wrapping, stress output sensitivity. If the hull has h vertices, the method does roughly one full scan of all n points per hull vertex. That can be excellent for small h, but it becomes quadratic on inputs where most points lie on the boundary.",
+    "For Graham scan, the sorting step buys a very simple invariant: after each iteration the stack is the convex hull of the processed prefix in angular order. The pop operation is not a heuristic; it removes a point that has just been certified as non-extreme by a wrong turn.",
+    "Use this as a proof sketch rather than a code lecture. When the new point is outside, the visible chain is exactly the portion of the old boundary that cannot remain exposed. The two tangent vertices are the transition points between visible and hidden boundary edges.",
+    "The important distinction is model-based. A lower bound is not a complaint about a known algorithm; it says any comparison-based algorithm that outputs the hull in cyclic order can be forced to reveal enough information to sort. The reduction arrow means a fast hull solver would create a fast sorter.",
+    "Divide-and-conquer is the constructive answer after the lower-bound discussion. Recursively solve left and right subsets, then replace the two facing chains by upper and lower common tangents. Point out that the difficult part of the merge is not drawing the bridge but proving when the bridge is supporting both hulls.",
+    "This slide turns tangent finding into a local walk. If the candidate bridge is not supporting one side, move the endpoint on that hull. The walk terminates because each correction advances around a convex polygon. The same orientation predicate remains the only geometric test.",
+    "Use this slide to prevent a common misconception: the 3D hull is not a polygonal cycle with extra coordinates. Its boundary is a mesh of faces. The certificate changes from a cyclic vertex list to a set of oriented facets whose planes support all points.",
+    "Euler's formula is a sanity check on the combinatorics of a convex polyhedron. It does not by itself prove the hull is correct, but it catches inconsistent face-edge-vertex bookkeeping. For triangular facets, the relation 3F = 2E is another useful check when every face is a triangle and every edge is shared by two faces.",
+    "Close the lecture by aligning all algorithms with the evidence they maintain. Extreme points answer what belongs on the boundary; support lines and planes answer why it is exposed; orientation predicates answer how we test it; complexity results answer how much information must be discovered.",
+    "Invite students to use the notebook as a laboratory rather than a static reading. Moving a point from inside to outside the hull is the fastest way to see which certificates change. The exercise also tests whether they understand reduction directions and the difference between planar and spatial output."
+  ]
+}
+</script>
+<script src="deck-stage.js"></script>
+</body>
+</html>

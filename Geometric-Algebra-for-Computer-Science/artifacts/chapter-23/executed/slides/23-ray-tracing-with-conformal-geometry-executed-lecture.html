@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ray Tracing With Conformal Geometry</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="23-ray-tracing-with-conformal-geometry-executed">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/artifacts/chapter-23/executed/23-ray-tracing-with-conformal-geometry.executed.ipynb">
+  <meta name="source_span" content="printed pages 581; PDF pages 577.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text and KaTeX 0.16.11 are explicitly loaded for formula rendering.">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: 'Source Sans 3', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 58px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 64px 64px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 64px;
+      line-height: 1.05;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 32px;
+      line-height: 1.18;
+      color: var(--slide-accent);
+      margin-bottom: 10px;
+    }
+
+    p,
+    li {
+      font-size: 27px;
+      line-height: 1.34;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 32px;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 22px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+    }
+
+    .rule {
+      width: 96px;
+      height: 6px;
+      background: var(--slide-accent);
+      border-radius: 4px;
+      margin: 22px 0 28px;
+    }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 44px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .cols.wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .cols.wide-right {
+      grid-template-columns: 0.86fr 1.14fr;
+    }
+
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      background: #fff;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 6px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 6px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 6px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 6px solid var(--slide-violet);
+    }
+
+    .formula {
+      font-family: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      font-size: 35px;
+      line-height: 1.32;
+      text-align: center;
+      padding: 15px 18px;
+      border-radius: 8px;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.32;
+      color: var(--slide-dimmed);
+      margin-top: 12px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      gap: 28px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #eef2ff;
+    }
+
+    .muted {
+      color: var(--slide-muted);
+    }
+
+    .math {
+      font-family: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      font-style: italic;
+    }
+
+    .ledger {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .metric {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 34px;
+      line-height: 1;
+      color: var(--slide-accent);
+      margin-bottom: 8px;
+    }
+
+    .metric span {
+      font-size: 22px;
+      color: var(--slide-muted);
+      line-height: 1.25;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .flow-node {
+      border: 2px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px 14px;
+      min-height: 116px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 25px;
+      font-weight: 700;
+      line-height: 1.18;
+    }
+
+    .two-stack {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 22px;
+      min-height: 0;
+    }
+
+    .compact-list li {
+      margin-bottom: 10px;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.22;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid var(--slide-border);
+    }
+
+    .table th,
+    .table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--slide-border-light);
+      vertical-align: top;
+    }
+
+    .table th {
+      text-align: left;
+      color: var(--slide-accent);
+      background: var(--slide-bg-alt);
+      font-weight: 700;
+    }
+
+    .table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .katex {
+      font-size: 1em !important;
+    }
+
+    .katex-display {
+      margin: 8px 0 !important;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      font-family: 'Source Sans 3', Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Geometric Algebra for Computer Science",
+  "chapter_id": "23-ray-tracing-with-conformal-geometry-executed",
+  "notebook_path": "Geometric-Algebra-for-Computer-Science/artifacts/chapter-23/executed/23-ray-tracing-with-conformal-geometry.executed.ipynb",
+  "source_span": "printed pages 581; PDF pages 577.",
+  "source_pdf": "Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Ray Tracing With Conformal Geometry",
+      "notes": "Open by framing the chapter as an application stress test. The conformal model supplies a single geometric language, but the renderer still has to survive repeated pixel-scale work. Ask students to listen for the balance between elegant objects and the cheaper representations used in hot loops."
+    },
+    {
+      "slide": 2,
+      "title": "The Rendering Pipeline Is a Sequence of Geometric Questions",
+      "notes": "Use the pipeline as the lecture map. Each box is a question that becomes more local: which direction does the pixel see, which model might be hit, which region contains the ray, which triangle is closest, and which lighting paths are available from the hit point."
+    },
+    {
+      "slide": 3,
+      "title": "Conformal Meaning, Deliberate Storage",
+      "notes": "Emphasize that this is not a rejection of conformal geometry. The algebra names the objects and the invariants, while the implementation stores the form that answers the repeated query cheaply. That distinction is the central engineering lesson of the chapter."
+    },
+    {
+      "slide": 4,
+      "title": "Meshes Keep Surface Geometry Inspectable",
+      "notes": "Make the mesh checks feel practical rather than bureaucratic. Positive areas, unit normals, and enclosing spheres are the guard rails that prevent visual bugs from masquerading as algebraic mistakes. The numbers also show how a transformed box, a smoothed sphere mesh, and a floor enter the same scene."
+    },
+    {
+      "slide": 5,
+      "title": "Camera Rays and Bounding Spheres",
+      "notes": "Treat the camera as a ray factory. The conformal model can describe lines richly, but closest-hit rendering benefits from an origin, a unit direction, and a parameter interval. Bounding spheres are the first conservative test: a miss proves absence, while a hit merely permits finer work."
+    },
+    {
+      "slide": 6,
+      "title": "A Triangle Hit Carries Interpolation Data",
+      "notes": "Slow down on barycentric coordinates because they are the bridge from intersection to shading. The ray parameter locates the surface point, while the three weights decide whether the point is inside the triangle and how vertex normals or other attributes should be interpolated."
+    },
+    {
+      "slide": 7,
+      "title": "BSP Traversal Preserves Answers While Reducing Triangle Tests",
+      "notes": "The acceleration slide should compare correctness and cost separately. The ray bundle has perfect agreement between naive and BSP traversal, so the geometry is preserved. The payoff is visible in primitive counts: many triangle tests are replaced by cheaper box and node decisions."
+    },
+    {
+      "slide": 8,
+      "title": "Shading Spawns New Rays From Local Surface Data",
+      "notes": "After a hit, the geometric question changes. The renderer no longer asks which surface is first; it asks which lights are visible and which outgoing directions contribute. The interpolated normal, finite shadow segment, reflected ray, and optional refraction rule are all local geometric constructions."
+    },
+    {
+      "slide": 9,
+      "title": "Evaluation: Elegance Meets Throughput",
+      "notes": "Connect the notebook statistics to the source page evaluation. The chapter does not claim that the richest conformal representation is always fastest. Instead, it argues for a disciplined compromise: keep conformal operations where they clarify transformations and object relationships, then specialize inner-loop storage when performance matters."
+    },
+    {
+      "slide": 10,
+      "title": "Takeaways for Graphics Software",
+      "notes": "Close with a software-design habit, not a formula list. Let the algebra state what the geometric object is, let the renderer store what each repeated operation needs, and let executable checks protect the bridge between the two. That habit is reusable beyond this small ray tracer."
+    }
+  ]
+}
+  </script>
+
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="eyebrow">Geometry Atlas lecture deck</div>
+        <div class="cols wide-left">
+          <div>
+            <h1>Ray Tracing With<br>Conformal Geometry</h1>
+            <div class="rule"></div>
+            <p class="muted">Geometric Algebra for Computer Science, Chapter 23.</p>
+            <div class="panel blue" style="margin-top: 30px;">
+              <p><strong>Source grounding.</strong> Notebook: <code>Geometric-Algebra-for-Computer-Science/artifacts/chapter-23/executed/23-ray-tracing-with-conformal-geometry.executed.ipynb</code>. Source span: printed pages 581; PDF pages 577. Source PDF: <code>Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf</code>.</p>
+            </div>
+            <div class="ledger" style="margin-top: 24px;">
+              <div class="metric"><strong>432</strong><span>probe rays checked</span></div>
+              <div class="metric"><strong>11</strong><span>generated chapter artifacts</span></div>
+              <div class="metric"><strong>84x112</strong><span>mini render shape</span></div>
+              <div class="metric"><strong>1</strong><span>reflected bounce</span></div>
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 760 560" role="img" aria-label="Ray tracer scene with camera rays, conformal lift, and geometric primitives">
+              <defs>
+                <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                  <path d="M0,0 L0,8 L11,4 z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="30" y="36" width="700" height="470" rx="12" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="80" y1="442" x2="690" y2="442" stroke="#CBD5E1" stroke-width="4"/>
+              <polygon points="86,186 142,152 142,300" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+              <circle cx="112" cy="226" r="10" fill="#1E3A8A"/>
+              <text x="92" y="342" font-size="28" font-weight="700" fill="#1E3A8A">camera</text>
+              <line x1="142" y1="176" x2="344" y2="244" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-title)"/>
+              <line x1="142" y1="226" x2="536" y2="180" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-title)"/>
+              <line x1="142" y1="278" x2="604" y2="422" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-title)"/>
+              <circle cx="384" cy="266" r="74" fill="#FEE2E2" stroke="#B45309" stroke-width="6"/>
+              <path d="M324 266 C354 190 422 190 450 268 C424 332 352 332 324 266" fill="none" stroke="#B45309" stroke-width="4" opacity="0.65"/>
+              <rect x="508" y="132" width="118" height="118" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="6" transform="rotate(-18 567 191)"/>
+              <polygon points="214,442 680,442 622,368 264,372" fill="#DCFCE7" stroke="#0F766E" stroke-width="5"/>
+              <circle cx="384" cy="266" r="103" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 12"/>
+              <text x="386" y="98" text-anchor="middle" font-size="27" fill="#475569">geometry queries become pixels</text>
+              <text x="382" y="536" text-anchor="middle" font-size="30" fill="#111827">points, rays, spheres, triangles, shadows, reflected paths</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Chapter id: 23-ray-tracing-with-conformal-geometry-executed</span><span>HTML source of record</span></div>
+      </div>
+      <aside class="speaker-notes">Open by framing the chapter as an application stress test. The conformal model supplies a single geometric language, but the renderer still has to survive repeated pixel-scale work. Ask students to listen for the balance between elegant objects and the cheaper representations used in hot loops.</aside>
+    </section>
+
+    <section data-label="Pipeline">
+      <div class="slide">
+        <div class="eyebrow">Rendering as narrowing search</div>
+        <h2>The Rendering Pipeline Is a Sequence of Geometric Questions</h2>
+        <div class="rule"></div>
+        <div class="flow">
+          <div class="flow-node" style="border-color: var(--slide-blue);">pixel<br><span class="muted">image sample</span></div>
+          <div class="flow-node" style="border-color: var(--slide-blue);">camera ray<br><span class="muted">oriented query</span></div>
+          <div class="flow-node" style="border-color: var(--slide-teal);">sphere test<br><span class="muted">cheap rejection</span></div>
+          <div class="flow-node" style="border-color: var(--slide-violet);">BSP path<br><span class="muted">spatial search</span></div>
+          <div class="flow-node" style="border-color: var(--slide-amber);">triangle hit<br><span class="muted">local surface</span></div>
+          <div class="flow-node" style="border-color: var(--slide-teal);">shader<br><span class="muted">light paths</span></div>
+        </div>
+        <div class="cols" style="margin-top: 42px;">
+          <div class="panel blue">
+            <h3>Question Chain</h3>
+            <ul class="compact-list">
+              <li>Which ray leaves the pinhole through this pixel?</li>
+              <li>Which model can possibly be hit by that ray?</li>
+              <li>Which triangle gives the nearest positive parameter?</li>
+              <li>Which lights and spawned rays contribute color?</li>
+            </ul>
+          </div>
+          <div>
+            <svg viewBox="0 0 760 390" role="img" aria-label="Pipeline narrowing from full scene to local hit record">
+              <defs>
+                <marker id="arrow-pipeline" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L0,8 L10,4 z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="48" y="46" width="170" height="280" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <circle cx="132" cy="160" r="44" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"/>
+              <rect x="110" y="224" width="84" height="58" fill="#DCFCE7" stroke="#0F766E" stroke-width="4"/>
+              <text x="132" y="352" text-anchor="middle" font-size="24" fill="#475569">full scene</text>
+              <path d="M238 186 L320 186" stroke="#475569" stroke-width="5" marker-end="url(#arrow-pipeline)"/>
+              <rect x="340" y="82" width="160" height="210" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <line x1="382" y1="104" x2="382" y2="270" stroke="#6D28D9" stroke-width="4"/>
+              <line x1="340" y1="174" x2="500" y2="174" stroke="#6D28D9" stroke-width="4"/>
+              <text x="420" y="352" text-anchor="middle" font-size="24" fill="#475569">candidate cells</text>
+              <path d="M520 186 L602 186" stroke="#475569" stroke-width="5" marker-end="url(#arrow-pipeline)"/>
+              <polygon points="632,105 706,252 568,252" fill="#FFFBEB" stroke="#B45309" stroke-width="5"/>
+              <circle cx="635" cy="196" r="10" fill="#B45309"/>
+              <text x="637" y="352" text-anchor="middle" font-size="24" fill="#475569">one hit record</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Notebook route: rays, meshes, BSP, shading, render</span><span>Source anchor includes printed page 581 and PDF page 577</span></div>
+      </div>
+      <aside class="speaker-notes">Use the pipeline as the lecture map. Each box is a question that becomes more local: which direction does the pixel see, which model might be hit, which region contains the ray, which triangle is closest, and which lighting paths are available from the hit point.</aside>
+    </section>
+
+    <section data-label="Representation">
+      <div class="slide">
+        <div class="eyebrow">Conformal reading versus hot-loop storage</div>
+        <h2>Conformal Meaning, Deliberate Storage</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div>
+            <table class="table" aria-label="Translation guide from ray tracing object to conformal meaning and storage form">
+              <tr><th>Object</th><th>Conformal meaning</th><th>Notebook storage</th></tr>
+              <tr><td>Point</td><td>null conformal point</td><td>3-vector plus \(P(x)\) check</td></tr>
+              <tr><td>Ray</td><td>oriented line query</td><td>origin, unit direction, interval</td></tr>
+              <tr><td>Triangle</td><td>oriented surface patch</td><td>three vertex indices and normal data</td></tr>
+              <tr><td>Bounding sphere</td><td>round enclosing primitive</td><td>center, radius, interval rejection</td></tr>
+              <tr><td>Transformation</td><td>versor action on objects</td><td>rigid matrix applied before tracing</td></tr>
+            </table>
+            <div class="formula" style="margin-top: 22px;">\(P(x)=x+n_o+\frac{1}{2}\|x\|^2 n_\infty,\quad P(x)\cdot P(y)=-\frac{1}{2}\|x-y\|^2\)</div>
+          </div>
+          <div class="two-stack">
+            <div class="panel teal">
+              <h3>Algebraic Role</h3>
+              <p>The conformal model gives points, spheres, planes, lines, and transformations a shared vocabulary for reasoning about geometry.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Engineering Role</h3>
+              <p>The renderer stores the cheapest form that preserves the query: vertex arrays for meshes, intervals for rays, and counters for acceleration checks.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Conformal recovered squared distance in the notebook: 3.8125</span><span>Representation is part of the geometry</span></div>
+      </div>
+      <aside class="speaker-notes">Emphasize that this is not a rejection of conformal geometry. The algebra names the objects and the invariants, while the implementation stores the form that answers the repeated query cheaply. That distinction is the central engineering lesson of the chapter.</aside>
+    </section>
+
+    <section data-label="Meshes">
+      <div class="slide">
+        <div class="eyebrow">Scene primitives and checks</div>
+        <h2>Meshes Keep Surface Geometry Inspectable</h2>
+        <div class="rule"></div>
+        <div class="cols wide-right">
+          <div>
+            <div class="panel blue">
+              <h3>Three Meshes</h3>
+              <ul class="compact-list">
+                <li>Red sphere mesh: 266 vertices, 528 triangles.</li>
+                <li>Blue transformed box: 8 vertices, 12 triangles.</li>
+                <li>Ground plane: 4 vertices, 2 triangles.</li>
+              </ul>
+            </div>
+            <div class="panel teal" style="margin-top: 22px;">
+              <h3>Mesh Invariants</h3>
+              <p>Positive face areas, unit face normals, unit vertex normals, and no vertex outside its bounding sphere.</p>
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 900 620" role="img" aria-label="Mesh vertices, triangle faces, normals, and bounding sphere">
+              <rect x="38" y="34" width="824" height="520" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <circle cx="275" cy="292" r="138" fill="#FEE2E2" stroke="#B45309" stroke-width="5"/>
+              <circle cx="275" cy="292" r="174" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="14 12"/>
+              <g stroke="#B45309" stroke-width="3" opacity="0.55">
+                <path d="M142 292 L408 292"/>
+                <path d="M178 212 L372 372"/>
+                <path d="M178 372 L372 212"/>
+                <path d="M275 154 L275 430"/>
+                <path d="M160 246 C228 214 322 214 390 246"/>
+                <path d="M160 338 C228 370 322 370 390 338"/>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="5" fill="#DBEAFE" transform="translate(552 170) rotate(-20)">
+                <rect x="-80" y="-80" width="160" height="160" rx="8"/>
+                <line x1="-80" y1="0" x2="80" y2="0"/>
+                <line x1="0" y1="-80" x2="0" y2="80"/>
+              </g>
+              <polygon points="152,496 740,496 660,424 232,424" fill="#DCFCE7" stroke="#0F766E" stroke-width="5"/>
+              <line x1="632" y1="250" x2="680" y2="182" stroke="#2563EB" stroke-width="6"/>
+              <path d="M680 182 L668 220 L650 198 z" fill="#2563EB"/>
+              <text x="275" y="96" text-anchor="middle" font-size="28" fill="#475569">bounding sphere is conservative</text>
+              <text x="632" y="124" text-anchor="middle" font-size="28" fill="#1E3A8A">rigidly transformed model</text>
+              <text x="450" y="588" text-anchor="middle" font-size="30" fill="#111827">surface arrays remain geometric only if their invariants hold</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>All max normal errors are at floating-point noise scale</span><span>Bounding-sphere slack recorded as 0.0 for all meshes</span></div>
+      </div>
+      <aside class="speaker-notes">Make the mesh checks feel practical rather than bureaucratic. Positive areas, unit normals, and enclosing spheres are the guard rails that prevent visual bugs from masquerading as algebraic mistakes. The numbers also show how a transformed box, a smoothed sphere mesh, and a floor enter the same scene.</aside>
+    </section>
+
+    <section data-label="Camera Rays">
+      <div class="slide">
+        <div class="eyebrow">Pinhole camera and first rejection</div>
+        <h2>Camera Rays and Bounding Spheres</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div>
+            <svg viewBox="0 0 760 610" role="img" aria-label="Pinhole camera rays and bounding sphere intervals">
+              <defs>
+                <marker id="arrow-camera" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                  <path d="M0,0 L0,8 L11,4 z" fill="#2563EB"/>
+                </marker>
+              </defs>
+              <rect x="52" y="62" width="656" height="460" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <polygon points="96,306 160,246 160,366" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"/>
+              <circle cx="124" cy="306" r="10" fill="#1E3A8A"/>
+              <rect x="238" y="168" width="16" height="276" fill="#CBD5E1"/>
+              <line x1="124" y1="306" x2="590" y2="164" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-camera)"/>
+              <line x1="124" y1="306" x2="626" y2="306" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-camera)"/>
+              <line x1="124" y1="306" x2="590" y2="448" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-camera)"/>
+              <circle cx="510" cy="306" r="112" fill="#FEE2E2" opacity="0.55" stroke="#B45309" stroke-width="6"/>
+              <path d="M404 270 L616 342" stroke="#B45309" stroke-width="7" opacity="0.75"/>
+              <circle cx="404" cy="270" r="9" fill="#B45309"/>
+              <circle cx="616" cy="342" r="9" fill="#B45309"/>
+              <text x="490" y="246" font-size="28" fill="#B45309">sphere interval</text>
+              <text x="235" y="142" text-anchor="middle" font-size="26" fill="#475569">image plane</text>
+              <text x="380" y="566" text-anchor="middle" font-size="30" fill="#111827">a miss against the sphere skips all triangles in that mesh</text>
+            </svg>
+          </div>
+          <div>
+            <div class="panel blue">
+              <h3>Ray Object</h3>
+              <div class="formula">\(r(t)=o+t\,d,\quad \|d\|=1,\quad t_{\min}\le t\le t_{\max}\)</div>
+              <p style="margin-top: 14px;">The center camera ray points almost exactly at the camera target in the executed notebook.</p>
+            </div>
+            <div class="panel teal" style="margin-top: 22px;">
+              <h3>Center-Ray Sphere Intervals</h3>
+              <p>Red sphere mesh: [5.3592, 6.3316]. Blue box mesh: [4.5475, 5.4586]. Ground: [1.6014, 9.9803].</p>
+            </div>
+            <div class="panel amber" style="margin-top: 22px;">
+              <h3>Conservative Logic</h3>
+              <p>No interval means no possible hit. An interval means only that a detailed local test is worth paying for.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Camera rays are generated in normalized device coordinates</span><span>Shadow and reflection rays reuse the same object form</span></div>
+      </div>
+      <aside class="speaker-notes">Treat the camera as a ray factory. The conformal model can describe lines richly, but closest-hit rendering benefits from an origin, a unit direction, and a parameter interval. Bounding spheres are the first conservative test: a miss proves absence, while a hit merely permits finer work.</aside>
+    </section>
+
+    <section data-label="Triangle Hit">
+      <div class="slide">
+        <div class="eyebrow">Local intersection and interpolation</div>
+        <h2>A Triangle Hit Carries Interpolation Data</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div>
+            <svg viewBox="0 0 880 600" role="img" aria-label="Ray-triangle intersection with barycentric coordinates">
+              <defs>
+                <marker id="arrow-tri" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                  <path d="M0,0 L0,8 L11,4 z" fill="#2563EB"/>
+                </marker>
+              </defs>
+              <rect x="52" y="44" width="776" height="480" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <polygon points="188,402 674,354 376,132" fill="#EFF6FF" stroke="#2563EB" stroke-width="6"/>
+              <g stroke="#94A3B8" stroke-width="3" stroke-dasharray="10 10">
+                <line x1="394" y1="292" x2="188" y2="402"/>
+                <line x1="394" y1="292" x2="674" y2="354"/>
+                <line x1="394" y1="292" x2="376" y2="132"/>
+              </g>
+              <line x1="394" y1="42" x2="394" y2="292" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-tri)"/>
+              <circle cx="394" cy="292" r="12" fill="#B45309"/>
+              <text x="406" y="276" font-size="28" fill="#B45309">hit</text>
+              <text x="166" y="436" font-size="28" fill="#1E3A8A">v0</text>
+              <text x="684" y="364" font-size="28" fill="#1E3A8A">v1</text>
+              <text x="356" y="118" font-size="28" fill="#1E3A8A">v2</text>
+              <path d="M394 292 L454 218" stroke="#0F766E" stroke-width="6"/>
+              <path d="M454 218 L448 250 L428 234 z" fill="#0F766E"/>
+              <text x="470" y="218" font-size="27" fill="#0F766E">interpolated normal</text>
+              <text x="440" y="562" text-anchor="middle" font-size="30" fill="#111827">inside test and shading data are both carried by barycentric weights</text>
+            </svg>
+          </div>
+          <div>
+            <div class="panel blue">
+              <h3>Worked Hit</h3>
+              <div class="formula">\(t=2.0046,\quad \lambda=(0.2973,0.4031,0.2996)\)</div>
+              <p style="margin-top: 14px;">The weights are nonnegative and sum to one, so the point is inside the triangular patch.</p>
+            </div>
+            <div class="panel teal" style="margin-top: 22px;">
+              <h3>Two Reconstructions</h3>
+              <div class="formula">\(r(t)=\lambda_0v_0+\lambda_1v_1+\lambda_2v_2\)</div>
+              <p style="margin-top: 14px;">The notebook checks that the ray point and barycentric point match.</p>
+            </div>
+            <div class="panel amber" style="margin-top: 22px;">
+              <h3>Closest Surface Rule</h3>
+              <p>A later triangle hit can be geometrically real and still invisible if a smaller positive parameter has already been found.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Triangle faces are the actual intersection primitives</span><span>Normals and materials are read from the hit record</span></div>
+      </div>
+      <aside class="speaker-notes">Slow down on barycentric coordinates because they are the bridge from intersection to shading. The ray parameter locates the surface point, while the three weights decide whether the point is inside the triangle and how vertex normals or other attributes should be interpolated.</aside>
+    </section>
+
+    <section data-label="BSP Acceleration">
+      <div class="slide">
+        <div class="eyebrow">Correctness before speed</div>
+        <h2>BSP Traversal Preserves Answers While Reducing Triangle Tests</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div>
+            <div class="panel teal">
+              <h3>Bundle Check</h3>
+              <p>432 camera rays agree exactly between naive traversal and BSP traversal on closest hit or miss.</p>
+            </div>
+            <div class="ledger" style="margin-top: 22px; grid-template-columns: repeat(2, 1fr);">
+              <div class="metric"><strong>20,472</strong><span>naive triangle tests</span></div>
+              <div class="metric"><strong>1,408</strong><span>BSP triangle tests</span></div>
+              <div class="metric"><strong>542</strong><span>center-ray naive tests</span></div>
+              <div class="metric"><strong>20</strong><span>center-ray BSP tests</span></div>
+            </div>
+            <div class="panel amber" style="margin-top: 22px;">
+              <p>The BSP spends additional box and node tests, but those decisions are cheaper than repeated triangle intersections.</p>
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 820 590" role="img" aria-label="BSP tree and triangle-test count comparison">
+              <defs>
+                <marker id="arrow-bsp" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L0,8 L10,4 z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="44" y="40" width="732" height="488" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <rect x="342" y="70" width="136" height="68" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+              <text x="410" y="113" text-anchor="middle" font-size="24" font-weight="700" fill="#1E3A8A">split x</text>
+              <path d="M382 138 L246 212" stroke="#475569" stroke-width="4" marker-end="url(#arrow-bsp)"/>
+              <path d="M438 138 L574 212" stroke="#475569" stroke-width="4" marker-end="url(#arrow-bsp)"/>
+              <rect x="178" y="216" width="136" height="68" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <rect x="506" y="216" width="136" height="68" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <text x="246" y="259" text-anchor="middle" font-size="24" font-weight="700" fill="#6D28D9">split y</text>
+              <text x="574" y="259" text-anchor="middle" font-size="24" font-weight="700" fill="#6D28D9">split z</text>
+              <path d="M246 284 L196 350" stroke="#475569" stroke-width="4" marker-end="url(#arrow-bsp)"/>
+              <path d="M246 284 L296 350" stroke="#475569" stroke-width="4" marker-end="url(#arrow-bsp)"/>
+              <path d="M574 284 L524 350" stroke="#475569" stroke-width="4" marker-end="url(#arrow-bsp)"/>
+              <path d="M574 284 L624 350" stroke="#475569" stroke-width="4" marker-end="url(#arrow-bsp)"/>
+              <g font-size="22" font-weight="700" text-anchor="middle">
+                <rect x="144" y="354" width="104" height="58" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="196" y="390" fill="#475569">leaf</text>
+                <rect x="244" y="354" width="104" height="58" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="296" y="390" fill="#475569">leaf</text>
+                <rect x="472" y="354" width="104" height="58" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="524" y="390" fill="#475569">leaf</text>
+                <rect x="572" y="354" width="104" height="58" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="624" y="390" fill="#475569">leaf</text>
+              </g>
+              <rect x="156" y="474" width="440" height="28" fill="#DBEAFE" stroke="#2563EB" stroke-width="3"/>
+              <rect x="156" y="430" width="676" height="28" fill="#FEE2E2" stroke="#B45309" stroke-width="3" transform="scale(0.52 1) translate(142 0)"/>
+              <text x="170" y="450" font-size="22" fill="#B45309">naive: 20,472</text>
+              <text x="170" y="496" font-size="22" fill="#2563EB">BSP: 1,408</text>
+              <text x="410" y="560" text-anchor="middle" font-size="28" fill="#111827">the answer is fixed; the search order is optimized</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>BSP summary: red mesh 171 nodes and 86 leaves</span><span>Acceleration is measured by primitive counts, not wall-clock timing</span></div>
+      </div>
+      <aside class="speaker-notes">The acceleration slide should compare correctness and cost separately. The ray bundle has perfect agreement between naive and BSP traversal, so the geometry is preserved. The payoff is visible in primitive counts: many triangle tests are replaced by cheaper box and node decisions.</aside>
+    </section>
+
+    <section data-label="Shading">
+      <div class="slide">
+        <div class="eyebrow">Local surface data becomes color</div>
+        <h2>Shading Spawns New Rays From Local Surface Data</h2>
+        <div class="rule"></div>
+        <div class="cols wide-right">
+          <div>
+            <div class="panel blue">
+              <h3>Hit Record</h3>
+              <p>Point, face index, barycentric coordinates, material, and a normalized interpolated normal.</p>
+            </div>
+            <div class="panel teal" style="margin-top: 22px;">
+              <h3>Notebook Sample</h3>
+              <p>Hit normal length: 1.0. Barycentric sum: 1.0. Local color: [0.1622, 0.0424, 0.0320].</p>
+            </div>
+            <div class="formula" style="margin-top: 22px;">\(d_{\rm refl}=d-2(d\cdot n)n\)</div>
+          </div>
+          <div>
+            <svg viewBox="0 0 900 610" role="img" aria-label="Shading geometry with normal, light, view, shadow ray, and reflection">
+              <defs>
+                <marker id="arrow-shade" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                  <path d="M0,0 L0,8 L11,4 z" fill="#475569"/>
+                </marker>
+                <marker id="arrow-shade-blue" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                  <path d="M0,0 L0,8 L11,4 z" fill="#2563EB"/>
+                </marker>
+              </defs>
+              <rect x="48" y="48" width="800" height="482" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <path d="M110 392 C270 292 440 292 616 392 C712 446 770 462 820 430" fill="none" stroke="#0F766E" stroke-width="9"/>
+              <circle cx="430" cy="330" r="13" fill="#B45309"/>
+              <line x1="430" y1="330" x2="430" y2="190" stroke="#0F766E" stroke-width="7" marker-end="url(#arrow-shade)"/>
+              <line x1="430" y1="330" x2="720" y2="126" stroke="#B45309" stroke-width="6" marker-end="url(#arrow-shade)"/>
+              <line x1="430" y1="330" x2="178" y2="126" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-shade-blue)"/>
+              <line x1="430" y1="330" x2="652" y2="498" stroke="#6D28D9" stroke-width="6" marker-end="url(#arrow-shade)"/>
+              <circle cx="746" cy="106" r="24" fill="#FDE68A" stroke="#B45309" stroke-width="4"/>
+              <circle cx="148" cy="104" r="22" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"/>
+              <text x="442" y="178" font-size="28" fill="#0F766E">normal</text>
+              <text x="670" y="114" font-size="28" fill="#B45309">light</text>
+              <text x="120" y="84" font-size="28" fill="#2563EB">view</text>
+              <text x="656" y="532" font-size="28" fill="#6D28D9">reflected ray</text>
+              <path d="M548 248 C594 258 626 282 650 318" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="10 10"/>
+              <text x="593" y="236" font-size="24" fill="#B45309">shadow segment</text>
+              <text x="450" y="575" text-anchor="middle" font-size="30" fill="#111827">shading asks visibility and angle questions at the hit point</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Ambient, diffuse, specular, finite shadow rays, and one reflected bounce</span><span>Refraction check returns None under total internal reflection</span></div>
+      </div>
+      <aside class="speaker-notes">After a hit, the geometric question changes. The renderer no longer asks which surface is first; it asks which lights are visible and which outgoing directions contribute. The interpolated normal, finite shadow segment, reflected ray, and optional refraction rule are all local geometric constructions.</aside>
+    </section>
+
+    <section data-label="Evaluation">
+      <div class="slide">
+        <div class="eyebrow">Printed page 581 evaluation</div>
+        <h2>Evaluation: Elegance Meets Throughput</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div>
+            <div class="panel blue">
+              <h3>Notebook Render Counters</h3>
+              <ul class="compact-list">
+                <li>Sphere tests: 68,979.</li>
+                <li>Box tests: 159,565.</li>
+                <li>Triangle tests: 130,938.</li>
+                <li>Nodes visited: 85,233; leaves visited: 23,796.</li>
+              </ul>
+            </div>
+            <div class="panel amber" style="margin-top: 22px;">
+              <h3>Source-Page Tradeoff</h3>
+              <p>The chapter evaluation reports a speed cost for a full 5D conformal approach: about 25 percent versus a 3D vector version and under 5 percent versus a 4D homogeneous version.</p>
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 820 600" role="img" aria-label="Tradeoff between conformal elegance and renderer throughput">
+              <rect x="52" y="58" width="716" height="458" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="138" y1="408" x2="690" y2="408" stroke="#111827" stroke-width="5"/>
+              <line x1="138" y1="408" x2="138" y2="124" stroke="#111827" stroke-width="5"/>
+              <text x="414" y="462" text-anchor="middle" font-size="28" fill="#475569">implementation specialization</text>
+              <text x="82" y="280" text-anchor="middle" font-size="28" fill="#475569" transform="rotate(-90 82 280)">geometric universality</text>
+              <circle cx="250" cy="180" r="28" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"/>
+              <text x="250" y="126" text-anchor="middle" font-size="25" fill="#2563EB">universal CGA</text>
+              <circle cx="430" cy="270" r="28" fill="#FDE68A" stroke="#B45309" stroke-width="5"/>
+              <text x="430" y="218" text-anchor="middle" font-size="25" fill="#B45309">mixed design</text>
+              <circle cx="606" cy="360" r="28" fill="#CCFBF1" stroke="#0F766E" stroke-width="5"/>
+              <text x="606" y="314" text-anchor="middle" font-size="25" fill="#0F766E">hot-loop arrays</text>
+              <path d="M278 190 C350 210 398 232 410 254" fill="none" stroke="#475569" stroke-width="5" stroke-dasharray="10 10"/>
+              <path d="M458 282 C520 304 570 326 592 348" fill="none" stroke="#475569" stroke-width="5" stroke-dasharray="10 10"/>
+              <rect x="170" y="492" width="500" height="54" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="420" y="527" text-anchor="middle" font-size="25" fill="#1E3A8A">use algebra for meaning; specialize the repeated query</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Mini render: 84x112 RGB pixels</span><span>Source span visible: printed pages 581; PDF pages 577</span></div>
+      </div>
+      <aside class="speaker-notes">Connect the notebook statistics to the source page evaluation. The chapter does not claim that the richest conformal representation is always fastest. Instead, it argues for a disciplined compromise: keep conformal operations where they clarify transformations and object relationships, then specialize inner-loop storage when performance matters.</aside>
+    </section>
+
+    <section data-label="Synthesis">
+      <div class="slide alt">
+        <div class="eyebrow">Takeaways</div>
+        <h2>Takeaways for Graphics Software</h2>
+        <div class="rule"></div>
+        <div class="three">
+          <div class="panel blue">
+            <h3>Algebra Names Objects</h3>
+            <p>Points, rays, planes, spheres, reflections, and transformations belong to one conformal geometric vocabulary.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Storage Answers Queries</h3>
+            <p>Point-direction rays, vertex arrays, barycentric weights, and BSP nodes are chosen for repeated rendering questions.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Checks Protect Meaning</h3>
+            <p>Distance identities, unit normals, positive areas, hit agreement, and artifact existence catch broken geometric assumptions.</p>
+          </div>
+          <div class="panel violet">
+            <h3>Closest Hit Is Local</h3>
+            <p>The visible surface is the nearest valid positive parameter, not every mathematically possible intersection.</p>
+          </div>
+          <div class="panel">
+            <h3>Acceleration Is Conservative</h3>
+            <p>Spheres and boxes discard work only when they can prove a detailed primitive cannot be involved.</p>
+          </div>
+          <div class="panel">
+            <h3>Shading Reuses Geometry</h3>
+            <p>Normals, finite light segments, reflection, and refraction continue the same object-based reasoning after a hit.</p>
+          </div>
+        </div>
+        <div class="panel blue" style="margin-top: 28px;">
+          <p><strong>Design habit.</strong> Let the conformal model define the geometric contract, then let the renderer choose the representation that keeps the contract cheap to evaluate.</p>
+        </div>
+        <div class="footer"><span>Chapter 23 complete</span><span>From algebraic geometry objects to executable graphics software</span></div>
+      </div>
+      <aside class="speaker-notes">Close with a software-design habit, not a formula list. Let the algebra state what the geometric object is, let the renderer store what each repeated operation needs, and let executable checks protect the bridge between the two. That habit is reusable beyond this small ray tracer.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

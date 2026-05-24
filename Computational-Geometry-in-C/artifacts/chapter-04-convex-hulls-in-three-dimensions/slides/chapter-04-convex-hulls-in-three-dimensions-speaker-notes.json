@@ -1,0 +1,92 @@
+[
+  {
+    "slide": 1,
+    "title": "Convex Hulls In Three Dimensions",
+    "notes": "Open by changing the mental model from a boundary cycle to a mutable surface. The mesh image is not just a picture of the hull; it is the object the implementation must maintain through vertices, edges, faces, orientations, and adjacency."
+  },
+  {
+    "slide": 2,
+    "title": "Learning Arc",
+    "notes": "Use this slide as the map for the lecture. We start with topological validity, turn Euler into a debugging ledger, learn the signed-volume visibility predicate, then ask what data structure survives deletion and stitching. Randomization and higher dimensions appear only after the deterministic surface update is clear."
+  },
+  {
+    "slide": 3,
+    "title": "What Counts As A Polyhedron",
+    "notes": "Slow down on the word polyhedron because implementation bugs often create objects that look plausible but are not valid surfaces. Every edge should have two incident faces, neighborhoods should look locally like disks, and genus zero is the setting where the simple Euler ledger applies."
+  },
+  {
+    "slide": 4,
+    "title": "Convex Polytopes And Euler's Ledger",
+    "notes": "Read the table as both theorem and instrumentation. In a triangulated convex hull, Euler gives V minus E plus F equal to two, and triangular faces force edge and face counts to be linear in the number of hull vertices. The notebook check records V equals eight, E equals eighteen, F equals twelve."
+  },
+  {
+    "slide": 5,
+    "title": "Proof Roadmap For Euler",
+    "notes": "Do not reproduce a full proof here; teach the structure. Stretch the polyhedron to a plane graph, verify the tree case, and remove one cycle edge at a time. The invariant survives because deleting a cycle edge reduces both E and F by one."
+  },
+  {
+    "slide": 6,
+    "title": "Why 3D Hulls Are Harder Than 2D",
+    "notes": "Compare the data maintained by a 2D hull and a 3D hull. In two dimensions the boundary is a cyclic list with tangent edits. In three dimensions a point update deletes a connected patch, finds a horizon cycle, and creates many cone faces while preserving orientation."
+  },
+  {
+    "slide": 7,
+    "title": "Algorithm Families",
+    "notes": "Place the chapter algorithms without drowning students in details. Gift wrapping is output-sensitive but may scan many points per face, divide and conquer reaches the optimal comparison bound but is hard to implement, and incremental beneath-beyond is the implementation centerpiece that randomization later improves."
+  },
+  {
+    "slide": 8,
+    "title": "Signed Volume Predicate",
+    "notes": "Tie the formula to the 2D orientation test students already know. The determinant is six times the oriented tetrahedron volume, so an oriented face can classify a new point by sign. The sign convention depends on face orientation; consistency matters more than the particular choice."
+  },
+  {
+    "slide": 9,
+    "title": "Beneath-Beyond Step",
+    "notes": "Walk through the update in the artifact. One face is visible from the new point; its three boundary edges are the horizon because each has exactly one visible incident face. The new hull removes the visible patch and creates one cone triangle per horizon edge."
+  },
+  {
+    "slide": 10,
+    "title": "Algorithm 4.1 As State Machine",
+    "notes": "Translate the pseudocode into states students can test. Start from a tetrahedron, classify faces by signed volume, discard an interior point if no face is visible, otherwise mark horizon edges, create cone faces, and clean the deleted records. The complexity is quadratic when every insertion scans the current surface."
+  },
+  {
+    "slide": 11,
+    "title": "Implementation Records",
+    "notes": "Make the record fields concrete without copying C code. Vertices, edges, and faces carry flags so the update can mark visible faces, horizon edges, and deletion candidates before physically removing anything. This delayed cleanup is what keeps traversal from invalidating itself mid-walk."
+  },
+  {
+    "slide": 12,
+    "title": "Orientation And Cleanup",
+    "notes": "Use this as an implementation checklist. New cone faces must be oriented consistently with the surviving surface, old visible faces must be deleted, and edges or vertices with no remaining support should be cleaned. Euler and orientation checks catch different classes of mistakes."
+  },
+  {
+    "slide": 13,
+    "title": "Degeneracy And Robustness",
+    "notes": "Stress that the clean determinant story assumes general position. Coplanar or nearly coplanar points, repeated points, and large integer coordinates can make signs ambiguous or overflow. Connect this directly to the notebook lab: moving a point close to a face should make students ask whether the sign is certified, perturbed, or treated as coplanar. Robust implementations need an explicit policy, not hope."
+  },
+  {
+    "slide": 14,
+    "title": "Boundary Representation Comparison",
+    "notes": "Use the half-edge artifact as the anchor for a broader comparison. The chapter names several boundary representations, but the central design question is the same: how quickly can the algorithm move around a face, cross an edge, and repair adjacency after a local edit."
+  },
+  {
+    "slide": 15,
+    "title": "Conflict Graphs For Randomization",
+    "notes": "Explain conflicts as cached visibility. Instead of scanning every face for every outside point, the algorithm records which outside points can see which faces. When visible faces are deleted, only conflicts attached to the affected neighborhood need to be redistributed."
+  },
+  {
+    "slide": 16,
+    "title": "Higher Dimensions And Output Sensitivity",
+    "notes": "Use the growth plot to separate algorithmic overhead from output size. In three dimensions Euler keeps the hull surface linear in the number of vertices, but higher-dimensional polytopes can have many more faces. The output can be the bottleneck before implementation details enter."
+  },
+  {
+    "slide": 17,
+    "title": "Worked Inspection Exercise",
+    "notes": "Run this as a short in-class diagnosis. Students should identify the visible face, list the horizon edges, predict the three cone faces, and name the checks that would fail if a cone face were oriented backwards or if a horizon edge had two visible incident faces."
+  },
+  {
+    "slide": 18,
+    "title": "Recap And Implementation Checks",
+    "notes": "Close by returning to the mutable-surface theme. A correct 3D hull implementation is not just a determinant loop; it is a surface data structure with topological invariants, geometric predicates, cleanup policy, and performance bookkeeping. Ask students to read each check as a promise about one layer of the implementation: topology, visibility, adjacency, or randomized search."
+  }
+]

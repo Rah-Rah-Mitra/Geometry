@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shape Recovery Lecture</title>
+  <meta name="course" content="Discrete and Computational Geometry">
+  <meta name="chapter_id" content="chapter-05-shape-recovery">
+  <meta name="notebook_path" content="Discrete-and-Computational-Geometry/chapter-05-shape-recovery/05-shape-recovery.ipynb">
+  <meta name="source_span" content="printed pages 136-169">
+  <meta name="source_pdf" content="Discrete-and-Computational-Geometry/Discrete and Computational Geometry, 2nd Edition.pdf">
+  <meta name="design_system_version" content="Geometry Lecture Design System 1.0">
+  <script src="deck-stage.js"></script>
+  <style>
+    :root {
+      --slide-bg: #ffffff;
+      --slide-bg-alt: #f8fafc;
+      --slide-ink: #111827;
+      --slide-muted: #475569;
+      --slide-dimmed: #64748b;
+      --slide-accent: #1e3a8a;
+      --slide-blue: #2563eb;
+      --slide-teal: #0f766e;
+      --slide-amber: #b45309;
+      --slide-violet: #6d28d9;
+      --slide-border: #cbd5e1;
+      --slide-border-light: #e2e8f0;
+      --font-sans: Source Sans 3, Segoe UI, Arial, sans-serif;
+      --font-math: STIX Two Text, Cambria Math, Georgia, serif;
+      --font-mono: JetBrains Mono, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    section { background: var(--slide-bg); }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+    .pad {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 76px 104px 70px;
+      display: flex;
+      flex-direction: column;
+    }
+    .mesh {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.055;
+      background-image:
+        linear-gradient(30deg, transparent 0 48px, #1e3a8a 49px, transparent 50px),
+        linear-gradient(150deg, transparent 0 58px, #0f766e 59px, transparent 60px),
+        linear-gradient(to right, #2563eb 1px, transparent 1px),
+        linear-gradient(to bottom, #2563eb 1px, transparent 1px);
+      background-size: 138px 138px, 154px 154px, 72px 72px, 72px 72px;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 66px; line-height: 1.04; letter-spacing: 0; font-weight: 700; }
+    h2 { font-size: 50px; line-height: 1.08; letter-spacing: 0; font-weight: 700; }
+    h3 { font-size: 30px; line-height: 1.2; font-weight: 700; color: var(--slide-accent); }
+    p, li { font-size: 27px; line-height: 1.38; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    li { position: relative; padding-left: 28px; margin: 11px 0; color: var(--slide-ink); }
+    li::before { content: ""; position: absolute; left: 0; top: 15px; width: 9px; height: 9px; border-radius: 50%; background: var(--slide-blue); }
+    .kicker { font-size: 20px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--slide-dimmed); }
+    .rule { width: 76px; height: 5px; border-radius: 4px; margin: 18px 0 26px; background: var(--slide-accent); }
+    .subtitle { font-size: 30px; line-height: 1.42; color: var(--slide-muted); max-width: 1040px; }
+    .footer { position: absolute; left: 104px; right: 104px; bottom: 28px; display: flex; justify-content: space-between; font-size: 20px; color: var(--slide-dimmed); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 54px; flex: 1; align-items: center; }
+    .wide-two { display: grid; grid-template-columns: 1.15fr .85fr; gap: 54px; flex: 1; align-items: center; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; flex: 1; align-items: stretch; }
+    .card { border: 1px solid var(--slide-border-light); border-radius: 8px; background: #fff; padding: 26px 30px; }
+    .box { border-left: 5px solid var(--slide-blue); border-radius: 8px; padding: 22px 28px; background: #eff6ff; }
+    .box.theorem { border-left-color: var(--slide-accent); background: #eef2ff; }
+    .box.example { border-left-color: var(--slide-teal); background: #f0fdfa; }
+    .box.warn { border-left-color: var(--slide-amber); background: #fffbeb; }
+    .box.exercise { border-left-color: var(--slide-violet); background: #f5f3ff; }
+    .label { font-size: 20px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--slide-blue); margin-bottom: 8px; }
+    .theorem .label { color: var(--slide-accent); }
+    .example .label { color: var(--slide-teal); }
+    .warn .label { color: var(--slide-amber); }
+    .exercise .label { color: var(--slide-violet); }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .formula { font-family: var(--font-math); font-size: 37px; line-height: 1.25; text-align: center; padding: 20px 28px; border-radius: 8px; background: var(--slide-bg-alt); border: 1px solid var(--slide-border-light); }
+    .small { font-size: 23px; line-height: 1.35; color: var(--slide-muted); }
+    .caption { font-size: 20px; color: var(--slide-dimmed); font-weight: 600; text-align: center; margin-top: 10px; }
+    .tag { display: inline-block; padding: 6px 11px; border-radius: 6px; font-size: 20px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; background: #eef2ff; color: var(--slide-accent); }
+    .diagram { width: 100%; height: auto; display: block; }
+    .speaker-notes { display: none; }
+    .axis { stroke: #94a3b8; stroke-width: 3; }
+    .boundary { fill: none; stroke: #111827; stroke-width: 6; stroke-linejoin: round; }
+    .blue { stroke: #2563eb; }
+    .teal { stroke: #0f766e; }
+    .amber { stroke: #b45309; }
+    .violet { stroke: #6d28d9; }
+    .thin { stroke-width: 3; }
+    .med { stroke-width: 5; }
+    .dash { stroke-dasharray: 12 10; }
+    .pt { fill: #2563eb; stroke: #fff; stroke-width: 4; }
+    .pt2 { fill: #0f766e; stroke: #fff; stroke-width: 4; }
+    .muted-line { stroke: #cbd5e1; stroke-width: 3; }
+    .fill-blue { fill: rgba(37,99,235,.10); }
+    .fill-teal { fill: rgba(15,118,110,.11); }
+    .fill-amber { fill: rgba(180,83,9,.12); }
+    .slide-title-row { display: flex; justify-content: space-between; gap: 40px; align-items: flex-start; margin-bottom: 22px; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad" style="justify-content:center;">
+          <div class="kicker">Discrete and Computational Geometry &middot; Chapter 05</div>
+          <h1 style="max-width:1120px; margin-top:18px;">Shape Recovery From Samples</h1>
+          <div class="rule"></div>
+          <p class="subtitle">How medial axes, local feature size, Delaunay structure, and alpha complexes turn scattered geometric evidence into a certified shape.</p>
+          <div style="display:flex; gap:14px; margin-top:34px;">
+            <span class="tag">Medial Axis</span>
+            <span class="tag" style="background:#f0fdfa;color:var(--slide-teal);">Reconstruction</span>
+            <span class="tag" style="background:#fffbeb;color:var(--slide-amber);">Sampling</span>
+            <span class="tag" style="background:#f5f3ff;color:var(--slide-violet);">Alpha Complex</span>
+          </div>
+          <svg class="diagram" style="position:absolute; right:105px; bottom:105px; width:610px;" viewBox="0 0 610 360" aria-label="Sampled curve and recovered graph">
+            <path d="M75 191 C86 77 186 40 276 83 C348 118 382 45 472 88 C564 132 552 292 425 299 C344 304 331 237 250 258 C144 285 62 284 75 191Z" fill="none" stroke="#111827" stroke-width="6"/>
+            <path d="M82 192 C96 95 190 70 274 98 C340 122 382 70 461 101 C538 132 529 267 419 273 C346 277 329 213 248 235 C152 261 73 265 82 192Z" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="14 12"/>
+            <g fill="#2563eb" stroke="#fff" stroke-width="4">
+              <circle cx="83" cy="190" r="8"/><circle cx="106" cy="122" r="8"/><circle cx="170" cy="76" r="8"/><circle cx="247" cy="74" r="8"/><circle cx="317" cy="105" r="8"/><circle cx="392" cy="72" r="8"/><circle cx="473" cy="89" r="8"/><circle cx="535" cy="152" r="8"/><circle cx="528" cy="238" r="8"/><circle cx="456" cy="291" r="8"/><circle cx="372" cy="280" r="8"/><circle cx="315" cy="236" r="8"/><circle cx="239" cy="258" r="8"/><circle cx="153" cy="281" r="8"/><circle cx="83" cy="251" r="8"/>
+            </g>
+          </svg>
+          <div class="footer"><span>Geometry Atlas</span><span>printed pages 136-169</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Frame shape recovery as an inference problem: the input is incomplete geometric evidence, usually samples, and the output is a shape with controlled topology. The lecture separates three ideas that students often blend together: a skeleton explains feature sensitivity, a reconstruction graph proposes boundary edges, and an alpha complex records a growing union of disks with finite combinatorics.</aside>
+    </section>
+
+    <section data-label="Recovery Problem">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad">
+          <div class="slide-title-row"><div><div class="kicker">Problem Setting</div><h2>Recovering A Shape Is More Than Connecting Dots</h2><div class="rule"></div></div><span class="tag">Input to Certificate</span></div>
+          <div class="wide-two">
+            <div>
+              <div class="box theorem">
+                <div class="label">Guiding Question</div>
+                <p>Given finite samples near an unknown curve or region, what geometric conditions make the recovered object faithful?</p>
+              </div>
+              <ul style="margin-top:28px;">
+                <li>Metric information decides which sample pairs are plausible neighbors.</li>
+                <li>Voronoi and Delaunay structure provide a finite search space.</li>
+                <li>Topological checks detect false components, holes, and shortcuts.</li>
+              </ul>
+            </div>
+            <svg class="diagram" viewBox="0 0 760 520" aria-label="Pipeline from samples to shape">
+              <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#1e3a8a"/></marker></defs>
+              <rect x="20" y="60" width="180" height="360" rx="8" fill="#eff6ff" stroke="#cbd5e1"/>
+              <rect x="290" y="60" width="180" height="360" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+              <rect x="560" y="60" width="180" height="360" rx="8" fill="#f0fdfa" stroke="#cbd5e1"/>
+              <text x="110" y="36" text-anchor="middle" font-size="24" font-weight="700" fill="#1e3a8a">Samples</text>
+              <text x="380" y="36" text-anchor="middle" font-size="24" font-weight="700" fill="#1e3a8a">Geometry</text>
+              <text x="650" y="36" text-anchor="middle" font-size="24" font-weight="700" fill="#1e3a8a">Recovered Shape</text>
+              <path d="M200 240 H290" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow)"/>
+              <path d="M470 240 H560" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow)"/>
+              <g fill="#2563eb" stroke="#fff" stroke-width="3">
+                <circle cx="75" cy="140" r="9"/><circle cx="126" cy="112" r="9"/><circle cx="159" cy="160" r="9"/><circle cx="78" cy="242" r="9"/><circle cx="143" cy="260" r="9"/><circle cx="112" cy="344" r="9"/><circle cx="164" cy="371" r="9"/>
+              </g>
+              <path d="M328 365 L418 118 L448 334 L322 202 L440 203 L328 365" fill="none" stroke="#94a3b8" stroke-width="3"/>
+              <path d="M328 365 L322 202 L418 118 L448 334 L328 365" fill="none" stroke="#2563eb" stroke-width="6"/>
+              <path d="M606 344 C575 260 590 143 656 119 C718 97 727 213 690 287 C676 318 648 344 606 344Z" fill="rgba(15,118,110,.11)" stroke="#0f766e" stroke-width="6"/>
+              <text x="110" y="467" text-anchor="middle" font-size="21" fill="#475569">finite evidence</text>
+              <text x="380" y="467" text-anchor="middle" font-size="21" fill="#475569">certified candidates</text>
+              <text x="650" y="467" text-anchor="middle" font-size="21" fill="#475569">metric + topology</text>
+            </svg>
+          </div>
+          <div class="footer"><span>Shape recovery</span><span>02 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Emphasize that sampling alone is ambiguous. The same cloud can support many curves unless we add assumptions about density, smoothness, and feature separation. The chapter's tools are useful because they turn those assumptions into computable structures instead of visual preference.</aside>
+    </section>
+
+    <section data-label="Medial Axis">
+      <div class="slide">
+        <div class="pad">
+          <div class="kicker">Skeletons</div><h2>The Medial Axis Marks Where Boundary Evidence Competes</h2><div class="rule"></div>
+          <div class="two">
+            <svg class="diagram" viewBox="0 0 780 560" aria-label="Medial axis and maximal disks">
+              <path class="boundary" d="M102 104 H610 V198 H408 V440 H102 Z"/>
+              <path d="M195 270 H355 L475 150 M356 270 L356 370 M195 270 L195 385" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="195" cy="270" r="92" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="12 10"/>
+              <circle cx="356" cy="270" r="85" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="12 10"/>
+              <circle cx="475" cy="150" r="48" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="12 10"/>
+              <g fill="#2563eb"><circle cx="195" cy="270" r="8"/><circle cx="356" cy="270" r="8"/><circle cx="475" cy="150" r="8"/></g>
+              <text x="380" y="522" text-anchor="middle" font-size="25" fill="#475569">centers of disks that cannot grow without crossing the boundary</text>
+            </svg>
+            <div>
+              <div class="box">
+                <div class="label">Definition</div>
+                <p>The medial axis of a region is the set of centers of maximal inscribed disks. A disk is maximal when no larger inscribed disk contains it.</p>
+              </div>
+              <div class="formula" style="margin-top:26px;"><span class="math">lfs(p) = dist(p, medial axis)</span></div>
+              <p class="small" style="margin-top:22px;">Near sharp corners, narrow necks, or almost-touching boundary arcs, the medial axis moves close to the boundary. Those are the places where a reconstruction needs denser samples.</p>
+            </div>
+          </div>
+          <div class="footer"><span>Medial axis</span><span>03 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the disk picture rather than a memorized definition. A medial-axis point is where at least two boundary features are equally close, so tiny perturbations can change which boundary points are paired. Local feature size is the distance from the boundary to this instability set.</aside>
+    </section>
+
+    <section data-label="Feature Size">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad">
+          <div class="kicker">Sampling Density</div><h2>Local Feature Size Converts Geometry Into A Spacing Rule</h2><div class="rule"></div>
+          <div class="wide-two">
+            <div>
+              <div class="box theorem">
+                <div class="label">Sampling Principle</div>
+                <p>A sample should be denser where the nearest competing feature is closer. Uniform spacing is wasteful in calm regions and unsafe near small features.</p>
+              </div>
+              <ul style="margin-top:28px;">
+                <li>Large local feature size permits longer boundary steps.</li>
+                <li>Small local feature size demands tighter spacing and sharper certificates.</li>
+                <li>The condition is local, so adaptive sampling is natural.</li>
+              </ul>
+            </div>
+            <svg class="diagram" viewBox="0 0 760 520" aria-label="Curve with variable sample spacing">
+              <path d="M86 260 C132 92 310 92 374 220 C424 319 533 329 616 190 C657 122 708 157 688 247 C660 383 453 445 300 389 C181 345 64 342 86 260Z" fill="none" stroke="#111827" stroke-width="6"/>
+              <path d="M235 298 C284 261 318 252 370 254" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="10 8"/>
+              <g fill="#2563eb" stroke="#fff" stroke-width="4">
+                <circle cx="96" cy="252" r="8"/><circle cx="131" cy="156" r="8"/><circle cx="224" cy="104" r="8"/><circle cx="323" cy="132" r="8"/><circle cx="377" cy="224" r="8"/><circle cx="410" cy="288" r="8"/><circle cx="472" cy="327" r="8"/><circle cx="550" cy="286" r="8"/><circle cx="616" cy="190" r="8"/><circle cx="683" cy="207" r="8"/><circle cx="645" cy="327" r="8"/><circle cx="543" cy="399" r="8"/><circle cx="420" cy="418" r="8"/><circle cx="305" cy="391" r="8"/><circle cx="215" cy="354" r="8"/><circle cx="125" cy="331" r="8"/>
+              </g>
+              <line x1="377" y1="224" x2="305" y2="391" stroke="#b45309" stroke-width="5"/>
+              <text x="430" y="318" font-size="25" font-weight="700" fill="#b45309">small lfs</text>
+              <line x1="131" y1="156" x2="224" y2="104" stroke="#0f766e" stroke-width="5"/>
+              <text x="84" y="96" font-size="25" font-weight="700" fill="#0f766e">larger spacing ok</text>
+            </svg>
+          </div>
+          <div class="footer"><span>Local feature size</span><span>04 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Students should leave this slide with a diagnostic habit: ask where the shape nearly touches itself or bends sharply, then ask whether the samples resolve that scale. The point is not to memorize a constant but to understand why any theorem must compare sample spacing with local feature size.</aside>
+    </section>
+
+    <section data-label="Straight Skeleton">
+      <div class="slide">
+        <div class="pad">
+          <div class="kicker">A Related But Different Skeleton</div><h2>Straight Skeletons Track Polygon Wavefront Events</h2><div class="rule"></div>
+          <div class="two">
+            <svg class="diagram" viewBox="0 0 780 560" aria-label="Offset polygon wavefront and straight skeleton">
+              <path class="boundary" d="M110 105 H630 V250 H500 V442 H250 V320 H110 Z"/>
+              <path d="M156 151 H584 V214 H454 V396 H286 V274 H156 Z" fill="none" stroke="#0f766e" stroke-width="4"/>
+              <path d="M202 197 H538 V218 H408 V350 H322 V228 H202 Z" fill="none" stroke="#0f766e" stroke-width="4" opacity=".7"/>
+              <path d="M250 245 H487 M250 245 L356 320 M487 245 L408 320 M356 320 V395 M408 320 V250 M250 245 V320" fill="none" stroke="#2563eb" stroke-width="7" stroke-linecap="round"/>
+              <g fill="#b45309"><circle cx="250" cy="245" r="8"/><circle cx="356" cy="320" r="8"/><circle cx="408" cy="320" r="8"/><circle cx="487" cy="245" r="8"/></g>
+            </svg>
+            <div>
+              <div class="box example">
+                <div class="label">Interpretation</div>
+                <p>Move each polygon edge inward at the same speed. The straight skeleton records where moving edges collide, split, or vanish.</p>
+              </div>
+              <div class="box warn" style="margin-top:24px;">
+                <div class="label">Do Not Conflate</div>
+                <p>The medial axis uses nearest boundary distance and can include curved branches. The straight skeleton uses straight-line offset events from polygon edges.</p>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Straight skeleton</span><span>05 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This slide is included because the two skeletons are tempting to identify. Keep the contrast concrete: medial-axis disks are distance certificates, while straight-skeleton arcs are wavefront histories. Both expose structure, but they answer different algorithmic questions.</aside>
+    </section>
+
+    <section data-label="Delaunay Voronoi">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad">
+          <div class="kicker">Finite Search Space</div><h2>Delaunay Edges Are The Reconstruction Candidate Pool</h2><div class="rule"></div>
+          <div class="two">
+            <div>
+              <p class="subtitle" style="max-width:800px;">The Voronoi diagram asks which sample is nearest. Its dual, the Delaunay triangulation, connects samples whose Voronoi cells touch.</p>
+              <div class="box theorem" style="margin-top:30px;">
+                <div class="label">Algorithmic Use</div>
+                <p>Instead of testing every pair of samples, reconstruction algorithms search a geometrically filtered graph.</p>
+              </div>
+            </div>
+            <svg class="diagram" viewBox="0 0 760 540" aria-label="Delaunay and Voronoi relationship">
+              <g stroke="#cbd5e1" stroke-width="3" fill="none">
+                <path d="M121 90 L238 146 L226 278 L114 342 L50 217 Z"/>
+                <path d="M238 146 L383 88 L499 157 L470 300 L226 278 Z"/>
+                <path d="M470 300 L600 243 L705 335 L635 467 L492 430 Z"/>
+                <path d="M226 278 L470 300 L492 430 L291 455 L114 342 Z"/>
+              </g>
+              <g fill="none" stroke="#2563eb" stroke-width="5" opacity=".85">
+                <path d="M150 170 L280 116 L430 202 L588 170 L650 354 L520 404 L340 380 L210 310 Z"/>
+                <path d="M150 170 L210 310 L280 116 L430 202 L340 380 L520 404 L588 170"/>
+                <path d="M210 310 L340 380 M430 202 L588 170 M430 202 L520 404"/>
+              </g>
+              <g fill="#2563eb" stroke="#fff" stroke-width="4">
+                <circle cx="150" cy="170" r="9"/><circle cx="280" cy="116" r="9"/><circle cx="430" cy="202" r="9"/><circle cx="588" cy="170" r="9"/><circle cx="650" cy="354" r="9"/><circle cx="520" cy="404" r="9"/><circle cx="340" cy="380" r="9"/><circle cx="210" cy="310" r="9"/>
+              </g>
+              <text x="104" y="483" font-size="24" fill="#64748b">pale: Voronoi cells</text>
+              <text x="430" y="483" font-size="24" fill="#2563eb">blue: Delaunay edges</text>
+            </svg>
+          </div>
+          <div class="footer"><span>Voronoi / Delaunay</span><span>06 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Point out the duality visually. Delaunay edges are not automatically the recovered curve, but they are a strong candidate pool because nearest-neighbor geometry has already removed many impossible chords. The reconstruction task becomes selecting the right subgraph.</aside>
+    </section>
+
+    <section data-label="Crust Pipeline">
+      <div class="slide">
+        <div class="pad">
+          <div class="kicker">Curve Reconstruction</div><h2>A Crust-Style Pipeline: Filter, Then Check</h2><div class="rule"></div>
+          <div class="three">
+            <div class="card">
+              <h3>1. Sample Cloud</h3>
+              <svg class="diagram" viewBox="0 0 440 310"><path d="M60 170 C90 60 210 55 267 124 C323 191 387 154 380 230 C370 318 158 291 80 238 C52 219 49 200 60 170Z" fill="none" stroke="#111827" stroke-width="5"/><g fill="#2563eb" stroke="#fff" stroke-width="3"><circle cx="62" cy="171" r="7"/><circle cx="90" cy="96" r="7"/><circle cx="160" cy="62" r="7"/><circle cx="240" cy="92" r="7"/><circle cx="292" cy="160" r="7"/><circle cx="365" cy="180" r="7"/><circle cx="359" cy="257" r="7"/><circle cx="265" cy="286" r="7"/><circle cx="158" cy="277" r="7"/><circle cx="80" cy="238" r="7"/></g></svg>
+              <p class="small">Start with points, not ordered boundary data.</p>
+            </div>
+            <div class="card">
+              <h3>2. Candidate Graph</h3>
+              <svg class="diagram" viewBox="0 0 440 310"><g fill="none" stroke="#cbd5e1" stroke-width="3"><path d="M62 171 L90 96 L160 62 L240 92 L292 160 L365 180 L359 257 L265 286 L158 277 L80 238 Z"/><path d="M90 96 L292 160 L158 277 M160 62 L265 286 M240 92 L359 257 M80 238 L292 160"/></g><path d="M62 171 L90 96 L160 62 L240 92 L292 160 L365 180 L359 257 L265 286 L158 277 L80 238 Z" fill="none" stroke="#2563eb" stroke-width="6"/><g fill="#2563eb" stroke="#fff" stroke-width="3"><circle cx="62" cy="171" r="7"/><circle cx="90" cy="96" r="7"/><circle cx="160" cy="62" r="7"/><circle cx="240" cy="92" r="7"/><circle cx="292" cy="160" r="7"/><circle cx="365" cy="180" r="7"/><circle cx="359" cy="257" r="7"/><circle cx="265" cy="286" r="7"/><circle cx="158" cy="277" r="7"/><circle cx="80" cy="238" r="7"/></g></svg>
+              <p class="small">Keep Delaunay edges compatible with local scale.</p>
+            </div>
+            <div class="card">
+              <h3>3. Ledger</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; margin-top:30px; font-size:24px; background:#cbd5e1; border:1px solid #cbd5e1;">
+                <div style="background:#f8fafc;padding:14px;font-weight:700;">Check</div><div style="background:#f8fafc;padding:14px;font-weight:700;">Target</div>
+                <div style="background:#fff;padding:14px;">degree</div><div style="background:#fff;padding:14px;">near 2</div>
+                <div style="background:#fff;padding:14px;">components</div><div style="background:#fff;padding:14px;">one cycle</div>
+                <div style="background:#fff;padding:14px;">shortcuts</div><div style="background:#fff;padding:14px;">absent</div>
+              </div>
+              <p class="small" style="margin-top:22px;">A picture is not a proof; graph invariants catch failures.</p>
+            </div>
+          </div>
+          <div class="footer"><span>Crust-style reconstruction</span><span>07 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Present this as a transparent model of a family of reconstruction ideas rather than a production implementation. The Delaunay graph narrows the options, a scale rule selects edges, and a ledger of degrees and components checks whether the selected graph behaves like the intended curve.</aside>
+    </section>
+
+    <section data-label="Failure Modes">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad">
+          <div class="kicker">What Can Go Wrong</div><h2>Sparse Samples Create Plausible But Wrong Chords</h2><div class="rule"></div>
+          <div class="two">
+            <svg class="diagram" viewBox="0 0 760 520" aria-label="Correct and incorrect reconstruction">
+              <path d="M100 260 C110 124 252 89 344 160 C404 205 433 204 496 144 C574 70 681 153 658 276 C633 407 469 435 382 333 C344 288 300 286 252 351 C182 446 91 385 100 260Z" fill="none" stroke="#111827" stroke-width="5"/>
+              <path d="M100 260 L252 351 L382 333 L658 276 L496 144 L344 160 L100 260" fill="none" stroke="#b45309" stroke-width="7" stroke-dasharray="15 11"/>
+              <path d="M100 260 C110 124 252 89 344 160 C404 205 433 204 496 144 C574 70 681 153 658 276" fill="none" stroke="#0f766e" stroke-width="6"/>
+              <g fill="#2563eb" stroke="#fff" stroke-width="4"><circle cx="100" cy="260" r="9"/><circle cx="344" cy="160" r="9"/><circle cx="496" cy="144" r="9"/><circle cx="658" cy="276" r="9"/><circle cx="382" cy="333" r="9"/><circle cx="252" cy="351" r="9"/></g>
+              <text x="230" y="75" font-size="26" fill="#b45309" font-weight="700">long chord passes a visual sniff test</text>
+            </svg>
+            <div>
+              <div class="box warn">
+                <div class="label">Diagnostic</div>
+                <p>If spacing exceeds the local feature scale, the nearest Delaunay candidates may jump across a narrow gap.</p>
+              </div>
+              <ul style="margin-top:28px;">
+                <li>Degree counts can still look reasonable.</li>
+                <li>Cycle rank may change even when the drawing looks smooth.</li>
+                <li>Failures concentrate near small local feature size.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer"><span>Reconstruction failures</span><span>08 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This is the cautionary slide. A bad reconstruction can be visually convincing because human perception completes curves generously. Ask students to locate the narrow feature and explain why the chord is tempting to the algorithm but wrong for the underlying topology.</aside>
+    </section>
+
+    <section data-label="Alpha Body">
+      <div class="slide">
+        <div class="pad">
+          <div class="kicker">Growing Disks</div><h2>Body(Alpha) Is A Monotone Geometric Proxy</h2><div class="rule"></div>
+          <div class="wide-two">
+            <div>
+              <div class="box">
+                <div class="label">Definition</div>
+                <p>For a sample set <span class="math">S</span>, <span class="math">Body(alpha)</span> is the union of closed disks of radius <span class="math">alpha</span> centered at points of <span class="math">S</span>.</p>
+              </div>
+              <div class="formula" style="margin-top:26px;"><span class="math">alpha_1 <= alpha_2 implies Body(alpha_1) subset Body(alpha_2)</span></div>
+              <p class="small" style="margin-top:22px;">As alpha grows, components merge and holes may appear or fill. The geometry changes continuously; the next slide makes it finite.</p>
+            </div>
+            <svg class="diagram" viewBox="0 0 760 520" aria-label="Union of disks">
+              <g fill="rgba(15,118,110,.15)" stroke="#0f766e" stroke-width="3">
+                <circle cx="145" cy="250" r="62"/><circle cx="224" cy="168" r="62"/><circle cx="330" cy="150" r="62"/><circle cx="442" cy="202" r="62"/><circle cx="506" cy="305" r="62"/><circle cx="400" cy="380" r="62"/><circle cx="268" cy="360" r="62"/><circle cx="156" cy="330" r="62"/>
+              </g>
+              <path d="M145 250 L224 168 L330 150 L442 202 L506 305 L400 380 L268 360 L156 330 Z" fill="none" stroke="#2563eb" stroke-width="5"/>
+              <g fill="#2563eb" stroke="#fff" stroke-width="4"><circle cx="145" cy="250" r="8"/><circle cx="224" cy="168" r="8"/><circle cx="330" cy="150" r="8"/><circle cx="442" cy="202" r="8"/><circle cx="506" cy="305" r="8"/><circle cx="400" cy="380" r="8"/><circle cx="268" cy="360" r="8"/><circle cx="156" cy="330" r="8"/></g>
+              <text x="374" y="482" text-anchor="middle" font-size="25" fill="#475569">radius alpha disks build a shape around the samples</text>
+            </svg>
+          </div>
+          <div class="footer"><span>Body(alpha)</span><span>09 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Make the monotonicity explicit: increasing alpha never removes points from the body. This gives a natural scale parameter. The price is that a union of disks is continuous geometry, so we need a combinatorial model that changes only at controlled thresholds.</aside>
+    </section>
+
+    <section data-label="Alpha Complex">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad">
+          <div class="kicker">Combinatorial Proxy</div><h2>The Alpha Complex Keeps The Delaunay Pieces Supported At Scale Alpha</h2><div class="rule"></div>
+          <div class="two">
+            <svg class="diagram" viewBox="0 0 780 560" aria-label="Alpha complex as Delaunay subcomplex">
+              <g fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="4">
+                <polygon points="160,150 325,120 276,276"/>
+                <polygon points="325,120 472,190 276,276"/>
+                <polygon points="276,276 472,190 508,365"/>
+                <polygon points="276,276 508,365 332,420"/>
+              </g>
+              <g fill="none" stroke="#94a3b8" stroke-width="3"><path d="M160 150 L472 190 L332 420 L160 150 M325 120 L508 365 L276 276 L325 120 M160 150 L276 276 L508 365"/></g>
+              <g fill="#2563eb" stroke="#fff" stroke-width="4"><circle cx="160" cy="150" r="9"/><circle cx="325" cy="120" r="9"/><circle cx="472" cy="190" r="9"/><circle cx="508" cy="365" r="9"/><circle cx="332" cy="420" r="9"/><circle cx="276" cy="276" r="9"/></g>
+              <circle cx="325" cy="266" r="151" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="12 10"/>
+              <text x="388" y="512" text-anchor="middle" font-size="24" fill="#475569">admitted simplices form a Delaunay subcomplex</text>
+            </svg>
+            <div>
+              <div class="box theorem">
+                <div class="label">Threshold Rules</div>
+                <p>Edges enter when two radius-alpha disks have the required support. Triangles enter when their circumradius is at most alpha.</p>
+              </div>
+              <ul style="margin-top:28px;">
+                <li>Every accepted edge or triangle comes from the Delaunay triangulation.</li>
+                <li>The complex grows as alpha grows.</li>
+                <li>The finite complex can preserve the homotopy type of the disk union under the right hypotheses.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer"><span>Alpha complex</span><span>10 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The alpha complex is the bridge between continuous disk unions and finite computation. Avoid overloading students with all implementation cases; the essential idea is that Delaunay geometry supplies candidate simplices, and alpha decides which are active at a particular scale.</aside>
+    </section>
+
+    <section data-label="Filtration">
+      <div class="slide">
+        <div class="pad">
+          <div class="kicker">Filtration</div><h2>As Alpha Grows, The Complex Records Events</h2><div class="rule"></div>
+          <div class="three">
+            <div class="card"><h3>Small alpha</h3><svg class="diagram" viewBox="0 0 420 280"><g fill="rgba(15,118,110,.10)" stroke="#0f766e" stroke-width="3"><circle cx="95" cy="122" r="32"/><circle cx="170" cy="78" r="32"/><circle cx="253" cy="92" r="32"/><circle cx="315" cy="160" r="32"/><circle cx="235" cy="218" r="32"/><circle cx="130" cy="210" r="32"/></g><g fill="#2563eb"><circle cx="95" cy="122" r="7"/><circle cx="170" cy="78" r="7"/><circle cx="253" cy="92" r="7"/><circle cx="315" cy="160" r="7"/><circle cx="235" cy="218" r="7"/><circle cx="130" cy="210" r="7"/></g></svg><p class="small">Many components, few edges.</p></div>
+            <div class="card"><h3>Middle alpha</h3><svg class="diagram" viewBox="0 0 420 280"><g fill="rgba(15,118,110,.11)" stroke="#0f766e" stroke-width="3"><circle cx="95" cy="122" r="50"/><circle cx="170" cy="78" r="50"/><circle cx="253" cy="92" r="50"/><circle cx="315" cy="160" r="50"/><circle cx="235" cy="218" r="50"/><circle cx="130" cy="210" r="50"/></g><path d="M95 122 L170 78 L253 92 L315 160 L235 218 L130 210 L95 122" fill="none" stroke="#2563eb" stroke-width="5"/><g fill="#2563eb"><circle cx="95" cy="122" r="7"/><circle cx="170" cy="78" r="7"/><circle cx="253" cy="92" r="7"/><circle cx="315" cy="160" r="7"/><circle cx="235" cy="218" r="7"/><circle cx="130" cy="210" r="7"/></g></svg><p class="small">Components merge; a loop appears.</p></div>
+            <div class="card"><h3>Large alpha</h3><svg class="diagram" viewBox="0 0 420 280"><g fill="rgba(37,99,235,.12)" stroke="#2563eb" stroke-width="4"><polygon points="95,122 170,78 253,92"/><polygon points="95,122 253,92 315,160"/><polygon points="95,122 315,160 235,218"/><polygon points="95,122 235,218 130,210"/></g><path d="M95 122 L170 78 L253 92 L315 160 L235 218 L130 210 Z" fill="none" stroke="#2563eb" stroke-width="5"/><g fill="#2563eb"><circle cx="95" cy="122" r="7"/><circle cx="170" cy="78" r="7"/><circle cx="253" cy="92" r="7"/><circle cx="315" cy="160" r="7"/><circle cx="235" cy="218" r="7"/><circle cx="130" cy="210" r="7"/></g></svg><p class="small">Triangles fill cycles.</p></div>
+          </div>
+          <div class="formula" style="margin-top:28px;"><span class="math">K(alpha_1) subset K(alpha_2) subset K(alpha_3)</span></div>
+          <div class="footer"><span>Alpha filtration</span><span>11 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">A filtration is useful because it turns one arbitrary scale choice into a sequence of scale events. The lecturer can ask what changed between panels: first components merge, then loops appear, then triangles fill loops. This is the computational shadow of persistent topology.</aside>
+    </section>
+
+    <section data-label="Topology Ledger">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad">
+          <div class="kicker">Homotopy Checks</div><h2>Track Components And Cycles, Not Just Boundaries</h2><div class="rule"></div>
+          <div class="two">
+            <div class="card">
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:1px; background:#cbd5e1; border:1px solid #cbd5e1; font-size:25px;">
+                <div style="background:#f8fafc;padding:16px;font-weight:800;">alpha</div><div style="background:#f8fafc;padding:16px;font-weight:800;">edges</div><div style="background:#f8fafc;padding:16px;font-weight:800;">comp.</div><div style="background:#f8fafc;padding:16px;font-weight:800;">cycles</div>
+                <div style="background:#fff;padding:16px;">0.18</div><div style="background:#fff;padding:16px;">4</div><div style="background:#fff;padding:16px;">5</div><div style="background:#fff;padding:16px;">0</div>
+                <div style="background:#fff;padding:16px;">0.24</div><div style="background:#fff;padding:16px;">10</div><div style="background:#fff;padding:16px;">2</div><div style="background:#fff;padding:16px;">1</div>
+                <div style="background:#fff;padding:16px;">0.32</div><div style="background:#fff;padding:16px;">18</div><div style="background:#fff;padding:16px;">1</div><div style="background:#fff;padding:16px;">3</div>
+                <div style="background:#fff;padding:16px;">0.46</div><div style="background:#fff;padding:16px;">29</div><div style="background:#fff;padding:16px;">1</div><div style="background:#fff;padding:16px;">1</div>
+              </div>
+              <p class="small" style="margin-top:22px;">Illustrative ledger: exact values depend on the sample set, but the monotone event logic is the point.</p>
+            </div>
+            <div>
+              <div class="box theorem">
+                <div class="label">Finite Topology</div>
+                <p>For a graph, the cycle rank is <span class="math">E - V + C</span>. Adding triangles can fill graph cycles, so the complex-level hole count is the more meaningful invariant.</p>
+              </div>
+              <ul style="margin-top:28px;">
+                <li>Components should not increase as alpha grows.</li>
+                <li>Edges and triangles are monotone additions.</li>
+                <li>Wrong topology can reveal a wrong reconstruction even when the outline is plausible.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer"><span>Topology ledger</span><span>12 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The table is not meant as a theorem statement; it models the habit of recording invariants. Stress that topology is a certificate layer. A recovered drawing can have the right local geometry while still having the wrong number of components or loops.</aside>
+    </section>
+
+    <section data-label="Proof Roadmap">
+      <div class="slide">
+        <div class="pad">
+          <div class="kicker">Why The Complex Can Stand In For The Body</div><h2>Nerve Reasoning Explains The Alpha Complex</h2><div class="rule"></div>
+          <div class="wide-two">
+            <div>
+              <div class="box theorem">
+                <div class="label">Proof Roadmap</div>
+                <p>When disk intersections behave well, a cover by disks has the same homotopy type as the nerve of the cover. The alpha complex is a Delaunay-efficient way to represent that nerve at scale.</p>
+              </div>
+              <ul style="margin-top:28px;">
+                <li>Disks and their finite intersections are contractible.</li>
+                <li>The nerve records which subfamilies intersect.</li>
+                <li>Delaunay restrictions remove redundant simplices without changing the intended type under the hypotheses.</li>
+              </ul>
+            </div>
+            <svg class="diagram" viewBox="0 0 760 520" aria-label="Nerve of disks">
+              <g fill="rgba(15,118,110,.16)" stroke="#0f766e" stroke-width="4"><circle cx="238" cy="232" r="105"/><circle cx="362" cy="232" r="105"/><circle cx="300" cy="334" r="105"/></g>
+              <g fill="none" stroke="#2563eb" stroke-width="7"><polygon points="238,232 362,232 300,334"/></g>
+              <g fill="#2563eb" stroke="#fff" stroke-width="4"><circle cx="238" cy="232" r="10"/><circle cx="362" cy="232" r="10"/><circle cx="300" cy="334" r="10"/></g>
+              <text x="300" y="82" text-anchor="middle" font-size="26" fill="#475569">overlapping disks</text>
+              <text x="300" y="486" text-anchor="middle" font-size="26" fill="#475569">nerve simplex records the shared intersection</text>
+              <path d="M548 206 L670 206 L608 314 Z" fill="rgba(37,99,235,.12)" stroke="#2563eb" stroke-width="6"/>
+              <g fill="#2563eb"><circle cx="548" cy="206" r="9"/><circle cx="670" cy="206" r="9"/><circle cx="608" cy="314" r="9"/></g>
+            </svg>
+          </div>
+          <div class="footer"><span>Nerve viewpoint</span><span>13 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This is a proof sketch slide, not a full algebraic topology lecture. The key message is that alpha complexes are not merely drawing conveniences. They are justified because the combinatorics of a good cover can preserve the homotopy type of the covered geometric body.</aside>
+    </section>
+
+    <section data-label="Algorithmic Invariants">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad">
+          <div class="kicker">Implementation Mindset</div><h2>Every Recovery Routine Needs A Small Audit Trail</h2><div class="rule"></div>
+          <div class="three">
+            <div class="box"><div class="label">Metric</div><p>Nearest-neighbor distances, edge lengths, and local scale estimates explain why candidate edges were accepted.</p></div>
+            <div class="box example"><div class="label">Combinatorial</div><p>Delaunay membership, degrees, components, and cycle rank make graph output reproducible.</p></div>
+            <div class="box exercise"><div class="label">Topological</div><p>Filtration events, filled triangles, and hole counts check whether the recovered object has the intended type.</p></div>
+          </div>
+          <div class="formula" style="margin-top:44px;"><span class="math">good reconstruction = plausible geometry + recorded invariants + scale sensitivity</span></div>
+          <div class="footer"><span>Audit trail</span><span>14 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Connect the lecture back to computational practice. A notebook or program should not only output a picture; it should save the quantities that justify the picture. This is the difference between a visualization and a reproducible geometric computation.</aside>
+    </section>
+
+    <section data-label="Exercise">
+      <div class="slide">
+        <div class="pad">
+          <div class="kicker">In-Class Exercise</div><h2>Choose Alpha And Defend The Topology</h2><div class="rule"></div>
+          <div class="two">
+            <svg class="diagram" viewBox="0 0 760 520" aria-label="Sample set for alpha exercise">
+              <g fill="#2563eb" stroke="#fff" stroke-width="4">
+                <circle cx="174" cy="168" r="10"/><circle cx="250" cy="104" r="10"/><circle cx="348" cy="102" r="10"/><circle cx="440" cy="152" r="10"/><circle cx="498" cy="246" r="10"/><circle cx="470" cy="348" r="10"/><circle cx="372" cy="414" r="10"/><circle cx="260" cy="404" r="10"/><circle cx="174" cy="330" r="10"/><circle cx="132" cy="246" r="10"/><circle cx="315" cy="248" r="10"/>
+              </g>
+              <g fill="none" stroke="#cbd5e1" stroke-width="3"><path d="M174 168 L250 104 L348 102 L440 152 L498 246 L470 348 L372 414 L260 404 L174 330 L132 246 Z"/><path d="M174 168 L315 248 L440 152 M132 246 L315 248 L498 246 M174 330 L315 248 L470 348 M260 404 L315 248 L372 414"/></g>
+              <circle cx="315" cy="248" r="98" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="14 10"/>
+            </svg>
+            <div>
+              <div class="box exercise">
+                <div class="label">Prompt</div>
+                <p>Pick a radius alpha that preserves one central hole. Which edges and triangles should enter, and what invariant would convince you?</p>
+              </div>
+              <ul style="margin-top:28px;">
+                <li>Mark edges admitted by the radius choice.</li>
+                <li>Identify triangles that would fill the central loop.</li>
+                <li>Report components and a hole-count argument.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="footer"><span>Exercise</span><span>15 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Have students work in pairs for a few minutes. The intended discussion is not about finding a perfect numeric alpha from the slide but about defending a scale choice with edge entries, triangle entries, and topology. Ask one group to argue for preserving the hole and another to argue when the hole should be filled.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide">
+        <div class="mesh"></div>
+        <div class="pad" style="justify-content:center;">
+          <div class="kicker">Takeaways</div>
+          <h2 style="font-size:58px; max-width:1180px;">Shape Recovery Works When Scale, Candidates, And Topology Agree</h2>
+          <div class="rule"></div>
+          <div class="three" style="flex:none; margin-top:12px;">
+            <div class="card"><h3>1. Skeletons Explain Sensitivity</h3><p class="small" style="font-size:24px;">The medial axis and local feature size identify where reconstruction is fragile.</p></div>
+            <div class="card"><h3>2. Delaunay Structure Narrows Choices</h3><p class="small" style="font-size:24px;">Candidate edges come from geometry, not from arbitrary visual interpolation.</p></div>
+            <div class="card"><h3>3. Alpha Complexes Certify Scale</h3><p class="small" style="font-size:24px;">A filtration records how components, loops, and filled regions change with alpha.</p></div>
+          </div>
+          <div class="box theorem" style="margin-top:44px;">
+            <div class="label">Closing Principle</div>
+            <p>Recovery is credible only when the drawing is accompanied by the assumptions and invariants that make it reproducible.</p>
+          </div>
+          <div class="footer"><span>Chapter 05 recap</span><span>16 / 16</span></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by tying the three threads together. The medial axis tells us where samples must be dense, Delaunay-based reconstruction tells us which edges can be considered, and alpha complexes let us compare shapes across scale with topological bookkeeping. That combination is the chapter's durable lesson.</aside>
+    </section>
+  </deck-stage>
+  <script id="speaker-notes" type="application/json">[
+  "Frame shape recovery as an inference problem: the input is incomplete geometric evidence, usually samples, and the output is a shape with controlled topology. The lecture separates three ideas that students often blend together: a skeleton explains feature sensitivity, a reconstruction graph proposes boundary edges, and an alpha complex records a growing union of disks with finite combinatorics.",
+  "Emphasize that sampling alone is ambiguous. The same cloud can support many curves unless we add assumptions about density, smoothness, and feature separation. The chapter's tools are useful because they turn those assumptions into computable structures instead of visual preference.",
+  "Use the disk picture rather than a memorized definition. A medial-axis point is where at least two boundary features are equally close, so tiny perturbations can change which boundary points are paired. Local feature size is the distance from the boundary to this instability set.",
+  "Students should leave this slide with a diagnostic habit: ask where the shape nearly touches itself or bends sharply, then ask whether the samples resolve that scale. The point is not to memorize a constant but to understand why any theorem must compare sample spacing with local feature size.",
+  "This slide is included because the two skeletons are tempting to identify. Keep the contrast concrete: medial-axis disks are distance certificates, while straight-skeleton arcs are wavefront histories. Both expose structure, but they answer different algorithmic questions.",
+  "Point out the duality visually. Delaunay edges are not automatically the recovered curve, but they are a strong candidate pool because nearest-neighbor geometry has already removed many impossible chords. The reconstruction task becomes selecting the right subgraph.",
+  "Present this as a transparent model of a family of reconstruction ideas rather than a production implementation. The Delaunay graph narrows the options, a scale rule selects edges, and a ledger of degrees and components checks whether the selected graph behaves like the intended curve.",
+  "This is the cautionary slide. A bad reconstruction can be visually convincing because human perception completes curves generously. Ask students to locate the narrow feature and explain why the chord is tempting to the algorithm but wrong for the underlying topology.",
+  "Make the monotonicity explicit: increasing alpha never removes points from the body. This gives a natural scale parameter. The price is that a union of disks is continuous geometry, so we need a combinatorial model that changes only at controlled thresholds.",
+  "The alpha complex is the bridge between continuous disk unions and finite computation. Avoid overloading students with all implementation cases; the essential idea is that Delaunay geometry supplies candidate simplices, and alpha decides which are active at a particular scale.",
+  "A filtration is useful because it turns one arbitrary scale choice into a sequence of scale events. The lecturer can ask what changed between panels: first components merge, then loops appear, then triangles fill loops. This is the computational shadow of persistent topology.",
+  "The table is not meant as a theorem statement; it models the habit of recording invariants. Stress that topology is a certificate layer. A recovered drawing can have the right local geometry while still having the wrong number of components or loops.",
+  "This is a proof sketch slide, not a full algebraic topology lecture. The key message is that alpha complexes are not merely drawing conveniences. They are justified because the combinatorics of a good cover can preserve the homotopy type of the covered geometric body.",
+  "Connect the lecture back to computational practice. A notebook or program should not only output a picture; it should save the quantities that justify the picture. This is the difference between a visualization and a reproducible geometric computation.",
+  "Have students work in pairs for a few minutes. The intended discussion is not about finding a perfect numeric alpha from the slide but about defending a scale choice with edge entries, triangle entries, and topology. Ask one group to argue for preserving the hole and another to argue when the hole should be filled.",
+  "Close by tying the three threads together. The medial axis tells us where samples must be dense, Delaunay-based reconstruction tells us which edges can be considered, and alpha complexes let us compare shapes across scale with topological bookkeeping. That combination is the chapter's durable lesson."
+]</script>
+</body>
+</html>

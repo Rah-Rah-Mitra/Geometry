@@ -1,0 +1,82 @@
+[
+  {
+    "slide": 1,
+    "title": "Quadtrees: Non-Uniform Mesh Generation",
+    "notes": "Open from the printed circuit board motivation: a solver wants small elements near material boundaries and fewer elements elsewhere. This lecture turns that modeling pressure into a data structure story. The route is quadtree subdivision, balancing, and then a conforming triangular mesh whose pieces have controlled angles."
+  },
+  {
+    "slide": 2,
+    "title": "Mesh Generation Problem",
+    "notes": "Use the domain square as the contract. The mesh must be conforming, must respect component boundaries, must avoid badly shaped triangles, and must place fine detail only where it is needed. Emphasize that these goals compete: respecting input edges alone does not guarantee shape quality, and uniform refinement wastes elements."
+  },
+  {
+    "slide": 3,
+    "title": "Why Uniform Grids Waste Work",
+    "notes": "Compare the two grids with the notebook checks in mind: the toy adaptive subdivision has eight leaf cells, while a same-depth uniform grid would have sixteen. The real chapter example is more dramatic, but the teaching point is the same: resolution should follow geometric detail, not the full bounding square."
+  },
+  {
+    "slide": 4,
+    "title": "Quadtree As Two Synchronized Objects",
+    "notes": "A quadtree is both a rooted four-child tree and a square subdivision. Students should keep these objects synchronized mentally: a tree edge means a geometric split, and a leaf means a square that remains in the subdivision. Algorithms will move between these views constantly."
+  },
+  {
+    "slide": 5,
+    "title": "Quadrant Rule And Boundary Ties",
+    "notes": "The quadrant convention is a small implementation detail that prevents large ambiguity later. Points on splitting lines must be routed deterministically, so every recursive call owns a disjoint subset. The exact less-than and greater-than choices are less important than the fact that they are fixed and used consistently."
+  },
+  {
+    "slide": 6,
+    "title": "Depth Bound",
+    "notes": "The depth argument is a packing argument inside one square. At depth i, a cell has side length s over 2 to the i, so its diagonal is s times square-root two over 2 to the i. If an internal cell still contains two points, that diagonal must be at least the minimum point separation c."
+  },
+  {
+    "slide": 7,
+    "title": "Size And Construction Cost",
+    "notes": "Bound the tree one level at a time. At any fixed depth, internal nodes occupy disjoint cells and each contains at least one input point, so there are at most n internal nodes on that layer. Summing over d plus one layers gives the size and recursive construction cost."
+  },
+  {
+    "slide": 8,
+    "title": "Neighbor Finding",
+    "notes": "Neighbor finding is the first place where the tree view pays for the subdivision view. For a north neighbor, a southern child can cross to its sibling immediately. A northern child must climb until a crossing is possible, then descend on the opposite side if a leaf neighbor is required."
+  },
+  {
+    "slide": 9,
+    "title": "Balanced Quadtree Invariant",
+    "notes": "Balanced means adjacent leaves differ by at most one depth level, or equivalently by at most a factor two in side length. This prevents a large square from having a long side broken into many tiny pieces, which is exactly the situation that makes conforming triangulation awkward."
+  },
+  {
+    "slide": 10,
+    "title": "Balancing Algorithm State",
+    "notes": "Present balancing as a local repair loop. The queue contains leaves that might violate the invariant with some neighbor. Splitting one square can fix a current violation but expose a new one nearby, so the algorithm checks neighbors after each split and pushes newly threatened leaves."
+  },
+  {
+    "slide": 11,
+    "title": "The Linear Blowup Proof",
+    "notes": "The charging proof explains why local repair does not cascade into a superlinear explosion. A newly created split can be charged to one of a constant number of nearby old squares at a comparable scale. The contradiction idea is that the first unchargeable split would have needed an even earlier unchargeable neighbor."
+  },
+  {
+    "slide": 12,
+    "title": "From Points To Polygonal Components",
+    "notes": "For meshing, the stopping rule changes from point occupancy to boundary interaction. A square keeps splitting while it is larger than unit size and its closure intersects a component boundary. This concentrates cells around polygon edges and leaves large calm regions coarse."
+  },
+  {
+    "slide": 13,
+    "title": "Why Diagonals Appear",
+    "notes": "The input restrictions make the final triangulation simple. With integer grid coordinates and component edges at horizontal, vertical, or forty-five degree orientations, any component segment crossing a unit cell runs as an allowed grid edge or diagonal. Those diagonals can become mesh edges rather than obstacles."
+  },
+  {
+    "slide": 14,
+    "title": "Balanced Cells Triangulate Cleanly",
+    "notes": "Once the balanced subdivision is stored in a DCEL, every face has only a small set of boundary configurations. A cell cut by a component diagonal already has its triangulating edge. An ordinary cell gets one diagonal. If side midpoints appear, balancing ensures at most one per side, and a center Steiner point creates only forty-five, forty-five, ninety triangles."
+  },
+  {
+    "slide": 15,
+    "title": "Complexity Pipeline",
+    "notes": "Walk through the bound as a pipeline rather than a theorem recital. Component edges intersect only O of p of S cells at each grid level. There are O log U levels down to unit cells. Balancing preserves asymptotic size, and triangulation adds only a constant number of triangles per balanced cell."
+  },
+  {
+    "slide": 16,
+    "title": "Recap And Extensions",
+    "notes": "Close by naming the algorithmic transformation: adaptive square subdivision becomes useful only after balancing and local triangulation rules. Then place quadtrees in context: compressed quadtrees remove long one-child chains, octrees extend the idea to three dimensions, and related variants support images, range queries, and graphics workloads."
+  }
+]

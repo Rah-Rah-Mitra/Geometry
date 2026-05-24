@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="A Mathematical Introduction to Robotic Manipulation">
+  <meta name="chapter_id" content="chapter-03">
+  <meta name="chapter_title" content="Chapter 03: Manipulator Kinematics">
+  <meta name="notebook_path" content="A-Mathematical-Introduction-to-Robotic-Manipulation/part-01-foundations-and-single-robot-manipulation/chapter-03-manipulator-kinematics/03-manipulator-kinematics.ipynb">
+  <meta name="source_span" content="printed pages 81-154; PDF pages 99-172">
+  <meta name="source_pdf" content="A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf">
+  <meta name="design_system_version" content="Geometry Atlas lecture-design-system">
+  <title>Manipulator Kinematics: From Joint Screws To Rank Loss</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <style>
+    deck-stage:not(:defined){visibility:hidden}
+    body{margin:0;background:#e5e7eb;color:var(--slide-ink);font-family:var(--font-sans)}
+    section{box-sizing:border-box;width:1920px;height:1080px;padding:78px 96px 62px;background:var(--slide-bg);display:flex;flex-direction:column;gap:30px}
+    section.alt{background:var(--slide-bg-alt)}
+    h1,h2,h3,p{margin:0}
+    h1{font-size:70px;line-height:1.02;font-weight:700;letter-spacing:0;color:var(--slide-ink);max-width:1320px}
+    h2{font-size:52px;line-height:1.08;font-weight:700;color:var(--slide-ink)}
+    h3{font-size:31px;line-height:1.18;font-weight:700;color:var(--slide-accent)}
+    p,li{font-size:28px;line-height:1.28}
+    ul,ol{margin:0;padding-left:32px}
+    li+li{margin-top:13px}
+    .subtitle{font-size:32px;line-height:1.25;color:var(--slide-muted);max-width:1180px}
+    .kicker{font-size:23px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;color:var(--slide-teal)}
+    .title-row{display:flex;justify-content:space-between;gap:28px;align-items:flex-start}
+    .source{margin-top:auto;font-size:21px;color:var(--slide-dimmed);border-top:1px solid var(--slide-border);padding-top:14px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:stretch}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}
+    .panel{border:1px solid var(--slide-border);border-radius:8px;background:white;padding:28px;box-shadow:0 1px 2px rgb(0 0 0 / 0.05)}
+    .panel.teal{border-left:5px solid var(--slide-teal);background:#f0fdfa}
+    .panel.blue{border-left:5px solid var(--slide-blue);background:#eff6ff}
+    .panel.amber{border-left:5px solid var(--slide-amber);background:#fffbeb}
+    .panel.violet{border-left:5px solid var(--slide-violet);background:#f5f3ff}
+    .math{font-family:var(--font-math);font-size:34px;line-height:1.32}
+    .formula{font-family:var(--font-math);font-size:40px;line-height:1.25;color:var(--slide-ink)}
+    .small{font-size:23px;color:var(--slide-muted);line-height:1.28}
+    .tiny{font-size:21px;color:var(--slide-dimmed);line-height:1.25}
+    .tag{display:inline-block;border:1px solid var(--slide-border);border-radius:6px;padding:7px 11px;font-size:22px;font-weight:700;color:var(--slide-accent);background:white}
+    .hero-diagram{width:100%;height:520px;border:1px solid var(--slide-border);border-radius:8px;background:linear-gradient(0deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:center}
+    img.figure{max-width:100%;max-height:560px;object-fit:contain;border:1px solid var(--slide-border);border-radius:8px;background:white}
+    .caption{font-size:22px;color:var(--slide-dimmed);margin-top:10px}
+    .stack{display:flex;flex-direction:column;gap:18px}
+    .row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+    .mono{font-family:var(--font-code);font-size:24px}
+    svg{max-width:100%}
+    .speaker-notes{display:none}
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="alt" data-label="Chapter Question">
+  <div class="kicker">Chapter 03</div>
+  <h1>Manipulator Kinematics: From Joint Screws To Rank Loss</h1>
+  <p class="subtitle">How does a list of joint motions become a pose map, a velocity map, and a diagnostic for when the robot loses usable directions?</p>
+  <div class="grid3">
+    <div class="panel blue"><h3>Artifact</h3><p>Forward kinematics as a product of exponentials, with each joint contributing one rigid motion.</p></div>
+    <div class="panel teal"><h3>Computation</h3><p>Differentiate that pose map to get spatial and body Jacobians for velocity, force, and local IK.</p></div>
+    <div class="panel amber"><h3>Invariant</h3><p>Rank, conditioning, and manipulability expose the poses where motion authority collapses.</p></div>
+  </div>
+  <p class="source">Source grounding: Chapter 03, printed pp. 81-154; PDF pp. 99-172. Notebook: A-Mathematical-Introduction-to-Robotic-Manipulation/part-01-foundations-and-single-robot-manipulation/chapter-03-manipulator-kinematics/03-manipulator-kinematics.ipynb</p>
+  <aside class="speaker-notes">Open the lecture by naming the organizing question rather than starting with notation. The chapter is about converting joint coordinates into task-space statements. Emphasize that the same objects will be reused three times: first for pose, then for velocity, then for rank and conditioning. The source span is shown so students know this is a guided synthesis of the assigned chapter and the companion notebook, not a replacement for the reading.</aside>
+</section>
+
+<section data-label="Kinematic Objects">
+  <div class="title-row"><h2>Kinematic Objects And Coordinate Promises</h2><span class="tag">Frame discipline</span></div>
+  <div class="grid2">
+    <div class="panel blue stack">
+      <h3>Objects</h3>
+      <ul>
+        <li>Configuration <span class="math">q</span>: the joint coordinates.</li>
+        <li>End-effector pose <span class="math">g(q) \in SE(3)</span>.</li>
+        <li>Twist <span class="math">\xi = (\omega, v)</span>: instantaneous rigid motion.</li>
+        <li>Jacobian <span class="math">J(q)</span>: columns are joint-generated twists.</li>
+      </ul>
+    </div>
+    <div class="hero-diagram">
+      <svg viewBox="0 0 820 460" width="760" height="430" role="img" aria-label="Coordinate frames connected by manipulator links">
+        <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2563EB"/></marker></defs>
+        <rect x="40" y="360" width="150" height="24" fill="#e2e8f0"/>
+        <line x1="115" y1="360" x2="115" y2="250" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow)"/>
+        <line x1="115" y1="360" x2="235" y2="360" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow)"/>
+        <text x="70" y="235" font-size="26" fill="#1e3a8a">space frame S</text>
+        <circle cx="240" cy="310" r="14" fill="#2563EB"/>
+        <line x1="240" y1="310" x2="430" y2="230" stroke="#2563EB" stroke-width="14" stroke-linecap="round"/>
+        <circle cx="430" cy="230" r="14" fill="#0F766E"/>
+        <line x1="430" y1="230" x2="610" y2="280" stroke="#0F766E" stroke-width="14" stroke-linecap="round"/>
+        <circle cx="610" cy="280" r="13" fill="#B45309"/>
+        <line x1="610" y1="280" x2="610" y2="185" stroke="#B45309" stroke-width="5" marker-end="url(#arrow)"/>
+        <line x1="610" y1="280" x2="720" y2="280" stroke="#B45309" stroke-width="5" marker-end="url(#arrow)"/>
+        <text x="575" y="168" font-size="26" fill="#B45309">tool frame T</text>
+        <path d="M240 310 C320 250, 340 250, 430 230" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 10"/>
+        <path d="M430 230 C505 230, 555 250, 610 280" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 10"/>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Visible source: Chapter 03 source span, printed pp. 81-154; PDF pp. 99-172.</p>
+  <aside class="speaker-notes">Pause on the word promise. Every formula in manipulator kinematics silently promises which frame its coordinates use. A twist written in the space frame and a twist written in the body frame may describe the same physical motion, but their numeric components are not interchangeable. Tell students that many wrong answers in this chapter come from mixing true geometry with mismatched coordinates.</aside>
+</section>
+
+<section data-label="POE Forward Kinematics">
+  <div class="title-row"><h2>Product Of Exponentials Forward Kinematics</h2><span class="tag">Pose map</span></div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="panel blue"><p class="formula">g(q)=e^{\hat{\xi}_1 q_1} e^{\hat{\xi}_2 q_2}\cdots e^{\hat{\xi}_n q_n} g(0)</p></div>
+      <div class="panel">
+        <ul>
+          <li>The zero pose <span class="math">g(0)</span> anchors the tool frame.</li>
+          <li>Each joint contributes one exponential motion.</li>
+          <li>Multiplication order is part of the model, not cosmetic notation.</li>
+        </ul>
+      </div>
+    </div>
+    <figure>
+      <img class="figure" src="../figures/product-of-exponentials-builder.png" alt="Product of exponentials builder artifact">
+      <figcaption class="caption">Generated artifact: product-of-exponentials-builder.png</figcaption>
+    </figure>
+  </div>
+  <p class="source">Source grounding: POE construction in Chapter 03, printed pp. 81-154; PDF pp. 99-172.</p>
+  <aside class="speaker-notes">Use the generated builder figure as the visual memory for the formula. The key teaching move is to separate the physical idea from the notation: a robot is not being approximated by exponentials; a revolute or prismatic joint is exactly a one-parameter subgroup of rigid motions under the assumptions of the chapter. The product records how those subgroup motions are composed.</aside>
+</section>
+
+<section data-label="Each Exponential">
+  <div class="title-row"><h2>What One Exponential Contributes</h2><span class="tag">Local motion</span></div>
+  <div class="grid3">
+    <div class="panel blue"><h3>Revolute</h3><p class="math">e^{\hat{\xi}\theta}</p><p>Rotation about an axis, plus the translation induced by choosing an axis not through the origin.</p></div>
+    <div class="panel teal"><h3>Prismatic</h3><p class="math">e^{\hat{\xi}d}</p><p>Pure translation along a fixed direction. The angular part is zero.</p></div>
+    <div class="panel amber"><h3>Composition</h3><p class="math">AB \neq BA</p><p>The earlier factors move the coordinate system in which later effects are observed.</p></div>
+  </div>
+  <div class="hero-diagram">
+    <svg viewBox="0 0 980 330" width="1120" height="360" role="img" aria-label="Three exponential contributions in sequence">
+      <path d="M90 230 H850" stroke="#cbd5e1" stroke-width="4"/>
+      <circle cx="170" cy="230" r="40" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+      <path d="M160 208 A35 35 0 1 1 150 250" fill="none" stroke="#2563eb" stroke-width="5"/>
+      <text x="118" y="306" font-size="28" fill="#1e3a8a">joint 1</text>
+      <line x1="290" y1="230" x2="430" y2="150" stroke="#0f766e" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="290" cy="230" r="11" fill="#0f766e"/><circle cx="430" cy="150" r="11" fill="#0f766e"/>
+      <text x="310" y="306" font-size="28" fill="#0f766e">joint 2</text>
+      <line x1="560" y1="230" x2="720" y2="230" stroke="#b45309" stroke-width="10" stroke-linecap="round"/>
+      <path d="M700 210 L742 230 L700 250" fill="none" stroke="#b45309" stroke-width="8"/>
+      <text x="568" y="306" font-size="28" fill="#b45309">joint 3</text>
+      <text x="805" y="225" font-size="34" fill="#111827" font-family="STIX Two Text">g(q)</text>
+    </svg>
+  </div>
+  <p class="source">Source grounding: joint exponentials and rigid motions, Chapter 03, printed pp. 81-154.</p>
+  <aside class="speaker-notes">Make this slide tactile: each factor is a command to move by one joint while respecting the frame convention. For a revolute joint, students often remember only the rotation matrix and forget the translational term created by an offset axis. For a prismatic joint, the angular part vanishes, which makes it a useful contrast case when deriving Jacobian columns later.</aside>
+</section>
+
+<section data-label="Twist Parameterization">
+  <div class="title-row"><h2>Twist Parameterization</h2><span class="tag">Six coordinates</span></div>
+  <div class="grid2">
+    <div class="panel blue stack">
+      <p class="formula">\xi = \begin{bmatrix}\omega \\ v\end{bmatrix},\qquad \hat{\xi}=\begin{bmatrix}\hat{\omega}&v\\0&0\end{bmatrix}</p>
+      <p>A twist is the coordinate vector for an instantaneous rigid-body velocity.</p>
+    </div>
+    <div class="panel teal stack">
+      <h3>Axis-Based Reading</h3>
+      <ul>
+        <li>For a revolute axis through point <span class="math">q</span>: <span class="math">v=-\omega \times q</span>.</li>
+        <li>For a prismatic axis in direction <span class="math">u</span>: <span class="math">\omega=0,\; v=u</span>.</li>
+        <li>The same physical screw has different coordinates in different frames.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel amber"><p>Frame discipline check: before adding, comparing, or stacking twists, ask whether all columns are expressed in the same coordinate frame.</p></div>
+  <p class="source">Visible source: twist and screw coordinate material from Chapter 03, PDF pp. 99-172.</p>
+  <aside class="speaker-notes">This is the place to slow down before the chapter becomes computational. A twist is not just a six-vector with convenient entries; it is a representation of a screw motion. The sign in v equals minus omega cross q is a common source of mistakes, so describe it as the velocity needed at the origin when the body rotates about an offset axis. Then return to the frame promise.</aside>
+</section>
+
+<section data-label="Workspace And Manipulability">
+  <div class="title-row"><h2>Workspace And Manipulability Are Different Questions</h2><span class="tag">Reach versus dexterity</span></div>
+  <div class="grid2">
+    <figure>
+      <img class="figure" src="../figures/workspace-and-manipulability.png" alt="Workspace samples and manipulability artifact">
+      <figcaption class="caption">Generated artifact: workspace-and-manipulability.png</figcaption>
+    </figure>
+    <div class="stack">
+      <div class="panel blue"><h3>Workspace</h3><p>Which task-space points or poses are attainable by some joint configuration?</p></div>
+      <div class="panel teal"><h3>Manipulability</h3><p>At a chosen configuration, which small task velocities can be produced easily?</p></div>
+      <div class="panel"><p class="mono">final-sanity.json: workspace_samples = 784, task_jacobian_rank = 2, task_manipulability = 0.5634603038552195</p></div>
+    </div>
+  </div>
+  <p class="source">Artifact grounding: checks/final-sanity.json and Chapter 03 source span, printed pp. 81-154.</p>
+  <aside class="speaker-notes">Students may conflate a large reachable region with good local control everywhere inside it. Use the artifact to split those ideas. Workspace is an existential question over configurations; manipulability is a local differential question at a single configuration. The final sanity values are not universal constants, but they confirm that the accompanying notebook produced a nonempty workspace sample and a full-rank planar task Jacobian at its diagnostic pose.</aside>
+</section>
+
+<section data-label="Planar 2R Example">
+  <div class="title-row"><h2>Planar 2R Worked Example</h2><span class="tag">Small model, full story</span></div>
+  <div class="grid2">
+    <div class="hero-diagram">
+      <svg viewBox="0 0 720 520" width="720" height="520" role="img" aria-label="Planar two revolute robot arm">
+        <circle cx="315" cy="260" r="210" fill="#eff6ff" stroke="#cbd5e1" stroke-width="3"/>
+        <circle cx="315" cy="260" r="90" fill="white" stroke="#cbd5e1" stroke-width="3" stroke-dasharray="8 8"/>
+        <line x1="315" y1="260" x2="470" y2="170" stroke="#2563eb" stroke-width="16" stroke-linecap="round"/>
+        <line x1="470" y1="170" x2="580" y2="260" stroke="#0f766e" stroke-width="16" stroke-linecap="round"/>
+        <circle cx="315" cy="260" r="16" fill="#1e3a8a"/><circle cx="470" cy="170" r="14" fill="#0f766e"/><circle cx="580" cy="260" r="13" fill="#b45309"/>
+        <path d="M365 260 A50 50 0 0 0 355 228" fill="none" stroke="#2563eb" stroke-width="5"/>
+        <path d="M515 207 A58 58 0 0 0 496 169" fill="none" stroke="#0f766e" stroke-width="5"/>
+        <text x="370" y="235" font-size="28" fill="#2563eb">q1</text><text x="520" y="190" font-size="28" fill="#0f766e">q2</text>
+        <text x="592" y="273" font-size="28" fill="#b45309">x(q)</text>
+      </svg>
+    </div>
+    <div class="stack">
+      <div class="panel blue"><p class="formula">x=l_1\cos q_1+l_2\cos(q_1+q_2)</p><p class="formula">y=l_1\sin q_1+l_2\sin(q_1+q_2)</p></div>
+      <div class="panel teal"><p>The same example carries forward kinematics, inverse kinematics, Jacobian rank, and manipulability without hiding behind 3D notation.</p></div>
+    </div>
+  </div>
+  <p class="source">Source grounding: planar manipulator examples in Chapter 03, printed pp. 81-154.</p>
+  <aside class="speaker-notes">The planar two-revolute arm is deliberately modest. It lets the class see the whole pipeline in coordinates they can check by hand: forward position, multiple inverse solutions, a two-by-two task Jacobian, and singular configurations. Use it as a laboratory object. When the later slides return to rank loss, remind students that the geometric failure is already visible here when the links align.</aside>
+</section>
+
+<section data-label="IK Branches">
+  <div class="title-row"><h2>Inverse Kinematics: Branches And Failures</h2><span class="tag">Solve with geometry</span></div>
+  <div class="grid3">
+    <div class="panel teal"><h3>Multiple Branches</h3><p>Elbow-up and elbow-down solutions can reach the same endpoint with different joint angles.</p></div>
+    <div class="panel amber"><h3>No Solution</h3><p>Targets outside the reachable annulus violate length constraints before algebra begins.</p></div>
+    <div class="panel blue"><h3>Boundary Cases</h3><p>Branches merge when the triangle degenerates; local sensitivity usually increases.</p></div>
+  </div>
+  <div class="hero-diagram">
+    <svg viewBox="0 0 980 360" width="1120" height="390" role="img" aria-label="Two inverse kinematics branches">
+      <circle cx="220" cy="185" r="8" fill="#1e3a8a"/><circle cx="660" cy="185" r="8" fill="#1e3a8a"/>
+      <circle cx="415" cy="185" r="12" fill="#b45309"/><circle cx="855" cy="185" r="12" fill="#b45309"/>
+      <line x1="220" y1="185" x2="320" y2="82" stroke="#2563eb" stroke-width="10" stroke-linecap="round"/>
+      <line x1="320" y1="82" x2="415" y2="185" stroke="#0f766e" stroke-width="10" stroke-linecap="round"/>
+      <line x1="220" y1="185" x2="320" y2="288" stroke="#2563eb" stroke-width="10" stroke-linecap="round"/>
+      <line x1="320" y1="288" x2="415" y2="185" stroke="#0f766e" stroke-width="10" stroke-linecap="round"/>
+      <line x1="660" y1="185" x2="855" y2="185" stroke="#94a3b8" stroke-width="10" stroke-linecap="round"/>
+      <line x1="855" y1="185" x2="950" y2="185" stroke="#94a3b8" stroke-width="10" stroke-linecap="round"/>
+      <text x="250" y="335" font-size="28" fill="#111827">two branches</text><text x="664" y="335" font-size="28" fill="#111827">merged boundary branch</text>
+    </svg>
+  </div>
+  <p class="source">Source grounding: inverse kinematics discussion in Chapter 03, PDF pp. 99-172.</p>
+  <aside class="speaker-notes">Present inverse kinematics as a set-valued problem rather than as the inverse of a function. The forward map can fold configuration space onto the same task-space point, which is why a target pose may have several joint solutions. It can also miss a target entirely. Branch merging is not just a drawing artifact; it signals the same local rank and conditioning trouble that will appear algebraically in the Jacobian.</aside>
+</section>
+
+<section data-label="Paden Kahan">
+  <div class="title-row"><h2>Paden-Kahan Reductions</h2><span class="tag">Subproblems</span></div>
+  <div class="grid3">
+    <div class="panel blue"><h3>Rotate To A Point</h3><p>Find the joint angle that moves one point onto another around a known axis.</p></div>
+    <div class="panel teal"><h3>Two Rotations</h3><p>Split a pose constraint into two axis rotations meeting at an intermediate point.</p></div>
+    <div class="panel violet"><h3>Distance Constraint</h3><p>Use circle or sphere geometry when exact point matching is too strong.</p></div>
+  </div>
+  <div class="panel amber"><p>The reductions are not magic recipes. They preserve geometric constraints while lowering the IK problem to solvable rigid-motion primitives.</p></div>
+  <p class="source">Source grounding: Chapter 03 IK subproblem methods, printed pp. 81-154.</p>
+  <aside class="speaker-notes">This slide should feel like a map of strategy rather than a derivation dump. The Paden-Kahan subproblems are useful because they identify repeated geometric atoms inside larger inverse kinematics systems. Explain that a complicated serial manipulator can sometimes be decomposed into rotations that move points, rotations that meet at a hidden intermediate point, or rotations that satisfy a distance relation. Students should leave knowing why these reductions matter.</aside>
+</section>
+
+<section data-label="Why Jacobian Appears">
+  <div class="title-row"><h2>Why The Jacobian Appears</h2><span class="tag">Differentiate the pose map</span></div>
+  <div class="grid2">
+    <div class="panel blue stack">
+      <p class="formula">V_s = J_s(q)\dot{q}</p>
+      <p class="formula">V_b = J_b(q)\dot{q}</p>
+      <p>The Jacobian is the linear map from joint rates to instantaneous end-effector twist.</p>
+    </div>
+    <div class="hero-diagram">
+      <svg viewBox="0 0 760 430" width="780" height="440" role="img" aria-label="Configuration velocity maps to task velocity">
+        <rect x="70" y="120" width="210" height="150" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+        <text x="110" y="185" font-size="38" fill="#1e3a8a">q dot</text>
+        <path d="M300 195 H485" stroke="#475569" stroke-width="5"/>
+        <path d="M465 172 L505 195 L465 218" fill="none" stroke="#475569" stroke-width="5"/>
+        <rect x="520" y="120" width="190" height="150" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="575" y="185" font-size="38" fill="#0f766e">V</text>
+        <text x="345" y="160" font-size="32" fill="#111827" font-family="STIX Two Text">J(q)</text>
+        <text x="210" y="340" font-size="28" fill="#64748b">configuration tangent</text>
+        <text x="485" y="340" font-size="28" fill="#64748b">rigid-body velocity</text>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: manipulator Jacobian material in Chapter 03, PDF pp. 99-172.</p>
+  <aside class="speaker-notes">Frame the Jacobian as a derivative of a group-valued map, not as a table of partial derivatives thrown at the problem. Since the pose lives in SE(3), the derivative is naturally represented as a twist. The same joint-rate vector can be mapped to a spatial twist or a body twist depending on whether the velocity is expressed in the space frame or end-effector frame.</aside>
+</section>
+
+<section data-label="Spatial Jacobian">
+  <div class="title-row"><h2>Spatial Jacobian Columns</h2><span class="tag">Adjoint transport</span></div>
+  <div class="grid2">
+    <div class="panel blue stack">
+      <p class="formula">J_s(q)=\left[\xi_1,\; \mathrm{Ad}_{e^{\hat{\xi}_1q_1}}\xi_2,\;\ldots\right]</p>
+      <p>Column <span class="math">i</span> is joint <span class="math">i</span>'s screw, carried through the motion of earlier joints.</p>
+    </div>
+    <div class="panel teal">
+      <h3>Column Reading</h3>
+      <ol>
+        <li>Freeze all joints except one rate.</li>
+        <li>Ask what end-effector twist that single rate produces.</li>
+        <li>Express the answer in the space frame.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="panel"><p class="mono">final-sanity.json confirms a spatial_jacobian_shape of [6, 2] for the notebook's planar diagnostic model.</p></div>
+  <p class="source">Artifact grounding: checks/final-sanity.json; source span printed pp. 81-154.</p>
+  <aside class="speaker-notes">The spatial Jacobian formula is often intimidating because adjoints enter quickly. Translate the formula into a simple column story. Joint one is already expressed in the space frame. Joint two and beyond must be transported by the transformations created by earlier joints. The notebook sanity check uses a two-joint model, so its spatial Jacobian has six twist rows and two joint columns.</aside>
+</section>
+
+<section data-label="Body Jacobian">
+  <div class="title-row"><h2>Body Jacobian And Frame Discipline</h2><span class="tag">Same motion, different coordinates</span></div>
+  <div class="grid2">
+    <div class="panel blue"><p class="formula">J_b(q)=\mathrm{Ad}_{g(q)^{-1}}J_s(q)</p><p>Body columns express the end-effector twist in the current tool frame.</p></div>
+    <div class="panel amber"><h3>Common Error</h3><p>Do not mix <span class="math">J_s</span> with a body-frame twist target, or <span class="math">J_b</span> with a space-frame error. The dimensions may agree while the coordinates do not.</p></div>
+  </div>
+  <div class="hero-diagram">
+    <svg viewBox="0 0 920 340" width="1080" height="390" role="img" aria-label="Space and body coordinate frames">
+      <line x1="150" y1="260" x2="300" y2="260" stroke="#1e3a8a" stroke-width="6"/><line x1="150" y1="260" x2="150" y2="110" stroke="#1e3a8a" stroke-width="6"/>
+      <text x="110" y="305" font-size="28" fill="#1e3a8a">space</text>
+      <g transform="translate(620 170) rotate(-22)">
+        <line x1="0" y1="0" x2="145" y2="0" stroke="#b45309" stroke-width="6"/><line x1="0" y1="0" x2="0" y2="-145" stroke="#b45309" stroke-width="6"/>
+        <rect x="-22" y="-22" width="44" height="44" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+      </g>
+      <path d="M305 230 C410 170, 500 150, 620 170" fill="none" stroke="#2563eb" stroke-width="10" stroke-linecap="round"/>
+      <text x="590" y="305" font-size="28" fill="#b45309">body/tool</text>
+    </svg>
+  </div>
+  <p class="source">Source grounding: spatial and body Jacobian conventions in Chapter 03, PDF pp. 99-172.</p>
+  <aside class="speaker-notes">Treat this as the chapter's hygiene slide. Spatial and body Jacobians are not rival theories. They encode the same physical velocity in different frames, related by an adjoint transformation. The warning is practical: numerical code will happily multiply a six-by-n matrix by joint rates even when the target twist was expressed in the wrong frame. The result can look plausible and still be conceptually wrong.</aside>
+</section>
+
+<section data-label="Force Transpose">
+  <div class="title-row"><h2>Forces And Torques: The Transpose Map</h2><span class="tag">Virtual work</span></div>
+  <div class="grid2">
+    <div class="panel blue stack">
+      <p class="formula">\tau = J(q)^T F</p>
+      <p>Joint torques balance an end-effector wrench through the same differential geometry.</p>
+    </div>
+    <div class="panel teal stack">
+      <h3>Interpretation</h3>
+      <ul>
+        <li><span class="math">F</span> is a wrench in the matching frame.</li>
+        <li><span class="math">J^T</span> pushes task-space effort back to joint effort.</li>
+        <li>Near singularity, some wrench directions demand large joint torques.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel amber"><p>Frame matching remains mandatory: a spatial wrench pairs with a spatial twist, and a body wrench pairs with a body twist.</p></div>
+  <p class="source">Source grounding: Jacobian transpose force relation in Chapter 03, printed pp. 81-154.</p>
+  <aside class="speaker-notes">Use virtual work as the bridge: power at the joints equals power at the end effector when the coordinates are paired correctly. This gives the transpose relation without treating it as a mnemonic. Reinforce the frame pairing because wrench and twist coordinates are dual. A body-frame wrench belongs with a body-frame twist, and the same consistency is required when applying the transpose map.</aside>
+</section>
+
+<section data-label="Singularities">
+  <div class="title-row"><h2>Singularities As Rank Loss</h2><span class="tag">Lost directions</span></div>
+  <div class="grid2">
+    <figure>
+      <img class="figure" src="../figures/jacobian-singularity-gallery.png" alt="Jacobian singularity gallery artifact">
+      <figcaption class="caption">Generated artifact: jacobian-singularity-gallery.png</figcaption>
+    </figure>
+    <div class="stack">
+      <div class="panel amber"><h3>Definition In Practice</h3><p>A configuration is singular for a task when <span class="math">J(q)</span> loses rank and cannot span all desired instantaneous task directions.</p></div>
+      <div class="panel blue"><p class="formula">\det J(q)=0</p><p class="small">Only for square task Jacobians. Rank is the more general language.</p></div>
+    </div>
+  </div>
+  <p class="source">Artifact grounding: jacobian-singularity-gallery.png and Chapter 03 source span, PDF pp. 99-172.</p>
+  <aside class="speaker-notes">This is the conceptual climax of the deck title. A singularity is not mysterious or merely numerical; it is rank loss in the differential map for the task being studied. For a square planar Jacobian, determinant zero is a convenient test, but the general language is rank because many robot tasks are not square. The gallery artifact is meant to help students see rank loss as geometry.</aside>
+</section>
+
+<section data-label="Manipulability Ellipsoid">
+  <div class="title-row"><h2>Manipulability Ellipsoid</h2><span class="tag">Shape of easy motion</span></div>
+  <div class="grid2">
+    <div class="hero-diagram">
+      <svg viewBox="0 0 700 500" width="700" height="500" role="img" aria-label="Manipulability ellipsoid">
+        <line x1="90" y1="390" x2="610" y2="390" stroke="#cbd5e1" stroke-width="4"/>
+        <line x1="350" y1="450" x2="350" y2="70" stroke="#cbd5e1" stroke-width="4"/>
+        <ellipse cx="350" cy="260" rx="210" ry="72" transform="rotate(-24 350 260)" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/>
+        <line x1="164" y1="348" x2="536" y2="172" stroke="#2563eb" stroke-width="5"/>
+        <line x1="319" y1="194" x2="381" y2="326" stroke="#0f766e" stroke-width="5"/>
+        <text x="505" y="166" font-size="28" fill="#2563eb">easy</text>
+        <text x="390" y="334" font-size="28" fill="#0f766e">hard</text>
+      </svg>
+    </div>
+    <div class="stack">
+      <div class="panel blue"><p class="formula">\dot{x}=J(q)\dot{q},\quad \|\dot{q}\|\le 1</p></div>
+      <div class="panel teal"><p>The image of the unit joint-rate ball becomes an ellipsoid in task velocity space.</p></div>
+      <div class="panel amber"><p>As a singularity is approached, at least one ellipsoid axis collapses toward zero.</p></div>
+    </div>
+  </div>
+  <p class="source">Source and artifact grounding: workspace/manipulability notebook artifact; Chapter 03 printed pp. 81-154.</p>
+  <aside class="speaker-notes">Build intuition from the unit ball. If all joint-rate vectors of length at most one are allowed, the Jacobian maps that ball into an ellipsoid of possible task velocities. Long axes indicate directions where small joint rates produce large task velocity; short axes indicate poor authority. Near singularity, the ellipsoid flattens, which gives a visual version of rank loss and poor conditioning.</aside>
+</section>
+
+<section data-label="Redundant Parallel">
+  <div class="title-row"><h2>Redundant And Parallel Manipulators</h2><span class="tag">Rank beyond square systems</span></div>
+  <div class="grid2">
+    <div class="panel blue"><h3>Redundant Serial Arms</h3><p>More joints than task dimensions can create null-space motion: the tool stays locally fixed while joints move.</p><p class="math">J\dot{q}=0</p></div>
+    <div class="panel teal"><h3>Parallel Mechanisms</h3><p>Closed-chain constraints change the rank story. Mobility and force transmission depend on constraint Jacobians as well as actuation.</p></div>
+  </div>
+  <div class="panel amber"><p>The invariant is still local linear algebra: rank, null space, and conditioning describe what instantaneous motions or wrenches are available.</p></div>
+  <p class="source">Source grounding: Chapter 03 manipulator kinematics scope, printed pp. 81-154; PDF pp. 99-172.</p>
+  <aside class="speaker-notes">Do not overextend the chapter beyond its support, but do show why square determinants are too narrow. Redundant arms can have many joint motions that do not change the task pose at first order, which is a null-space phenomenon. Parallel mechanisms bring constraints into the same rank vocabulary. The point is not to solve every architecture here; it is to preserve the invariant that rank controls instantaneous authority.</aside>
+</section>
+
+<section data-label="Applied Lab">
+  <div class="title-row"><h2>Applied Lab: Best And Worst Conditioned Poses</h2><span class="tag">Rerun and compare</span></div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="panel teal"><h3>Lab Prompt</h3><p>Sample a planar arm workspace and compare its best-conditioned and worst-conditioned poses.</p></div>
+      <div class="panel violet"><h3>Reader Task</h3><p>Change one parameter, rerun the visual cell, and explain which invariant did or did not change.</p></div>
+      <div class="panel"><p class="mono">labs/applied-lab.json: source_orientation = printed pp. 81-154; PDF pp. 99-172</p></div>
+    </div>
+    <figure>
+      <img class="figure" src="../figures/workspace-and-manipulability.png" alt="Workspace and manipulability lab artifact">
+      <figcaption class="caption">Generated lab visual used for conditioning comparison.</figcaption>
+    </figure>
+  </div>
+  <p class="source">Artifact grounding: labs/applied-lab.json and checks/final-sanity.json.</p>
+  <aside class="speaker-notes">This slide turns the chapter into an experiment. Ask students to treat the notebook as an instrument: modify a link length, joint limit, or sampled pose, then identify what changed. A workspace boundary may move while the definition of rank loss does not. A manipulability number may change while the frame discipline rule remains the same. This helps separate implementation details from kinematic invariants.</aside>
+</section>
+
+<section data-label="Recap">
+  <div class="title-row"><h2>Recap: Artifact, Computation, Invariant</h2><span class="tag">Lecture close</span></div>
+  <div class="grid3">
+    <div class="panel blue"><h3>Artifact</h3><p>The POE builder records forward kinematics as ordered joint exponentials ending at the home pose.</p></div>
+    <div class="panel teal"><h3>Computation</h3><p>Jacobians are differentiated pose maps; their columns are joint-generated twists in a declared frame.</p></div>
+    <div class="panel amber"><h3>Invariant</h3><p>Rank loss, ellipsoid flattening, and bad conditioning are different views of lost instantaneous authority.</p></div>
+  </div>
+  <div class="panel"><p class="formula">g(q) \longrightarrow J(q) \longrightarrow \mathrm{rank}\,J(q)</p></div>
+  <p class="source">Source grounding: Chapter 03, printed pp. 81-154; PDF pp. 99-172. Companion artifacts: figures/product-of-exponentials-builder.png, figures/workspace-and-manipulability.png, figures/jacobian-singularity-gallery.png, checks/final-sanity.json, labs/applied-lab.json.</p>
+  <aside class="speaker-notes">End by tying the full sequence together. Forward kinematics produces the pose map, differentiation produces the velocity map, and rank analysis explains where the velocity map fails to provide directions. The three generated figures are not decorative; they correspond to those stages. Leave students with the practical rule that every calculation should declare its frame and every local control claim should survive a rank or conditioning check.</aside>
+</section>
+
+</deck-stage>
+
+<script type="application/json" id="deck-metadata">
+{
+  "course": "A Mathematical Introduction to Robotic Manipulation",
+  "chapter_id": "chapter-03",
+  "chapter_title": "Chapter 03: Manipulator Kinematics",
+  "notebook_path": "A-Mathematical-Introduction-to-Robotic-Manipulation/part-01-foundations-and-single-robot-manipulation/chapter-03-manipulator-kinematics/03-manipulator-kinematics.ipynb",
+  "source_span": "printed pages 81-154; PDF pages 99-172",
+  "source_pdf": "A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf",
+  "design_system_version": "Geometry Atlas lecture-design-system"
+}
+</script>
+<script type="application/json" id="speaker-notes">
+[
+  {"slide":1,"notes":"Open the lecture by naming the organizing question rather than starting with notation. The chapter is about converting joint coordinates into task-space statements. Emphasize that the same objects will be reused three times: first for pose, then for velocity, then for rank and conditioning. The source span is shown so students know this is a guided synthesis of the assigned chapter and the companion notebook, not a replacement for the reading."},
+  {"slide":2,"notes":"Pause on the word promise. Every formula in manipulator kinematics silently promises which frame its coordinates use. A twist written in the space frame and a twist written in the body frame may describe the same physical motion, but their numeric components are not interchangeable. Tell students that many wrong answers in this chapter come from mixing true geometry with mismatched coordinates."},
+  {"slide":3,"notes":"Use the generated builder figure as the visual memory for the formula. The key teaching move is to separate the physical idea from the notation: a robot is not being approximated by exponentials; a revolute or prismatic joint is exactly a one-parameter subgroup of rigid motions under the assumptions of the chapter. The product records how those subgroup motions are composed."},
+  {"slide":4,"notes":"Make this slide tactile: each factor is a command to move by one joint while respecting the frame convention. For a revolute joint, students often remember only the rotation matrix and forget the translational term created by an offset axis. For a prismatic joint, the angular part vanishes, which makes it a useful contrast case when deriving Jacobian columns later."},
+  {"slide":5,"notes":"This is the place to slow down before the chapter becomes computational. A twist is not just a six-vector with convenient entries; it is a representation of a screw motion. The sign in v equals minus omega cross q is a common source of mistakes, so describe it as the velocity needed at the origin when the body rotates about an offset axis. Then return to the frame promise."},
+  {"slide":6,"notes":"Students may conflate a large reachable region with good local control everywhere inside it. Use the artifact to split those ideas. Workspace is an existential question over configurations; manipulability is a local differential question at a single configuration. The final sanity values are not universal constants, but they confirm that the accompanying notebook produced a nonempty workspace sample and a full-rank planar task Jacobian at its diagnostic pose."},
+  {"slide":7,"notes":"The planar two-revolute arm is deliberately modest. It lets the class see the whole pipeline in coordinates they can check by hand: forward position, multiple inverse solutions, a two-by-two task Jacobian, and singular configurations. Use it as a laboratory object. When the later slides return to rank loss, remind students that the geometric failure is already visible here when the links align."},
+  {"slide":8,"notes":"Present inverse kinematics as a set-valued problem rather than as the inverse of a function. The forward map can fold configuration space onto the same task-space point, which is why a target pose may have several joint solutions. It can also miss a target entirely. Branch merging is not just a drawing artifact; it signals the same local rank and conditioning trouble that will appear algebraically in the Jacobian."},
+  {"slide":9,"notes":"This slide should feel like a map of strategy rather than a derivation dump. The Paden-Kahan subproblems are useful because they identify repeated geometric atoms inside larger inverse kinematics systems. Explain that a complicated serial manipulator can sometimes be decomposed into rotations that move points, rotations that meet at a hidden intermediate point, or rotations that satisfy a distance relation. Students should leave knowing why these reductions matter."},
+  {"slide":10,"notes":"Frame the Jacobian as a derivative of a group-valued map, not as a table of partial derivatives thrown at the problem. Since the pose lives in SE(3), the derivative is naturally represented as a twist. The same joint-rate vector can be mapped to a spatial twist or a body twist depending on whether the velocity is expressed in the space frame or end-effector frame."},
+  {"slide":11,"notes":"The spatial Jacobian formula is often intimidating because adjoints enter quickly. Translate the formula into a simple column story. Joint one is already expressed in the space frame. Joint two and beyond must be transported by the transformations created by earlier joints. The notebook sanity check uses a two-joint model, so its spatial Jacobian has six twist rows and two joint columns."},
+  {"slide":12,"notes":"Treat this as the chapter's hygiene slide. Spatial and body Jacobians are not rival theories. They encode the same physical velocity in different frames, related by an adjoint transformation. The warning is practical: numerical code will happily multiply a six-by-n matrix by joint rates even when the target twist was expressed in the wrong frame. The result can look plausible and still be conceptually wrong."},
+  {"slide":13,"notes":"Use virtual work as the bridge: power at the joints equals power at the end effector when the coordinates are paired correctly. This gives the transpose relation without treating it as a mnemonic. Reinforce the frame pairing because wrench and twist coordinates are dual. A body-frame wrench belongs with a body-frame twist, and the same consistency is required when applying the transpose map."},
+  {"slide":14,"notes":"This is the conceptual climax of the deck title. A singularity is not mysterious or merely numerical; it is rank loss in the differential map for the task being studied. For a square planar Jacobian, determinant zero is a convenient test, but the general language is rank because many robot tasks are not square. The gallery artifact is meant to help students see rank loss as geometry."},
+  {"slide":15,"notes":"Build intuition from the unit ball. If all joint-rate vectors of length at most one are allowed, the Jacobian maps that ball into an ellipsoid of possible task velocities. Long axes indicate directions where small joint rates produce large task velocity; short axes indicate poor authority. Near singularity, the ellipsoid flattens, which gives a visual version of rank loss and poor conditioning."},
+  {"slide":16,"notes":"Do not overextend the chapter beyond its support, but do show why square determinants are too narrow. Redundant arms can have many joint motions that do not change the task pose at first order, which is a null-space phenomenon. Parallel mechanisms bring constraints into the same rank vocabulary. The point is not to solve every architecture here; it is to preserve the invariant that rank controls instantaneous authority."},
+  {"slide":17,"notes":"This slide turns the chapter into an experiment. Ask students to treat the notebook as an instrument: modify a link length, joint limit, or sampled pose, then identify what changed. A workspace boundary may move while the definition of rank loss does not. A manipulability number may change while the frame discipline rule remains the same. This helps separate implementation details from kinematic invariants."},
+  {"slide":18,"notes":"End by tying the full sequence together. Forward kinematics produces the pose map, differentiation produces the velocity map, and rank analysis explains where the velocity map fails to provide directions. The three generated figures are not decorative; they correspond to those stages. Leave students with the practical rule that every calculation should declare its frame and every local control claim should survive a rank or conditioning check."}
+]
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) {
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ]
+      });
+    }
+  });
+</script>
+</body>
+</html>

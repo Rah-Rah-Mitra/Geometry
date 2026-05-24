@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 06: Hand Dynamics and Control</title>
+  <meta name="course" content="A Mathematical Introduction to Robotic Manipulation">
+  <meta name="chapter_id" content="chapter-06">
+  <meta name="notebook_path" content="A-Mathematical-Introduction-to-Robotic-Manipulation/part-02-multifingered-manipulation/chapter-06-hand-dynamics-and-control/06-hand-dynamics-and-control.ipynb">
+  <meta name="source_span" content="printed pages 265-316; PDF pages 283-334.">
+  <meta name="source_pdf" content="A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 70px 96px 52px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    .speaker-notes { display: none; }
+    h1, h2, h3, p { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 64px; line-height: 1.04; font-weight: 700; max-width: 1260px; }
+    h2 { font-size: 50px; line-height: 1.1; font-weight: 700; color: var(--slide-ink); }
+    h3 { font-size: 31px; line-height: 1.16; color: var(--slide-accent); margin-bottom: 12px; }
+    p, li { font-size: 27px; line-height: 1.32; }
+    ul, ol { margin: 0; padding-left: 32px; }
+    li + li { margin-top: 9px; }
+    .eyebrow {
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+    }
+    .rule { width: 104px; height: 6px; border-radius: 4px; background: var(--slide-accent); margin: 24px 0 30px; }
+    .lead { font-size: 32px; line-height: 1.28; color: var(--slide-muted); max-width: 1180px; }
+    .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 26px; margin-top: 26px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex: 1; min-height: 0; align-items: stretch; }
+    .wide-left { grid-template-columns: 1.16fr 0.84fr; }
+    .wide-right { grid-template-columns: 0.84fr 1.16fr; }
+    .thirds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .panel {
+      border: 1px solid var(--slide-border, #cbd5e1);
+      border-radius: 8px;
+      background: #fff;
+      padding: 23px 25px;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+      min-height: 0;
+    }
+    .panel.blue { background: var(--math-definition-bg, #eff6ff); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg, #f0fdfa); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg, #fffbeb); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg, #f5f3ff); border-left: 6px solid var(--slide-violet); }
+    .panel.slate { background: var(--slide-bg-alt); border-left: 6px solid var(--slide-border, #cbd5e1); }
+    .tag {
+      display: inline-block;
+      font-size: 21px;
+      line-height: 1.15;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      padding: 7px 10px;
+      margin-bottom: 12px;
+    }
+    .math-card {
+      border: 1px solid var(--slide-border, #cbd5e1);
+      border-radius: 8px;
+      background: #fff;
+      padding: 20px 24px;
+    }
+    .math-card .katex-display { margin: 0.25em 0; }
+    .split-stack { display: flex; flex-direction: column; gap: 22px; min-height: 0; }
+    .diagram {
+      border: 1px solid var(--slide-border-light, #e2e8f0);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .diagram svg { width: 100%; height: 100%; }
+    .image-card {
+      border: 1px solid var(--slide-border-light, #e2e8f0);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .image-card img { max-width: 100%; max-height: 585px; object-fit: contain; }
+    .caption { font-size: 22px; line-height: 1.25; color: var(--slide-dimmed); margin-top: 10px; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: center;
+      margin-top: 24px;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      line-height: 1.2;
+      border-top: 1px solid var(--slide-border-light, #e2e8f0);
+      padding-top: 14px;
+    }
+    .mini { font-size: 23px; line-height: 1.28; color: var(--slide-muted); }
+    .formula-label { font-size: 22px; font-weight: 700; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0; margin-bottom: 8px; }
+    .svg-label { font-family: var(--font-sans); font-size: 28px; font-weight: 700; fill: #111827; }
+    .svg-small { font-family: var(--font-sans); font-size: 23px; fill: #475569; }
+    .svg-math { font-family: var(--font-math); font-size: 28px; fill: #111827; font-style: italic; }
+    .title-row { display: grid; grid-template-columns: 1fr 440px; gap: 48px; align-items: center; flex: 1; min-height: 0; }
+    .title-visual { height: 560px; }
+    .compact-list li { font-size: 25px; }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "A Mathematical Introduction to Robotic Manipulation",
+  "chapter_id": "chapter-06",
+  "chapter_title": "Chapter 06: Hand Dynamics and Control",
+  "notebook_path": "A-Mathematical-Introduction-to-Robotic-Manipulation/part-02-multifingered-manipulation/chapter-06-hand-dynamics-and-control/06-hand-dynamics-and-control.ipynb",
+  "source_span": "printed pages 265-316; PDF pages 283-334.",
+  "source_pdf": "A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Hand Dynamics And Control">
+      <div class="eyebrow">Chapter 06: Hand Dynamics And Control</div>
+      <div class="title-row">
+        <div>
+          <h1>Constrained Hand Dynamics: Motion, Contact, And Internal Force</h1>
+          <div class="rule"></div>
+          <p class="lead">A multifingered hand is not several robot arms in parallel. It is one constrained dynamical system whose useful controls split into object motion, contact consistency, and squeeze.</p>
+        </div>
+        <div class="diagram title-visual">
+          <svg viewBox="0 0 440 560" role="img" aria-label="Three fingers constrain and control an object">
+            <defs>
+              <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <rect x="140" y="190" width="160" height="160" rx="24" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <circle cx="220" cy="270" r="8" fill="#1e3a8a"/>
+            <path d="M62 115 C110 155, 130 205, 147 235" fill="none" stroke="#2563eb" stroke-width="22" stroke-linecap="round"/>
+            <path d="M55 445 C108 400, 127 346, 147 306" fill="none" stroke="#0f766e" stroke-width="22" stroke-linecap="round"/>
+            <path d="M377 272 C335 272, 314 272, 300 272" fill="none" stroke="#b45309" stroke-width="22" stroke-linecap="round"/>
+            <circle cx="147" cy="235" r="14" fill="#fff" stroke="#2563eb" stroke-width="5"/>
+            <circle cx="147" cy="306" r="14" fill="#fff" stroke="#0f766e" stroke-width="5"/>
+            <circle cx="300" cy="272" r="14" fill="#fff" stroke="#b45309" stroke-width="5"/>
+            <line x1="147" y1="235" x2="205" y2="252" stroke="#2563eb" stroke-width="5" marker-end="url(#arrow-title)"/>
+            <line x1="147" y1="306" x2="205" y2="288" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-title)"/>
+            <line x1="300" y1="272" x2="238" y2="272" stroke="#b45309" stroke-width="5" marker-end="url(#arrow-title)"/>
+            <path d="M190 395 C230 432, 273 424, 304 392" fill="none" stroke="#6d28d9" stroke-width="5" stroke-dasharray="12 9" marker-end="url(#arrow-title)"/>
+            <text x="32" y="70" class="svg-label">contact constraints</text>
+            <text x="52" y="507" class="svg-small">multipliers become contact forces</text>
+            <text x="165" y="445" class="svg-small">internal force loop</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Source grounding: printed pages 265-316; PDF pages 283-334</span><span>Notebook: 06-hand-dynamics-and-control.ipynb</span></div>
+      <aside class="speaker-notes">Open by naming the split that will organize the lecture: the hand must move the object, satisfy rolling or contact constraints, and regulate forces that do not show up as object motion. Students should hear that dynamics and control are being built on the constraint geometry from earlier grasping chapters, not replacing it.</aside>
+    </section>
+
+    <section class="slide" data-label="From Constraints To Allowed Velocities">
+      <div class="eyebrow">1. Constraints As Velocity Geometry</div>
+      <h2>From Constraints To Allowed Velocities</h2>
+      <div class="content cols wide-right">
+        <div class="split-stack">
+          <div class="panel blue">
+            <span class="tag">Pfaffian form</span>
+            <p>A contact model first removes instantaneous directions. The admissible velocity space is the nullspace of the constraint rows.</p>
+          </div>
+          <div class="math-card">
+            <div class="formula-label">Allowed velocities</div>
+            $$A(q)\dot q = 0,\qquad \dot q \in \ker A(q)$$
+          </div>
+          <div class="panel slate">
+            <ul>
+              <li>Holonomic constraints also come from position equations.</li>
+              <li>Nonholonomic constraints must remain velocity constraints.</li>
+              <li>The rank of <span class="svg-math">A</span> counts forbidden instantaneous directions.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="image-card">
+          <img src="../figures/pfaffian-constraint-types.png" alt="Generated comparison of Pfaffian constraint types and allowed velocity spaces">
+          <p class="caption">Generated chapter artifact: velocity planes and forbidden directions.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: pfaffian-constraint-types.png</span><span>Slide 2 / 16</span></div>
+      <aside class="speaker-notes">Use the figure as the first inspection object. Ask students to point to the allowed direction before reading the formula. Then connect the drawing to A(q) dot q equals zero: each row is a covector that tests velocity, and the hand is allowed to use only the velocities that pass all tests simultaneously.</aside>
+    </section>
+
+    <section class="slide" data-label="Lagrange Multipliers As Constraint Forces">
+      <div class="eyebrow">2. Multipliers Become Physical Forces</div>
+      <h2>Lagrange Multipliers As Constraint Forces</h2>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Constraint covectors create forces normal to the allowed velocity plane">
+            <defs>
+              <marker id="arrow-mult" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <path d="M125 355 L445 260 L635 335 L312 435 Z" fill="rgba(37,99,235,0.1)" stroke="#2563eb" stroke-width="5"/>
+            <line x1="305" y1="350" x2="560" y2="270" stroke="#2563eb" stroke-width="5" marker-end="url(#arrow-mult)"/>
+            <line x1="305" y1="350" x2="168" y2="310" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-mult)"/>
+            <line x1="305" y1="350" x2="305" y2="140" stroke="#b45309" stroke-width="7" marker-end="url(#arrow-mult)"/>
+            <circle cx="305" cy="350" r="12" fill="#1e3a8a"/>
+            <text x="415" y="240" class="svg-label">allowed virtual velocities</text>
+            <text x="325" y="168" class="svg-label">A(q)^T lambda</text>
+            <text x="105" y="460" class="svg-small">constraint force does no work on tangent virtual motion</text>
+          </svg>
+        </div>
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Constrained dynamics</div>
+            $$M(q)\ddot q + C(q,\dot q)\dot q + N(q) = \tau + A(q)^T\lambda$$
+          </div>
+          <div class="panel amber">
+            <span class="tag">Interpretation</span>
+            <p>The multiplier vector is not a numerical trick. It is the contact or joint reaction needed to keep acceleration consistent with the constraints.</p>
+          </div>
+          <div class="math-card">
+            <div class="formula-label">Constraint consistency</div>
+            $$A(q)\ddot q + \dot A(q,\dot q)\dot q = 0$$
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Lagrange multipliers carry the reaction wrench information</span><span>Slide 3 / 16</span></div>
+      <aside class="speaker-notes">This slide is the bridge from kinematic restrictions to dynamics. Emphasize that lambda is determined by enforcing the acceleration-level constraint, while A transpose lambda lies in generalized force coordinates. The plane picture also prepares d'Alembert's principle: these reaction forces are orthogonal to every allowed virtual displacement.</aside>
+    </section>
+
+    <section class="slide" data-label="d'Alembert Projection">
+      <div class="eyebrow">3. Remove Forces That Cannot Do Virtual Work</div>
+      <h2>d'Alembert Projection</h2>
+      <div class="content cols wide-left">
+        <div class="split-stack">
+          <div class="panel teal">
+            <span class="tag">Virtual displacement test</span>
+            <p>Choose any virtual displacement that respects the instantaneous constraints. Constraint reactions disappear from the virtual-work equation.</p>
+          </div>
+          <div class="math-card">
+            <div class="formula-label">d'Alembert statement</div>
+            $$\delta q^T\!\left(M\ddot q + C\dot q + N - \tau\right)=0,\quad A(q)\delta q=0$$
+          </div>
+          <div class="math-card">
+            <div class="formula-label">Projection by a nullspace basis</div>
+            $$N_A^T\!\left(M\ddot q + C\dot q + N\right)=N_A^T\tau,\qquad A N_A=0$$
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 620 560" role="img" aria-label="Projection removes constraint-force components">
+            <defs>
+              <marker id="arrow-proj" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <rect x="78" y="86" width="464" height="126" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="120" y="162" class="svg-label">full generalized dynamics</text>
+            <line x1="310" y1="222" x2="310" y2="316" stroke="#475569" stroke-width="5" marker-end="url(#arrow-proj)"/>
+            <rect x="78" y="326" width="464" height="126" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="146" y="402" class="svg-label">allowed-motion equations</text>
+            <path d="M88 485 C168 520, 460 520, 532 486" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <text x="147" y="532" class="svg-small">A^T lambda is filtered out by N_A^T</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Projection keeps dynamics on the constraint distribution</span><span>Slide 4 / 16</span></div>
+      <aside class="speaker-notes">Do not rush the notation here. First say the geometric sentence: allowed virtual motions cannot detect ideal constraint forces. Then show how the nullspace basis N_A turns that sentence into equations. This is why projection is a modeling step, not merely algebraic cleanup after solving for multipliers.</aside>
+    </section>
+
+    <section class="slide" data-label="Rolling Disk Split">
+      <div class="eyebrow">4. A Contact Model In Miniature</div>
+      <h2>Rolling Disk Split</h2>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Rolling disk with heading and spin constraints">
+            <defs>
+              <marker id="arrow-disk" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <line x1="82" y1="430" x2="690" y2="430" stroke="#cbd5e1" stroke-width="4"/>
+            <ellipse cx="360" cy="292" rx="78" ry="142" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/>
+            <ellipse cx="360" cy="292" rx="18" ry="138" fill="none" stroke="#1e3a8a" stroke-width="4" stroke-dasharray="10 10"/>
+            <line x1="360" y1="430" x2="500" y2="350" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-disk)"/>
+            <line x1="360" y1="430" x2="242" y2="360" stroke="#b45309" stroke-width="6" stroke-dasharray="13 10" marker-end="url(#arrow-disk)"/>
+            <path d="M405 192 C455 220, 455 288, 408 318" fill="none" stroke="#6d28d9" stroke-width="5" marker-end="url(#arrow-disk)"/>
+            <circle cx="360" cy="430" r="11" fill="#111827"/>
+            <text x="514" y="348" class="svg-label">roll</text>
+            <text x="85" y="346" class="svg-label">side slip forbidden</text>
+            <text x="420" y="205" class="svg-small">spin angle phi</text>
+            <text x="390" y="476" class="svg-small">configuration: x, y, theta, phi</text>
+          </svg>
+        </div>
+        <div class="split-stack">
+          <div class="panel blue">
+            <span class="tag">Two kinds of restriction</span>
+            <ul>
+              <li>No lateral velocity at the contact point.</li>
+              <li>Forward translation couples to wheel spin.</li>
+              <li>Heading changes rotate the allowed direction field.</li>
+            </ul>
+          </div>
+          <div class="math-card">
+            <div class="formula-label">Canonical velocity split</div>
+            $$-\sin\theta\,\dot x+\cos\theta\,\dot y=0,\qquad
+\cos\theta\,\dot x+\sin\theta\,\dot y-r\dot\phi=0$$
+          </div>
+          <div class="panel slate">
+            <p class="mini">The disk is a compact warning label for hand contacts: local rolling equations are simple, but their allowed directions vary with configuration.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Rolling contact separates allowed motion from forbidden slip</span><span>Slide 5 / 16</span></div>
+      <aside class="speaker-notes">Use the disk because it is less visually crowded than a hand and still contains the important issue. The first equation forbids sideways motion, while the second couples rolling distance to spin. Once theta changes, the allowed direction in the plane changes, which is the seed of the nonholonomic behavior on the next slide.</aside>
+    </section>
+
+    <section class="slide" data-label="The Nonholonomic Failure Mode">
+      <div class="eyebrow">5. The Common Modeling Error</div>
+      <h2>The Nonholonomic Failure Mode</h2>
+      <div class="content cols wide-left">
+        <div class="split-stack">
+          <div class="panel amber">
+            <span class="tag">Failure mode</span>
+            <p>Replacing a velocity constraint by an invented position equation can remove real motions or add impossible ones.</p>
+          </div>
+          <div class="math-card">
+            <div class="formula-label">What must stay differential</div>
+            $$A(q)\dot q=0\;\;\not\Rightarrow\;\;h(q)=\mathrm{constant}$$
+          </div>
+          <div class="panel blue">
+            <ul>
+              <li>Admissible loops can create net displacement.</li>
+              <li>Constraint rows define a distribution, not always level sets.</li>
+              <li>Projection must use virtual velocities, not guessed coordinates.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 650 560" role="img" aria-label="Nonholonomic loop creates net displacement">
+            <defs>
+              <marker id="arrow-loop" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <path d="M110 420 C160 300, 225 250, 320 260 C430 273, 495 325, 542 190" fill="none" stroke="#cbd5e1" stroke-width="5" stroke-dasharray="12 11"/>
+            <path d="M170 380 C240 326, 300 337, 340 394 C374 442, 440 452, 505 390" fill="none" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow-loop)"/>
+            <path d="M182 383 C222 456, 305 485, 384 454 C462 424, 495 354, 460 289" fill="none" stroke="#0f766e" stroke-width="7" marker-end="url(#arrow-loop)"/>
+            <circle cx="170" cy="380" r="12" fill="#1e3a8a"/>
+            <circle cx="505" cy="390" r="12" fill="#b45309"/>
+            <line x1="170" y1="380" x2="505" y2="390" stroke="#b45309" stroke-width="5" stroke-dasharray="10 10" marker-end="url(#arrow-loop)"/>
+            <text x="106" y="350" class="svg-label">start</text>
+            <text x="462" y="443" class="svg-label">net pose change</text>
+            <text x="165" y="118" class="svg-small">a local velocity rule can generate global displacement through a sequence</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Nonholonomic constraints are distributions, not automatic surfaces</span><span>Slide 6 / 16</span></div>
+      <aside class="speaker-notes">Name the mistake explicitly because it is attractive in calculations. Students may want to integrate every row of A into a lost coordinate. The loop diagram shows why that is dangerous: legal small motions can compose into a displacement that no single position constraint would predict. This matters for rolling fingers as much as for wheels.</aside>
+    </section>
+
+    <section class="slide" data-label="Composite Hand-Object Dynamics">
+      <div class="eyebrow">6. One System, Many Coordinates</div>
+      <h2>Composite Hand-Object Dynamics</h2>
+      <div class="content cols">
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Stacked state</div>
+            $$q=\begin{bmatrix}q_h\\x_o\end{bmatrix},\qquad
+M_c(q)\ddot q+C_c(q,\dot q)\dot q+N_c(q)=B\tau+A(q)^T\lambda$$
+          </div>
+          <div class="panel teal">
+            <span class="tag">Meaning of the blocks</span>
+            <ul class="compact-list">
+              <li>Finger dynamics supply joint inertia and actuator torques.</li>
+              <li>Object dynamics supply mass, inertia, and external wrench response.</li>
+              <li>Contact constraints identify compatible finger and object velocities.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Composite hand-object dynamics block diagram">
+            <defs>
+              <marker id="arrow-composite" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <rect x="78" y="105" width="226" height="120" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <text x="120" y="172" class="svg-label">finger joints</text>
+            <rect x="456" y="105" width="226" height="120" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="505" y="172" class="svg-label">object pose</text>
+            <rect x="244" y="310" width="272" height="116" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="290" y="378" class="svg-label">contact equations</text>
+            <line x1="304" y1="188" x2="344" y2="310" stroke="#475569" stroke-width="5" marker-end="url(#arrow-composite)"/>
+            <line x1="456" y1="188" x2="416" y2="310" stroke="#475569" stroke-width="5" marker-end="url(#arrow-composite)"/>
+            <line x1="380" y1="426" x2="380" y2="500" stroke="#b45309" stroke-width="5" marker-end="url(#arrow-composite)"/>
+            <text x="300" y="530" class="svg-small">lambda returns as contact force</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>The hand and object are coupled before control is designed</span><span>Slide 7 / 16</span></div>
+      <aside class="speaker-notes">The essential teaching point is that contact coupling is not an afterthought. If the fingers and object are modeled separately and patched together later, the constraint forces become mysterious. The composite equation says where every coordinate lives and where lambda enters, so later control laws can be checked for dimensional and physical consistency.</aside>
+    </section>
+
+    <section class="slide" data-label="Structural Lemma For Control">
+      <div class="eyebrow">7. Why Control Can Reuse Robot Dynamics</div>
+      <h2>Structural Lemma For Control</h2>
+      <div class="content cols wide-right">
+        <div class="panel blue">
+          <span class="tag">Lemma</span>
+          <p>After ideal constraints are imposed and independent coordinates are selected, the reduced hand-object dynamics retain the manipulator form: symmetric positive inertia, velocity-product terms, potential or bias terms, and projected inputs.</p>
+        </div>
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Reduced coordinates</div>
+            $$\bar M(z)\ddot z+\bar C(z,\dot z)\dot z+\bar N(z)=\bar B(z)\tau+\bar J(z)^T f_{\mathrm{ext}}$$
+          </div>
+          <div class="panel slate">
+            <ol>
+              <li>Select coordinates or a nullspace basis for admissible motion.</li>
+              <li>Project the full equation onto that admissible subspace.</li>
+              <li>Use the retained structure to design tracking and force regulation.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="diagram" style="height: 235px; margin-top: 18px;">
+        <svg viewBox="0 0 1560 220" role="img" aria-label="Structural lemma proof roadmap">
+          <defs>
+            <marker id="arrow-lemma" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+          </defs>
+          <rect x="56" y="54" width="310" height="104" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+          <text x="102" y="116" class="svg-label">full dynamics</text>
+          <line x1="366" y1="106" x2="518" y2="106" stroke="#475569" stroke-width="5" marker-end="url(#arrow-lemma)"/>
+          <rect x="518" y="54" width="310" height="104" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/>
+          <text x="574" y="116" class="svg-label">constraint split</text>
+          <line x1="828" y1="106" x2="980" y2="106" stroke="#475569" stroke-width="5" marker-end="url(#arrow-lemma)"/>
+          <rect x="980" y="54" width="310" height="104" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+          <text x="1030" y="116" class="svg-label">reduced robot form</text>
+          <line x1="1290" y1="106" x2="1440" y2="106" stroke="#475569" stroke-width="5" marker-end="url(#arrow-lemma)"/>
+          <text x="1378" y="158" class="svg-small">controller inherits geometry</text>
+        </svg>
+      </div>
+      <div class="footer"><span>Projected systems keep the structure needed for feedback</span><span>Slide 8 / 16</span></div>
+      <aside class="speaker-notes">Present this as a structural lemma rather than a new modeling assumption. The payoff is that the controller can use familiar manipulator tools after constraints are handled correctly. The caveat is equally important: the reduced coordinates and projected inputs carry the contact geometry, so hiding the projection hides the assumptions that make the controller valid.</aside>
+    </section>
+
+    <section class="slide" data-label="Internal Forces Are Nullspace Forces">
+      <div class="eyebrow">8. Forces Invisible To Object Acceleration</div>
+      <h2>Internal Forces Are Nullspace Forces</h2>
+      <div class="content cols wide-right">
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Grasp map split</div>
+            $$w_o=Gf_c,\qquad f_c=G^\dagger w_o+N_G\eta,\qquad G N_G=0$$
+          </div>
+          <div class="panel teal">
+            <span class="tag">Control meaning</span>
+            <p>The vector <span class="svg-math">eta</span> changes contact loading without changing the net object wrench. That is how a grasp squeezes harder while tracking the same object motion.</p>
+          </div>
+          <div class="panel amber">
+            <p class="mini">Internal force is useful only if it remains compatible with unilateral contact and friction limits.</p>
+          </div>
+        </div>
+        <div class="image-card">
+          <img src="../figures/internal-force-nullspace.png" alt="Generated internal force nullspace diagram for a grasp map">
+          <p class="caption">Generated chapter artifact: squeeze forces in the nullspace of the grasp map.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: internal-force-nullspace.png</span><span>Slide 9 / 16</span></div>
+      <aside class="speaker-notes">Keep the algebra tied to the picture. The grasp map sends contact forces to an object wrench, so its nullspace contains contact force patterns the object cannot feel as a net wrench. Those patterns are not wasted effort: they maintain grip margin, preload rolling contacts, and prepare the hand to reject disturbances without changing the commanded motion.</aside>
+    </section>
+
+    <section class="slide" data-label="Other Constrained Robot Systems">
+      <div class="eyebrow">9. Same Algebra Beyond Hands</div>
+      <h2>Other Constrained Robot Systems</h2>
+      <div class="content thirds">
+        <div class="panel blue">
+          <h3>Coordinated Lifting</h3>
+          <svg viewBox="0 0 420 220" role="img" aria-label="Two robots lifting one object with shared constraints">
+            <rect x="152" y="78" width="116" height="62" rx="10" fill="#eff6ff" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M106 172 L152 118" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+            <path d="M314 172 L268 118" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+            <circle cx="106" cy="172" r="18" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <circle cx="314" cy="172" r="18" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <line x1="210" y1="78" x2="210" y2="34" stroke="#b45309" stroke-width="6" marker-end="url(#arrow-other)"/>
+          </svg>
+          <p class="mini">Multiple manipulators share one object acceleration and must agree on the same constraint wrench.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Workspace Dynamics</h3>
+          <svg viewBox="0 0 420 220" role="img" aria-label="Joint dynamics transformed to workspace dynamics">
+            <defs><marker id="arrow-other" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#0f766e"/></marker></defs>
+            <rect x="54" y="82" width="120" height="78" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <rect x="246" y="82" width="120" height="78" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <line x1="176" y1="121" x2="244" y2="121" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-other)"/>
+            <text x="78" y="130" class="svg-small">theta</text>
+            <text x="284" y="130" class="svg-small">x</text>
+            <text x="188" y="74" class="svg-small">J^{-T}</text>
+          </svg>
+          <p class="mini">Task-space equations inherit inertia through the Jacobian, for example \(\widetilde M=M_o+J^{-T}M_fJ^{-1}\).</p>
+        </div>
+        <div class="panel violet">
+          <h3>Hybrid Force-Position</h3>
+          <svg viewBox="0 0 420 220" role="img" aria-label="Tangent motion and normal force decomposition">
+            <line x1="74" y1="150" x2="348" y2="92" stroke="#cbd5e1" stroke-width="8"/>
+            <circle cx="210" cy="121" r="16" fill="#fff" stroke="#6d28d9" stroke-width="5"/>
+            <line x1="210" y1="121" x2="310" y2="100" stroke="#0f766e" stroke-width="7" marker-end="url(#arrow-other)"/>
+            <line x1="210" y1="121" x2="190" y2="38" stroke="#b45309" stroke-width="7" marker-end="url(#arrow-other)"/>
+            <text x="278" y="78" class="svg-small">tangent motion</text>
+            <text x="112" y="42" class="svg-small">normal force</text>
+          </svg>
+          <p class="mini">Position is controlled in admissible tangent directions while normal reaction forces are regulated separately.</p>
+        </div>
+      </div>
+      <div class="math-card" style="margin-top: 24px;">
+        <div class="formula-label">Section 2.3 template</div>
+        $$J_h\dot\theta=G^T\dot x,\qquad
+\text{reduced dynamics}+\text{task force}+\text{internal constraint force}$$
+      </div>
+      <div class="footer"><span>Grounding: coordinated lifting, workspace dynamics, and hybrid force-position control</span><span>Slide 10 / 16</span></div>
+      <aside class="speaker-notes">This slide stays inside the chapter's Section 2.3 examples. Coordinated lifting shows several manipulators sharing one object equation. Workspace dynamics show how the Jacobian moves the same structure into task coordinates. Hybrid control separates tangent motion from normal force regulation. The common habit is not a generic constraint slogan; it is the specific hand-object equation reused in nearby robot systems.</aside>
+    </section>
+
+    <section class="slide" data-label="Redundancy: Motions Invisible To The Task">
+      <div class="eyebrow">10. Nullspaces Are Not Just For Forces</div>
+      <h2>Redundancy: Motions Invisible To The Task</h2>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Joint velocity nullspace projected away from object task velocity">
+            <defs>
+              <marker id="arrow-red" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <rect x="76" y="98" width="238" height="340" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <text x="112" y="153" class="svg-label">joint space</text>
+            <circle cx="190" cy="274" r="76" fill="rgba(37,99,235,0.08)" stroke="#2563eb" stroke-width="4"/>
+            <line x1="190" y1="274" x2="250" y2="212" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-red)"/>
+            <line x1="190" y1="274" x2="132" y2="332" stroke="#b45309" stroke-width="6" stroke-dasharray="12 9" marker-end="url(#arrow-red)"/>
+            <rect x="482" y="148" width="214" height="240" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <text x="526" y="208" class="svg-label">task space</text>
+            <line x1="314" y1="274" x2="482" y2="274" stroke="#475569" stroke-width="5" marker-end="url(#arrow-red)"/>
+            <line x1="560" y1="294" x2="632" y2="236" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-red)"/>
+            <text x="124" y="470" class="svg-small">null motion changes posture</text>
+            <text x="493" y="438" class="svg-small">same object velocity</text>
+          </svg>
+        </div>
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Task split</div>
+            $$\dot x = J(q)\dot q,\qquad
+\dot q=J^\dagger \dot x+\left(I-J^\dagger J\right)\zeta$$
+          </div>
+          <div class="panel teal">
+            <span class="tag">Hand interpretation</span>
+            <p>Extra finger mobility can improve posture, avoid limits, or regulate contacts while leaving the object task velocity unchanged.</p>
+          </div>
+          <div class="panel amber">
+            <p class="mini">A redundant direction is useful only after it has survived the contact constraints. Task nullspace and constraint nullspace must be reconciled.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Velocity nullspaces complement force nullspaces</span><span>Slide 11 / 16</span></div>
+      <aside class="speaker-notes">Connect this to internal forces without conflating them. Internal force nullspaces live in contact force coordinates; redundancy nullspaces live in motion coordinates. A dexterous hand often has both, and a controller has to decide how to spend them: keep the object tracking, improve the grasp geometry, and avoid joint or contact limits.</aside>
+    </section>
+
+    <section class="slide" data-label="Nonmanipulable Grasps Restrict Object Motion">
+      <div class="eyebrow">11. When Contact Geometry Shrinks The Task</div>
+      <h2>Nonmanipulable Grasps Restrict Object Motion</h2>
+      <div class="content cols wide-left">
+        <div class="split-stack">
+          <div class="panel amber">
+            <span class="tag">Diagnostic</span>
+            <p>A grasp can hold an object yet fail to command arbitrary local object motion. The missing motions appear as rank loss in the grasp or hand Jacobian structure.</p>
+          </div>
+          <div class="math-card">
+            <div class="formula-label">Motion feasibility</div>
+            $$V_o \in \operatorname{im} J_{\mathrm{hand-object}},\qquad
+\operatorname{rank}J_{\mathrm{hand-object}}<6\Rightarrow\text{restricted object twists}$$
+          </div>
+          <div class="panel slate">
+            <ul>
+              <li>Some contacts resist disturbance but cannot produce a desired twist.</li>
+              <li>Manipulability is local and configuration dependent.</li>
+              <li>Force closure does not automatically imply motion dexterity.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 650 560" role="img" aria-label="Object twist space restricted to a lower-dimensional cone">
+            <defs>
+              <marker id="arrow-grasp" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <rect x="226" y="180" width="188" height="150" rx="20" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M80 130 C150 165, 178 220, 226 234" fill="none" stroke="#2563eb" stroke-width="18" stroke-linecap="round"/>
+            <path d="M560 422 C495 374, 460 322, 414 296" fill="none" stroke="#0f766e" stroke-width="18" stroke-linecap="round"/>
+            <circle cx="226" cy="234" r="13" fill="#fff" stroke="#2563eb" stroke-width="5"/>
+            <circle cx="414" cy="296" r="13" fill="#fff" stroke="#0f766e" stroke-width="5"/>
+            <line x1="320" y1="255" x2="455" y2="255" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-grasp)"/>
+            <line x1="320" y1="255" x2="320" y2="118" stroke="#b45309" stroke-width="6" stroke-dasharray="12 9"/>
+            <line x1="320" y1="255" x2="214" y2="365" stroke="#b45309" stroke-width="6" stroke-dasharray="12 9"/>
+            <text x="420" y="246" class="svg-label">allowed twist</text>
+            <text x="138" y="408" class="svg-small">missing twist directions cannot be tracked</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Stable grasping and dexterous manipulation are different tests</span><span>Slide 12 / 16</span></div>
+      <aside class="speaker-notes">Slow down on the distinction between holding and manipulating. A nonmanipulable grasp may resist some external wrenches and still lack enough independent motion directions to steer the object locally. This is where rank is not abstract linear algebra; it is the difference between a controller target that is reachable and one that asks for motion the contacts cannot provide.</aside>
+    </section>
+
+    <section class="slide" data-label="Tendon Extension Becomes Torque Coupling">
+      <div class="eyebrow">12. Actuation Geometry</div>
+      <h2>Tendon Extension Becomes Torque Coupling</h2>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Tendon routes convert tension into coupled joint torques">
+            <defs>
+              <marker id="arrow-tendon" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <path d="M160 438 L250 330 L355 252 L488 196" fill="none" stroke="#2563eb" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="250" cy="330" r="34" fill="#fff" stroke="#1e3a8a" stroke-width="6"/>
+            <circle cx="355" cy="252" r="30" fill="#fff" stroke="#1e3a8a" stroke-width="6"/>
+            <path d="M98 462 C158 402, 210 350, 250 330 C308 301, 338 270, 355 252 C396 214, 442 194, 520 178" fill="none" stroke="#b45309" stroke-width="8"/>
+            <line x1="98" y1="462" x2="48" y2="514" stroke="#b45309" stroke-width="8" marker-end="url(#arrow-tendon)"/>
+            <path d="M250 330 C284 368, 334 368, 368 334" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-tendon)"/>
+            <path d="M355 252 C386 286, 432 284, 460 249" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-tendon)"/>
+            <text x="49" y="426" class="svg-label">tension</text>
+            <text x="410" y="344" class="svg-small">one tendon can torque multiple joints</text>
+            <text x="298" y="112" class="svg-small">route geometry defines the moment arms</text>
+          </svg>
+        </div>
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Virtual work identity</div>
+            $$\delta \ell = R(q)\delta q,\qquad
+\tau = R(q)^T f_t$$
+          </div>
+          <div class="panel blue">
+            <span class="tag">Coupling</span>
+            <p>A tendon route maps joint motion into tendon extension. Transposing that map converts tendon tension into joint torques.</p>
+          </div>
+          <div class="panel amber">
+            <p class="mini">Because tendons pull but do not push, feasible torque directions form a cone rather than a full vector space.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Actuator geometry changes the control input space</span><span>Slide 13 / 16</span></div>
+      <aside class="speaker-notes">Treat tendon actuation as another map between spaces. The same virtual-work logic used for contact forces now explains why R transpose maps tension into generalized torque. The asymmetry is crucial: motors at joints can often be idealized as signed torques, while tendons impose pull-only feasibility and couple joints through their routing.</aside>
+    </section>
+
+    <section class="slide" data-label="Elastic Tendons And Force Closure">
+      <div class="eyebrow">13. Feasibility With Pull-Only Inputs</div>
+      <h2>Elastic Tendons And Force Closure</h2>
+      <div class="content cols wide-right">
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Pull-only feasible torques</div>
+            $$f_t\ge 0,\qquad \tau=R(q)^T f_t,\qquad
+\mathcal C_\tau=\{R(q)^T f_t: f_t\ge 0\}$$
+          </div>
+          <div class="panel teal">
+            <span class="tag">Elastic preload</span>
+            <p>Elastic tendon stretch can maintain positive tension, giving the hand a passive route toward contact preload and force-closure margins.</p>
+          </div>
+          <div class="panel amber">
+            <p class="mini">The controller must ask whether a desired internal force lies inside both the contact-force cone and the tendon-generated torque cone.</p>
+          </div>
+        </div>
+        <div class="image-card">
+          <img src="../figures/tendon-actuation-feasibility.png" alt="Generated tendon actuation feasibility diagram with pull-only tension cone">
+          <p class="caption">Generated chapter artifact: pull-only tendon tensions and feasible torque cones.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: tendon-actuation-feasibility.png</span><span>Slide 14 / 16</span></div>
+      <aside class="speaker-notes">Use the artifact to make feasibility visible. The tendon matrix may span useful torque directions, but the nonnegative tension requirement clips that span to a cone. Elasticity helps by keeping tension positive and by storing preload, yet it does not erase the cone test. Force closure must be checked against the actual actuation model.</aside>
+    </section>
+
+    <section class="slide" data-label="Tracking Plus Internal Force Regulation">
+      <div class="eyebrow">14. Two Objectives, One Torque Command</div>
+      <h2>Tracking Plus Internal Force Regulation</h2>
+      <div class="content cols wide-left">
+        <div class="split-stack">
+          <div class="math-card">
+            <div class="formula-label">Composite control shape</div>
+            $$\tau=\tau_{\mathrm{track}}+J_c(q)^T\!\left(G^\dagger w_{\mathrm{cmd}}+N_G\eta_{\mathrm{cmd}}\right)+\tau_{\mathrm{posture}}$$
+          </div>
+          <div class="panel blue">
+            <span class="tag">Division of labor</span>
+            <ul>
+              <li>Tracking terms shape object motion and contact-compatible acceleration.</li>
+              <li>Internal-force terms adjust squeeze without changing the object wrench.</li>
+              <li>Posture terms spend remaining redundancy on limits and conditioning.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 640 560" role="img" aria-label="Tracking and internal force control loops compose into torque">
+            <defs>
+              <marker id="arrow-track" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <rect x="66" y="72" width="210" height="108" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <text x="100" y="136" class="svg-label">object error</text>
+            <rect x="66" y="226" width="210" height="108" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="90" y="290" class="svg-label">internal force</text>
+            <rect x="66" y="380" width="210" height="108" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/>
+            <text x="108" y="444" class="svg-label">posture</text>
+            <circle cx="414" cy="280" r="60" fill="#fff" stroke="#1e3a8a" stroke-width="6"/>
+            <text x="386" y="289" class="svg-label">tau</text>
+            <line x1="276" y1="126" x2="364" y2="248" stroke="#475569" stroke-width="5" marker-end="url(#arrow-track)"/>
+            <line x1="276" y1="280" x2="354" y2="280" stroke="#475569" stroke-width="5" marker-end="url(#arrow-track)"/>
+            <line x1="276" y1="434" x2="364" y2="312" stroke="#475569" stroke-width="5" marker-end="url(#arrow-track)"/>
+            <line x1="474" y1="280" x2="575" y2="280" stroke="#b45309" stroke-width="6" marker-end="url(#arrow-track)"/>
+            <text x="512" y="332" class="svg-small">hand-object plant</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Control law terms must live in compatible projected spaces</span><span>Slide 15 / 16</span></div>
+      <aside class="speaker-notes">Frame the displayed law as a shape rather than a prescription for one implementation. The important point is compositional: object tracking, commanded wrench, internal squeeze, and posture objectives enter through maps that respect contact constraints. If any term is added in the wrong coordinate space, the controller may fight the constraints instead of using them.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Hierarchical Control As Geometry-Aware Composition">
+      <div class="eyebrow">15. Closing Synthesis</div>
+      <h2>Hierarchical Control As Geometry-Aware Composition</h2>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Hierarchical hand control stack from constraints to actuation">
+            <defs>
+              <marker id="arrow-hier" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#475569"/></marker>
+            </defs>
+            <rect x="100" y="74" width="560" height="78" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="224" y="124" class="svg-label">object task and desired wrench</text>
+            <line x1="380" y1="152" x2="380" y2="198" stroke="#475569" stroke-width="5" marker-end="url(#arrow-hier)"/>
+            <rect x="100" y="202" width="560" height="78" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <text x="226" y="252" class="svg-label">constraint projection and ranks</text>
+            <line x1="380" y1="280" x2="380" y2="326" stroke="#475569" stroke-width="5" marker-end="url(#arrow-hier)"/>
+            <rect x="100" y="330" width="560" height="78" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="226" y="380" class="svg-label">internal force and preload</text>
+            <line x1="380" y1="408" x2="380" y2="454" stroke="#475569" stroke-width="5" marker-end="url(#arrow-hier)"/>
+            <rect x="100" y="458" width="560" height="78" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <text x="208" y="508" class="svg-label">actuator feasibility and feedback</text>
+          </svg>
+        </div>
+        <div class="split-stack">
+          <div class="panel blue">
+            <span class="tag">Lecture takeaways</span>
+            <ul>
+              <li>Pfaffian constraints define the velocities a hand may use.</li>
+              <li>d'Alembert projection removes ideal reactions from motion equations.</li>
+              <li>Internal forces are nullspace commands, not object accelerations.</li>
+              <li>Tendons and force closure add feasibility cones to the hierarchy.</li>
+            </ul>
+          </div>
+          <div class="math-card">
+            <div class="formula-label">Geometric control contract</div>
+            $$\text{track motion}\;\oplus\;\text{regulate internal force}\;\oplus\;\text{respect actuation cones}$$
+          </div>
+          <div class="panel teal">
+            <p class="mini">A good hand controller composes maps between spaces and checks each nullspace, rank, and cone before asking for torque.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Chapter 06 completes the constrained dynamics path for multifingered manipulation</span><span>Slide 16 / 16</span></div>
+      <aside class="speaker-notes">Close by returning to the hierarchy rather than a single formula. The chapter's control story is geometry-aware composition: constraints first, projected dynamics second, task and internal-force objectives third, and actuator feasibility last. That order is not bookkeeping. It is what prevents the hand from commanding beautiful object motion that violates contact, friction, or tendon limits.</aside>
+    </section>
+  </deck-stage>
+  <script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "title": "Constrained Hand Dynamics: Motion, Contact, And Internal Force",
+    "notes": "Open by naming the split that will organize the lecture: the hand must move the object, satisfy rolling or contact constraints, and regulate forces that do not show up as object motion. Students should hear that dynamics and control are being built on the constraint geometry from earlier grasping chapters, not replacing it."
+  },
+  {
+    "slide": 2,
+    "title": "From Constraints To Allowed Velocities",
+    "notes": "Use the figure as the first inspection object. Ask students to point to the allowed direction before reading the formula. Then connect the drawing to A(q) dot q equals zero: each row is a covector that tests velocity, and the hand is allowed to use only the velocities that pass all tests simultaneously."
+  },
+  {
+    "slide": 3,
+    "title": "Lagrange Multipliers As Constraint Forces",
+    "notes": "This slide is the bridge from kinematic restrictions to dynamics. Emphasize that lambda is determined by enforcing the acceleration-level constraint, while A transpose lambda lies in generalized force coordinates. The plane picture also prepares d'Alembert's principle: these reaction forces are orthogonal to every allowed virtual displacement."
+  },
+  {
+    "slide": 4,
+    "title": "d'Alembert Projection",
+    "notes": "Do not rush the notation here. First say the geometric sentence: allowed virtual motions cannot detect ideal constraint forces. Then show how the nullspace basis N_A turns that sentence into equations. This is why projection is a modeling step, not merely algebraic cleanup after solving for multipliers."
+  },
+  {
+    "slide": 5,
+    "title": "Rolling Disk Split",
+    "notes": "Use the disk because it is less visually crowded than a hand and still contains the important issue. The first equation forbids sideways motion, while the second couples rolling distance to spin. Once theta changes, the allowed direction in the plane changes, which is the seed of the nonholonomic behavior on the next slide."
+  },
+  {
+    "slide": 6,
+    "title": "The Nonholonomic Failure Mode",
+    "notes": "Name the mistake explicitly because it is attractive in calculations. Students may want to integrate every row of A into a lost coordinate. The loop diagram shows why that is dangerous: legal small motions can compose into a displacement that no single position constraint would predict. This matters for rolling fingers as much as for wheels."
+  },
+  {
+    "slide": 7,
+    "title": "Composite Hand-Object Dynamics",
+    "notes": "The essential teaching point is that contact coupling is not an afterthought. If the fingers and object are modeled separately and patched together later, the constraint forces become mysterious. The composite equation says where every coordinate lives and where lambda enters, so later control laws can be checked for dimensional and physical consistency."
+  },
+  {
+    "slide": 8,
+    "title": "Structural Lemma For Control",
+    "notes": "Present this as a structural lemma rather than a new modeling assumption. The payoff is that the controller can use familiar manipulator tools after constraints are handled correctly. The caveat is equally important: the reduced coordinates and projected inputs carry the contact geometry, so hiding the projection hides the assumptions that make the controller valid."
+  },
+  {
+    "slide": 9,
+    "title": "Internal Forces Are Nullspace Forces",
+    "notes": "Keep the algebra tied to the picture. The grasp map sends contact forces to an object wrench, so its nullspace contains contact force patterns the object cannot feel as a net wrench. Those patterns are not wasted effort: they maintain grip margin, preload rolling contacts, and prepare the hand to reject disturbances without changing the commanded motion."
+  },
+  {
+    "slide": 10,
+    "title": "Other Constrained Robot Systems",
+    "notes": "This slide stays inside the chapter's Section 2.3 examples. Coordinated lifting shows several manipulators sharing one object equation. Workspace dynamics show how the Jacobian moves the same structure into task coordinates. Hybrid control separates tangent motion from normal force regulation. The common habit is not a generic constraint slogan; it is the specific hand-object equation reused in nearby robot systems."
+  },
+  {
+    "slide": 11,
+    "title": "Redundancy: Motions Invisible To The Task",
+    "notes": "Connect this to internal forces without conflating them. Internal force nullspaces live in contact force coordinates; redundancy nullspaces live in motion coordinates. A dexterous hand often has both, and a controller has to decide how to spend them: keep the object tracking, improve the grasp geometry, and avoid joint or contact limits."
+  },
+  {
+    "slide": 12,
+    "title": "Nonmanipulable Grasps Restrict Object Motion",
+    "notes": "Slow down on the distinction between holding and manipulating. A nonmanipulable grasp may resist some external wrenches and still lack enough independent motion directions to steer the object locally. This is where rank is not abstract linear algebra; it is the difference between a controller target that is reachable and one that asks for motion the contacts cannot provide."
+  },
+  {
+    "slide": 13,
+    "title": "Tendon Extension Becomes Torque Coupling",
+    "notes": "Treat tendon actuation as another map between spaces. The same virtual-work logic used for contact forces now explains why R transpose maps tension into generalized torque. The asymmetry is crucial: motors at joints can often be idealized as signed torques, while tendons impose pull-only feasibility and couple joints through their routing."
+  },
+  {
+    "slide": 14,
+    "title": "Elastic Tendons And Force Closure",
+    "notes": "Use the artifact to make feasibility visible. The tendon matrix may span useful torque directions, but the nonnegative tension requirement clips that span to a cone. Elasticity helps by keeping tension positive and by storing preload, yet it does not erase the cone test. Force closure must be checked against the actual actuation model."
+  },
+  {
+    "slide": 15,
+    "title": "Tracking Plus Internal Force Regulation",
+    "notes": "Frame the displayed law as a shape rather than a prescription for one implementation. The important point is compositional: object tracking, commanded wrench, internal squeeze, and posture objectives enter through maps that respect contact constraints. If any term is added in the wrong coordinate space, the controller may fight the constraints instead of using them."
+  },
+  {
+    "slide": 16,
+    "title": "Hierarchical Control As Geometry-Aware Composition",
+    "notes": "Close by returning to the hierarchy rather than a single formula. The chapter's control story is geometry-aware composition: constraints first, projected dynamics second, task and internal-force objectives third, and actuator feasibility last. That order is not bookkeeping. It is what prevents the hand from commanding beautiful object motion that violates contact, friction, or tendon limits."
+  }
+]
+  </script>
+</body>
+</html>

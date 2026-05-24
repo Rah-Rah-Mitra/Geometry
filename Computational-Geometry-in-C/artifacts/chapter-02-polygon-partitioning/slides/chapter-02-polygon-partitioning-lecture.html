@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polygon Partitioning: Cut First, Solve Easier Pieces</title>
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-02-polygon-partitioning">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-02-polygon-partitioning/02-polygon-partitioning.ipynb">
+  <meta name="source_span" content="printed pages 44-62; PDF pages 53-71.">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      padding: 72px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+      position: relative;
+      letter-spacing: 0;
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(30, 58, 138, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 58, 138, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+
+    .slide.mesh::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.05;
+      background-image:
+        linear-gradient(30deg, transparent 47%, var(--slide-accent) 48%, transparent 49%),
+        linear-gradient(150deg, transparent 47%, var(--slide-teal) 48%, transparent 49%);
+      background-size: 170px 170px;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.04;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 52px;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    h3 {
+      font-size: 30px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    .kicker {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      font-size: 30px;
+      line-height: 1.45;
+      color: var(--slide-muted);
+      max-width: 1050px;
+    }
+
+    .rule {
+      width: 88px;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--slide-accent);
+      margin: 18px 0 24px;
+    }
+
+    .footer {
+      position: absolute;
+      left: 96px;
+      right: 96px;
+      bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--slide-dimmed);
+      font-size: 20px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 52px;
+      height: calc(100% - 142px);
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .grid-2-even {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      height: calc(100% - 142px);
+      min-height: 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      height: calc(100% - 150px);
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 26px 30px;
+      box-sizing: border-box;
+      min-height: 0;
+    }
+
+    .panel.soft {
+      background: var(--slide-bg-alt);
+    }
+
+    .svg-panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: var(--slide-bg-alt);
+      display: grid;
+      place-items: center;
+      min-height: 0;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .body {
+      font-size: 28px;
+      line-height: 1.48;
+      color: var(--slide-ink);
+    }
+
+    .muted {
+      color: var(--slide-muted);
+    }
+
+    .small {
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--slide-muted);
+    }
+
+    .math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+
+    .bullets {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .bullets li {
+      font-size: 28px;
+      line-height: 1.42;
+      padding-left: 30px;
+      position: relative;
+    }
+
+    .bullets li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 17px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--slide-accent);
+    }
+
+    .mini-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mini-list li {
+      font-size: 24px;
+      line-height: 1.38;
+      color: var(--slide-muted);
+      padding-left: 24px;
+      position: relative;
+    }
+
+    .mini-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 13px;
+      width: 8px;
+      height: 8px;
+      background: var(--slide-teal);
+      border-radius: 50%;
+    }
+
+    .env {
+      border-left: 4px solid;
+      border-radius: 8px;
+      padding: 22px 26px 22px 30px;
+      box-sizing: border-box;
+    }
+
+    .env-head {
+      font-size: 23px;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 9px;
+    }
+
+    .env-body {
+      font-size: 27px;
+      line-height: 1.45;
+    }
+
+    .env--def {
+      background: var(--math-definition-bg);
+      border-left-color: var(--math-definition-rule);
+    }
+
+    .env--def .env-head {
+      color: var(--math-definition-rule);
+    }
+
+    .env--thm {
+      background: var(--math-theorem-bg);
+      border-left-color: var(--math-theorem-rule);
+    }
+
+    .env--thm .env-head {
+      color: var(--math-theorem-rule);
+    }
+
+    .env--proof {
+      background: var(--math-proof-bg);
+      border-left-color: var(--math-proof-rule);
+    }
+
+    .env--proof .env-head {
+      color: var(--slide-muted);
+    }
+
+    .env--ex {
+      background: var(--math-example-bg);
+      border-left-color: var(--math-example-rule);
+    }
+
+    .env--ex .env-head {
+      color: var(--math-example-rule);
+    }
+
+    .env--warn {
+      background: var(--math-warning-bg);
+      border-left-color: var(--math-warning-rule);
+    }
+
+    .env--warn .env-head {
+      color: var(--math-warning-rule);
+    }
+
+    .env--rem {
+      background: var(--math-remark-bg);
+      border-left-color: var(--math-remark-rule);
+    }
+
+    .env--rem .env-head {
+      color: var(--slide-muted);
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .badge {
+      font-size: 22px;
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 7px 13px;
+      background: var(--slide-bg-alt);
+      color: var(--slide-accent);
+      border: 1px solid var(--slide-border-light);
+    }
+
+    .step-row {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .step-num {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--slide-accent);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 38px;
+      line-height: 1.35;
+      text-align: center;
+      color: var(--slide-ink);
+    }
+
+    .formula strong {
+      color: var(--slide-accent);
+    }
+
+    .table {
+      display: grid;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 24px;
+    }
+
+    .cell-h {
+      background: var(--slide-bg-alt);
+      font-weight: 700;
+      color: var(--slide-accent);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--slide-border);
+    }
+
+    .cell {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--slide-border-light);
+      color: var(--slide-ink);
+    }
+
+    .cell.last {
+      border-bottom: none;
+    }
+
+    svg text {
+      font-family: 'Source Sans 3', Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .svg-label {
+      font-size: 24px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="deck-metadata">
+    {
+      "course": "Computational Geometry in C",
+      "chapter_id": "chapter-02-polygon-partitioning",
+      "notebook_path": "Computational-Geometry-in-C/chapter-02-polygon-partitioning/02-polygon-partitioning.ipynb",
+      "source_span": "printed pages 44-62; PDF pages 53-71.",
+      "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+      "design_system_version": "lecture-design-system-2026-05-23"
+    }
+  </script>
+
+  <script id="speaker-notes" type="application/json">
+[
+  "Open by framing partitioning as a preprocessing chapter. The point is not to admire cuts for their own sake; it is to trade one arbitrary polygon for pieces with simpler geometry, so triangulation, visibility, and convex processing become easier to reason about and implement.",
+  "Use this slide as the contract for the lecture. Each named structure removes a kind of ambiguity: monotone pieces remove disconnected sweep slices, trapezoids expose supports, mountains make ears obvious, and convex pieces are the shape many downstream algorithms really want.",
+  "Make the comparison concrete: partitioning is not competing with triangulation so much as preparing for it. A cut-first strategy isolates the difficult sweep events, then asks each resulting piece to satisfy a stronger geometric promise before triangulation or convex processing begins.",
+  "Spend time on the horizontal-line test because it is the chapter's most useful mental model. A monotone polygon can still be nonconvex, but the sweep never has to maintain two disconnected interior intervals for the same piece.",
+  "Point to the two highlighted notches and ask what a horizontal sweep remembers just before and just after those levels. The important observation is local: a cusp is where the connected slice bookkeeping changes, so it is a natural place to insert a diagonal.",
+  "Separate two ideas that students often merge. Reflex means the internal angle bends inward; cusp means that inward bend matters to the chosen sweep direction. The same vertex can be harmless for one direction and troublesome for another.",
+  "Do not turn this into a full code lecture; keep it as algorithmic intuition. Once vertices are sorted by height, the stack represents the unresolved visible frontier. Monotonicity is exactly what prevents the frontier from branching into several independent intervals.",
+  "Explain the data-structure role of trapezoidalization. Sorting supplies the event order, while the active edge structure answers the geometric question: if a cusp shoots a support ray horizontally, which boundary edge does it encounter first?",
+  "Connect this slide directly to the previous one. A support line is not the final goal; it is evidence for where a diagonal can remove the cusp event. Once the pieces all pass the monotone test, the triangulation problem has changed character.",
+  "This is the operational slide. The chapter is not asking students to memorize every low-level case; it asks them to see why sorting and active-edge order locate the supports, and why the resulting monotone pieces make the remaining triangulation routine simple.",
+  "Describe mountains as a useful extreme of monotonicity. The base anchors the polygon, and the upper chain is convex enough that ear choices become visually forced. That makes mountains a clean bridge between monotone partitioning and linear triangulation.",
+  "Use the colored triangles to make the lemma feel geometric rather than magical. The convex chain bends the right way, so an ear triangle does not poke outside the polygon. After clipping it, the remaining polygon is again a smaller mountain.",
+  "The purpose of the fan diagram is not to claim every mountain is triangulated by the same fan. It is to show the count and the local nature of the operation: each accepted ear produces one triangle, and no vertex needs repeated global reconsideration.",
+  "Keep the history balanced. Chazelle proves that linear triangulation is possible, while Seidel gives a randomized path that is important in computational geometry practice. For this lecture, their role is to show that partitioning is part of a larger search for exploitable polygon structure.",
+  "Use the ledger language deliberately. Reflex vertices are the debt that convex partitioning must pay down. The lower bound says one piece cannot hide too many reflex difficulties, while the upper bound says a simple constructive process can always stay within r plus one pieces.",
+  "Close by tying the chapter together. Hertel-Mehlhorn is memorable because it begins with something easy to trust, a triangulation, and then deletes only diagonals whose removal has a local convexity certificate. That is the same chapter theme: add or remove structure when a geometric invariant says it is safe."
+]
+  </script>
+
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt mesh">
+        <div style="position: relative; z-index: 1; display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 56px; height: 100%; align-items: center;">
+          <div>
+            <div class="kicker">Computational Geometry in C · Chapter 2</div>
+            <h1 style="margin-top: 18px;">Polygon Partitioning</h1>
+            <div class="rule"></div>
+            <p class="subtitle">Cut a difficult polygon into monotone, trapezoidal, mountain, and convex pieces whose structure makes later algorithms simpler.</p>
+            <div class="badge-row">
+              <span class="badge">printed pages 44-62</span>
+              <span class="badge">PDF pages 53-71</span>
+              <span class="badge">preprocessing strategy</span>
+            </div>
+          </div>
+          <div class="svg-panel" style="height: 720px;">
+            <svg viewBox="0 0 900 610" width="100%" height="100%" role="img" aria-label="Synthetic polygon split into structured pieces">
+              <defs>
+                <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+                </marker>
+              </defs>
+              <polygon points="85,490 85,95 790,95 790,190 600,190 600,278 790,278 790,490" fill="rgba(37,99,235,0.06)" stroke="#1E3A8A" stroke-width="5"></polygon>
+              <line x1="85" y1="280" x2="790" y2="280" stroke="#0F766E" stroke-width="5"></line>
+              <line x1="310" y1="95" x2="310" y2="490" stroke="#2563EB" stroke-width="5"></line>
+              <line x1="600" y1="190" x2="310" y2="280" stroke="#B45309" stroke-width="5" stroke-dasharray="16 12"></line>
+              <line x1="600" y1="278" x2="310" y2="280" stroke="#B45309" stroke-width="5" stroke-dasharray="16 12"></line>
+              <polygon points="85,95 310,95 310,280 85,280" fill="rgba(15,118,110,0.14)" stroke="none"></polygon>
+              <polygon points="85,280 310,280 310,490 85,490" fill="rgba(109,40,217,0.12)" stroke="none"></polygon>
+              <polygon points="310,95 790,95 790,190 600,190 310,280" fill="rgba(37,99,235,0.13)" stroke="none"></polygon>
+              <polygon points="310,280 600,278 790,278 790,490 310,490" fill="rgba(180,83,9,0.11)" stroke="none"></polygon>
+              <text x="126" y="184" class="svg-label" fill="#0F766E">monotone</text>
+              <text x="118" y="390" class="svg-label" fill="#6D28D9">convex</text>
+              <text x="470" y="150" class="svg-label" fill="#2563EB">trapezoid-like</text>
+              <text x="482" y="395" class="svg-label" fill="#B45309">mountain route</text>
+              <path d="M160 540 C260 575, 430 575, 580 538" fill="none" stroke="#2563EB" stroke-width="4" marker-end="url(#arrow-blue)"></path>
+              <text x="600" y="548" font-size="25" fill="#475569">cut first</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Geometry Atlas</span><span>Notebook: chapter-02-polygon-partitioning</span></div>
+      </div>
+      <aside class="speaker-notes">Open by framing partitioning as a preprocessing chapter. The point is not to admire cuts for their own sake; it is to trade one arbitrary polygon for pieces with simpler geometry, so triangulation, visibility, and convex processing become easier to reason about and implement.</aside>
+    </section>
+
+    <section data-label="Learning Arc">
+      <div class="slide">
+        <div class="kicker">Learning Arc</div>
+        <h2>From Arbitrary Polygon To Algorithm-Friendly Pieces</h2>
+        <div class="rule"></div>
+        <div class="grid-2-even">
+          <div class="panel soft" style="display: flex; flex-direction: column; gap: 18px; justify-content: center;">
+            <div class="step-row"><div class="step-num">1</div><div class="body"><strong>Arbitrary polygon.</strong> Local notches create split and merge events under a sweep.</div></div>
+            <div class="step-row"><div class="step-num" style="background: var(--slide-blue);">2</div><div class="body"><strong>Monotone pieces.</strong> Horizontal lines meet each piece in one interval.</div></div>
+            <div class="step-row"><div class="step-num" style="background: var(--slide-teal);">3</div><div class="body"><strong>Trapezoidal supports.</strong> Sweep state identifies useful cusp-to-edge cuts.</div></div>
+            <div class="step-row"><div class="step-num" style="background: var(--slide-amber);">4</div><div class="body"><strong>Mountains and convex pieces.</strong> Ears and reflex ledgers control triangulation and partition size.</div></div>
+          </div>
+          <div class="svg-panel">
+            <svg viewBox="0 0 800 600" width="100%" height="100%" role="img" aria-label="Five-stage learning arc">
+              <defs>
+                <marker id="arrow-arc" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#64748B"></path>
+                </marker>
+              </defs>
+              <g transform="translate(40 90)">
+                <polygon points="0,140 0,0 170,0 170,54 120,54 120,90 170,90 170,140" fill="rgba(30,58,138,0.08)" stroke="#1E3A8A" stroke-width="4"></polygon>
+                <text x="15" y="190" font-size="25" fill="#1E3A8A" font-weight="700">arbitrary</text>
+              </g>
+              <path d="M235 165 L300 165" stroke="#64748B" stroke-width="4" marker-end="url(#arrow-arc)"></path>
+              <g transform="translate(315 90)">
+                <polygon points="0,140 30,0 175,0 145,140" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="4"></polygon>
+                <line x1="20" y1="44" x2="160" y2="44" stroke="#94A3B8" stroke-width="3" stroke-dasharray="10 8"></line>
+                <line x1="14" y1="90" x2="152" y2="90" stroke="#94A3B8" stroke-width="3" stroke-dasharray="10 8"></line>
+                <text x="18" y="190" font-size="25" fill="#2563EB" font-weight="700">monotone</text>
+              </g>
+              <path d="M510 165 L575 165" stroke="#64748B" stroke-width="4" marker-end="url(#arrow-arc)"></path>
+              <g transform="translate(590 90)">
+                <polygon points="0,140 20,0 180,0 160,140" fill="rgba(15,118,110,0.10)" stroke="#0F766E" stroke-width="4"></polygon>
+                <line x1="20" y1="42" x2="174" y2="42" stroke="#0F766E" stroke-width="4"></line>
+                <line x1="10" y1="92" x2="166" y2="92" stroke="#0F766E" stroke-width="4"></line>
+                <text x="3" y="190" font-size="25" fill="#0F766E" font-weight="700">trapezoids</text>
+              </g>
+              <path d="M685 300 C650 390, 510 410, 465 455" stroke="#64748B" stroke-width="4" fill="none" marker-end="url(#arrow-arc)"></path>
+              <g transform="translate(330 420)">
+                <polygon points="0,100 180,100 145,42 93,0 35,44" fill="rgba(180,83,9,0.10)" stroke="#B45309" stroke-width="4"></polygon>
+                <line x1="0" y1="100" x2="180" y2="100" stroke="#1E3A8A" stroke-width="5"></line>
+                <text x="16" y="145" font-size="25" fill="#B45309" font-weight="700">mountain</text>
+              </g>
+              <path d="M320 470 L240 470" stroke="#64748B" stroke-width="4" marker-end="url(#arrow-arc)"></path>
+              <g transform="translate(60 420)">
+                <polygon points="0,90 35,20 115,0 180,50 140,110 45,115" fill="rgba(109,40,217,0.10)" stroke="#6D28D9" stroke-width="4"></polygon>
+                <line x1="0" y1="90" x2="115" y2="0" stroke="#6D28D9" stroke-width="3"></line>
+                <line x1="0" y1="90" x2="180" y2="50" stroke="#6D28D9" stroke-width="3"></line>
+                <text x="14" y="150" font-size="25" fill="#6D28D9" font-weight="700">convex</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Chapter goal</span><span>arbitrary -> monotone -> trapezoid -> mountain -> convex</span></div>
+      </div>
+      <aside class="speaker-notes">Use this slide as the contract for the lecture. Each named structure removes a kind of ambiguity: monotone pieces remove disconnected sweep slices, trapezoids expose supports, mountains make ears obvious, and convex pieces are the shape many downstream algorithms really want.</aside>
+    </section>
+
+    <section data-label="Why Partition">
+      <div class="slide">
+        <div class="kicker">Motivation</div>
+        <h2>Whole-Polygon Triangulation Versus Cut-First Strategy</h2>
+        <div class="rule"></div>
+        <div class="grid-2-even">
+          <div class="panel" style="display: flex; flex-direction: column; gap: 22px;">
+            <h3>Whole polygon</h3>
+            <ul class="bullets">
+              <li>Every local notch must be handled by the triangulation procedure.</li>
+              <li>Algorithm invariants mix topology, visibility, and ordering.</li>
+              <li>One global failure can corrupt the whole decomposition.</li>
+            </ul>
+            <div class="env env--warn" style="margin-top: auto;">
+              <div class="env-head">Risk</div>
+              <div class="env-body">The hard events are still present when the final algorithm begins.</div>
+            </div>
+          </div>
+          <div class="panel soft" style="display: flex; flex-direction: column; gap: 22px;">
+            <h3 style="color: var(--slide-teal);">Cut first</h3>
+            <ul class="bullets">
+              <li>Find structural diagonals with a sweep or local test.</li>
+              <li>Run simpler algorithms on monotone or convex subproblems.</li>
+              <li>Attach correctness to each preprocessing invariant.</li>
+            </ul>
+            <div class="env env--ex" style="margin-top: auto;">
+              <div class="env-head">Strategy</div>
+              <div class="env-body">Pay \(O(n \log n)\) once, then solve easy pieces with tight local rules.</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Partitioning as preprocessing</span><span>the cuts simplify the invariants</span></div>
+      </div>
+      <aside class="speaker-notes">Make the comparison concrete: partitioning is not competing with triangulation so much as preparing for it. A cut-first strategy isolates the difficult sweep events, then asks each resulting piece to satisfy a stronger geometric promise before triangulation or convex processing begins.</aside>
+    </section>
+
+    <section data-label="Monotone Definition">
+      <div class="slide">
+        <div class="kicker">Definition</div>
+        <h2>Y-Monotone Polygons: Horizontal Lines See One Interval</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 760 600" width="100%" height="100%" role="img" aria-label="Horizontal line test and monotone chains">
+              <polygon points="150,520 210,120 560,92 640,500" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="5"></polygon>
+              <path d="M150 520 L210 120 L560 92 L640 500" fill="none" stroke="#1E3A8A" stroke-width="6"></path>
+              <path d="M150 520 L640 500" fill="none" stroke="#0F766E" stroke-width="6"></path>
+              <g stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10">
+                <line x1="70" y1="175" x2="700" y2="175"></line>
+                <line x1="70" y1="300" x2="700" y2="300"></line>
+                <line x1="70" y1="430" x2="700" y2="430"></line>
+              </g>
+              <g stroke="#B45309" stroke-width="7">
+                <line x1="202" y1="175" x2="578" y2="175"></line>
+                <line x1="183" y1="300" x2="605" y2="300"></line>
+                <line x1="164" y1="430" x2="630" y2="430"></line>
+              </g>
+              <text x="85" y="90" class="svg-label" fill="#1E3A8A">upper chain</text>
+              <text x="485" y="560" class="svg-label" fill="#0F766E">lower chain</text>
+              <text x="260" y="345" class="svg-label" fill="#B45309">one connected slice</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 22px;">
+            <div class="env env--def">
+              <div class="env-head">Definition 2.1</div>
+              <div class="env-body">A polygon is <strong>y-monotone</strong> when every horizontal line intersects its interior in the empty set, one point, or one line segment.</div>
+            </div>
+            <div class="env env--rem">
+              <div class="env-head">Equivalent Picture</div>
+              <div class="env-body">The boundary splits into two chains from the top vertex to the bottom vertex. Each chain is monotone in \(y\).</div>
+            </div>
+            <ul class="mini-list">
+              <li>Horizontal-line test: connected slice, never two separated intervals.</li>
+              <li>Top-to-bottom ordering gives a natural vertex order for triangulation.</li>
+              <li>Rotating the coordinate direction gives monotonicity in other directions.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer"><span>Notebook check</span><span>monotone example max horizontal intersections = 2</span></div>
+      </div>
+      <aside class="speaker-notes">Spend time on the horizontal-line test because it is the chapter's most useful mental model. A monotone polygon can still be nonconvex, but the sweep never has to maintain two disconnected interior intervals for the same piece.</aside>
+    </section>
+
+    <section data-label="Interior Cusps">
+      <div class="slide">
+        <div class="kicker">Failure Mode</div>
+        <h2>Interior Cusps Split A Sweep Interval</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 820 610" width="100%" height="100%" role="img" aria-label="Notched polygon with two separated horizontal slices">
+              <polygon points="95,510 95,95 720,95 720,190 560,190 560,278 720,278 720,510" fill="rgba(180,83,9,0.07)" stroke="#1E3A8A" stroke-width="5"></polygon>
+              <line x1="55" y1="235" x2="770" y2="235" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10"></line>
+              <line x1="95" y1="235" x2="560" y2="235" stroke="#B45309" stroke-width="8"></line>
+              <line x1="720" y1="235" x2="720" y2="235" stroke="#B45309" stroke-width="10"></line>
+              <circle cx="560" cy="190" r="11" fill="#B45309"></circle>
+              <circle cx="560" cy="278" r="11" fill="#B45309"></circle>
+              <circle cx="720" cy="190" r="9" fill="#6D28D9"></circle>
+              <circle cx="720" cy="278" r="9" fill="#6D28D9"></circle>
+              <text x="440" y="166" class="svg-label" fill="#B45309">interior cusp</text>
+              <text x="435" y="325" class="svg-label" fill="#B45309">interior cusp</text>
+              <text x="150" y="230" class="svg-label" fill="#B45309">slice changes topology</text>
+              <path d="M570 190 C630 180, 660 160, 704 110" stroke="#B45309" stroke-width="4" fill="none" stroke-dasharray="10 8"></path>
+              <path d="M570 278 C640 308, 670 342, 705 390" stroke="#B45309" stroke-width="4" fill="none" stroke-dasharray="10 8"></path>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="env env--warn">
+              <div class="env-head">Symptom</div>
+              <div class="env-body">At a cusp level, a sweep interval is born, dies, splits, or merges. The horizontal-line test fails because the interior is no longer connected.</div>
+            </div>
+            <div class="panel soft">
+              <h3>Sampled diagnostic</h3>
+              <div class="formula" style="margin: 20px 0;">max intersections = <strong>6</strong></div>
+              <p class="body muted">The notebook's notched polygon has four reflex vertices and sample lines that meet the boundary more than twice.</p>
+            </div>
+            <div class="env env--rem">
+              <div class="env-head">Teaching Move</div>
+              <div class="env-body">Cusps mark where the partition must add information: a diagonal removes a split or merge event from the sweep.</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Failure mode</span><span>interior cusps make nonmonotonicity visible</span></div>
+      </div>
+      <aside class="speaker-notes">Point to the two highlighted notches and ask what a horizontal sweep remembers just before and just after those levels. The important observation is local: a cusp is where the connected slice bookkeeping changes, so it is a natural place to insert a diagonal.</aside>
+    </section>
+
+    <section data-label="Cusp Criterion">
+      <div class="slide">
+        <div class="kicker">Local Criterion</div>
+        <h2>Reflex Vertices Whose Neighbors Lie On One Side</h2>
+        <div class="rule"></div>
+        <div class="grid-2-even">
+          <div class="svg-panel">
+            <svg viewBox="0 0 760 560" width="100%" height="100%" role="img" aria-label="Cusp criterion at a reflex vertex">
+              <g transform="translate(95 85)">
+                <path d="M60 360 L60 70 L400 70 L400 160 L265 160 L265 250 L400 250 L400 360 Z" fill="rgba(37,99,235,0.06)" stroke="#1E3A8A" stroke-width="5"></path>
+                <circle cx="265" cy="160" r="12" fill="#B45309"></circle>
+                <circle cx="400" cy="160" r="9" fill="#2563EB"></circle>
+                <circle cx="265" cy="250" r="9" fill="#2563EB"></circle>
+                <line x1="265" y1="160" x2="265" y2="28" stroke="#B45309" stroke-width="4" marker-end="url(#upcrit)"></line>
+                <line x1="265" y1="160" x2="265" y2="292" stroke="#B45309" stroke-width="4" marker-end="url(#downcrit)"></line>
+                <text x="230" y="140" class="svg-label" fill="#B45309">v</text>
+                <text x="417" y="168" font-size="23" fill="#2563EB">prev</text>
+                <text x="220" y="280" font-size="23" fill="#2563EB">next</text>
+                <text x="470" y="190" font-size="25" fill="#475569">neighbors on</text>
+                <text x="470" y="220" font-size="25" fill="#475569">same y-side?</text>
+              </g>
+              <defs>
+                <marker id="upcrit" markerWidth="12" markerHeight="12" refX="6" refY="2" orient="auto">
+                  <path d="M0,12 L6,0 L12,12 Z" fill="#B45309"></path>
+                </marker>
+                <marker id="downcrit" markerWidth="12" markerHeight="12" refX="6" refY="10" orient="auto">
+                  <path d="M0,0 L6,12 L12,0 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="env env--thm">
+              <div class="env-head">Cusp Criterion</div>
+              <div class="env-body">For a chosen sweep direction, an interior cusp is a reflex vertex whose two boundary neighbors lie locally on the same side of the sweep level.</div>
+            </div>
+            <div class="panel soft">
+              <h3>Reflex test</h3>
+              <p class="body" style="margin-top: 12px;">The internal angle exceeds \(180^\circ\), so the polygon turns inward at \(v\). Cusps are the reflex vertices that also create split or merge events for the sweep.</p>
+            </div>
+            <div class="env env--ex">
+              <div class="env-head">Notebook Ledger</div>
+              <div class="env-body">The notched example records reflex vertices 4, 5, 8, and 9. These are the local obstructions later counted by convex partition bounds.</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Local rule</span><span>reflex plus same-side neighbors signals a cusp event</span></div>
+      </div>
+      <aside class="speaker-notes">Separate two ideas that students often merge. Reflex means the internal angle bends inward; cusp means that inward bend matters to the chosen sweep direction. The same vertex can be harmless for one direction and troublesome for another.</aside>
+    </section>
+
+    <section data-label="Monotone Triangulation">
+      <div class="slide">
+        <div class="kicker">Algorithmic Payoff</div>
+        <h2>Monotone Triangulation: Sorted Vertices And A Stack</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 760 600" width="100%" height="100%" role="img" aria-label="Sorted monotone polygon with stack diagonals">
+              <polygon points="130,520 190,95 545,118 650,510" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="5"></polygon>
+              <line x1="190" y1="95" x2="545" y2="118" stroke="#1E3A8A" stroke-width="6"></line>
+              <line x1="130" y1="520" x2="650" y2="510" stroke="#0F766E" stroke-width="6"></line>
+              <line x1="190" y1="95" x2="650" y2="510" stroke="#B45309" stroke-width="4"></line>
+              <line x1="545" y1="118" x2="130" y2="520" stroke="#B45309" stroke-width="4"></line>
+              <line x1="190" y1="95" x2="130" y2="520" stroke="#94A3B8" stroke-width="3" stroke-dasharray="9 9"></line>
+              <g fill="#1E3A8A">
+                <circle cx="190" cy="95" r="10"></circle>
+                <circle cx="545" cy="118" r="10"></circle>
+                <circle cx="650" cy="510" r="10"></circle>
+                <circle cx="130" cy="520" r="10"></circle>
+              </g>
+              <text x="170" y="65" class="svg-label" fill="#1E3A8A">v1</text>
+              <text x="552" y="96" class="svg-label" fill="#1E3A8A">v2</text>
+              <text x="657" y="535" class="svg-label" fill="#1E3A8A">v3</text>
+              <text x="85" y="544" class="svg-label" fill="#1E3A8A">v4</text>
+              <text x="330" y="335" class="svg-label" fill="#B45309">valid diagonals appear as stack pops</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="env env--ex">
+              <div class="env-head">Stack Intuition</div>
+              <div class="env-body">Process vertices from top to bottom. The stack stores the current visible chain; when visibility changes, pop vertices and draw diagonals.</div>
+            </div>
+            <div class="table" style="grid-template-columns: 180px 1fr;">
+              <div class="cell-h">Invariant</div><div class="cell-h">Why It Helps</div>
+              <div class="cell">sorted order</div><div class="cell">the sweep never revisits a height</div>
+              <div class="cell">two chains</div><div class="cell">chain changes tell when to flush the stack</div>
+              <div class="cell last">visibility test</div><div class="cell last">local diagonal validity is easy to check</div>
+            </div>
+            <div class="env env--rem">
+              <div class="env-head">Count</div>
+              <div class="env-body">A monotone \(n\)-gon triangulates into \(n-2\) triangles; the stack only decides which diagonals realize that count.</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Why monotone pieces matter</span><span>ordering makes triangulation local</span></div>
+      </div>
+      <aside class="speaker-notes">Do not turn this into a full code lecture; keep it as algorithmic intuition. Once vertices are sorted by height, the stack represents the unresolved visible frontier. Monotonicity is exactly what prevents the frontier from branching into several independent intervals.</aside>
+    </section>
+
+    <section data-label="Trapezoidalization">
+      <div class="slide">
+        <div class="kicker">Sweep Construction</div>
+        <h2>Trapezoidalization: Supports And Active Edge Order</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 840 610" width="100%" height="100%" role="img" aria-label="Horizontal support line and active edges">
+              <polygon points="85,520 85,95 735,95 735,190 560,190 560,278 735,278 735,520" fill="rgba(15,118,110,0.08)" stroke="#1E3A8A" stroke-width="5"></polygon>
+              <g stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10">
+                <line x1="55" y1="145" x2="775" y2="145"></line>
+                <line x1="55" y1="235" x2="775" y2="235"></line>
+                <line x1="55" y1="330" x2="775" y2="330"></line>
+                <line x1="55" y1="430" x2="775" y2="430"></line>
+              </g>
+              <line x1="85" y1="235" x2="560" y2="235" stroke="#0F766E" stroke-width="7"></line>
+              <line x1="560" y1="190" x2="735" y2="190" stroke="#B45309" stroke-width="5"></line>
+              <line x1="560" y1="278" x2="735" y2="278" stroke="#B45309" stroke-width="5"></line>
+              <line x1="560" y1="190" x2="560" y2="278" stroke="#B45309" stroke-width="7"></line>
+              <text x="125" y="225" class="svg-label" fill="#0F766E">support at cusp level</text>
+              <text x="594" y="247" class="svg-label" fill="#B45309">active edge</text>
+              <text x="120" y="560" class="svg-label" fill="#64748B">sweep stores edges ordered by x-intersection</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="env env--def">
+              <div class="env-head">Trapezoidalization</div>
+              <div class="env-body">Extend horizontal supports from event vertices until they hit the nearest visible polygon edge. The resulting cells are trapezoid-like vertical-order regions.</div>
+            </div>
+            <ul class="bullets">
+              <li>Sort vertices by sweep coordinate.</li>
+              <li>Maintain active edges in left-to-right order.</li>
+              <li>At cusp events, query the neighboring active edge.</li>
+            </ul>
+            <div class="env env--ex">
+              <div class="env-head">Check</div>
+              <div class="env-body">The notebook support level is \(y=1.8\), matching the cusp level in the synthetic notched polygon.</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Sweep-line role</span><span>balanced active edge order gives O(n log n)</span></div>
+      </div>
+      <aside class="speaker-notes">Explain the data-structure role of trapezoidalization. Sorting supplies the event order, while the active edge structure answers the geometric question: if a cusp shoots a support ray horizontally, which boundary edge does it encounter first?</aside>
+    </section>
+
+    <section data-label="Trapezoids To Monotone Pieces">
+      <div class="slide">
+        <div class="kicker">Assembly</div>
+        <h2>From Supports To Monotone Pieces</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 840 610" width="100%" height="100%" role="img" aria-label="Cusp to support diagonals produce monotone pieces">
+              <polygon points="85,520 85,95 735,95 735,190 560,190 560,278 735,278 735,520" fill="rgba(37,99,235,0.04)" stroke="#1E3A8A" stroke-width="5"></polygon>
+              <polygon points="85,95 330,95 330,235 85,235" fill="rgba(15,118,110,0.16)" stroke="none"></polygon>
+              <polygon points="85,235 330,235 330,520 85,520" fill="rgba(37,99,235,0.13)" stroke="none"></polygon>
+              <polygon points="330,95 735,95 735,190 560,190 560,235 330,235" fill="rgba(180,83,9,0.12)" stroke="none"></polygon>
+              <polygon points="330,235 560,235 560,278 735,278 735,520 330,520" fill="rgba(109,40,217,0.11)" stroke="none"></polygon>
+              <line x1="85" y1="235" x2="560" y2="235" stroke="#B45309" stroke-width="7"></line>
+              <line x1="330" y1="95" x2="330" y2="520" stroke="#2563EB" stroke-width="5" stroke-dasharray="14 10"></line>
+              <circle cx="560" cy="190" r="11" fill="#B45309"></circle>
+              <circle cx="560" cy="278" r="11" fill="#B45309"></circle>
+              <text x="104" y="168" class="svg-label" fill="#0F766E">P1</text>
+              <text x="104" y="390" class="svg-label" fill="#2563EB">P2</text>
+              <text x="420" y="160" class="svg-label" fill="#B45309">P3</text>
+              <text x="470" y="405" class="svg-label" fill="#6D28D9">P4</text>
+              <text x="350" y="258" class="svg-label" fill="#B45309">support diagonal removes cusp behavior</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="env env--thm">
+              <div class="env-head">Partition Principle</div>
+              <div class="env-body">Connect each relevant cusp to its support target so that every resulting component passes the horizontal-line test.</div>
+            </div>
+            <div class="table" style="grid-template-columns: 140px 1fr 1fr;">
+              <div class="cell-h">Piece</div><div class="cell-h">Max intersections</div><div class="cell-h">Status</div>
+              <div class="cell">P1</div><div class="cell">2</div><div class="cell" style="color: var(--slide-teal); font-weight: 700;">monotone</div>
+              <div class="cell">P2</div><div class="cell">2</div><div class="cell" style="color: var(--slide-teal); font-weight: 700;">monotone</div>
+              <div class="cell">P3</div><div class="cell">2</div><div class="cell" style="color: var(--slide-teal); font-weight: 700;">monotone</div>
+              <div class="cell last">P4</div><div class="cell last">2</div><div class="cell last" style="color: var(--slide-teal); font-weight: 700;">monotone</div>
+            </div>
+            <p class="body muted">The slide shows a synthetic, source-generated example rather than a copied textbook figure.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Notebook result</span><span>four partition pieces all y-monotone</span></div>
+      </div>
+      <aside class="speaker-notes">Connect this slide directly to the previous one. A support line is not the final goal; it is evidence for where a diagonal can remove the cusp event. Once the pieces all pass the monotone test, the triangulation problem has changed character.</aside>
+    </section>
+
+    <section data-label="Algorithm Box">
+      <div class="slide">
+        <div class="kicker">Algorithm Box</div>
+        <h2>Sort, Sweep, Connect Cusps, Triangulate Pieces</h2>
+        <div class="rule"></div>
+        <div class="grid-2-even">
+          <div class="panel soft" style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="step-row"><div class="step-num">1</div><div class="body"><strong>Sort.</strong> Order vertices by the sweep coordinate.</div></div>
+            <div class="step-row"><div class="step-num">2</div><div class="body"><strong>Sweep.</strong> Maintain the active edge order and classify events.</div></div>
+            <div class="step-row"><div class="step-num">3</div><div class="body"><strong>Connect cusps.</strong> Insert support diagonals that destroy split and merge events.</div></div>
+            <div class="step-row"><div class="step-num">4</div><div class="body"><strong>Triangulate.</strong> Run the monotone stack procedure on each piece.</div></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 22px;">
+            <div class="env env--thm">
+              <div class="env-head">Running Time</div>
+              <div class="env-body">The accessible sweep-based route is \(O(n \log n)\): sorting plus balanced active-edge updates dominate the local geometry.</div>
+            </div>
+            <div class="svg-panel" style="height: 420px;">
+              <svg viewBox="0 0 700 330" width="100%" height="100%" role="img" aria-label="Algorithm pipeline">
+                <defs>
+                  <marker id="pipearrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#64748B"></path>
+                  </marker>
+                </defs>
+                <g font-size="25" font-weight="700">
+                  <rect x="20" y="110" width="120" height="84" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                  <text x="47" y="160" fill="#2563EB">sort</text>
+                  <path d="M155 152 L225 152" stroke="#64748B" stroke-width="4" marker-end="url(#pipearrow)"></path>
+                  <rect x="240" y="110" width="120" height="84" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                  <text x="264" y="160" fill="#0F766E">sweep</text>
+                  <path d="M375 152 L445 152" stroke="#64748B" stroke-width="4" marker-end="url(#pipearrow)"></path>
+                  <rect x="460" y="110" width="190" height="84" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+                  <text x="490" y="160" fill="#B45309">diagonals</text>
+                </g>
+                <text x="230" y="270" font-size="28" fill="#1E3A8A" font-weight="700">pieces now satisfy stronger invariants</text>
+              </svg>
+            </div>
+            <div class="env env--rem">
+              <div class="env-head">Implementation Caution</div>
+              <div class="env-body">Degenerate equal-height vertices need tie handling, but the conceptual invariant is unchanged: active edges are ordered by current sweep intersection.</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Chapter-level algorithm</span><span>O(n log n) preprocessing plus monotone triangulation</span></div>
+      </div>
+      <aside class="speaker-notes">This is the operational slide. The chapter is not asking students to memorize every low-level case; it asks them to see why sorting and active-edge order locate the supports, and why the resulting monotone pieces make the remaining triangulation routine simple.</aside>
+    </section>
+
+    <section data-label="Monotone Mountains">
+      <div class="slide">
+        <div class="kicker">Special Structure</div>
+        <h2>Monotone Mountains: A Base Plus One Convex Chain</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 820 600" width="100%" height="100%" role="img" aria-label="Monotone mountain with base and convex chain">
+              <polygon points="95,500 725,500 645,325 505,190 345,125 190,300" fill="rgba(180,83,9,0.08)" stroke="#B45309" stroke-width="5"></polygon>
+              <polyline points="95,500 190,300 345,125 505,190 645,325 725,500" fill="none" stroke="#B45309" stroke-width="7"></polyline>
+              <line x1="95" y1="500" x2="725" y2="500" stroke="#1E3A8A" stroke-width="8"></line>
+              <circle cx="95" cy="500" r="11" fill="#1E3A8A"></circle>
+              <circle cx="725" cy="500" r="11" fill="#1E3A8A"></circle>
+              <text x="345" y="545" class="svg-label" fill="#1E3A8A">base edge</text>
+              <text x="305" y="90" class="svg-label" fill="#B45309">convex chain</text>
+              <text x="168" y="288" font-size="24" fill="#475569">chain vertices are ear candidates</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="env env--def">
+              <div class="env-head">Definition 2.2</div>
+              <div class="env-body">A monotone mountain has one distinguished base edge and a remaining boundary chain that is convex from one base endpoint to the other.</div>
+            </div>
+            <ul class="bullets">
+              <li>It is y-monotone after orienting the base below the chain.</li>
+              <li>The convex chain exposes ears in a predictable order.</li>
+              <li>The structure is strong enough for a linear triangulation argument.</li>
+            </ul>
+            <div class="env env--ex">
+              <div class="env-head">Notebook Check</div>
+              <div class="env-body">The synthetic mountain has 6 vertices and triangulates into 4 triangles, matching \(n-2\).</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Mountain structure</span><span>base edge plus convex chain</span></div>
+      </div>
+      <aside class="speaker-notes">Describe mountains as a useful extreme of monotonicity. The base anchors the polygon, and the upper chain is convex enough that ear choices become visually forced. That makes mountains a clean bridge between monotone partitioning and linear triangulation.</aside>
+    </section>
+
+    <section data-label="Mountain Ear Lemma">
+      <div class="slide">
+        <div class="kicker">Lemma</div>
+        <h2>Mountain Ear Lemma: Convex Chain Vertices Can Be Removed</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 820 600" width="100%" height="100%" role="img" aria-label="Ears on a monotone mountain">
+              <polygon points="95,500 725,500 645,325 505,190 345,125 190,300" fill="rgba(180,83,9,0.06)" stroke="#B45309" stroke-width="5"></polygon>
+              <polygon points="95,500 190,300 345,125" fill="rgba(15,118,110,0.18)" stroke="#0F766E" stroke-width="4"></polygon>
+              <polygon points="345,125 505,190 645,325" fill="rgba(37,99,235,0.13)" stroke="#2563EB" stroke-width="4"></polygon>
+              <polygon points="505,190 645,325 725,500" fill="rgba(109,40,217,0.11)" stroke="#6D28D9" stroke-width="4"></polygon>
+              <line x1="95" y1="500" x2="725" y2="500" stroke="#1E3A8A" stroke-width="8"></line>
+              <g fill="#B45309">
+                <circle cx="190" cy="300" r="11"></circle>
+                <circle cx="345" cy="125" r="11"></circle>
+                <circle cx="505" cy="190" r="11"></circle>
+                <circle cx="645" cy="325" r="11"></circle>
+              </g>
+              <text x="172" y="282" class="svg-label" fill="#0F766E">ear</text>
+              <text x="326" y="98" class="svg-label" fill="#2563EB">ear</text>
+              <text x="600" y="300" class="svg-label" fill="#6D28D9">ear</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="env env--thm">
+              <div class="env-head">Mountain Ear Lemma</div>
+              <div class="env-body">In a monotone mountain, at least one internal vertex of the convex chain is an ear tip: its adjacent vertices see each other through the polygon.</div>
+            </div>
+            <div class="env env--proof">
+              <div class="env-head">Proof Roadmap</div>
+              <div class="env-body">Convexity of the chain keeps the candidate triangle inside the mountain. Removing that triangle leaves a smaller mountain, so induction can continue.</div>
+            </div>
+            <p class="body muted">The lemma is the structural reason a mountain can be triangulated without returning to a global search for arbitrary ears.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Ear structure</span><span>visible ears support induction</span></div>
+      </div>
+      <aside class="speaker-notes">Use the colored triangles to make the lemma feel geometric rather than magical. The convex chain bends the right way, so an ear triangle does not poke outside the polygon. After clipping it, the remaining polygon is again a smaller mountain.</aside>
+    </section>
+
+    <section data-label="Linear Mountain Triangulation">
+      <div class="slide">
+        <div class="kicker">Linear Routine</div>
+        <h2>Linear Mountain Triangulation</h2>
+        <div class="rule"></div>
+        <div class="grid-2-even">
+          <div class="panel soft">
+            <h3>Fan-style view for the checked example</h3>
+            <div class="svg-panel" style="height: 560px; margin-top: 18px;">
+              <svg viewBox="0 0 720 470" width="100%" height="100%" role="img" aria-label="Mountain fan triangulation">
+                <polygon points="55,405 665,405 585,250 455,135 310,80 170,250" fill="rgba(37,99,235,0.05)" stroke="#B45309" stroke-width="5"></polygon>
+                <line x1="55" y1="405" x2="665" y2="405" stroke="#1E3A8A" stroke-width="7"></line>
+                <g stroke="#0F766E" stroke-width="5">
+                  <line x1="55" y1="405" x2="170" y2="250"></line>
+                  <line x1="55" y1="405" x2="310" y2="80"></line>
+                  <line x1="55" y1="405" x2="455" y2="135"></line>
+                  <line x1="55" y1="405" x2="585" y2="250"></line>
+                </g>
+                <text x="105" y="360" font-size="24" fill="#0F766E">T1</text>
+                <text x="205" y="285" font-size="24" fill="#0F766E">T2</text>
+                <text x="330" y="255" font-size="24" fill="#0F766E">T3</text>
+                <text x="500" y="315" font-size="24" fill="#0F766E">T4</text>
+              </svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="env env--ex">
+              <div class="env-head">Invariant</div>
+              <div class="env-body">Maintain the current mountain boundary. Each ear removal emits one triangle and reduces the number of vertices by one.</div>
+            </div>
+            <div class="formula">vertices \(=6\)<br>triangles \(=4=n-2\)</div>
+            <div class="env env--proof">
+              <div class="env-head">Why Linear</div>
+              <div class="env-body">Each chain vertex enters the ear test a constant number of times. The algorithm advances along the chain instead of searching the whole polygon.</div>
+            </div>
+            <ul class="mini-list">
+              <li>Area check: fan triangle areas sum to the mountain area.</li>
+              <li>Chain ear vertices in the notebook: 2, 3, and 4.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer"><span>Checked artifact</span><span>mountain has n-2 triangles</span></div>
+      </div>
+      <aside class="speaker-notes">The purpose of the fan diagram is not to claim every mountain is triangulated by the same fan. It is to show the count and the local nature of the operation: each accepted ear produces one triangle, and no vertex needs repeated global reconsideration.</aside>
+    </section>
+
+    <section data-label="Linear-Time Context">
+      <div class="slide">
+        <div class="kicker">Context</div>
+        <h2>Linear-Time Triangulation: Chazelle And Seidel</h2>
+        <div class="rule"></div>
+        <div class="grid-2-even">
+          <div class="panel" style="display: flex; flex-direction: column; gap: 20px;">
+            <h3>Where this chapter sits</h3>
+            <ul class="bullets">
+              <li>Sweep partitioning gives a clear \(O(n \log n)\) route.</li>
+              <li>Mountains show why special structure can be triangulated linearly.</li>
+              <li>The broader literature asks whether arbitrary simple polygons can be triangulated in linear time.</li>
+            </ul>
+            <div class="env env--rem" style="margin-top: auto;">
+              <div class="env-head">Role Of History</div>
+              <div class="env-body">The named algorithms are context for the asymptotic frontier, not prerequisites for implementing the chapter's sweep construction.</div>
+            </div>
+          </div>
+          <div class="svg-panel">
+            <svg viewBox="0 0 760 560" width="100%" height="100%" role="img" aria-label="Algorithm context map">
+              <line x1="110" y1="285" x2="650" y2="285" stroke="#CBD5E1" stroke-width="5"></line>
+              <g>
+                <circle cx="145" cy="285" r="24" fill="#2563EB"></circle>
+                <text x="92" y="350" font-size="25" fill="#2563EB" font-weight="700">sweep</text>
+                <text x="80" y="380" font-size="23" fill="#475569">clear O(n log n)</text>
+              </g>
+              <g>
+                <circle cx="345" cy="285" r="24" fill="#0F766E"></circle>
+                <text x="292" y="350" font-size="25" fill="#0F766E" font-weight="700">Seidel</text>
+                <text x="260" y="380" font-size="23" fill="#475569">randomized route</text>
+              </g>
+              <g>
+                <circle cx="565" cy="285" r="24" fill="#1E3A8A"></circle>
+                <text x="503" y="350" font-size="25" fill="#1E3A8A" font-weight="700">Chazelle</text>
+                <text x="500" y="380" font-size="23" fill="#475569">linear worst case</text>
+              </g>
+              <text x="120" y="150" font-size="30" fill="#111827" font-weight="700">increasing theoretical sophistication</text>
+              <text x="150" y="450" font-size="27" fill="#475569">All routes depend on making structure visible.</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Asymptotic story</span><span>accessible sweep versus linear-time frontier</span></div>
+      </div>
+      <aside class="speaker-notes">Keep the history balanced. Chazelle proves that linear triangulation is possible, while Seidel gives a randomized path that is important in computational geometry practice. For this lecture, their role is to show that partitioning is part of a larger search for exploitable polygon structure.</aside>
+    </section>
+
+    <section data-label="Convex Partition Bounds">
+      <div class="slide">
+        <div class="kicker">Convex Partitioning</div>
+        <h2>Reflex Vertices Control Lower And Upper Bounds</h2>
+        <div class="rule"></div>
+        <div class="grid-2">
+          <div class="svg-panel">
+            <svg viewBox="0 0 840 610" width="100%" height="100%" role="img" aria-label="Convex partition bounds with reflex ledger">
+              <polygon points="95,520 95,95 735,95 735,190 560,190 560,278 735,278 735,520" fill="rgba(109,40,217,0.06)" stroke="#1E3A8A" stroke-width="5"></polygon>
+              <line x1="95" y1="235" x2="560" y2="235" stroke="#6D28D9" stroke-width="6"></line>
+              <line x1="330" y1="95" x2="330" y2="520" stroke="#6D28D9" stroke-width="6" stroke-dasharray="14 10"></line>
+              <g fill="#B45309">
+                <circle cx="560" cy="190" r="12"></circle>
+                <circle cx="560" cy="278" r="12"></circle>
+                <circle cx="735" cy="190" r="12"></circle>
+                <circle cx="735" cy="278" r="12"></circle>
+              </g>
+              <text x="525" y="164" class="svg-label" fill="#B45309">r</text>
+              <text x="528" y="322" class="svg-label" fill="#B45309">r</text>
+              <text x="748" y="182" class="svg-label" fill="#B45309">r</text>
+              <text x="748" y="306" class="svg-label" fill="#B45309">r</text>
+              <text x="118" y="570" font-size="25" fill="#475569">four convex pieces shown; reflex count r = 4</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="env env--thm">
+              <div class="env-head">Reflex Ledger</div>
+              <div class="env-body">If a polygon has \(r\) reflex vertices, the number \(\Phi\) of pieces in a convex partition satisfies</div>
+            </div>
+            <div class="formula"><strong>\(\lceil r/2\rceil + 1 \le \Phi \le r+1\)</strong></div>
+            <div class="table" style="grid-template-columns: 1fr 1fr;">
+              <div class="cell-h">Quantity</div><div class="cell-h">Checked Value</div>
+              <div class="cell">reflex count \(r\)</div><div class="cell">4</div>
+              <div class="cell">lower bound</div><div class="cell">3</div>
+              <div class="cell">partition pieces</div><div class="cell">4</div>
+              <div class="cell last">upper bound</div><div class="cell last">5</div>
+            </div>
+            <p class="body muted">The count is not asserted optimal; it demonstrates the scale of the theorem.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Convex partition bounds</span><span>ceil(r/2)+1 <= Phi <= r+1</span></div>
+      </div>
+      <aside class="speaker-notes">Use the ledger language deliberately. Reflex vertices are the debt that convex partitioning must pay down. The lower bound says one piece cannot hide too many reflex difficulties, while the upper bound says a simple constructive process can always stay within r plus one pieces.</aside>
+    </section>
+
+    <section data-label="Hertel-Mehlhorn Recap">
+      <div class="slide alt">
+        <div class="kicker">Approximation And Recap</div>
+        <h2>Hertel-Mehlhorn: Triangulate, Then Remove Inessential Diagonals</h2>
+        <div class="rule"></div>
+        <div class="grid-2-even">
+          <div class="panel" style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="env env--def">
+              <div class="env-head">Essential Versus Inessential</div>
+              <div class="env-body">A diagonal is inessential when removing it merges two adjacent pieces and the union remains convex. Essential diagonals protect a reflex obstruction.</div>
+            </div>
+            <ul class="bullets">
+              <li>Start from any valid triangulation.</li>
+              <li>Scan diagonals and remove those certified as inessential.</li>
+              <li>Keep a convex partition that is fast and near the right scale.</li>
+            </ul>
+          </div>
+          <div class="svg-panel">
+            <svg viewBox="0 0 780 560" width="100%" height="100%" role="img" aria-label="Triangulation simplified by removing inessential diagonals">
+              <polygon points="90,460 150,150 350,85 610,130 700,430 430,500" fill="rgba(37,99,235,0.05)" stroke="#1E3A8A" stroke-width="5"></polygon>
+              <g stroke="#94A3B8" stroke-width="4" stroke-dasharray="10 8">
+                <line x1="90" y1="460" x2="350" y2="85"></line>
+                <line x1="90" y1="460" x2="610" y2="130"></line>
+                <line x1="90" y1="460" x2="700" y2="430"></line>
+                <line x1="350" y1="85" x2="700" y2="430"></line>
+              </g>
+              <g stroke="#0F766E" stroke-width="7">
+                <line x1="90" y1="460" x2="610" y2="130"></line>
+                <line x1="90" y1="460" x2="700" y2="430"></line>
+              </g>
+              <g stroke="#B45309" stroke-width="7" stroke-linecap="round">
+                <line x1="250" y1="260" x2="315" y2="318"></line>
+                <line x1="315" y1="260" x2="250" y2="318"></line>
+                <line x1="460" y1="198" x2="525" y2="256"></line>
+                <line x1="525" y1="198" x2="460" y2="256"></line>
+              </g>
+              <text x="145" y="535" class="svg-label" fill="#0F766E">kept essential diagonals</text>
+              <text x="405" y="300" class="svg-label" fill="#B45309">removed if convexity survives</text>
+            </svg>
+          </div>
+        </div>
+        <div style="position: absolute; left: 96px; right: 96px; bottom: 86px;">
+          <div class="table" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="cell-h">Monotone</div><div class="cell-h">Trapezoid</div><div class="cell-h">Mountain</div><div class="cell-h">Convex</div><div class="cell-h">Big Idea</div>
+            <div class="cell last">one slice</div><div class="cell last">support cuts</div><div class="cell last">visible ears</div><div class="cell last">no reflex</div><div class="cell last">preprocess to simplify</div>
+          </div>
+        </div>
+        <div class="footer"><span>Recap</span><span>triangulate, simplify, preserve convexity</span></div>
+      </div>
+      <aside class="speaker-notes">Close by tying the chapter together. Hertel-Mehlhorn is memorable because it begins with something easy to trust, a triangulation, and then deletes only diagonals whose removal has a local convexity certificate. That is the same chapter theme: add or remove structure when a geometric invariant says it is safe.</aside>
+    </section>
+  </deck-stage>
+
+</body>
+</html>

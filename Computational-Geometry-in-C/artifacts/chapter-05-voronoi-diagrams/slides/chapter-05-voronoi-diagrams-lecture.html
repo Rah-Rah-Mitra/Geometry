@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="97">
+  <meta name="course_root" content="Computational-Geometry-in-C">
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-05-voronoi-diagrams">
+  <meta name="chapter_title" content="Chapter 5 - Voronoi Diagrams">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-05-voronoi-diagrams/05-voronoi-diagrams.ipynb">
+  <meta name="source_span" content="printed pages 155-192.">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="source_pdf_pages" content="PDF pages 164-201">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 5 - Voronoi Diagrams</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 97,
+  "course_root": "Computational-Geometry-in-C",
+  "course": "Computational Geometry in C",
+  "chapter_id": "chapter-05-voronoi-diagrams",
+  "chapter_title": "Chapter 5 - Voronoi Diagrams",
+  "notebook_path": "Computational-Geometry-in-C/chapter-05-voronoi-diagrams/05-voronoi-diagrams.ipynb",
+  "source_span": "printed pages 155-192.",
+  "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+  "source_pdf_pages": "PDF pages 164-201",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 64px 92px 48px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 64px; line-height: 1.04; font-weight: 700; max-width: 1500px; }
+    h2 { font-size: 50px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 29px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 25px; line-height: 1.30; }
+    ul, ol { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    img { max-width: 100%; max-height: 100%; display: block; object-fit: contain; }
+    table { width: 100%; border-collapse: collapse; font-size: 23px; line-height: 1.22; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--slide-border-light); text-align: left; vertical-align: top; }
+    th { color: var(--slide-accent); background: var(--slide-bg-alt); font-weight: 700; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1390px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 28px; align-items: stretch; }
+    .cols { grid-template-columns: 0.96fr 1.04fr; }
+    .wide-left { grid-template-columns: 1.12fr .88fr; }
+    .wide-right { grid-template-columns: .86fr 1.14fr; }
+    .three, .four { display: grid; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 20px 22px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .panel p, .panel li { font-size: 24px; }
+    .math-box { padding: 21px 24px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.35; }
+    .big-formula { font-family: var(--font-math); font-size: 42px; line-height: 1.28; text-align: center; }
+    .small { font-size: 21px; line-height: 1.25; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .figure-pad { padding: 14px; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .route { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .route div { border: 2px solid var(--slide-border); border-radius: 8px; min-height: 90px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-size: 23px; font-weight: 700; background: #fff; }
+    .route .hot { border-color: var(--slide-amber); color: var(--slide-amber); background: #fffbeb; }
+    .check-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .check-list div { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 12px 14px; background: #fff; font-size: 21px; font-weight: 700; color: var(--slide-accent); }
+    .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .mini-grid .panel { padding: 17px 18px; }
+    .svg-label { font: 700 26px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 28px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-big { font: 700 32px 'Source Sans 3', Arial, sans-serif; fill: #1e3a8a; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Voronoi Diagrams: Proximity, Duality, Lifting">
+      <div class="topline"><div class="eyebrow">Computational Geometry in C &middot; Chapter 5</div><div class="badge">printed pages 155-192 / PDF 164-201</div></div>
+      <h1>Voronoi Diagrams: Proximity, Duality, Lifting</h1>
+      <p class="lead">Nearest-site regions become a planar graph; its straight-line dual is certified by empty circles; lifting the sites turns the same geometry into lower convex hull structure.</p>
+      <div class="content cols">
+        <div class="stack">
+          <div class="route">
+            <div>nearest site</div><div class="hot">empty circle</div><div>lower hull</div>
+          </div>
+          <div class="panel blue"><h3>Lecture Goal</h3><p>Teach Voronoi cells as half-plane intersections, Delaunay edges as empty-circle certificates, and paraboloid lifting as the bridge back to convex hull algorithms.</p></div>
+          <div class="panel teal"><h3>Notebook Grounding</h3><p>The synthetic artifacts verify dual ridge edges, unbounded hull-site cells, empty circumcircles, graph-containment applications, medial-axis contacts, and lifting checks.</p></div>
+        </div>
+        <figure class="diagram figure-pad" aria-label="Voronoi cells overlaid with Delaunay edges">
+          <img src="../figures/voronoi-delaunay-overlay.png" alt="Synthetic Voronoi diagram overlaid with Delaunay triangulation and hull sites">
+        </figure>
+      </div>
+      <div class="footer"><span>Manifest row 97 &middot; source span preserved in metadata</span><span>All visuals are synthetic notebook artifacts or slide-native SVG</span></div>
+      <aside class="speaker-notes">Open by naming the three views students should keep synchronized. The Voronoi diagram answers nearest-site questions in the plane, the Delaunay triangulation records which cells touch, and lifting to the paraboloid explains why empty circles and convex hulls are part of the same story.</aside>
+    </section>
+
+    <section class="slide" data-label="Applications Preview">
+      <div class="topline"><div class="eyebrow">Applications Preview</div><div class="badge">one structure, several queries</div></div>
+      <h2>Applications Preview</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Nearest neighbor, MST, and largest empty circle application board">
+          <img src="../figures/nearest-mst-largest-empty-circle.png" alt="Nearest-neighbor edges, MST edges, and largest empty circle candidate in the Voronoi diagram">
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Nearest Neighbor</h3><p>The nearest-neighbor graph is contained in the Delaunay graph, so a local proximity query can be searched through a sparse candidate set.</p></div>
+          <div class="panel teal"><h3>Euclidean MST</h3><p>Every MST edge is also a Delaunay edge in the notebook check, turning a complete graph problem into a planar sparse graph problem.</p></div>
+          <div class="panel amber"><h3>Largest Empty Circle</h3><p>Voronoi vertices are natural candidates because their radii are limited by three or more sites rather than by a single nearest point.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Checks: mst_and_nearest_edges_are_delaunay; largest_empty_circle_is_empty</span><span>Largest empty circle center: \((3.95, 3.35)\)</span></div>
+      <aside class="speaker-notes">Use this slide to justify the chapter before definitions take over. Nearest neighbors, spanning trees, and largest empty circles look like different tasks, but the Voronoi-Delaunay structure makes them share candidate edges and candidate centers. The point is not that one diagram solves everything automatically; it gives the right sparse geometry to search.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Definition Slide">
+      <div class="topline"><div class="eyebrow">Definition</div><div class="badge">nearest-site partition</div></div>
+      <h2>Definition Slide</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Voronoi Cell</div><p>For a finite site set \(S\) and site \(p_i \in S\), the cell is \[V(p_i)=\{x\in\mathbb{R}^2:\|x-p_i\|\le \|x-p_j\|\text{ for every }p_j\in S\}.\]</p></div>
+          <div class="panel blue"><h3>Region, Site, Edge, Vertex</h3><p>A region belongs to one site. Edges are equal-distance bisector pieces. Vertices are points equidistant from three or more sites in general position.</p></div>
+          <div class="panel teal"><h3>Diagram</h3><p>The Voronoi diagram is the collection of all cells and their shared boundaries.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Nearest site definition with bisectors and colored cells">
+          <svg viewBox="0 0 980 620" role="img">
+            <rect x="70" y="62" width="830" height="500" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <path d="M90,475 L310,270 L438,78" fill="none" stroke="#2563eb" stroke-width="5"/>
+            <path d="M310,270 L570,295 L878,230" fill="none" stroke="#2563eb" stroke-width="5"/>
+            <path d="M310,270 L288,545" fill="none" stroke="#2563eb" stroke-width="5"/>
+            <path d="M570,295 L610,545" fill="none" stroke="#2563eb" stroke-width="5"/>
+            <path d="M570,295 L545,82" fill="none" stroke="#2563eb" stroke-width="5"/>
+            <circle cx="220" cy="200" r="15" fill="#1e3a8a"/><text x="242" y="194" class="svg-math">p_i</text>
+            <circle cx="530" cy="170" r="12" fill="#0f766e"/><circle cx="650" cy="390" r="12" fill="#0f766e"/><circle cx="200" cy="430" r="12" fill="#0f766e"/>
+            <circle cx="310" cy="270" r="10" fill="#b45309"/><circle cx="570" cy="295" r="10" fill="#b45309"/>
+            <path d="M220,200 L310,270 L530,170" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 8"/>
+            <text x="132" y="528" class="svg-small">cell = all locations whose nearest site is \(p_i\)</text>
+            <text x="626" y="122" class="svg-small">bisector pieces are cell boundaries</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Distance ties belong to shared boundaries</span><span>General position avoids four-site Voronoi vertices</span></div>
+      <aside class="speaker-notes">Start from the inequality, then translate every symbol into geometry. A point belongs to the cell of p_i if no other site is closer. Equality with one other site makes an edge; equality with two other sites makes a vertex in the usual nondegenerate setting.</aside>
+    </section>
+
+    <section class="slide" data-label="Half-Plane Construction">
+      <div class="topline"><div class="eyebrow">Construction</div><div class="badge">cells as intersections</div></div>
+      <h2>Half-Plane Construction</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Voronoi cell as intersection of half-planes">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="hp-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#475569"/></marker></defs>
+            <rect x="58" y="58" width="780" height="500" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="300,164 492,186 612,332 506,464 292,430 210,274" fill="rgba(37,99,235,.12)" stroke="#2563eb" stroke-width="7"/>
+            <g stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 8">
+              <line x1="118" y1="210" x2="735" y2="286"/><line x1="230" y1="96" x2="704" y2="512"/><line x1="162" y1="510" x2="730" y2="142"/><line x1="250" y1="545" x2="520" y2="70"/><line x1="646" y1="536" x2="308" y2="74"/>
+            </g>
+            <circle cx="380" cy="306" r="15" fill="#1e3a8a"/><text x="404" y="302" class="svg-math">p</text>
+            <g fill="#0f766e"><circle cx="164" cy="170" r="12"/><circle cx="650" cy="152" r="12"/><circle cx="730" cy="430" r="12"/><circle cx="214" cy="500" r="12"/></g>
+            <path d="M665,128 C610,172 570,220 542,274" fill="none" stroke="#b45309" stroke-width="5" marker-end="url(#hp-arrow)"/>
+            <text x="392" y="570" text-anchor="middle" class="svg-small">Keep the side containing \(p\) for every other site.</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Convexity</div><p>Each comparison \(\|x-p\|\le \|x-q\|\) is one linear half-plane after squaring and canceling \(x\cdot x\).</p></div>
+          <div class="big-formula">\[2x\cdot(q-p)\le q\cdot q-p\cdot p\]</div>
+          <div class="panel teal"><h3>Algorithmic Baseline</h3><p>A single cell can be built by intersecting the \(n-1\) half-planes induced by the other sites.</p></div>
+          <div class="panel amber"><h3>Cost Warning</h3><p>Repeating that construction independently for every cell is clear but not the fastest chapter algorithm.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Half-plane intersection proves cells are convex</span><span>Per-cell construction is definition-driven</span></div>
+      <aside class="speaker-notes">Derive the half-plane only far enough to show why the boundary is linear. Squaring the distance comparison cancels the x dot x term, leaving a linear inequality. This single cancellation explains convex cells, polygonal boundaries, and the baseline half-plane-intersection algorithm.</aside>
+    </section>
+
+    <section class="slide" data-label="Bounded And Unbounded Cells">
+      <div class="topline"><div class="eyebrow">Cell Geometry</div><div class="badge">hull sites escape to infinity</div></div>
+      <h2>Bounded And Unbounded Cells</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Voronoi diagram showing bounded and unbounded cells">
+          <img src="../figures/voronoi-delaunay-overlay.png" alt="Voronoi-Delaunay overlay with hull sites and bounded cell information">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Hull Criterion</div><p>A Voronoi cell is unbounded exactly when its site lies on the convex hull of the site set.</p></div>
+          <div class="panel blue"><h3>Checked Artifact</h3><p>Hull sites \(0,1,4,5,6,9\) have unbounded regions; interior sites include bounded regions.</p></div>
+          <div class="panel teal"><h3>Geometric Reason</h3><p>A hull site has an outward direction in which no other site can overtake it; an interior site is blocked in every direction.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: hull_sites_have_unbounded_regions = true</span><span>Check: some_interior_region_is_bounded = true</span></div>
+      <aside class="speaker-notes">Connect this to the previous convex hull chapters. A hull site has a supporting line, so moving outward normal to that line keeps the site nearest forever and the cell is unbounded. Interior sites have competitors in every direction, so their regions can close up.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Degeneracy And Delaunay Flip">
+      <div class="topline"><div class="eyebrow">Degeneracy</div><div class="badge">four cocircular sites</div></div>
+      <h2>Degeneracy And Delaunay Flip</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Delaunay diagonal flip near a cocircular degeneracy">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="flip-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#475569"/></marker></defs>
+            <rect x="54" y="74" width="326" height="420" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <circle cx="217" cy="284" r="142" fill="rgba(37,99,235,.06)" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="138,168 304,218 278,405 118,360" fill="none" stroke="#0f766e" stroke-width="5"/>
+            <line x1="138" y1="168" x2="278" y2="405" stroke="#b45309" stroke-width="7"/>
+            <g fill="#111827"><circle cx="138" cy="168" r="12"/><circle cx="304" cy="218" r="12"/><circle cx="278" cy="405" r="12"/><circle cx="118" cy="360" r="12"/></g>
+            <text x="122" y="540" class="svg-small">one legal triangulation</text>
+            <path d="M410,284 L500,284" stroke="#475569" stroke-width="6" marker-end="url(#flip-arrow)"/>
+            <rect x="530" y="74" width="326" height="420" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <circle cx="693" cy="284" r="142" fill="rgba(180,83,9,.06)" stroke="#b45309" stroke-width="5"/>
+            <polygon points="614,168 780,218 754,405 594,360" fill="none" stroke="#0f766e" stroke-width="5"/>
+            <line x1="594" y1="360" x2="780" y2="218" stroke="#b45309" stroke-width="7"/>
+            <g fill="#111827"><circle cx="614" cy="168" r="12"/><circle cx="780" cy="218" r="12"/><circle cx="754" cy="405" r="12"/><circle cx="594" cy="360" r="12"/></g>
+            <text x="606" y="540" class="svg-small">the flipped diagonal</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel amber"><h3>What Breaks</h3><p>If four sites are cocircular, a Voronoi vertex has degree four and the Delaunay triangulation is not unique.</p></div>
+          <div class="math-box math-box--warning"><div class="math-box-label">Implementation Policy</div><p>A robust implementation must choose a tie convention, perturbation, or exact symbolic rule before comparing triangulations.</p></div>
+          <div class="panel blue"><h3>Flip View</h3><p>Moving one site across the empty-circle boundary swaps one diagonal for the other while preserving the same quadrilateral boundary.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The notebook data is in general position</span><span>The lab asks students to move a site toward cocircularity</span></div>
+      <aside class="speaker-notes">Use this as the chapter's robustness checkpoint. In general position, three sites define a Voronoi vertex and a Delaunay triangle. With four cocircular sites, the empty-circle test is tied, and either diagonal can be selected. The flip is the visible symptom of crossing that degeneracy.</aside>
+    </section>
+
+    <section class="slide" data-label="Delaunay As Dual">
+      <div class="topline"><div class="eyebrow">Planar Duality</div><div class="badge">cell adjacency becomes edges</div></div>
+      <h2>Delaunay As Dual</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Delaunay triangulation as the straight-line dual of Voronoi adjacency">
+          <img src="../figures/voronoi-delaunay-overlay.png" alt="Voronoi ridges and Delaunay edges shown together">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Dual Edge</div><p>If Voronoi cells \(V(p_i)\) and \(V(p_j)\) share a boundary edge, draw the straight segment \(p_i p_j\).</p></div>
+          <div class="panel teal"><h3>Checked Equality</h3><p>The notebook records the same 21 unordered pairs for Voronoi ridge adjacencies and Delaunay edges.</p></div>
+          <div class="panel blue"><h3>Planarity</h3><p>Under nondegenerate assumptions, these straight-line dual edges form a planar triangulation of the site set.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: delaunay_edges_match_voronoi_ridges = true</span><span>Delaunay edges are drawn between sites, not between Voronoi vertices</span></div>
+      <aside class="speaker-notes">Make the dual construction concrete. We are not drawing abstract graph dual edges through every face; we connect the two sites whose cells share a Voronoi edge. In the nondegenerate case those connections are straight, planar, and form the Delaunay triangulation.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Linear Size Roadmap">
+      <div class="topline"><div class="eyebrow">Combinatorics</div><div class="badge">why the diagram is sparse</div></div>
+      <h2>Linear Size Roadmap</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Roadmap from planar triangulation to linear Voronoi size">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="size-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#475569"/></marker></defs>
+            <g transform="translate(74 114)">
+              <rect x="0" y="0" width="220" height="130" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+              <text x="110" y="55" text-anchor="middle" class="svg-big">Voronoi</text>
+              <text x="110" y="92" text-anchor="middle" class="svg-small">cells and ridges</text>
+              <path d="M220,65 L320,65" stroke="#475569" stroke-width="6" marker-end="url(#size-arrow)"/>
+              <rect x="320" y="0" width="220" height="130" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+              <text x="430" y="55" text-anchor="middle" class="svg-big">Delaunay</text>
+              <text x="430" y="92" text-anchor="middle" class="svg-small">planar graph</text>
+              <path d="M540,65 L640,65" stroke="#475569" stroke-width="6" marker-end="url(#size-arrow)"/>
+              <rect x="640" y="0" width="220" height="130" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+              <text x="750" y="55" text-anchor="middle" class="svg-big">Euler</text>
+              <text x="750" y="92" text-anchor="middle" class="svg-small">linear bounds</text>
+            </g>
+            <g transform="translate(130 340)">
+              <path d="M0,0 L600,0" stroke="#cbd5e1" stroke-width="5"/>
+              <circle cx="0" cy="0" r="15" fill="#2563eb"/><circle cx="210" cy="0" r="15" fill="#0f766e"/><circle cx="420" cy="0" r="15" fill="#1e3a8a"/><circle cx="600" cy="0" r="15" fill="#b45309"/>
+              <text x="0" y="52" text-anchor="middle" class="svg-small">n sites</text>
+              <text x="210" y="52" text-anchor="middle" class="svg-small">planar edges</text>
+              <text x="420" y="52" text-anchor="middle" class="svg-small">triangles</text>
+              <text x="600" y="52" text-anchor="middle" class="svg-small">Voronoi vertices</text>
+            </g>
+            <text x="450" y="548" text-anchor="middle" class="svg-math">For nondegenerate planar triangulations, edges and faces are \(O(n)\).</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Size Thesis</div><p>Voronoi diagrams in the plane have linear combinatorial complexity because their Delaunay dual is planar.</p></div>
+          <div class="panel blue"><h3>Proof Roadmap</h3><ol><li>Build the straight-line Delaunay dual.</li><li>Use planarity and Euler's formula.</li><li>Transfer edge and vertex counts back to Voronoi features.</li></ol></div>
+          <div class="panel amber"><h3>Degenerate Cases</h3><p>Cocircularities may merge vertices or create nonunique triangulations, but a consistent triangulation still gives the same linear-size intuition.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The argument is combinatorial, not metric-heavy</span><span>Planarity is the key accounting device</span></div>
+      <aside class="speaker-notes">Give students the counting strategy rather than a wall of formulas. Once the Delaunay dual is planar, Euler-style accounting controls the number of edges and triangular faces. The Voronoi diagram inherits that linear bound because its ridges and vertices correspond to dual features.</aside>
+    </section>
+
+    <section class="slide" data-label="Empty-Circle Theorem">
+      <div class="topline"><div class="eyebrow">Certificate</div><div class="badge">12 checked triangles</div></div>
+      <h2>Empty-Circle Theorem</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Delaunay circumcircles with empty-circle checks">
+          <img src="../figures/empty-circle-checks.png" alt="Delaunay triangles with circumcircles checked to contain no other site">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Empty-Circle Theorem</div><p>A Delaunay triangle has a circumcircle with no input site strictly inside it. Conversely, empty circles certify Delaunay adjacency under the usual general-position assumptions.</p></div>
+          <div class="panel teal"><h3>Notebook Evidence</h3><p>All 12 Delaunay circumcircles are empty, and circumcenters are recorded in the table artifact.</p></div>
+          <div class="panel amber"><h3>Small Clearance</h3><p>Some clearances are small, so numerical tests need an explicit tolerance or exact predicate strategy in production code.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: all_delaunay_circumcircles_empty = true</span><span>Table: empty-circle-checks.csv</span></div>
+      <aside class="speaker-notes">Treat empty circles as certificates students can inspect. The center is a Voronoi vertex because it is equidistant from the triangle sites; emptiness says no other site is closer. That is exactly the local condition needed for the triangle to belong to the Delaunay triangulation.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Algorithm Families">
+      <div class="topline"><div class="eyebrow">Algorithm Families</div><div class="badge">six ways to see the same object</div></div>
+      <h2>Algorithm Families</h2>
+      <div class="content cols">
+        <div class="stack">
+          <table>
+            <thead><tr><th>Method</th><th>Core Idea</th><th>Typical Bound</th></tr></thead>
+            <tbody>
+              <tr><td>Per-cell HPI</td><td>Intersect nearest-site half-planes.</td><td>\(O(n^2\log n)\)</td></tr>
+              <tr><td>Incremental</td><td>Insert sites and repair affected cells.</td><td>Often \(O(n^2)\)</td></tr>
+              <tr><td>Divide and conquer</td><td>Merge diagrams by a bisector chain.</td><td>\(O(n\log n)\)</td></tr>
+              <tr><td>Fortune sweep</td><td>Maintain beach line of parabolic arcs.</td><td>\(O(n\log n)\)</td></tr>
+              <tr><td>Hull lifting</td><td>Compute lower convex hull after lifting.</td><td>Uses hull machinery</td></tr>
+              <tr><td>Arrangement envelope</td><td>Read lower/upper envelopes of planes.</td><td>Conceptual dual</td></tr>
+            </tbody>
+          </table>
+          <div class="panel teal"><h3>Notebook Table</h3><p>The slide condenses `voronoi-algorithm-map.csv` with original phrasing and the chapter roles preserved.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Algorithm family flow from definitions to lifting">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="alg-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#475569"/></marker></defs>
+            <g transform="translate(90 100)">
+              <rect x="0" y="0" width="260" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/><text x="130" y="64" text-anchor="middle" class="svg-label">definitions</text>
+              <rect x="500" y="0" width="260" height="110" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/><text x="630" y="64" text-anchor="middle" class="svg-label">divide/merge</text>
+              <rect x="0" y="300" width="260" height="110" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="5"/><text x="130" y="364" text-anchor="middle" class="svg-label">sweep</text>
+              <rect x="500" y="300" width="260" height="110" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="5"/><text x="630" y="364" text-anchor="middle" class="svg-label">lifting/envelope</text>
+              <path d="M260,55 L500,55" stroke="#475569" stroke-width="5" marker-end="url(#alg-arrow)"/>
+              <path d="M130,110 L130,300" stroke="#475569" stroke-width="5" marker-end="url(#alg-arrow)"/>
+              <path d="M260,355 L500,355" stroke="#475569" stroke-width="5" marker-end="url(#alg-arrow)"/>
+              <path d="M630,110 L630,300" stroke="#94a3b8" stroke-width="5" stroke-dasharray="12 9" marker-end="url(#alg-arrow)"/>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Check: algorithm_map_mentions_fortune_and_lifting = true</span><span>Choose an algorithm by invariant, not just by bound</span></div>
+      <aside class="speaker-notes">Position the algorithms as families of invariants. Half-plane intersection follows the definition directly. Divide-and-conquer and Fortune's sweep achieve optimal planar bounds with different data structures. Lifting and arrangements are less about a simple coding recipe here and more about revealing why Voronoi geometry belongs with convex hulls and envelopes.</aside>
+    </section>
+
+    <section class="slide" data-label="Fortune Sweep Intuition">
+      <div class="topline"><div class="eyebrow">Fortune Sweep Intuition</div><div class="badge">beach line of parabolas</div></div>
+      <h2>Fortune Sweep Intuition</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Beach Line</div><p>For a moving sweep line, the frontier consists of points whose distance to a seen site equals their distance to the sweep line.</p></div>
+          <div class="panel blue"><h3>Site Event</h3><p>A new site inserts a new parabolic arc into the beach line.</p></div>
+          <div class="panel teal"><h3>Circle Event</h3><p>When an arc disappears, a Voronoi vertex is created and two edges meet.</p></div>
+          <div class="panel amber"><h3>Data Structure Burden</h3><p>The sweep is fast because it schedules local events rather than recomputing every cell after each site.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Fortune sweep line and beach line parabolic arcs">
+          <svg viewBox="0 0 980 620" role="img">
+            <defs><marker id="sweep-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#b45309"/></marker></defs>
+            <rect x="70" y="62" width="830" height="500" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <line x1="110" y1="170" x2="860" y2="170" stroke="#b45309" stroke-width="7"/>
+            <path d="M822,96 L822,244" stroke="#b45309" stroke-width="5" marker-end="url(#sweep-arrow)"/>
+            <text x="116" y="145" class="svg-label">sweep line</text>
+            <g fill="#111827"><circle cx="260" cy="270" r="12"/><circle cx="460" cy="230" r="12"/><circle cx="650" cy="310" r="12"/></g>
+            <text x="278" y="264" class="svg-math">p</text><text x="478" y="224" class="svg-math">q</text><text x="668" y="304" class="svg-math">r</text>
+            <path d="M130,520 C185,390 215,318 260,270 C310,328 330,394 375,520" fill="none" stroke="#2563eb" stroke-width="6"/>
+            <path d="M298,520 C355,365 405,274 460,230 C520,302 550,385 596,520" fill="none" stroke="#0f766e" stroke-width="6"/>
+            <path d="M520,520 C568,405 608,340 650,310 C704,360 742,430 804,520" fill="none" stroke="#6d28d9" stroke-width="6"/>
+            <circle cx="376" cy="386" r="9" fill="#b45309"/><circle cx="584" cy="404" r="9" fill="#b45309"/>
+            <path d="M376,386 L376,560 M584,404 L584,560" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 8"/>
+            <text x="356" y="594" class="svg-small">breakpoints trace Voronoi edges</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Same distance rule, now against a moving line</span><span>Events turn a continuous sweep into a finite algorithm</span></div>
+      <aside class="speaker-notes">Avoid drowning the class in implementation details on the first pass. The key intuition is that a point on the beach line is equally far from a site and from the sweep line, so the arcs are parabolas. Breakpoints between arcs trace Voronoi edges; site and circle events are the moments when the combinatorial beach line changes.</aside>
+    </section>
+
+    <section class="slide" data-label="Nearest Neighbors And MST">
+      <div class="topline"><div class="eyebrow">Graph Applications</div><div class="badge">containment in Delaunay</div></div>
+      <h2>Nearest Neighbors And MST</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Nearest-neighbor and MST edges contained in Delaunay">
+          <img src="../figures/nearest-mst-largest-empty-circle.png" alt="Application board emphasizing nearest neighbor and MST edges in the Delaunay graph">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Containment Fact</div><p>Nearest-neighbor edges and Euclidean MST edges are subgraphs of the Delaunay triangulation.</p></div>
+          <div class="check-list">
+            <div>nearest: 7 edges</div><div>MST: 9 edges</div><div>Delaunay: 21 edges</div><div>all contained</div>
+          </div>
+          <div class="panel blue"><h3>Why This Matters</h3><p>Build the Delaunay graph first, then run graph algorithms on a sparse planar candidate graph instead of the complete graph.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: mst_and_nearest_edges_are_delaunay = true</span><span>Nearest and MST edges use distance, but Delaunay supplies candidates</span></div>
+      <aside class="speaker-notes">Explain this as a reduction in search space. The complete Euclidean graph has every pair of sites, but the Delaunay graph keeps only geometrically plausible neighbors. If an MST edge or nearest-neighbor edge were not Delaunay, an empty-circle or cut argument would reveal a closer replacement.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Largest Empty Circle">
+      <div class="topline"><div class="eyebrow">Optimization Application</div><div class="badge">center at a Voronoi candidate</div></div>
+      <h2>Largest Empty Circle</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Largest empty circle candidate">
+          <img src="../figures/nearest-mst-largest-empty-circle.png" alt="Largest empty circle centered at a Voronoi vertex in the synthetic site set">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Candidate Principle</div><p>Inside a bounded search window, a largest empty circle is found among Voronoi vertices and boundary candidates.</p></div>
+          <div class="panel teal"><h3>Notebook Candidate</h3><p>Center \((3.95,3.35)\), radius approximately \(1.5700\), and no site lies inside the circle.</p></div>
+          <div class="panel amber"><h3>Reason</h3><p>If the center can move while increasing the nearest-site distance, then it was not locally maximal. Voronoi vertices are where several nearest constraints meet.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: largest_empty_circle_is_empty = true</span><span>Boundary candidates matter when the search domain is bounded</span></div>
+      <aside class="speaker-notes">Treat the largest empty circle as an optimization problem over the distance-to-nearest-site function. Away from Voronoi features, the center can usually move to increase the radius. At a Voronoi vertex, several sites constrain the radius at once, making it a natural candidate for a local maximum.</aside>
+    </section>
+
+    <section class="slide" data-label="Medial Axis">
+      <div class="topline"><div class="eyebrow">Boundary Features</div><div class="badge">from point sites to shape skeletons</div></div>
+      <h2>Medial Axis</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Medial axis maximal circles in a corridor polygon">
+          <img src="../figures/medial-axis-maximal-circles.png" alt="Corridor polygon with medial centers and maximal boundary-touching circles">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Medial Axis</div><p>The medial axis is the set of centers with at least two closest boundary contacts, equivalently centers of maximal empty circles inside a shape.</p></div>
+          <div class="panel teal"><h3>Checked Sketch</h3><p>Every sampled medial center has two or more boundary contacts, and the central junction has four contacts.</p></div>
+          <div class="panel blue"><h3>Voronoi Link</h3><p>Replace point sites by boundary features: nearest-feature regions produce the skeleton of the shape.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: medial_centers_have_two_or_more_boundary_contacts = true</span><span>Check: central_junction_has_four_contacts = true</span></div>
+      <aside class="speaker-notes">Use the medial axis to broaden the meaning of site. Instead of nearest point among a finite set, the distance is to polygon boundary features. The same equal-distance idea identifies centers of maximal circles, and those centers form a skeletal representation of the shape.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Paraboloid Lifting">
+      <div class="topline"><div class="eyebrow">Lifting</div><div class="badge">\((x,y)\mapsto(x,y,x^2+y^2)\)</div></div>
+      <h2>Paraboloid Lifting</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Paraboloid lifting and lower hull projection">
+          <img src="../figures/paraboloid-lifting-delaunay.png" alt="Lifted sites on a paraboloid with Delaunay triangles as lower-hull shadows">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Lift Map</div><p>Send each site \((x,y)\) to \((x,y,x^2+y^2)\) on the paraboloid.</p></div>
+          <div class="math-box math-box--theorem"><div class="math-box-label">Delaunay From Hulls</div><p>Lower hull facets of the lifted points project to Delaunay triangles in the original plane.</p></div>
+          <div class="panel teal"><h3>Notebook Evidence</h3><p>The lifted point count is 10, the Delaunay triangle count is 12, and lifted triangles satisfy the empty-circle check.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: lifted_triangles_have_empty_circles = true</span><span>This is the bridge back to convex hull computation</span></div>
+      <aside class="speaker-notes">Connect the chapter to the hull chapters explicitly. The paraboloid turns circle emptiness in the plane into a supporting-plane condition in three dimensions. Lower hull facets are exactly the lifted triples whose projected circumcircles are empty.</aside>
+    </section>
+
+    <section class="slide" data-label="Tangent Planes And Arrangements">
+      <div class="topline"><div class="eyebrow">Envelope View</div><div class="badge">toward arrangements</div></div>
+      <h2>Tangent Planes And Arrangements</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Tangent planes to the paraboloid and lower envelope">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="tan-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#475569"/></marker></defs>
+            <rect x="58" y="58" width="780" height="500" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <path d="M140,455 C250,330 330,250 450,238 C570,250 650,330 760,455" fill="none" stroke="#2563eb" stroke-width="7"/>
+            <path d="M190,380 L540,250 L800,366" fill="rgba(15,118,110,.10)" stroke="#0f766e" stroke-width="5"/>
+            <path d="M112,482 L372,260 L690,330" fill="rgba(180,83,9,.10)" stroke="#b45309" stroke-width="5"/>
+            <path d="M260,432 L510,238 L818,430" fill="rgba(109,40,217,.09)" stroke="#6d28d9" stroke-width="5"/>
+            <g fill="#111827"><circle cx="310" cy="300" r="12"/><circle cx="500" cy="250" r="12"/><circle cx="650" cy="330" r="12"/></g>
+            <path d="M210,116 L310,300" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#tan-arrow)"/>
+            <text x="104" y="108" class="svg-small">tangent plane for a site</text>
+            <text x="440" y="548" text-anchor="middle" class="svg-math">nearest-site geometry becomes an envelope of planes</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Plane View</div><p>The tangent plane to \(z=x^2+y^2\) at a lifted site stores the same linear expression that appeared in the distance comparison.</p></div>
+          <div class="panel blue"><h3>Envelope</h3><p>Taking the relevant envelope of these planes recovers which site is nearest over each part of the plane.</p></div>
+          <div class="panel teal"><h3>Arrangements Link</h3><p>The next chapter's arrangement language studies how many cells, edges, and vertices such surfaces or planes create.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Same cancellation as the half-plane inequality</span><span>Voronoi diagrams are a gateway to envelopes and arrangements</span></div>
+      <aside class="speaker-notes">Show the algebraic continuity across the lecture. The distance comparison, the tangent plane, and the envelope view all come from the same squared-distance cancellation. This prepares students for arrangements: instead of one diagram in the plane, we study cells made by many curves, lines, or planes.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Applied Lab And Recap">
+      <div class="topline"><div class="eyebrow">Applied Lab And Recap</div><div class="badge">from cells to hulls</div></div>
+      <h2>Applied Lab And Recap</h2>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="four">
+            <div class="panel blue"><h3>Cells</h3><p>Nearest-site regions are convex intersections of bisector half-planes.</p></div>
+            <div class="panel teal"><h3>Duality</h3><p>Shared Voronoi edges become Delaunay edges between sites.</p></div>
+            <div class="panel amber"><h3>Certificates</h3><p>Empty circles certify Delaunay triangles and expose degeneracies.</p></div>
+            <div class="panel violet"><h3>Lifting</h3><p>Lower hull facets project back to Delaunay triangles.</p></div>
+          </div>
+          <div class="math-box math-box--exercise"><div class="math-box-label">Lab Moves</div><p>Move a site toward cocircularity and watch a Delaunay flip; delete a hull site and rerun the unbounded-cell check; add a point near the largest empty circle and predict the new radius.</p></div>
+          <div class="check-list">
+            <div>dual ridges match</div><div>hull cells unbounded</div><div>empty circles pass</div><div>MST edges contained</div><div>medial contacts pass</div><div>lifting agrees</div>
+          </div>
+        </div>
+        <figure class="diagram figure-pad" aria-label="Voronoi Delaunay recap overlay">
+          <img src="../figures/voronoi-delaunay-overlay.png" alt="Recap figure showing Voronoi cells and Delaunay triangulation">
+        </figure>
+      </div>
+      <div class="footer"><span>End of Chapter 5 deck</span><span>Next: arrangements generalize the combinatorics of geometric subdivisions</span></div>
+      <aside class="speaker-notes">Close by asking students to move between the views without changing the object. A cell is a nearest-site region, an edge in the dual is an empty-circle certificate, and a lifted lower facet is the same relationship seen from three dimensions. The lab prompts turn those equivalences into experiments students can rerun.</aside>
+    </section>
+  </deck-stage>
+
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "label": "Voronoi Diagrams: Proximity, Duality, Lifting",
+    "notes": "Open by naming the three views students should keep synchronized. The Voronoi diagram answers nearest-site questions in the plane, the Delaunay triangulation records which cells touch, and lifting to the paraboloid explains why empty circles and convex hulls are part of the same story."
+  },
+  {
+    "slide": 2,
+    "label": "Applications Preview",
+    "notes": "Use this slide to justify the chapter before definitions take over. Nearest neighbors, spanning trees, and largest empty circles look like different tasks, but the Voronoi-Delaunay structure makes them share candidate edges and candidate centers. The point is not that one diagram solves everything automatically; it gives the right sparse geometry to search."
+  },
+  {
+    "slide": 3,
+    "label": "Definition Slide",
+    "notes": "Start from the inequality, then translate every symbol into geometry. A point belongs to the cell of p_i if no other site is closer. Equality with one other site makes an edge; equality with two other sites makes a vertex in the usual nondegenerate setting."
+  },
+  {
+    "slide": 4,
+    "label": "Half-Plane Construction",
+    "notes": "Derive the half-plane only far enough to show why the boundary is linear. Squaring the distance comparison cancels the x dot x term, leaving a linear inequality. This single cancellation explains convex cells, polygonal boundaries, and the baseline half-plane-intersection algorithm."
+  },
+  {
+    "slide": 5,
+    "label": "Bounded And Unbounded Cells",
+    "notes": "Connect this to the previous convex hull chapters. A hull site has a supporting line, so moving outward normal to that line keeps the site nearest forever and the cell is unbounded. Interior sites have competitors in every direction, so their regions can close up."
+  },
+  {
+    "slide": 6,
+    "label": "Degeneracy And Delaunay Flip",
+    "notes": "Use this as the chapter's robustness checkpoint. In general position, three sites define a Voronoi vertex and a Delaunay triangle. With four cocircular sites, the empty-circle test is tied, and either diagonal can be selected. The flip is the visible symptom of crossing that degeneracy."
+  },
+  {
+    "slide": 7,
+    "label": "Delaunay As Dual",
+    "notes": "Make the dual construction concrete. We are not drawing abstract graph dual edges through every face; we connect the two sites whose cells share a Voronoi edge. In the nondegenerate case those connections are straight, planar, and form the Delaunay triangulation."
+  },
+  {
+    "slide": 8,
+    "label": "Linear Size Roadmap",
+    "notes": "Give students the counting strategy rather than a wall of formulas. Once the Delaunay dual is planar, Euler-style accounting controls the number of edges and triangular faces. The Voronoi diagram inherits that linear bound because its ridges and vertices correspond to dual features."
+  },
+  {
+    "slide": 9,
+    "label": "Empty-Circle Theorem",
+    "notes": "Treat empty circles as certificates students can inspect. The center is a Voronoi vertex because it is equidistant from the triangle sites; emptiness says no other site is closer. That is exactly the local condition needed for the triangle to belong to the Delaunay triangulation."
+  },
+  {
+    "slide": 10,
+    "label": "Algorithm Families",
+    "notes": "Position the algorithms as families of invariants. Half-plane intersection follows the definition directly. Divide-and-conquer and Fortune's sweep achieve optimal planar bounds with different data structures. Lifting and arrangements are less about a simple coding recipe here and more about revealing why Voronoi geometry belongs with convex hulls and envelopes."
+  },
+  {
+    "slide": 11,
+    "label": "Fortune Sweep Intuition",
+    "notes": "Avoid drowning the class in implementation details on the first pass. The key intuition is that a point on the beach line is equally far from a site and from the sweep line, so the arcs are parabolas. Breakpoints between arcs trace Voronoi edges; site and circle events are the moments when the combinatorial beach line changes."
+  },
+  {
+    "slide": 12,
+    "label": "Nearest Neighbors And MST",
+    "notes": "Explain this as a reduction in search space. The complete Euclidean graph has every pair of sites, but the Delaunay graph keeps only geometrically plausible neighbors. If an MST edge or nearest-neighbor edge were not Delaunay, an empty-circle or cut argument would reveal a closer replacement."
+  },
+  {
+    "slide": 13,
+    "label": "Largest Empty Circle",
+    "notes": "Treat the largest empty circle as an optimization problem over the distance-to-nearest-site function. Away from Voronoi features, the center can usually move to increase the radius. At a Voronoi vertex, several sites constrain the radius at once, making it a natural candidate for a local maximum."
+  },
+  {
+    "slide": 14,
+    "label": "Medial Axis",
+    "notes": "Use the medial axis to broaden the meaning of site. Instead of nearest point among a finite set, the distance is to polygon boundary features. The same equal-distance idea identifies centers of maximal circles, and those centers form a skeletal representation of the shape."
+  },
+  {
+    "slide": 15,
+    "label": "Paraboloid Lifting",
+    "notes": "Connect the chapter to the hull chapters explicitly. The paraboloid turns circle emptiness in the plane into a supporting-plane condition in three dimensions. Lower hull facets are exactly the lifted triples whose projected circumcircles are empty."
+  },
+  {
+    "slide": 16,
+    "label": "Tangent Planes And Arrangements",
+    "notes": "Show the algebraic continuity across the lecture. The distance comparison, the tangent plane, and the envelope view all come from the same squared-distance cancellation. This prepares students for arrangements: instead of one diagram in the plane, we study cells made by many curves, lines, or planes."
+  },
+  {
+    "slide": 17,
+    "label": "Applied Lab And Recap",
+    "notes": "Close by asking students to move between the views without changing the object. A cell is a nearest-site region, an edge in the dual is an empty-circle certificate, and a lifted lower facet is the same relationship seen from three dimensions. The lab prompts turn those equivalences into experiments students can rerun."
+  }
+]
+  </script>
+</body>
+</html>

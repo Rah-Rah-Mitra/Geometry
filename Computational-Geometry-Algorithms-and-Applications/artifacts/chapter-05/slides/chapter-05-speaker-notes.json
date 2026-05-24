@@ -1,0 +1,82 @@
+[
+  {
+    "slide": 1,
+    "label": "Metadata And Span Caveat",
+    "notes": "Start by making the scope explicit. The manifest span is printed pages 95 through 120 and PDF pages 106 through 131, but the physical text extraction has an offset. For teaching purposes, we stay inside Chapter 5: orthogonal range searching, kd-trees, range trees, tie handling, and fractional cascading. Do not preview Chapter 6 point location here."
+  },
+  {
+    "slide": 2,
+    "label": "Database To Geometry",
+    "notes": "Motivate the chapter from database queries. A tuple such as salary and age is just a point in the plane, and bounds on each field form an axis-aligned rectangle. The geometric problem is to preprocess the point set so that a rectangle query reports its contents quickly, ideally with time that separates navigation cost from the number of answers."
+  },
+  {
+    "slide": 3,
+    "label": "1D Split Node",
+    "notes": "Review the one-dimensional structure because it is the template for everything later. A balanced binary search tree stores the sorted keys. The query interval first finds the split node where the two endpoint searches diverge. From that split, the left descent contributes whole right subtrees and the right descent contributes whole left subtrees."
+  },
+  {
+    "slide": 4,
+    "label": "Output Sensitivity",
+    "notes": "Name output sensitivity early. We do not want a query bound that hides the cost of printing many answers, because reporting k points really takes k time. The useful accounting is navigation plus output: logarithmic work to discover canonical subtrees, then linear work in the number of reported leaves."
+  },
+  {
+    "slide": 5,
+    "label": "Kd-Tree Construction",
+    "notes": "Introduce kd-trees as a spatial binary tree rather than as a sorted one-dimensional tree. The construction repeatedly cuts the current point set at a median coordinate, alternating between vertical and horizontal cuts. The median keeps the tree balanced, while the changing axis lets the structure adapt to two-dimensional boxes."
+  },
+  {
+    "slide": 6,
+    "label": "Regions Attached To Nodes",
+    "notes": "Attach geometry to the tree nodes. The root owns the whole bounding rectangle, and each comparison on a search path clips that rectangle by a vertical or horizontal line. This is why a kd-tree can prune: the node region summarizes every point below the node without inspecting them individually."
+  },
+  {
+    "slide": 7,
+    "label": "Kd Query Pruning",
+    "notes": "The kd-tree query has three geometric cases. A disjoint node region contributes nothing, so the subtree is ignored. A fully contained node region contributes all its points, so the subtree is reported wholesale. Only partial overlap forces recursion, and the analysis is about bounding how many partial nodes can occur."
+  },
+  {
+    "slide": 8,
+    "label": "Why Sqrt Appears",
+    "notes": "Give intuition for the square-root term rather than only quoting the theorem. Track one vertical side of the query rectangle through the subdivision. After a vertical split and then a horizontal split, the line can cross two of the four grandchildren. This yields the recurrence Q of n equals two Q of n over four plus a constant, which solves to square root n."
+  },
+  {
+    "slide": 9,
+    "label": "Range Tree Idea",
+    "notes": "Now contrast kd-trees with range trees. A range tree keeps a primary balanced tree on x, but each internal node also stores an associated structure for the points in its subtree ordered by y. The data structure is larger, but it lets the two coordinate restrictions be handled in a more systematic way."
+  },
+  {
+    "slide": 10,
+    "label": "Canonical Subsets",
+    "notes": "Use the same split-node picture from one dimension, but emphasize the word canonical. The selected nodes form disjoint subtrees whose union is exactly the x-range. Because a balanced search path has logarithmic length, the decomposition contains only logarithmically many nodes."
+  },
+  {
+    "slide": 11,
+    "label": "2D Range Query Cost",
+    "notes": "Derive the two-dimensional range tree query bound by multiplication. The x-search produces logarithmically many canonical nodes. Each canonical node needs a one-dimensional y-range query in its associated structure. Summing those searches gives log squared n, and the actual reported points contribute the plus k term."
+  },
+  {
+    "slide": 12,
+    "label": "Higher Dimensions",
+    "notes": "Generalize the construction carefully. A range tree in d dimensions is a primary tree in one coordinate, with each node storing an associated range tree for the remaining d minus one coordinates. This recursion is elegant in fixed dimension, but students should notice the storage and logarithmic factors accumulating with dimension."
+  },
+  {
+    "slide": 13,
+    "label": "Equal Coordinate Failure",
+    "notes": "Discuss degeneracy as a correctness issue, not a footnote. If many points share the same x or y coordinate, comparisons at split lines can become ambiguous and balance can suffer. The standard repair is to use a composite coordinate or symbolic tie breaker, and then translate query endpoints consistently so that closed ranges keep the intended inclusions."
+  },
+  {
+    "slide": 14,
+    "label": "Fractional Cascading Warmup",
+    "notes": "Prepare fractional cascading by naming the wasted work. In an ordinary range tree, many associated y-lists are searched independently, even though the lists are related by the tree. Fractional cascading stores enough linking information that a position found by one binary search can be transferred into neighboring lists with only constant extra work."
+  },
+  {
+    "slide": 15,
+    "label": "Layered Range Tree",
+    "notes": "Connect the warmup to the final data structure. In the layered range tree, nodes store sorted arrays of y-coordinates, and adjacent arrays have bridge pointers. The x search still finds canonical nodes, but the y positions are cascaded through those lists, reducing the planar query overhead from log squared n to log n plus output."
+  },
+  {
+    "slide": 16,
+    "label": "Tradeoff Dashboard",
+    "notes": "Close by comparing the design choices. Kd-trees are lean and spatial, with square-root query overhead in the planar worst case. Range trees spend more storage to get logarithmic canonical decompositions, and layered range trees add fractional cascading to remove one logarithmic factor. The notes and exercises around the chapter emphasize variants, degeneracies, and the tradeoff between storage and query speed."
+  }
+]

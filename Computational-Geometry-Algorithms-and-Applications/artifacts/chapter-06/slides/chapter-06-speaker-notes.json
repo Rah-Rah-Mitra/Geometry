@@ -1,0 +1,82 @@
+[
+  {
+    "slide": 1,
+    "label": "Where Am I",
+    "notes": "Start with the user-facing problem: after a map has been built, a query point should identify its containing face quickly. The subdivision may come from streets, parcels, visibility regions, or any planar embedding. The chapter's theme is the tradeoff between preprocessing space and query time, with trapezoidal maps giving a randomized structure whose expected behavior is small enough to be practical."
+  },
+  {
+    "slide": 2,
+    "label": "Slabs Are Fast But Large",
+    "notes": "Use slabs as the natural first attempt. They make the query logic easy: compare the x-coordinate to find a slab, then compare the point to the ordered segments in that slab. The weakness is not query time but replication. A long segment can appear in many slab lists, so a subdivision with many crossing spans can force much more than linear storage."
+  },
+  {
+    "slide": 3,
+    "label": "Trapezoidal Map",
+    "notes": "Introduce the trapezoidal map as the local alternative to full slabs. The vertical extensions are only drawn from segment endpoints and they stop at the first obstacle. This keeps the decomposition tied to the input geometry rather than to every global vertex slab, and it prepares the ground for an incremental update rule."
+  },
+  {
+    "slide": 4,
+    "label": "Why Faces Are Trapezoids",
+    "notes": "Phrase Lemma 6.1 geometrically rather than as a memorized fact. A face cannot have two unrelated top chains over the same vertical slice without forcing a crossing or another vertical wall between them. The orientation assumptions, especially no vertical segments and disjoint interiors, make the top-bottom description unambiguous."
+  },
+  {
+    "slide": 5,
+    "label": "Four Records Define One Cell",
+    "notes": "Make the data representation concrete. A trapezoid is not stored as a long boundary cycle; it is stored by four references. The top and bottom are segment records or the bounding box, and the left and right walls are identified by the endpoints that generated them. This compact record is what later leaves can point to."
+  },
+  {
+    "slide": 6,
+    "label": "Linear Complexity",
+    "notes": "Give the linear-complexity proof as a charging argument. Each trapezoid has a left wall, and that wall comes from an endpoint or the bounding box. The local neighbor structure prevents one endpoint from being charged by too many trapezoids. This is the first reassurance that the geometry is not the source of the later superlinear risk."
+  },
+  {
+    "slide": 7,
+    "label": "Search DAG Query Walk",
+    "notes": "The search structure is a directed acyclic graph, not necessarily a tree, because later replacements can have several incoming pointers. A query follows comparisons: first x-type decisions against endpoints, then y-type decisions against segments. The invariant is synchronization: every leaf reached by the current decisions names the trapezoid of the current map that contains the query point."
+  },
+  {
+    "slide": 8,
+    "label": "Randomized Incremental Loop",
+    "notes": "Describe the algorithm as a maintained pair. The map T of S_i is the geometric subdivision after i inserted segments, and D is the search structure that can locate points in it. Each insertion first finds where the new segment begins, follows the cells it crosses, replaces those cells, and then patches the affected leaves in the DAG."
+  },
+  {
+    "slide": 9,
+    "label": "Follow Segment",
+    "notes": "The follow operation is local. After locating the left endpoint of the segment, the algorithm does not query the DAG again for every crossed cell. It walks through neighbor pointers, deciding at each right wall whether the segment continues through the upper-right or lower-right neighbor. This ordered crossed sequence is exactly the geometry that must be removed and rebuilt."
+  },
+  {
+    "slide": 10,
+    "label": "One-Trapezoid Replacement",
+    "notes": "Treat the one-trapezoid case as the basic patch. The segment starts and ends inside the same old cell, so the old cell disappears and up to four new cells appear: a left cap, a right cap, and the regions above and below the segment. The corresponding old DAG leaf is replaced by a tiny decision structure that distinguishes those four outcomes."
+  },
+  {
+    "slide": 11,
+    "label": "Multi-Trapezoid Replacement",
+    "notes": "The general insertion is the same idea repeated along a sequence of crossed trapezoids. The first and last cells handle the endpoints, while the middle cells are split by the segment. Some adjacent new fragments merge when they share the same top or bottom boundary. In the DAG, the important bookkeeping is that every pointer into a removed leaf must now enter the correct local replacement."
+  },
+  {
+    "slide": 12,
+    "label": "Backwards Analysis For Queries",
+    "notes": "Backwards analysis asks what would have to be deleted from the final structure for the query point's containing trapezoid to have looked different one step earlier. Only a constant number of defining objects matter for that trapezoid, so the last inserted relevant object has probability at most a constant over i. Summing those probabilities gives the harmonic bound, often stated here as at most 12 H_n comparisons in expectation."
+  },
+  {
+    "slide": 13,
+    "label": "Expected Size And Build Time",
+    "notes": "Separate the two expectations. Query paths are logarithmic in expectation, and the size and construction work are bounded by summing expected replacement costs over insertions. The final guarantee is an expected O(n log n) construction with linear expected map complexity and logarithmic expected query time."
+  },
+  {
+    "slide": 14,
+    "label": "Back To Subdivision Faces",
+    "notes": "Return to the original problem. The data structure does not report an artificial trapezoid as the final semantic answer. Each trapezoid knows which face of the original subdivision it lies inside, typically through a DCEL face pointer. This lets the randomized structure serve point location in the original map."
+  },
+  {
+    "slide": 15,
+    "label": "Degeneracy By Shear",
+    "notes": "Degeneracy handling should sound like careful implementation rather than a separate theorem. A tiny symbolic shear lets comparisons behave as though no segment is vertical and no two endpoints share an x-coordinate. The data structure still needs an explicit convention for a query on an input segment: it should report the segment or the incident face information instead of pretending the point is strictly above or below."
+  },
+  {
+    "slide": 16,
+    "label": "Tail Estimate To Worst-Case Query",
+    "notes": "Close with the reliability message. The randomized construction gives expected logarithmic query paths, but applications may want a worst-case cap for the constructed structure. The tail-estimate argument reduces checking all possible query points to checking representative points for final trapezoids. If the constructed DAG has a path that is too long, the algorithm can restart with a new random permutation and use the successful run as a certificate."
+  }
+]

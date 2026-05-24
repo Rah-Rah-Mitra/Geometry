@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fundamentals of Computer Graphics - Chapter 03: Raster Images</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-03">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-03-raster-images/03-raster-images.ipynb">
+  <meta name="source_span" content="printed pages 63-78; PDF pages 80-95.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text and KaTeX are loaded for raster-image formulas, gamma curves, and alpha compositing equations.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400;1,600&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --raster-bg: #FFFFFF;
+      --raster-bg-soft: #F8FAFC;
+      --raster-ink: #111827;
+      --raster-muted: #475569;
+      --raster-dim: #64748B;
+      --raster-indigo: #1E3A8A;
+      --raster-blue: #2563EB;
+      --raster-teal: #0F766E;
+      --raster-amber: #B45309;
+      --raster-violet: #6D28D9;
+      --raster-red: #DC2626;
+      --raster-green: #15803D;
+      --raster-border: #CBD5E1;
+      --raster-border-soft: #E2E8F0;
+      --font-sans: 'Source Sans 3', Arial, sans-serif;
+      --font-math: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      --font-code: 'JetBrains Mono', Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #020617;
+      color: var(--raster-ink);
+      font-family: var(--font-sans);
+    }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    section.slide {
+      width: 1920px;
+      height: 1080px;
+      overflow: clip;
+      padding: 58px 92px 46px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      border-top: 10px solid var(--raster-indigo);
+      background:
+        linear-gradient(90deg, rgba(203, 213, 225, 0.30) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(203, 213, 225, 0.18) 1px, transparent 1px),
+        var(--raster-bg);
+      background-size: 96px 96px, 96px 96px, auto;
+    }
+    section.slide.soft {
+      background:
+        radial-gradient(circle at 84% 18%, rgba(15, 118, 110, 0.10), transparent 28%),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        var(--raster-bg-soft);
+      background-size: auto, 88px 88px, auto;
+    }
+    h1, h2, h3, p, ul, ol, figure { margin: 0; letter-spacing: 0; }
+    h1 {
+      font-size: 64px;
+      line-height: 1.03;
+      max-width: 1240px;
+      color: var(--raster-ink);
+    }
+    h2 {
+      font-size: 50px;
+      line-height: 1.08;
+      color: var(--raster-ink);
+    }
+    h3 {
+      font-size: 30px;
+      line-height: 1.16;
+      color: var(--raster-indigo);
+      margin-bottom: 8px;
+    }
+    p, li {
+      font-size: 25px;
+      line-height: 1.26;
+    }
+    ul, ol {
+      padding-left: 30px;
+      display: grid;
+      gap: 9px;
+    }
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--raster-dim);
+      letter-spacing: 0;
+    }
+    .subtitle {
+      font-size: 31px;
+      line-height: 1.25;
+      color: var(--raster-muted);
+      max-width: 1260px;
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 32px;
+    }
+    .footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      color: var(--raster-dim);
+      font-size: 21px;
+      gap: 28px;
+    }
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 24px;
+      align-items: center;
+    }
+    .two { grid-template-columns: 1fr 1fr; }
+    .two.left-wide { grid-template-columns: 1.12fr 0.88fr; }
+    .two.right-wide { grid-template-columns: 0.86fr 1.14fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack {
+      display: grid;
+      gap: 16px;
+      align-content: center;
+    }
+    .panel {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--raster-border);
+      border-left: 5px solid var(--raster-blue);
+      border-radius: 8px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+    }
+    .panel.teal { border-left-color: var(--raster-teal); background: #F0FDFA; }
+    .panel.amber { border-left-color: var(--raster-amber); background: #FFFBEB; }
+    .panel.indigo { border-left-color: var(--raster-indigo); background: #EEF2FF; }
+    .panel.violet { border-left-color: var(--raster-violet); background: #F5F3FF; }
+    .panel.slate { border-left-color: #94A3B8; background: #F8FAFC; }
+    .panel p, .panel li { font-size: 24px; line-height: 1.24; }
+    .visual {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--raster-border);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+    }
+    .visual svg {
+      width: 100%;
+      height: auto;
+      max-height: 610px;
+      display: block;
+    }
+    .visual.short svg { max-height: 480px; }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.2;
+      background: #FFFFFF;
+      border: 1px solid var(--raster-border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .codebox {
+      font-family: var(--font-code);
+      font-size: 23px;
+      line-height: 1.32;
+      white-space: pre-line;
+      background: #F8FAFC;
+      border: 1px solid var(--raster-border);
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .badge {
+      font-size: 21px;
+      line-height: 1;
+      font-weight: 700;
+      color: var(--raster-indigo);
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 6px;
+      padding: 10px 13px 12px;
+    }
+    .badge.teal { color: var(--raster-teal); background: #CCFBF1; border-color: #99F6E4; }
+    .badge.amber { color: var(--raster-amber); background: #FEF3C7; border-color: #FDE68A; }
+    .badge.violet { color: var(--raster-violet); background: #EDE9FE; border-color: #DDD6FE; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.25;
+      background: #FFFFFF;
+      border: 1px solid var(--raster-border);
+      border-radius: 8px;
+    }
+    th {
+      color: var(--raster-indigo);
+      text-align: left;
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--raster-border);
+    }
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--raster-border-soft);
+      vertical-align: top;
+    }
+    .kicker {
+      font-size: 24px;
+      line-height: 1.28;
+      color: var(--raster-muted);
+    }
+    .small {
+      font-size: 21px;
+      line-height: 1.28;
+      color: var(--raster-dim);
+    }
+    .mathline {
+      font-family: var(--font-math);
+      font-size: 30px;
+      line-height: 1.22;
+    }
+    .takeaway-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .takeaway {
+      border: 1px solid var(--raster-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+    }
+    .takeaway strong {
+      font-size: 24px;
+      color: var(--raster-indigo);
+    }
+    .takeaway span {
+      font-size: 22px;
+      line-height: 1.22;
+      color: var(--raster-muted);
+    }
+  </style>
+  <script type="application/json" id="deck-metadata">
+    {
+      "course": "Fundamentals of Computer Graphics",
+      "chapter_id": "chapter-03",
+      "notebook_path": "Fundamentals-of-Computer-Graphics/chapter-03-raster-images/03-raster-images.ipynb",
+      "source_span": "printed pages 63-78; PDF pages 80-95.",
+      "source_pdf": "Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf",
+      "design_system_version": "lecture-design-system-2026-05-23"
+    }
+  </script>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide soft" data-label="Raster Images">
+      <div class="topline">
+        <div class="eyebrow">Fundamentals Of Computer Graphics</div>
+        <div class="eyebrow">Chapter 03</div>
+      </div>
+      <div class="content two left-wide">
+        <div class="stack">
+          <h1>Raster Images</h1>
+          <p class="subtitle">Device-independent arrays, finite pixel values, RGB color, gamma transfer, quantization, and alpha compositing.</p>
+          <div class="badge-row">
+            <span class="badge">printed pp. 63-78</span>
+            <span class="badge teal">PDF pp. 80-95</span>
+            <span class="badge amber">notebook-backed lab</span>
+          </div>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 820 560" role="img" aria-label="Raster image array interpreted by several devices">
+            <defs>
+              <pattern id="title-grid" width="46" height="46" patternUnits="userSpaceOnUse">
+                <rect width="46" height="46" fill="#F8FAFC"></rect>
+                <path d="M46 0H0V46" fill="none" stroke="#CBD5E1" stroke-width="2"></path>
+              </pattern>
+            </defs>
+            <rect x="90" y="96" width="290" height="210" rx="12" fill="url(#title-grid)" stroke="#1E3A8A" stroke-width="4"></rect>
+            <g>
+              <rect x="114" y="120" width="46" height="46" fill="#2563EB" opacity="0.88"></rect>
+              <rect x="160" y="120" width="46" height="46" fill="#0F766E" opacity="0.84"></rect>
+              <rect x="206" y="120" width="46" height="46" fill="#B45309" opacity="0.82"></rect>
+              <rect x="252" y="120" width="46" height="46" fill="#6D28D9" opacity="0.72"></rect>
+              <rect x="298" y="120" width="46" height="46" fill="#111827" opacity="0.68"></rect>
+              <rect x="114" y="166" width="46" height="46" fill="#0F766E" opacity="0.70"></rect>
+              <rect x="160" y="166" width="46" height="46" fill="#FFFFFF"></rect>
+              <rect x="206" y="166" width="46" height="46" fill="#2563EB" opacity="0.62"></rect>
+              <rect x="252" y="166" width="46" height="46" fill="#B45309" opacity="0.74"></rect>
+              <rect x="298" y="166" width="46" height="46" fill="#FFFFFF"></rect>
+              <rect x="114" y="212" width="46" height="46" fill="#6D28D9" opacity="0.68"></rect>
+              <rect x="160" y="212" width="46" height="46" fill="#2563EB" opacity="0.84"></rect>
+              <rect x="206" y="212" width="46" height="46" fill="#0F766E" opacity="0.74"></rect>
+              <rect x="252" y="212" width="46" height="46" fill="#FFFFFF"></rect>
+              <rect x="298" y="212" width="46" height="46" fill="#B45309" opacity="0.68"></rect>
+            </g>
+            <text x="235" y="350" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#1E3A8A">image array</text>
+            <path d="M392 158 C500 120 570 105 680 100" fill="none" stroke="#2563EB" stroke-width="6" stroke-linecap="round"></path>
+            <path d="M392 220 C520 235 570 255 682 300" fill="none" stroke="#0F766E" stroke-width="6" stroke-linecap="round"></path>
+            <path d="M330 316 C430 400 520 448 664 454" fill="none" stroke="#B45309" stroke-width="6" stroke-linecap="round"></path>
+            <g transform="translate(598 54)">
+              <rect x="0" y="0" width="154" height="94" rx="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="4"></rect>
+              <rect x="20" y="18" width="28" height="58" fill="#DC2626"></rect>
+              <rect x="50" y="18" width="28" height="58" fill="#15803D"></rect>
+              <rect x="80" y="18" width="28" height="58" fill="#2563EB"></rect>
+              <text x="77" y="132" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#475569">display</text>
+            </g>
+            <g transform="translate(602 258)">
+              <rect x="0" y="0" width="148" height="104" rx="10" fill="#FFFFFF" stroke="#0F766E" stroke-width="4"></rect>
+              <g fill="#111827">
+                <circle cx="28" cy="28" r="9"></circle>
+                <circle cx="62" cy="50" r="9"></circle>
+                <circle cx="96" cy="28" r="9"></circle>
+                <circle cx="118" cy="72" r="9"></circle>
+                <circle cx="38" cy="78" r="9"></circle>
+              </g>
+              <text x="74" y="142" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#475569">printer</text>
+            </g>
+            <g transform="translate(586 424)">
+              <rect x="0" y="0" width="178" height="86" rx="10" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></rect>
+              <circle cx="48" cy="43" r="24" fill="#1E3A8A" opacity="0.16" stroke="#1E3A8A" stroke-width="4"></circle>
+              <rect x="92" y="18" width="48" height="48" fill="#DC2626" opacity="0.72"></rect>
+              <rect x="140" y="18" width="24" height="48" fill="#15803D" opacity="0.72"></rect>
+              <text x="89" y="124" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#475569">sensor</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="footer">
+        <span>Fundamentals-of-Computer-Graphics/chapter-03-raster-images/03-raster-images.ipynb</span>
+        <span>Raster Images</span>
+      </div>
+      <aside class="speaker-notes">Open by positioning raster images as the practical contract between physical devices and graphics algorithms. The important move is not to memorize display hardware, but to notice that an image array can be interpreted by many devices. Preview the lecture around six inspectable commitments: device model, coordinates, value range, color space, transfer curve, and compositing rule.</aside>
+    </section>
+
+    <section class="slide" data-label="Device Contract">
+      <div class="topline">
+        <div class="eyebrow">Raster Model</div>
+        <div class="eyebrow">Array Plus Interpretation</div>
+      </div>
+      <h2>Raster Images Are Device Contracts</h2>
+      <div class="content two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 940 560" role="img" aria-label="One image array feeding multiple device interpretations">
+            <defs>
+              <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+              </marker>
+              <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"></path>
+              </marker>
+            </defs>
+            <rect x="34" y="78" width="260" height="360" rx="14" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="164" y="126" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#1E3A8A">stored image</text>
+            <g transform="translate(70 158)">
+              <rect x="0" y="0" width="188" height="188" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <g stroke="#CBD5E1" stroke-width="2">
+                <path d="M47 0V188 M94 0V188 M141 0V188 M0 47H188 M0 94H188 M0 141H188"></path>
+              </g>
+              <circle cx="48" cy="48" r="17" fill="#2563EB"></circle>
+              <circle cx="94" cy="48" r="17" fill="#0F766E"></circle>
+              <circle cx="141" cy="48" r="17" fill="#B45309"></circle>
+              <circle cx="48" cy="94" r="17" fill="#6D28D9"></circle>
+              <circle cx="94" cy="94" r="17" fill="#111827"></circle>
+              <circle cx="141" cy="94" r="17" fill="#2563EB" opacity="0.5"></circle>
+              <circle cx="48" cy="141" r="17" fill="#0F766E" opacity="0.6"></circle>
+              <circle cx="94" cy="141" r="17" fill="#B45309" opacity="0.5"></circle>
+              <circle cx="141" cy="141" r="17" fill="#6D28D9" opacity="0.5"></circle>
+            </g>
+            <text x="164" y="392" text-anchor="middle" font-family="JetBrains Mono" font-size="24" fill="#475569">height x width x channels</text>
+            <path d="M306 176H460" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-blue)"></path>
+            <path d="M306 280H460" stroke="#0F766E" stroke-width="6" marker-end="url(#arrow-teal)"></path>
+            <path d="M306 384H460" stroke="#B45309" stroke-width="6" marker-end="url(#arrow-blue)"></path>
+            <g transform="translate(486 90)">
+              <rect x="0" y="0" width="370" height="92" rx="12" fill="#FFFFFF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="32" y="38" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#2563EB">Display</text>
+              <text x="32" y="70" font-family="Source Sans 3" font-size="24" fill="#475569">subpixels emit or transmit light</text>
+            </g>
+            <g transform="translate(486 238)">
+              <rect x="0" y="0" width="370" height="92" rx="12" fill="#FFFFFF" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="32" y="38" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#0F766E">Hardcopy</text>
+              <text x="32" y="70" font-family="Source Sans 3" font-size="24" fill="#475569">dots or tone fields approximate color</text>
+            </g>
+            <g transform="translate(486 386)">
+              <rect x="0" y="0" width="370" height="92" rx="12" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></rect>
+              <text x="32" y="38" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#B45309">Input</text>
+              <text x="32" y="70" font-family="Source Sans 3" font-size="24" fill="#475569">sensors measure local light samples</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Core Abstraction</h3>
+            <p>A raster image is a finite 2D array whose entries are samples or local summaries of an image function.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Device Independence</h3>
+            <p>The same stored values can feed display subpixels, printer dots, sensor reconstruction, texture lookup, or a later image-processing step.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Bug Magnet</h3>
+            <p>Treating an image pixel as identical to a display pixel hides resampling, gamma, quantization, and coordinate convention errors.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Make the abstraction concrete before naming any equations. A raster is not merely a picture on a screen; it is an array plus an interpretation supplied by a device or algorithm. Stress that device independence is useful precisely because later operations can resize, filter, composite, store, and display the same image under different conventions.</aside>
+    </section>
+
+    <section class="slide" data-label="Raster Devices">
+      <div class="topline">
+        <div class="eyebrow">Devices</div>
+        <div class="eyebrow">Output And Input</div>
+      </div>
+      <h2>Raster Devices Explain The Array</h2>
+      <div class="content three">
+        <div class="panel indigo">
+          <h3>Displays</h3>
+          <div class="visual short">
+            <svg viewBox="0 0 380 260" role="img" aria-label="RGB display subpixels">
+              <rect x="42" y="32" width="296" height="166" rx="12" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5"></rect>
+              <g transform="translate(70 62)">
+                <rect x="0" y="0" width="40" height="104" fill="#DC2626"></rect>
+                <rect x="44" y="0" width="40" height="104" fill="#15803D"></rect>
+                <rect x="88" y="0" width="40" height="104" fill="#2563EB"></rect>
+                <rect x="154" y="0" width="40" height="104" fill="#DC2626" opacity="0.50"></rect>
+                <rect x="198" y="0" width="40" height="104" fill="#15803D" opacity="0.72"></rect>
+                <rect x="242" y="0" width="40" height="104" fill="#2563EB" opacity="0.90"></rect>
+              </g>
+              <text x="190" y="232" text-anchor="middle" font-family="Source Sans 3" font-size="27" font-weight="700" fill="#1E3A8A">fixed pixel grid</text>
+            </svg>
+          </div>
+          <p>Emissive or transmissive pixels use controllable light. Color displays commonly split one pixel into red, green, and blue subpixels.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Hardcopy</h3>
+          <div class="visual short">
+            <svg viewBox="0 0 380 260" role="img" aria-label="Printer raster dots and tones">
+              <rect x="58" y="34" width="264" height="166" rx="10" fill="#FFFFFF" stroke="#0F766E" stroke-width="5"></rect>
+              <g fill="#111827">
+                <circle cx="92" cy="74" r="12"></circle>
+                <circle cx="138" cy="112" r="10"></circle>
+                <circle cx="190" cy="76" r="16"></circle>
+                <circle cx="236" cy="124" r="14"></circle>
+                <circle cx="288" cy="86" r="10"></circle>
+                <circle cx="104" cy="160" r="8"></circle>
+                <circle cx="170" cy="166" r="13"></circle>
+                <circle cx="258" cy="166" r="18"></circle>
+              </g>
+              <path d="M58 216H322" stroke="#0F766E" stroke-width="5" stroke-linecap="round"></path>
+              <text x="190" y="244" text-anchor="middle" font-family="Source Sans 3" font-size="27" font-weight="700" fill="#0F766E">dots per inch</text>
+            </svg>
+          </div>
+          <p>Printers may be binary at each grid site or continuous tone. High resolution helps edges and halftone patterns approximate intermediate values.</p>
+        </div>
+        <div class="panel amber">
+          <h3>Input Sensors</h3>
+          <div class="visual short">
+            <svg viewBox="0 0 380 260" role="img" aria-label="Bayer-like sensor mosaic">
+              <rect x="66" y="34" width="248" height="166" rx="10" fill="#FFFFFF" stroke="#B45309" stroke-width="5"></rect>
+              <g transform="translate(94 62)">
+                <rect x="0" y="0" width="42" height="42" fill="#15803D" opacity="0.80"></rect>
+                <rect x="42" y="0" width="42" height="42" fill="#DC2626" opacity="0.80"></rect>
+                <rect x="84" y="0" width="42" height="42" fill="#15803D" opacity="0.80"></rect>
+                <rect x="126" y="0" width="42" height="42" fill="#DC2626" opacity="0.80"></rect>
+                <rect x="0" y="42" width="42" height="42" fill="#2563EB" opacity="0.80"></rect>
+                <rect x="42" y="42" width="42" height="42" fill="#15803D" opacity="0.80"></rect>
+                <rect x="84" y="42" width="42" height="42" fill="#2563EB" opacity="0.80"></rect>
+                <rect x="126" y="42" width="42" height="42" fill="#15803D" opacity="0.80"></rect>
+                <rect x="0" y="84" width="42" height="42" fill="#15803D" opacity="0.80"></rect>
+                <rect x="42" y="84" width="42" height="42" fill="#DC2626" opacity="0.80"></rect>
+                <rect x="84" y="84" width="42" height="42" fill="#15803D" opacity="0.80"></rect>
+                <rect x="126" y="84" width="42" height="42" fill="#DC2626" opacity="0.80"></rect>
+              </g>
+              <text x="190" y="232" text-anchor="middle" font-family="Source Sans 3" font-size="27" font-weight="700" fill="#B45309">measured samples</text>
+            </svg>
+          </div>
+          <p>Cameras and scanners produce raster measurements. A color-filter mosaic records incomplete color and needs reconstruction before full RGB use.</p>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the three device families to motivate why the same word pixel can mean several physical things. Displays control emitted or transmitted light, printers deposit marks or tones, and sensors measure incoming energy. The array abstraction survives these differences, but resolution, color channels, and sampling density must be interpreted through the device.</aside>
+    </section>
+
+    <section class="slide" data-label="Pixel Samples">
+      <div class="topline">
+        <div class="eyebrow">Pixels</div>
+        <div class="eyebrow">Samples Of A Function</div>
+      </div>
+      <h2>A Pixel Is A Local Sample</h2>
+      <div class="content two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 900 560" role="img" aria-label="Four by three sample grid with half-pixel domain">
+            <rect x="112" y="92" width="560" height="360" fill="#F8FAFC" stroke="#1E3A8A" stroke-width="5"></rect>
+            <g stroke="#CBD5E1" stroke-width="3">
+              <path d="M252 92V452 M392 92V452 M532 92V452"></path>
+              <path d="M112 212H672 M112 332H672"></path>
+            </g>
+            <g fill="#2563EB">
+              <circle cx="182" cy="392" r="14"></circle>
+              <circle cx="322" cy="392" r="14"></circle>
+              <circle cx="462" cy="392" r="14"></circle>
+              <circle cx="602" cy="392" r="14"></circle>
+              <circle cx="182" cy="272" r="14"></circle>
+              <circle cx="322" cy="272" r="14"></circle>
+              <circle cx="462" cy="272" r="14"></circle>
+              <circle cx="602" cy="272" r="14"></circle>
+              <circle cx="182" cy="152" r="14"></circle>
+              <circle cx="322" cy="152" r="14"></circle>
+              <circle cx="462" cy="152" r="14"></circle>
+              <circle cx="602" cy="152" r="14"></circle>
+            </g>
+            <path d="M112 452H672" stroke="#111827" stroke-width="4"></path>
+            <path d="M112 452V92" stroke="#111827" stroke-width="4"></path>
+            <text x="182" y="430" text-anchor="middle" font-family="Source Sans 3" font-size="28" fill="#475569">(0,0)</text>
+            <text x="602" y="132" text-anchor="middle" font-family="Source Sans 3" font-size="28" fill="#475569">(3,2)</text>
+            <text x="392" y="514" text-anchor="middle" font-family="STIX Two Text" font-size="34" fill="#111827">R = [-0.5, n_x - 0.5] x [-0.5, n_y - 0.5]</text>
+            <path d="M714 156C766 210 768 316 716 382" fill="none" stroke="#0F766E" stroke-width="5" stroke-linecap="round"></path>
+            <text x="748" y="286" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#0F766E">continuous image function</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="formula">\(I(x,y): R \to V\)</div>
+          <div class="panel indigo">
+            <h3>Domain</h3>
+            <p>The image occupies a rectangle in 2D coordinates, centered on integer sample locations.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Value Set</h3>
+            <p>The value may be grayscale, RGB, RGBA, integer, floating point, linear light, or encoded display data.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Interpretation</h3>
+            <p>Pixel entries are local measurements or averages. They are not automatically the geometry of the image.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Slow down on the sample convention because it affects every later chapter that maps geometry to pixels. The integer pair names a sample location, while the image domain extends half a pixel beyond the outer samples. This convention lets camera rays, rasterization rules, texture lookups, and filtering kernels talk about the same coordinates.</aside>
+    </section>
+
+    <section class="slide" data-label="Coordinate Conventions">
+      <div class="topline">
+        <div class="eyebrow">Coordinates</div>
+        <div class="eyebrow">Rows, Columns, And Origins</div>
+      </div>
+      <h2>Coordinate Conventions Are Part Of The Data</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Course Convention</h3>
+            <p>Use \((i,j)\) for column and row. The bottom-left sample is \((0,0)\), and the top-right sample is \((n_x-1,n_y-1)\).</p>
+          </div>
+          <div class="panel teal">
+            <h3>Array Convention</h3>
+            <p>Code often stores rows first, so an array element may be accessed as <span class="codebox">image[j, i, channel]</span>.</p>
+          </div>
+          <div class="panel amber">
+            <h3>API Mismatch</h3>
+            <p>Many file formats and graphics APIs count rows from the top. A correct image pipeline names the origin before trusting orientation.</p>
+          </div>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 860 560" role="img" aria-label="Bottom-left and top-left image coordinate conventions">
+            <g transform="translate(70 70)">
+              <rect x="0" y="0" width="300" height="300" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <g stroke="#CBD5E1" stroke-width="2">
+                <path d="M75 0V300 M150 0V300 M225 0V300 M0 75H300 M0 150H300 M0 225H300"></path>
+              </g>
+              <path d="M0 300H315" stroke="#111827" stroke-width="4"></path>
+              <path d="M0 300V-15" stroke="#111827" stroke-width="4"></path>
+              <circle cx="37.5" cy="262.5" r="13" fill="#2563EB"></circle>
+              <text x="37.5" y="340" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#1E3A8A">(0,0)</text>
+              <text x="150" y="382" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#1E3A8A">bottom-left origin</text>
+            </g>
+            <g transform="translate(490 70)">
+              <rect x="0" y="0" width="300" height="300" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></rect>
+              <g stroke="#CBD5E1" stroke-width="2">
+                <path d="M75 0V300 M150 0V300 M225 0V300 M0 75H300 M0 150H300 M0 225H300"></path>
+              </g>
+              <path d="M0 0H315" stroke="#111827" stroke-width="4"></path>
+              <path d="M0 0V315" stroke="#111827" stroke-width="4"></path>
+              <circle cx="37.5" cy="37.5" r="13" fill="#B45309"></circle>
+              <text x="37.5" y="-22" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#B45309">(0,0)</text>
+              <text x="150" y="382" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#B45309">top-left origin</text>
+            </g>
+            <path d="M404 222H454" stroke="#64748B" stroke-width="5" stroke-linecap="round"></path>
+            <text x="430" y="278" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#64748B">same bytes, different map</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Emphasize that coordinate conventions are not pedantic details. A vertically flipped texture, a misplaced sample center, or an off-by-one crop can all come from silently switching between row-major array access and screen-space coordinates. Ask students to state origin, axis direction, and sample-center convention whenever they inspect an image.</aside>
+    </section>
+
+    <section class="slide" data-label="Pixel Values">
+      <div class="topline">
+        <div class="eyebrow">Pixel Values</div>
+        <div class="eyebrow">Shape, Type, Range</div>
+      </div>
+      <h2>Pixel Values Carry Engineering Commitments</h2>
+      <div class="content two right-wide">
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Value Record</h3>
+            <p>Every array should be described by shape, channel count, numeric type, value range, and whether values represent linear light or encoded display codes.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Storage Pressure</h3>
+            <p>A 10 MP RGB image at 32-bit float per channel is about 114.44 MiB before compression or metadata.</p>
+          </div>
+          <div class="formula">bytes = width x height x channels x bytes_per_channel</div>
+        </div>
+        <div class="stack">
+          <table>
+            <thead>
+              <tr>
+                <th>Format</th>
+                <th>Bits / pixel</th>
+                <th>10 MP storage</th>
+                <th>Typical role</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1-bit mask</td>
+                <td>1</td>
+                <td>1.19 MiB</td>
+                <td>binary text, stencil, high-res dots</td>
+              </tr>
+              <tr>
+                <td>8-bit RGB</td>
+                <td>24</td>
+                <td>28.61 MiB</td>
+                <td>display-bound color images</td>
+              </tr>
+              <tr>
+                <td>16-bit RGB</td>
+                <td>48</td>
+                <td>57.22 MiB</td>
+                <td>editing and print pipelines</td>
+              </tr>
+              <tr>
+                <td>32-bit float RGB</td>
+                <td>96</td>
+                <td>114.44 MiB</td>
+                <td>HDR and intermediate computation</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="small">Values from the chapter notebook table, restated as implementation choices rather than a copied printed table.</p>
+        </div>
+      </div>
+      <aside class="speaker-notes">Tie pixel formats to costs and failure modes. Floating point is attractive because it preserves range and precision during computation, but images are large enough that storage and bandwidth matter immediately. Fixed-range integers are compact and common, yet they force clipping and quantization decisions that should be deliberate rather than accidental.</aside>
+    </section>
+
+    <section class="slide" data-label="RGB Cube">
+      <div class="topline">
+        <div class="eyebrow">Color</div>
+        <div class="eyebrow">Additive RGB</div>
+      </div>
+      <h2>RGB Color Is A Point In A Unit Cube</h2>
+      <div class="content two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 850 570" role="img" aria-label="RGB color cube with additive color corners">
+            <polygon points="210,390 470,455 654,292 392,228" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></polygon>
+            <polygon points="210,390 392,228 392,82 210,245" fill="#FEE2E2" stroke="#CBD5E1" stroke-width="3"></polygon>
+            <polygon points="392,228 654,292 654,146 392,82" fill="#DCFCE7" stroke="#CBD5E1" stroke-width="3"></polygon>
+            <polygon points="210,245 392,82 654,146 470,308" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="3"></polygon>
+            <g stroke-width="5" stroke-linecap="round">
+              <path d="M210 390L470 455" stroke="#DC2626"></path>
+              <path d="M210 390L392 228" stroke="#15803D"></path>
+              <path d="M210 390V245" stroke="#2563EB"></path>
+            </g>
+            <g font-family="Source Sans 3" font-size="26" font-weight="700">
+              <text x="178" y="420" fill="#111827">black</text>
+              <text x="480" y="496" fill="#DC2626">red</text>
+              <text x="642" y="328" fill="#15803D">green</text>
+              <text x="162" y="236" fill="#2563EB">blue</text>
+              <text x="632" y="128" fill="#0F766E">cyan</text>
+              <text x="420" y="72" fill="#6D28D9">magenta</text>
+              <text x="476" y="298" fill="#B45309">yellow</text>
+              <text x="660" y="178" fill="#111827">white</text>
+            </g>
+            <g>
+              <circle cx="210" cy="390" r="12" fill="#111827"></circle>
+              <circle cx="470" cy="455" r="12" fill="#DC2626"></circle>
+              <circle cx="392" cy="228" r="12" fill="#15803D"></circle>
+              <circle cx="210" cy="245" r="12" fill="#2563EB"></circle>
+              <circle cx="654" cy="146" r="12" fill="#0F766E"></circle>
+              <circle cx="392" cy="82" r="12" fill="#6D28D9"></circle>
+              <circle cx="470" cy="308" r="12" fill="#FACC15" stroke="#B45309" stroke-width="4"></circle>
+              <circle cx="654" cy="292" r="12" fill="#FFFFFF" stroke="#111827" stroke-width="4"></circle>
+            </g>
+            <text x="430" y="536" text-anchor="middle" font-family="STIX Two Text" font-size="36" fill="#111827">color = (r,g,b), 0 <= r,g,b <= 1</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Additive Primaries</h3>
+            <p>Display color is built by adding controlled red, green, and blue light, not by mixing pigments.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Cube Coordinates</h3>
+            <p>Black is \((0,0,0)\), white is \((1,1,1)\), and colors such as yellow occupy corners where two primaries are on.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Quantized In Practice</h3>
+            <p>Eight-bit RGB stores each component as an integer code from 0 to 255, so the cube is sampled on a finite lattice.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Treat the cube as a coordinate system rather than a color theory lecture. Students need enough RGB mechanics to reason about program values: three additive channels, bounded coordinates, corner colors, and finite integer codes. Make the contrast with paint mixing explicit because it prevents the common red-yellow-blue intuition from entering display calculations.</aside>
+    </section>
+
+    <section class="slide" data-label="Gamma Curve">
+      <div class="topline">
+        <div class="eyebrow">Gamma</div>
+        <div class="eyebrow">Codes Versus Light</div>
+      </div>
+      <h2>Gamma Separates Stored Codes From Emitted Light</h2>
+      <div class="content two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 850 570" role="img" aria-label="Gamma curve for display intensity">
+            <rect x="96" y="54" width="620" height="400" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <g stroke="#E2E8F0" stroke-width="2">
+              <path d="M96 374H716 M96 294H716 M96 214H716 M96 134H716"></path>
+              <path d="M220 54V454 M344 54V454 M468 54V454 M592 54V454"></path>
+            </g>
+            <path d="M96 454L716 54" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="12 10"></path>
+            <path d="M96 454 C210 449 350 426 462 354 C570 284 648 174 716 54" fill="none" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></path>
+            <path d="M548 454V254H96" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="9 8"></path>
+            <circle cx="548" cy="254" r="13" fill="#B45309"></circle>
+            <text x="548" y="496" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#B45309">code about 0.73</text>
+            <text x="76" y="266" text-anchor="end" font-family="Source Sans 3" font-size="26" fill="#B45309">half light</text>
+            <text x="406" y="534" text-anchor="middle" font-family="Source Sans 3" font-size="28" fill="#475569">stored code a</text>
+            <text x="44" y="270" text-anchor="middle" transform="rotate(-90 44 270)" font-family="Source Sans 3" font-size="28" fill="#475569">emitted intensity</text>
+            <text x="586" y="154" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#2563EB">gamma 2.2</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="formula">displayed intensity \(= M a^\gamma\)</div>
+          <div class="formula">gamma encode: \(a' = a^{1/\gamma}\)</div>
+          <div class="panel teal">
+            <h3>Operational Rule</h3>
+            <p>Decode stored values before lighting or filtering in linear light, then encode again for display or common image files.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Inspection Target</h3>
+            <p>The chapter notebook checks that gamma encoding and decoding round trip, and that half intensity maps to the expected code.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Present gamma as a bookkeeping distinction between code values and physical light, not as an isolated display curiosity. A stored value of one half is not usually half the emitted light. The useful engineering habit is to decode before linear-light operations, perform the computation, and encode only when targeting a display or storage convention.</aside>
+    </section>
+
+    <section class="slide" data-label="Linear Light">
+      <div class="topline">
+        <div class="eyebrow">Gamma Workflow</div>
+        <div class="eyebrow">Where To Compute</div>
+      </div>
+      <h2>Linear-Light Workflows Keep Averages Honest</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Pipeline</h3>
+            <p>Stored code values are convenient for files and displays. Lighting, blur, interpolation, and compositing need values proportional to light.</p>
+          </div>
+          <div class="codebox">encoded RGB
+  -> gamma decode
+  -> compute in linear light
+  -> gamma encode
+  -> quantize for storage</div>
+          <div class="panel amber">
+            <h3>Common Mistake</h3>
+            <p>Averaging encoded pixel codes can darken or brighten results because the arithmetic is not performed in the same space as light transport.</p>
+          </div>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 820 560" role="img" aria-label="Encoded and linear light pipeline">
+            <defs>
+              <marker id="flow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+              </marker>
+            </defs>
+            <g transform="translate(62 92)">
+              <rect x="0" y="0" width="176" height="116" rx="12" fill="#EEF2FF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="88" y="48" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#1E3A8A">code</text>
+              <text x="88" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="24" fill="#475569">0..255</text>
+            </g>
+            <g transform="translate(322 92)">
+              <rect x="0" y="0" width="176" height="116" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="88" y="48" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#0F766E">linear</text>
+              <text x="88" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="24" fill="#475569">light</text>
+            </g>
+            <g transform="translate(582 92)">
+              <rect x="0" y="0" width="176" height="116" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <text x="88" y="48" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#B45309">code</text>
+              <text x="88" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="24" fill="#475569">file/display</text>
+            </g>
+            <path d="M248 150H310" stroke="#2563EB" stroke-width="6" marker-end="url(#flow)"></path>
+            <path d="M508 150H570" stroke="#2563EB" stroke-width="6" marker-end="url(#flow)"></path>
+            <text x="279" y="112" text-anchor="middle" font-family="Source Sans 3" font-size="24" fill="#475569">decode</text>
+            <text x="539" y="112" text-anchor="middle" font-family="Source Sans 3" font-size="24" fill="#475569">encode</text>
+            <g transform="translate(96 300)">
+              <rect x="0" y="0" width="248" height="74" fill="#111827"></rect>
+              <rect x="248" y="0" width="248" height="74" fill="#FFFFFF" stroke="#111827" stroke-width="1"></rect>
+              <rect x="0" y="96" width="496" height="74" fill="#64748B"></rect>
+              <text x="548" y="48" font-family="Source Sans 3" font-size="26" fill="#475569">equal code average</text>
+              <text x="548" y="144" font-family="Source Sans 3" font-size="26" fill="#475569">linear-light target</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Connect the gamma curve to actual rendering operations. When students average, filter, composite, or illuminate encoded values, they are doing arithmetic in a perceptual or display code space rather than in light space. The safe pattern is simple enough to remember: decode, compute, encode, then quantize for the chosen output.</aside>
+    </section>
+
+    <section class="slide" data-label="Quantization And Clipping">
+      <div class="topline">
+        <div class="eyebrow">Finite Storage</div>
+        <div class="eyebrow">Precision And Range</div>
+      </div>
+      <h2>Quantization And Clipping Are Different Losses</h2>
+      <div class="content two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 900 560" role="img" aria-label="Quantized ramp and clipped ramp">
+            <text x="80" y="78" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#1E3A8A">quantization</text>
+            <g transform="translate(80 110)">
+              <rect x="0" y="0" width="700" height="86" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <rect x="0" y="0" width="88" height="86" fill="#111827"></rect>
+              <rect x="88" y="0" width="88" height="86" fill="#334155"></rect>
+              <rect x="176" y="0" width="88" height="86" fill="#475569"></rect>
+              <rect x="264" y="0" width="88" height="86" fill="#64748B"></rect>
+              <rect x="352" y="0" width="88" height="86" fill="#94A3B8"></rect>
+              <rect x="440" y="0" width="88" height="86" fill="#CBD5E1"></rect>
+              <rect x="528" y="0" width="88" height="86" fill="#E2E8F0"></rect>
+              <rect x="616" y="0" width="84" height="86" fill="#FFFFFF"></rect>
+            </g>
+            <text x="80" y="258" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#B45309">clipping</text>
+            <g transform="translate(80 290)">
+              <rect x="0" y="0" width="700" height="86" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <defs>
+                <linearGradient id="clip-ramp" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0" stop-color="#111827"></stop>
+                  <stop offset="0.65" stop-color="#E2E8F0"></stop>
+                  <stop offset="0.78" stop-color="#FFFFFF"></stop>
+                  <stop offset="1" stop-color="#FFFFFF"></stop>
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width="700" height="86" fill="url(#clip-ramp)"></rect>
+              <path d="M548 0V86" stroke="#B45309" stroke-width="6" stroke-dasharray="10 8"></path>
+              <text x="548" y="126" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#B45309">values above max collapse</text>
+            </g>
+            <text x="430" y="482" text-anchor="middle" font-family="STIX Two Text" font-size="34" fill="#111827">8-bit step = 1 / 255, rounding error <= 1 / 510</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Quantization</h3>
+            <p>Continuous or floating values are rounded to a finite set of levels. The artifact is precision loss, often visible as banding.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Clipping</h3>
+            <p>Values outside the allowed range are clamped. The artifact is range loss, such as saturated highlights with no recoverable detail.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Notebook Check</h3>
+            <p>For 8-bit data, the generated ramp confirms 256 unique values and a maximum absolute error under half a step.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Keep the two storage losses separate. Quantization says there are not enough levels, so nearby values are rounded together. Clipping says values outside the allowed interval are forced to the boundary. A high dynamic range pipeline can avoid clipping during computation, while higher bit depth or dithering can reduce visible quantization.</aside>
+    </section>
+
+    <section class="slide" data-label="Alpha Over">
+      <div class="topline">
+        <div class="eyebrow">Compositing</div>
+        <div class="eyebrow">Coverage And Opacity</div>
+      </div>
+      <h2>Alpha Describes How Much Foreground Contributes</h2>
+      <div class="content two right-wide">
+        <div class="stack">
+          <div class="formula">\(c = \alpha c_f + (1-\alpha)c_b\)</div>
+          <div class="panel indigo">
+            <h3>Coverage Reading</h3>
+            <p>If the foreground covers fraction \(\alpha\) of a pixel, the rest of the pixel contributes background color.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Opacity Reading</h3>
+            <p>A transparent foreground can also be modeled as blocking part of the background and adding its own attenuated color.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Storage Reading</h3>
+            <p>An alpha mask stores coverage separately; an RGBA image stores alpha as a fourth channel beside RGB.</p>
+          </div>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 860 560" role="img" aria-label="Foreground color over checker background with alpha">
+            <defs>
+              <pattern id="checker" width="64" height="64" patternUnits="userSpaceOnUse">
+                <rect width="64" height="64" fill="#E2E8F0"></rect>
+                <rect width="32" height="32" fill="#FFFFFF"></rect>
+                <rect x="32" y="32" width="32" height="32" fill="#FFFFFF"></rect>
+              </pattern>
+              <radialGradient id="alpha-disc" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stop-color="#2563EB" stop-opacity="0.98"></stop>
+                <stop offset="0.62" stop-color="#2563EB" stop-opacity="0.70"></stop>
+                <stop offset="1" stop-color="#2563EB" stop-opacity="0.05"></stop>
+              </radialGradient>
+            </defs>
+            <rect x="82" y="60" width="500" height="390" rx="14" fill="url(#checker)" stroke="#CBD5E1" stroke-width="4"></rect>
+            <circle cx="330" cy="255" r="150" fill="url(#alpha-disc)"></circle>
+            <rect x="610" y="88" width="188" height="88" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="704" y="140" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#1E3A8A">foreground</text>
+            <rect x="610" y="226" width="188" height="88" rx="10" fill="url(#checker)" stroke="#64748B" stroke-width="4"></rect>
+            <text x="704" y="278" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#475569">background</text>
+            <rect x="610" y="364" width="188" height="88" rx="10" fill="#EEF2FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="704" y="416" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#6D28D9">composite</text>
+            <text x="332" y="506" text-anchor="middle" font-family="Source Sans 3" font-size="29" font-weight="700" fill="#1E3A8A">soft edge means partial pixel contribution</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Explain alpha with a physical picture before moving to file formats. At an edge, a pixel may be partly foreground and partly background, so a weighted average is natural. The same equation can also model transparency. What matters computationally is that alpha travels with the color data and states how much foreground participates.</aside>
+    </section>
+
+    <section class="slide" data-label="Premultiplied Alpha">
+      <div class="topline">
+        <div class="eyebrow">Alpha Representation</div>
+        <div class="eyebrow">Filtering Without Color Leakage</div>
+      </div>
+      <h2>Premultiplied Alpha Stores Contribution Directly</h2>
+      <div class="content two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 900 560" role="img" aria-label="Straight alpha leaks hidden color while premultiplied alpha filters cleanly">
+            <g transform="translate(72 92)">
+              <rect x="0" y="0" width="330" height="310" rx="12" fill="#FFFFFF" stroke="#B45309" stroke-width="5"></rect>
+              <text x="165" y="44" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#B45309">straight RGBA</text>
+              <rect x="58" y="82" width="94" height="120" fill="#2563EB"></rect>
+              <rect x="152" y="82" width="94" height="120" fill="#2563EB" opacity="0.45"></rect>
+              <rect x="246" y="82" width="50" height="120" fill="#DC2626" opacity="0.18"></rect>
+              <path d="M72 238C128 198 220 198 282 238" fill="none" stroke="#DC2626" stroke-width="7" stroke-linecap="round"></path>
+              <text x="165" y="272" text-anchor="middle" font-family="Source Sans 3" font-size="25" fill="#475569">hidden RGB can leak during filtering</text>
+            </g>
+            <g transform="translate(498 92)">
+              <rect x="0" y="0" width="330" height="310" rx="12" fill="#FFFFFF" stroke="#0F766E" stroke-width="5"></rect>
+              <text x="165" y="44" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#0F766E">premultiplied</text>
+              <rect x="58" y="82" width="94" height="120" fill="#2563EB"></rect>
+              <rect x="152" y="82" width="94" height="120" fill="#2563EB" opacity="0.45"></rect>
+              <rect x="246" y="82" width="50" height="120" fill="#2563EB" opacity="0.05"></rect>
+              <path d="M72 238C128 210 220 210 282 238" fill="none" stroke="#0F766E" stroke-width="7" stroke-linecap="round"></path>
+              <text x="165" y="272" text-anchor="middle" font-family="Source Sans 3" font-size="25" fill="#475569">stored color already includes alpha</text>
+            </g>
+            <text x="450" y="476" text-anchor="middle" font-family="STIX Two Text" font-size="36" fill="#111827">premultiplied over: c = c_f^p + (1 - alpha)c_b</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Straight Alpha</h3>
+            <p>RGB stores foreground color even where alpha is small or zero. Filtering may blend invisible colors into visible edges.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Premultiplied Alpha</h3>
+            <p>Stored color is already multiplied by alpha, so interpolation blends actual contributions rather than hidden colors.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Invariant</h3>
+            <p>For an opaque background, straight alpha over and premultiplied over agree when the representation is converted correctly.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This is the slide where alpha becomes a representation issue. Straight alpha is easy to describe, but filtering can accidentally reveal RGB values from nearly transparent pixels. Premultiplied alpha stores contribution instead of unattached color, so interpolation, mipmapping, and soft edges behave more like the over equation intends.</aside>
+    </section>
+
+    <section class="slide" data-label="Image Storage">
+      <div class="topline">
+        <div class="eyebrow">Storage</div>
+        <div class="eyebrow">File Interfaces</div>
+      </div>
+      <h2>Image Storage Freezes A Set Of Choices</h2>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Raw Size</h3>
+            <p>An uncompressed 1 MP, 8-bit RGB image stores about three megabytes of sample data before file headers and metadata.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Compression</h3>
+            <p>Lossless formats preserve exact pixel values. Lossy formats trade exactness for much smaller files, often tuned to perception.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Contract Questions</h3>
+            <p>Which channels exist? Are values encoded or linear? Is alpha straight or premultiplied? Is compression allowed to change samples?</p>
+          </div>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 850 560" role="img" aria-label="Image storage layers from samples to file bytes">
+            <g transform="translate(90 78)">
+              <rect x="0" y="0" width="660" height="88" rx="12" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <text x="34" y="54" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#1E3A8A">samples</text>
+              <text x="222" y="54" font-family="JetBrains Mono" font-size="25" fill="#475569">height x width x channels</text>
+            </g>
+            <g transform="translate(90 196)">
+              <rect x="0" y="0" width="660" height="88" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="34" y="54" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#0F766E">encoding</text>
+              <text x="222" y="54" font-family="JetBrains Mono" font-size="25" fill="#475569">linear, gamma, HDR, LDR</text>
+            </g>
+            <g transform="translate(90 314)">
+              <rect x="0" y="0" width="660" height="88" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <text x="34" y="54" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#B45309">packing</text>
+              <text x="222" y="54" font-family="JetBrains Mono" font-size="25" fill="#475569">u8, u16, float16, float32</text>
+            </g>
+            <g transform="translate(90 432)">
+              <rect x="0" y="0" width="660" height="88" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+              <text x="34" y="54" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#6D28D9">file</text>
+              <text x="222" y="54" font-family="JetBrains Mono" font-size="25" fill="#475569">compression, metadata, color tag</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Frame storage formats as serialized decisions, not as a list of extensions to memorize. Once an image is saved, many choices become part of an interface with other software: channel order, bit depth, encoding, compression, alpha meaning, and metadata. A robust pipeline writes those decisions down before downstream tools infer them incorrectly.</aside>
+    </section>
+
+    <section class="slide" data-label="Audit Before Saving">
+      <div class="topline">
+        <div class="eyebrow">Notebook Lab</div>
+        <div class="eyebrow">Array Audit</div>
+      </div>
+      <h2>Audit The Image Array Before Saving It</h2>
+      <div class="content two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 900 560" role="img" aria-label="Checklist for auditing an image array">
+            <rect x="92" y="56" width="718" height="448" rx="18" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5"></rect>
+            <g font-family="Source Sans 3" font-size="30" font-weight="700">
+              <text x="152" y="124" fill="#1E3A8A">image audit record</text>
+            </g>
+            <g font-family="JetBrains Mono" font-size="26" fill="#111827">
+              <text x="152" y="184">shape: [96, 160, 3]</text>
+              <text x="152" y="232">dtype: uint8</text>
+              <text x="152" y="280">encoded range: [0.256, 1.000]</text>
+              <text x="152" y="328">max linear error: 0.00428</text>
+              <text x="152" y="376">alpha range: [0, 1]</text>
+              <text x="152" y="424">artifact: nonblank PNG</text>
+            </g>
+            <g fill="none" stroke="#0F766E" stroke-width="6" stroke-linecap="round">
+              <path d="M604 176l22 22 50-58"></path>
+              <path d="M604 224l22 22 50-58"></path>
+              <path d="M604 272l22 22 50-58"></path>
+              <path d="M604 320l22 22 50-58"></path>
+              <path d="M604 368l22 22 50-58"></path>
+              <path d="M604 416l22 22 50-58"></path>
+            </g>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel indigo">
+            <h3>Before Aesthetic Judgment</h3>
+            <p>Ask whether the array facts are coherent: dimensions, axes, channels, dtype, range, encoding, and alpha representation.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Executable Invariants</h3>
+            <p>The chapter notebook checks nonblank artifacts, gamma round trips, quantization bounds, RGB cube corners, and alpha equivalence.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Transferable Habit</h3>
+            <p>A rendered image is easier to debug when each visible artifact can be traced to a numeric contract.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the lab as the practical synthesis of the chapter. Before asking whether a picture looks good, the renderer should know what array it produced. The notebook records shape, dtype, value range, encoding, quantization error, alpha range, and artifact existence so a visual result is attached to testable facts.</aside>
+    </section>
+
+    <section class="slide" data-label="Raster Failure Modes">
+      <div class="topline">
+        <div class="eyebrow">Debugging</div>
+        <div class="eyebrow">What Usually Goes Wrong</div>
+      </div>
+      <h2>Most Raster Bugs Are Mismatched Conventions</h2>
+      <div class="content four">
+        <div class="panel amber">
+          <h3>Coordinates</h3>
+          <p>Flipped origin, missing half-pixel offset, row-column swap, or resampling with the wrong support.</p>
+        </div>
+        <div class="panel indigo">
+          <h3>Value Space</h3>
+          <p>Linear-light computation performed on encoded values, or encoded storage interpreted as physical intensity.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Finite Storage</h3>
+          <p>Unintended clipping, too few quantization levels, or silent conversion from float to integer.</p>
+        </div>
+        <div class="panel violet">
+          <h3>Alpha</h3>
+          <p>Straight and premultiplied color mixed together, or transparent pixels carrying hidden colors into filtered edges.</p>
+        </div>
+      </div>
+      <div class="visual short">
+        <svg viewBox="0 0 1500 270" role="img" aria-label="Raster pipeline failure mode map">
+          <defs>
+            <marker id="map-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#64748B"></path>
+            </marker>
+          </defs>
+          <g font-family="Source Sans 3" font-size="28" font-weight="700">
+            <rect x="60" y="74" width="210" height="96" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="165" y="132" text-anchor="middle" fill="#1E3A8A">sample</text>
+            <rect x="360" y="74" width="210" height="96" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="465" y="132" text-anchor="middle" fill="#0F766E">compute</text>
+            <rect x="660" y="74" width="210" height="96" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="765" y="132" text-anchor="middle" fill="#B45309">encode</text>
+            <rect x="960" y="74" width="210" height="96" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="1065" y="132" text-anchor="middle" fill="#6D28D9">store</text>
+            <rect x="1260" y="74" width="210" height="96" rx="10" fill="#F8FAFC" stroke="#64748B" stroke-width="4"></rect>
+            <text x="1365" y="132" text-anchor="middle" fill="#475569">display</text>
+          </g>
+          <g stroke="#64748B" stroke-width="5" marker-end="url(#map-arrow)">
+            <path d="M280 122H348"></path>
+            <path d="M580 122H648"></path>
+            <path d="M880 122H948"></path>
+            <path d="M1180 122H1248"></path>
+          </g>
+        </svg>
+      </div>
+      <aside class="speaker-notes">This checklist converts the lecture into debugging advice. When an image is wrong, resist guessing from the final appearance alone. Walk the pipeline and ask where conventions changed: coordinates at sampling, value space during computation, finite format during encoding, channel meaning during storage, and transfer curve during display.</aside>
+    </section>
+
+    <section class="slide soft" data-label="Takeaways">
+      <div class="topline">
+        <div class="eyebrow">Chapter 03</div>
+        <div class="eyebrow">Reusable Invariants</div>
+      </div>
+      <h2>Takeaways: Inspect The Array, Then Trust The Picture</h2>
+      <div class="content">
+        <div class="takeaway-grid">
+          <div class="takeaway">
+            <strong>Device</strong>
+            <span>A raster image is portable only after the device interpretation is explicit.</span>
+          </div>
+          <div class="takeaway">
+            <strong>Pixel</strong>
+            <span>Samples need coordinates, origin, domain, and channel conventions.</span>
+          </div>
+          <div class="takeaway">
+            <strong>RGB</strong>
+            <span>Display color is additive and lives in a bounded coordinate cube.</span>
+          </div>
+          <div class="takeaway">
+            <strong>Gamma</strong>
+            <span>Stored codes and physical light are different spaces.</span>
+          </div>
+          <div class="takeaway">
+            <strong>Alpha</strong>
+            <span>Compositing is weighted contribution, best audited with representation in mind.</span>
+          </div>
+        </div>
+        <div class="visual short">
+          <svg viewBox="0 0 1460 380" role="img" aria-label="Raster image invariant loop">
+            <defs>
+              <marker id="loop-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <circle cx="730" cy="190" r="104" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></circle>
+            <text x="730" y="180" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#1E3A8A">image</text>
+            <text x="730" y="216" text-anchor="middle" font-family="Source Sans 3" font-size="26" fill="#475569">array contract</text>
+            <g font-family="Source Sans 3" font-size="26" font-weight="700" fill="#111827">
+              <rect x="94" y="82" width="190" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="189" y="126" text-anchor="middle">device</text>
+              <rect x="336" y="250" width="190" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="431" y="294" text-anchor="middle">sample</text>
+              <rect x="635" y="28" width="190" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="730" y="72" text-anchor="middle">value</text>
+              <rect x="936" y="250" width="190" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="1031" y="294" text-anchor="middle">transfer</text>
+              <rect x="1176" y="82" width="190" height="70" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="1271" y="126" text-anchor="middle">compose</text>
+            </g>
+            <g stroke="#1E3A8A" stroke-width="5" fill="none" marker-end="url(#loop-arrow)" opacity="0.86">
+              <path d="M292 128C410 130 518 154 626 178"></path>
+              <path d="M528 270C590 244 628 230 652 214"></path>
+              <path d="M730 104V86"></path>
+              <path d="M832 210C882 232 924 252 962 274"></path>
+              <path d="M1168 128C1068 150 966 164 836 178"></path>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by making the invariant portable. Later chapters will add camera transforms, rasterization, filtering, textures, shading, and perception, but the first diagnostic question remains the same: what array was produced, in what coordinate system, with what value encoding, and under what compositing or storage rule? That habit makes images inspectable.</aside>
+    </section>
+  </deck-stage>
+
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    "Open by positioning raster images as the practical contract between physical devices and graphics algorithms. The important move is not to memorize display hardware, but to notice that an image array can be interpreted by many devices. Preview the lecture around six inspectable commitments: device model, coordinates, value range, color space, transfer curve, and compositing rule.",
+    "Make the abstraction concrete before naming any equations. A raster is not merely a picture on a screen; it is an array plus an interpretation supplied by a device or algorithm. Stress that device independence is useful precisely because later operations can resize, filter, composite, store, and display the same image under different conventions.",
+    "Use the three device families to motivate why the same word pixel can mean several physical things. Displays control emitted or transmitted light, printers deposit marks or tones, and sensors measure incoming energy. The array abstraction survives these differences, but resolution, color channels, and sampling density must be interpreted through the device.",
+    "Slow down on the sample convention because it affects every later chapter that maps geometry to pixels. The integer pair names a sample location, while the image domain extends half a pixel beyond the outer samples. This convention lets camera rays, rasterization rules, texture lookups, and filtering kernels talk about the same coordinates.",
+    "Emphasize that coordinate conventions are not pedantic details. A vertically flipped texture, a misplaced sample center, or an off-by-one crop can all come from silently switching between row-major array access and screen-space coordinates. Ask students to state origin, axis direction, and sample-center convention whenever they inspect an image.",
+    "Tie pixel formats to costs and failure modes. Floating point is attractive because it preserves range and precision during computation, but images are large enough that storage and bandwidth matter immediately. Fixed-range integers are compact and common, yet they force clipping and quantization decisions that should be deliberate rather than accidental.",
+    "Treat the cube as a coordinate system rather than a color theory lecture. Students need enough RGB mechanics to reason about program values: three additive channels, bounded coordinates, corner colors, and finite integer codes. Make the contrast with paint mixing explicit because it prevents the common red-yellow-blue intuition from entering display calculations.",
+    "Present gamma as a bookkeeping distinction between code values and physical light, not as an isolated display curiosity. A stored value of one half is not usually half the emitted light. The useful engineering habit is to decode before linear-light operations, perform the computation, and encode only when targeting a display or storage convention.",
+    "Connect the gamma curve to actual rendering operations. When students average, filter, composite, or illuminate encoded values, they are doing arithmetic in a perceptual or display code space rather than in light space. The safe pattern is simple enough to remember: decode, compute, encode, then quantize for the chosen output.",
+    "Keep the two storage losses separate. Quantization says there are not enough levels, so nearby values are rounded together. Clipping says values outside the allowed interval are forced to the boundary. A high dynamic range pipeline can avoid clipping during computation, while higher bit depth or dithering can reduce visible quantization.",
+    "Explain alpha with a physical picture before moving to file formats. At an edge, a pixel may be partly foreground and partly background, so a weighted average is natural. The same equation can also model transparency. What matters computationally is that alpha travels with the color data and states how much foreground participates.",
+    "This is the slide where alpha becomes a representation issue. Straight alpha is easy to describe, but filtering can accidentally reveal RGB values from nearly transparent pixels. Premultiplied alpha stores contribution instead of unattached color, so interpolation, mipmapping, and soft edges behave more like the over equation intends.",
+    "Frame storage formats as serialized decisions, not as a list of extensions to memorize. Once an image is saved, many choices become part of an interface with other software: channel order, bit depth, encoding, compression, alpha meaning, and metadata. A robust pipeline writes those decisions down before downstream tools infer them incorrectly.",
+    "Use the lab as the practical synthesis of the chapter. Before asking whether a picture looks good, the renderer should know what array it produced. The notebook records shape, dtype, value range, encoding, quantization error, alpha range, and artifact existence so a visual result is attached to testable facts.",
+    "This checklist converts the lecture into debugging advice. When an image is wrong, resist guessing from the final appearance alone. Walk the pipeline and ask where conventions changed: coordinates at sampling, value space during computation, finite format during encoding, channel meaning during storage, and transfer curve during display.",
+    "Close by making the invariant portable. Later chapters will add camera transforms, rasterization, filtering, textures, shading, and perception, but the first diagnostic question remains the same: what array was produced, in what coordinate system, with what value encoding, and under what compositing or storage rule? That habit makes images inspectable."
+  ]
+}
+  </script>
+</body>
+</html>

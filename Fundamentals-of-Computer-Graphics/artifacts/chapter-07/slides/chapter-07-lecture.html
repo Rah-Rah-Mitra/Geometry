@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-07">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-07-transformation-matrices/07-transformation-matrices.ipynb">
+  <meta name="source_span" content="printed pages 127-156; PDF pages 144-173.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="Geometry Lecture Design System 1.0">
+  <title>Chapter 07: Transformation Matrices</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #000000;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    section {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      padding: 62px 86px 58px;
+      background:
+        linear-gradient(90deg, rgb(37 99 235 / 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgb(37 99 235 / 0.035) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 96px 96px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .quiet {
+      background:
+        radial-gradient(circle at 88% 12%, rgb(15 118 110 / 0.08), transparent 260px),
+        linear-gradient(90deg, rgb(203 213 225 / 0.22) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: auto, 120px 120px, auto;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 64px;
+      line-height: 1.05;
+      color: var(--slide-ink);
+      max-width: 1280px;
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.1;
+      color: var(--slide-accent);
+    }
+
+    h3 {
+      font-size: 30px;
+      line-height: 1.25;
+      color: var(--slide-muted);
+      font-weight: 600;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-teal);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      font-size: 32px;
+      line-height: 1.4;
+      color: var(--slide-muted);
+      max-width: 1240px;
+    }
+
+    .body {
+      font-size: 28px;
+      line-height: 1.45;
+      color: var(--slide-ink);
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--slide-dimmed);
+    }
+
+    .math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 24px;
+    }
+
+    .stage-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 46px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .three-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      flex: 1;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .row {
+      display: flex;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .panel {
+      background: rgb(255 255 255 / 0.92);
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 5px solid var(--slide-teal);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 5px solid var(--slide-blue);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 5px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 5px solid var(--slide-violet);
+    }
+
+    .panel.indigo {
+      background: var(--math-theorem-bg);
+      border-left: 5px solid var(--slide-accent);
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.4;
+      color: var(--slide-ink);
+    }
+
+    .formula.small {
+      font-size: 30px;
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #ffffff;
+      width: fit-content;
+    }
+
+    ul.clean {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    ul.clean li {
+      font-size: 28px;
+      line-height: 1.35;
+      padding-left: 28px;
+      border-left: 5px solid var(--slide-border);
+    }
+
+    .matrix-card {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 20px 22px;
+      background: #ffffff;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .matrix-card strong {
+      font-size: 25px;
+      color: var(--slide-accent);
+    }
+
+    .matrix {
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.35;
+      white-space: nowrap;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .diagram {
+      background: #ffffff;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .full-diagram {
+      flex: 1;
+      min-height: 0;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="quiet" data-label="Title">
+    <p class="eyebrow">Fundamentals of Computer Graphics - Chapter 07</p>
+    <h1>Transformation Matrices</h1>
+    <p class="lead">Matrices become the common language for moving models, composing edits, carrying points between coordinate frames, and keeping normals meaningful after deformation.</p>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel indigo">
+          <p class="formula small">Source span: printed pages 127-156; PDF pages 144-173.</p>
+          <p class="body">Notebook: <span class="mono">chapter-07-transformation-matrices/07-transformation-matrices.ipynb</span></p>
+        </div>
+        <div class="panel teal">
+          <p class="body">Lecture promise: every matrix is read as a geometric claim, then tested by basis vectors, determinants, inverses, and frame labels.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 820 520" role="img" aria-label="A coordinate grid, a model tile, and three transformation arrows.">
+          <defs>
+            <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <rect x="54" y="64" width="260" height="260" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="3"></rect>
+          <g stroke="#CBD5E1" stroke-width="2">
+            <path d="M 106 64 V 324 M 158 64 V 324 M 210 64 V 324 M 262 64 V 324"></path>
+            <path d="M 54 116 H 314 M 54 168 H 314 M 54 220 H 314 M 54 272 H 314"></path>
+          </g>
+          <polygon points="118,245 218,238 240,178 184,110 108,142" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></polygon>
+          <circle cx="175" cy="178" r="42" fill="none" stroke="#0F766E" stroke-width="5"></circle>
+          <path d="M 360 190 C 440 80, 500 80, 582 184" fill="none" stroke="#2563EB" stroke-width="8" marker-end="url(#arrow-blue)"></path>
+          <path d="M 360 260 C 456 348, 520 356, 650 278" fill="none" stroke="#0F766E" stroke-width="8" marker-end="url(#arrow-teal)"></path>
+          <g transform="translate(548 90) rotate(20)">
+            <polygon points="0,150 150,128 198,42 72,8 -28,82" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></polygon>
+            <ellipse cx="78" cy="82" rx="62" ry="28" fill="none" stroke="#B45309" stroke-width="5"></ellipse>
+          </g>
+          <text x="76" y="380" font-size="28" font-family="Source Sans 3" fill="#475569">local model points</text>
+          <text x="546" y="402" font-size="28" font-family="Source Sans 3" fill="#475569">world and frame coordinates</text>
+          <text x="396" y="174" font-size="26" font-family="STIX Two Text" fill="#2563EB">A p</text>
+          <text x="430" y="318" font-size="26" font-family="STIX Two Text" fill="#0F766E">F p + t</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Open by framing transformation matrices as a compact contract between geometry and code. The chapter is not just about memorizing scale or rotation patterns; it is about learning to read what a matrix promises to do, test that promise on basis vectors, and keep coordinate spaces explicit.</aside>
+  </section>
+
+  <section data-label="Columns Tell The Story">
+    <p class="eyebrow">1. Linear maps move the basis first</p>
+    <h2>Read a 2 x 2 Matrix by Its Columns</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel blue">
+          <p class="formula">A = [ a<sub>1</sub> a<sub>2</sub> ], &nbsp; A e<sub>1</sub> = a<sub>1</sub>, &nbsp; A e<sub>2</sub> = a<sub>2</sub></p>
+          <p class="body">Once the two basis arrows are known, every point follows by the same linear combination.</p>
+        </div>
+        <ul class="clean">
+          <li>Grid squares become parallelograms.</li>
+          <li>A determinant gives signed area scale.</li>
+          <li>A negative determinant flags an orientation flip.</li>
+        </ul>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 840 560" role="img" aria-label="Canonical basis vectors transformed into matrix columns.">
+          <defs>
+            <marker id="arrow-basis-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="arrow-basis-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(160 390)">
+            <g stroke="#E2E8F0" stroke-width="2">
+              <path d="M -120 0 H 180 M 0 -160 V 80"></path>
+              <path d="M -80 -160 V 80 M -40 -160 V 80 M 40 -160 V 80 M 80 -160 V 80 M 120 -160 V 80"></path>
+              <path d="M -120 -120 H 180 M -120 -80 H 180 M -120 -40 H 180 M -120 40 H 180"></path>
+            </g>
+            <path d="M 0 0 L 100 0" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow-basis-blue)"></path>
+            <path d="M 0 0 L 0 -100" stroke="#0F766E" stroke-width="7" marker-end="url(#arrow-basis-teal)"></path>
+            <text x="106" y="8" font-size="28" fill="#2563EB" font-family="STIX Two Text">e1</text>
+            <text x="10" y="-106" font-size="28" fill="#0F766E" font-family="STIX Two Text">e2</text>
+            <text x="-110" y="126" font-size="26" fill="#475569" font-family="Source Sans 3">canonical grid</text>
+          </g>
+          <path d="M 365 300 C 420 210, 472 202, 536 276" fill="none" stroke="#94A3B8" stroke-width="6" marker-end="url(#arrow-basis-blue)"></path>
+          <g transform="translate(610 400)">
+            <g stroke="#E2E8F0" stroke-width="2">
+              <path d="M -126 0 L 190 -74 M -90 -70 L 226 -144 M -162 70 L 154 -4"></path>
+              <path d="M 0 0 L 84 -142 M 52 32 L 136 -110 M -52 -32 L 32 -174"></path>
+            </g>
+            <path d="M 0 0 L 140 -34" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow-basis-blue)"></path>
+            <path d="M 0 0 L 82 -138" stroke="#0F766E" stroke-width="7" marker-end="url(#arrow-basis-teal)"></path>
+            <polygon points="0,0 140,-34 222,-172 82,-138" fill="#DBEAFE" stroke="#2563EB" stroke-width="4" opacity="0.72"></polygon>
+            <text x="146" y="-30" font-size="28" fill="#2563EB" font-family="STIX Two Text">a1</text>
+            <text x="88" y="-148" font-size="28" fill="#0F766E" font-family="STIX Two Text">a2</text>
+            <text x="-108" y="126" font-size="26" fill="#475569" font-family="Source Sans 3">transformed grid</text>
+          </g>
+          <text x="322" y="82" font-size="34" fill="#111827" font-family="STIX Two Text">det(A) = signed area scale</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide to make the column convention physical. Ask students where the canonical x and y arrows land, then reconstruct a generic point as a weighted sum of those two images. The determinant is introduced as a measurement tool, not an abstract number floating above the diagram.</aside>
+  </section>
+
+  <section data-label="Elementary Maps">
+    <p class="eyebrow">2. Elementary transformations</p>
+    <h2>Scale, Shear, Rotation, Reflection</h2>
+    <div class="three-grid">
+      <div class="matrix-card">
+        <strong>Axis scale</strong>
+        <p class="matrix">[ s<sub>x</sub> 0 ; 0 s<sub>y</sub> ]</p>
+        <p class="caption">Diagonal entries change unit lengths along coordinate axes.</p>
+      </div>
+      <div class="matrix-card">
+        <strong>Horizontal shear</strong>
+        <p class="matrix">[ 1 h ; 0 1 ]</p>
+        <p class="caption">One basis arrow stays fixed while the other tilts.</p>
+      </div>
+      <div class="matrix-card">
+        <strong>Rotation</strong>
+        <p class="matrix">[ c -s ; s c ]</p>
+        <p class="caption">Columns stay orthonormal and determinant remains +1.</p>
+      </div>
+      <div class="matrix-card">
+        <strong>Reflection</strong>
+        <p class="matrix">[ -1 0 ; 0 1 ]</p>
+        <p class="caption">One axis reverses, so handedness changes sign.</p>
+      </div>
+      <div class="matrix-card">
+        <strong>Uniform scale</strong>
+        <p class="matrix">k I</p>
+        <p class="caption">Angles survive; area changes by k squared.</p>
+      </div>
+      <div class="matrix-card">
+        <strong>Rigid 2D motion</strong>
+        <p class="matrix">R plus t</p>
+        <p class="caption">Rotation and translation preserve distances.</p>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 1640 260" role="img" aria-label="A small marker under scale, shear, rotation, and reflection.">
+        <defs>
+          <g id="marker-shape">
+            <polygon points="-72,52 34,52 34,18 74,18 74,-20 34,-20 34,-54 -26,-54 -26,-12 -72,-12" fill="#DBEAFE" stroke="#2563EB" stroke-width="6"></polygon>
+            <ellipse cx="-4" cy="-2" rx="34" ry="28" fill="none" stroke="#0F766E" stroke-width="6"></ellipse>
+          </g>
+        </defs>
+        <g transform="translate(150 136)">
+          <use href="#marker-shape"></use>
+          <text x="-62" y="112" font-size="25" fill="#475569" font-family="Source Sans 3">original</text>
+        </g>
+        <g transform="translate(480 136) scale(1.55 0.62)">
+          <use href="#marker-shape"></use>
+        </g>
+        <text x="418" y="248" font-size="25" fill="#475569" font-family="Source Sans 3">nonuniform scale</text>
+        <g transform="translate(830 136) skewX(-24)">
+          <use href="#marker-shape"></use>
+        </g>
+        <text x="792" y="248" font-size="25" fill="#475569" font-family="Source Sans 3">shear</text>
+        <g transform="translate(1150 136) rotate(-42)">
+          <use href="#marker-shape"></use>
+        </g>
+        <text x="1106" y="248" font-size="25" fill="#475569" font-family="Source Sans 3">rotation</text>
+        <g transform="translate(1458 136) scale(-1 1)">
+          <use href="#marker-shape"></use>
+        </g>
+        <text x="1396" y="248" font-size="25" fill="#475569" font-family="Source Sans 3">reflection</text>
+      </svg>
+    </div>
+    <aside class="speaker-notes">The asymmetric marker prevents a false sense that all transformations are interchangeable. A circle becoming an ellipse diagnoses stretching or shearing, while the little protrusion exposes rotations and reflections. Emphasize that matrix patterns are memorable because they describe where basis arrows and simple test shapes land.</aside>
+  </section>
+
+  <section data-label="Composition Order">
+    <p class="eyebrow">3. Composition order is geometry</p>
+    <h2>Column Vectors Read Products from Right to Left</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel indigo">
+          <p class="formula">p' = R S p</p>
+          <p class="body">The scale acts first, then the rotation. Multiplication is associative, so the product can be cached as one matrix.</p>
+        </div>
+        <div class="panel amber">
+          <p class="formula">R S != S R</p>
+          <p class="body">Changing the order usually changes which axes are stretched, even when the determinant is the same.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="Two transformation orders applied to the same marker.">
+          <defs>
+            <marker id="order-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#1E3A8A"></path>
+            </marker>
+            <g id="tiny-marker">
+              <polygon points="-52,38 24,38 24,12 58,12 58,-12 24,-12 24,-40 -22,-40 -22,-8 -52,-8" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></polygon>
+              <ellipse cx="-3" cy="-1" rx="26" ry="20" fill="none" stroke="#0F766E" stroke-width="5"></ellipse>
+            </g>
+          </defs>
+          <g transform="translate(108 270)">
+            <use href="#tiny-marker"></use>
+            <text x="-58" y="112" font-size="26" fill="#475569" font-family="Source Sans 3">p</text>
+          </g>
+          <path d="M 196 226 C 294 132, 396 126, 504 214" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#order-arrow)"></path>
+          <path d="M 196 316 C 304 414, 414 416, 528 320" fill="none" stroke="#B45309" stroke-width="6" marker-end="url(#order-arrow)"></path>
+          <g transform="translate(665 174) rotate(-38) scale(1.75 0.55)">
+            <use href="#tiny-marker"></use>
+          </g>
+          <g transform="translate(665 386) scale(1.75 0.55) rotate(-38)">
+            <use href="#tiny-marker"></use>
+          </g>
+          <text x="322" y="128" font-size="30" fill="#1E3A8A" font-family="STIX Two Text">R S p</text>
+          <text x="314" y="452" font-size="30" fill="#B45309" font-family="STIX Two Text">S R p</text>
+          <text x="590" y="82" font-size="25" fill="#475569" font-family="Source Sans 3">scale then rotate</text>
+          <text x="590" y="518" font-size="25" fill="#475569" font-family="Source Sans 3">rotate then scale</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Slow down on the convention, because many graphics bugs begin here. With column vectors, the rightmost matrix touches the point first. The same pair of matrices can preserve the same area scale while giving a visibly different result, so visual debugging should always include the intended order.</aside>
+  </section>
+
+  <section data-label="Pivots And Products">
+    <p class="eyebrow">4. Products build new operations</p>
+    <h2>Rotate Around a Point by Moving the Pivot</h2>
+    <div class="stage-grid">
+      <div class="diagram">
+        <svg viewBox="0 0 880 620" role="img" aria-label="A three-step pivot rotation around a chosen point.">
+          <defs>
+            <marker id="pivot-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+          </defs>
+          <rect x="70" y="70" width="720" height="430" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+          <g stroke="#E2E8F0" stroke-width="2">
+            <path d="M 70 178 H 790 M 70 286 H 790 M 70 394 H 790"></path>
+            <path d="M 214 70 V 500 M 358 70 V 500 M 502 70 V 500 M 646 70 V 500"></path>
+          </g>
+          <circle cx="378" cy="310" r="9" fill="#B45309"></circle>
+          <text x="392" y="304" font-size="27" fill="#B45309" font-family="Source Sans 3">pivot q</text>
+          <polygon points="490,266 612,298 572,390 452,358" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></polygon>
+          <polygon points="434,154 554,200 502,288 386,238" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></polygon>
+          <path d="M 520 330 A 166 166 0 0 0 454 198" fill="none" stroke="#2563EB" stroke-width="7" marker-end="url(#pivot-arrow)"></path>
+          <text x="120" y="548" font-size="30" fill="#111827" font-family="STIX Two Text">M = T(q) R T(-q)</text>
+          <text x="472" y="548" font-size="26" fill="#475569" font-family="Source Sans 3">rightmost operation moves q to the origin first</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <p class="body">The simple rotation matrix knows only how to rotate about the origin.</p>
+        </div>
+        <div class="panel teal">
+          <p class="body">To rotate about a chosen pivot, translate the pivot to the origin, rotate, and translate back.</p>
+        </div>
+        <div class="panel amber">
+          <p class="body">The product order records the story in reverse reading order: <span class="math">T(q) R T(-q)</span>.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">This pivot slide turns composition into a design pattern. Students already know translation and rotation separately; the useful graphics move is to surround a simple operation with coordinate changes. The pivot formula also prepares them for camera and object transforms, where moving the frame is often clearer than moving every point.</aside>
+  </section>
+
+  <section data-label="Symmetric Decomposition">
+    <p class="eyebrow">5. Decomposition makes a matrix inspectable</p>
+    <h2>Symmetric Maps Are Scales Along Rotated Axes</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel indigo">
+          <p class="formula">A = R S R<sup>T</sup></p>
+          <p class="body">Rotate principal directions to the coordinate axes, scale there, then rotate back.</p>
+        </div>
+        <ul class="clean">
+          <li>The unit circle becomes an ellipse.</li>
+          <li>Eigenvectors give the ellipse axes.</li>
+          <li>Eigenvalues give signed scale factors.</li>
+        </ul>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="Unit circle transformed into an ellipse with principal axes.">
+          <defs>
+            <marker id="eig-arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="eig-arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(430 292)">
+            <g stroke="#E2E8F0" stroke-width="2">
+              <path d="M -310 0 H 310 M 0 -230 V 230"></path>
+              <path d="M -240 -230 V 230 M -160 -230 V 230 M -80 -230 V 230 M 80 -230 V 230 M 160 -230 V 230 M 240 -230 V 230"></path>
+              <path d="M -310 -160 H 310 M -310 -80 H 310 M -310 80 H 310 M -310 160 H 310"></path>
+            </g>
+            <circle cx="0" cy="0" r="120" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 12"></circle>
+            <ellipse cx="0" cy="0" rx="238" ry="74" fill="#DBEAFE" stroke="#2563EB" stroke-width="6" transform="rotate(-28)"></ellipse>
+            <path d="M 0 0 L 210 -112" stroke="#2563EB" stroke-width="8" marker-end="url(#eig-arrow-blue)"></path>
+            <path d="M 0 0 L 38 70" stroke="#0F766E" stroke-width="8" marker-end="url(#eig-arrow-teal)"></path>
+            <text x="218" y="-124" font-size="28" fill="#2563EB" font-family="STIX Two Text">lambda1 v1</text>
+            <text x="48" y="92" font-size="28" fill="#0F766E" font-family="STIX Two Text">lambda2 v2</text>
+          </g>
+          <text x="92" y="502" font-size="25" fill="#475569" font-family="Source Sans 3">Dashed circle: original unit directions. Blue ellipse: all transformed unit directions.</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Present the symmetric case as a readable special case rather than as a prerequisite for numerical linear algebra. The picture says that a symmetric matrix has no hidden twist between input and output frames. It only chooses perpendicular axes, stretches by factors, and returns those axes to the plane.</aside>
+  </section>
+
+  <section data-label="SVD Geometry">
+    <p class="eyebrow">6. General linear maps</p>
+    <h2>SVD Uses One Input Frame and One Output Frame</h2>
+    <div class="stage-grid">
+      <div class="diagram">
+        <svg viewBox="0 0 900 610" role="img" aria-label="SVD pipeline from right singular vectors through scale to left singular vectors.">
+          <defs>
+            <marker id="svd-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g transform="translate(115 310)">
+            <circle cx="0" cy="0" r="82" fill="#F8FAFC" stroke="#94A3B8" stroke-width="4"></circle>
+            <path d="M 0 0 L 68 -44" stroke="#2563EB" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+            <path d="M 0 0 L 46 70" stroke="#0F766E" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+            <text x="-64" y="136" font-size="25" fill="#475569" font-family="Source Sans 3">right singular frame V</text>
+          </g>
+          <path d="M 225 310 H 344" stroke="#1E3A8A" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+          <g transform="translate(452 310)">
+            <ellipse cx="0" cy="0" rx="150" ry="58" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></ellipse>
+            <path d="M 0 0 L 150 0" stroke="#2563EB" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+            <path d="M 0 0 L 0 58" stroke="#0F766E" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+            <text x="-96" y="136" font-size="25" fill="#475569" font-family="Source Sans 3">axis scale S</text>
+          </g>
+          <path d="M 620 310 H 736" stroke="#1E3A8A" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+          <g transform="translate(790 310) rotate(-33)">
+            <ellipse cx="0" cy="0" rx="150" ry="58" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></ellipse>
+            <path d="M 0 0 L 150 0" stroke="#2563EB" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+            <path d="M 0 0 L 0 58" stroke="#0F766E" stroke-width="7" marker-end="url(#svd-arrow)"></path>
+          </g>
+          <text x="660" y="535" font-size="25" fill="#475569" font-family="Source Sans 3">left singular frame U</text>
+          <text x="318" y="112" font-size="38" fill="#111827" font-family="STIX Two Text">A = U S V<sup>T</sup></text>
+          <text x="330" y="178" font-size="27" fill="#475569" font-family="Source Sans 3">turn input axes, scale, turn to output axes</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <p class="body">The right singular vectors name the directions that arrive at clean axis scales.</p>
+        </div>
+        <div class="panel teal">
+          <p class="body">The left singular vectors name the final directions after the scale has acted.</p>
+        </div>
+        <div class="panel amber">
+          <p class="body">Tiny singular values warn that inverses and normal matrices may amplify noise.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">The SVD slide extends the eigen-decomposition picture without making the algebra feel mysterious. For a general matrix, the useful diagnostic is that the best input axes and output axes need not coincide. That distinction explains shear-like behavior and previews why numerical conditioning matters for inverse transforms.</aside>
+  </section>
+
+  <section data-label="Homogeneous Coordinates">
+    <p class="eyebrow">7. Translation joins matrix multiplication</p>
+    <h2>Homogeneous Coordinates Separate Points from Directions</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel blue">
+          <p class="formula">point: [ x y 1 ]<sup>T</sup></p>
+          <p class="body">The translation column contributes because the final coordinate is one.</p>
+        </div>
+        <div class="panel teal">
+          <p class="formula">direction: [ x y 0 ]<sup>T</sup></p>
+          <p class="body">The same numeric pair behaves as an offset and ignores translation.</p>
+        </div>
+        <div class="panel indigo">
+          <p class="formula">[ A t ; 0 1 ] [ p ; 1 ] = [ A p + t ; 1 ]</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="A point moves under translation while a direction arrow does not.">
+          <defs>
+            <marker id="hom-arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="hom-arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(135 430)">
+            <g stroke="#E2E8F0" stroke-width="2">
+              <path d="M -70 0 H 640 M 0 -330 V 70"></path>
+              <path d="M 100 -330 V 70 M 200 -330 V 70 M 300 -330 V 70 M 400 -330 V 70 M 500 -330 V 70"></path>
+              <path d="M -70 -100 H 640 M -70 -200 H 640 M -70 -300 H 640"></path>
+            </g>
+            <circle cx="170" cy="-160" r="12" fill="#2563EB"></circle>
+            <circle cx="430" cy="-250" r="12" fill="#B45309"></circle>
+            <path d="M 170 -160 L 430 -250" stroke="#B45309" stroke-width="6" marker-end="url(#hom-arrow-blue)"></path>
+            <path d="M 0 0 L 170 -160" stroke="#0F766E" stroke-width="7" marker-end="url(#hom-arrow-teal)"></path>
+            <path d="M 0 0 L 170 -160" stroke="#0F766E" stroke-width="3" stroke-dasharray="10 10"></path>
+            <text x="128" y="-178" font-size="27" fill="#2563EB" font-family="Source Sans 3">point before</text>
+            <text x="442" y="-260" font-size="27" fill="#B45309" font-family="Source Sans 3">point after</text>
+            <text x="82" y="-72" font-size="27" fill="#0F766E" font-family="Source Sans 3">direction unchanged</text>
+          </g>
+          <text x="92" y="74" font-size="31" fill="#111827" font-family="STIX Two Text">T(x,y,w) = (x + t<sub>x</sub>w, y + t<sub>y</sub>w, w)</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">This is the conceptual payoff for homogeneous coordinates. The final coordinate is not a technical nuisance; it is a type tag. Points have locations and should move under translation, while directions describe offsets and should keep the same arrow when the origin changes.</aside>
+  </section>
+
+  <section data-label="Affine Blocks">
+    <p class="eyebrow">8. Affine matrices in graphics</p>
+    <h2>The 4 x 4 Block Form Keeps Linear and Translation Parts Visible</h2>
+    <div class="stage-grid">
+      <div class="diagram">
+        <svg viewBox="0 0 900 590" role="img" aria-label="A block affine matrix with linear and translation parts labeled.">
+          <rect x="90" y="82" width="720" height="410" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4" rx="8"></rect>
+          <rect x="138" y="134" width="390" height="250" fill="#EFF6FF" stroke="#2563EB" stroke-width="5" rx="8"></rect>
+          <rect x="552" y="134" width="108" height="250" fill="#F0FDFA" stroke="#0F766E" stroke-width="5" rx="8"></rect>
+          <rect x="138" y="408" width="522" height="42" fill="#F8FAFC" stroke="#94A3B8" stroke-width="4" rx="8"></rect>
+          <text x="275" y="278" font-size="54" fill="#2563EB" font-family="STIX Two Text">A</text>
+          <text x="586" y="278" font-size="54" fill="#0F766E" font-family="STIX Two Text">t</text>
+          <text x="346" y="440" font-size="34" fill="#475569" font-family="STIX Two Text">0 0 0 1</text>
+          <text x="172" y="112" font-size="28" fill="#475569" font-family="Source Sans 3">rotation, scale, shear</text>
+          <text x="528" y="112" font-size="28" fill="#475569" font-family="Source Sans 3">translation</text>
+          <text x="214" y="540" font-size="31" fill="#111827" font-family="Source Sans 3">Affine bottom row: points stay affine until perspective enters.</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel indigo">
+          <p class="formula">M = [ A t ; 0 1 ]</p>
+          <p class="body">A stores the linear part. The final column stores translation.</p>
+        </div>
+        <div class="panel teal">
+          <p class="body">Rigid body transform: A is orthogonal and det(A) = +1.</p>
+        </div>
+        <div class="panel amber">
+          <p class="body">General affine transform: A may scale, shear, or reflect, so distances and normals need extra care.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Connect the matrix layout to what students will see in APIs and shaders. The block form makes debugging practical: the upper-left block answers what happened to directions, the right column answers what happened to points, and the bottom row tells whether this is still an affine transform.</aside>
+  </section>
+
+  <section data-label="Windowing">
+    <p class="eyebrow">9. Windowing as a constructive product</p>
+    <h2>Map One Rectangle to Another with Translate, Scale, Translate</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel blue">
+          <p class="body">Move the source lower-left corner to the origin.</p>
+        </div>
+        <div class="panel teal">
+          <p class="body">Scale width and height to match the target rectangle.</p>
+        </div>
+        <div class="panel indigo">
+          <p class="body">Move the origin to the target lower-left corner.</p>
+        </div>
+        <p class="formula small">M = T(target low) S(target size/source size) T(-source low)</p>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 880 600" role="img" aria-label="Source rectangle mapped to a target viewport rectangle.">
+          <defs>
+            <marker id="window-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="90" y="170" width="290" height="190" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+          <rect x="540" y="112" width="250" height="336" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></rect>
+          <circle cx="90" cy="360" r="8" fill="#B45309"></circle>
+          <circle cx="540" cy="448" r="8" fill="#B45309"></circle>
+          <path d="M 386 255 C 450 210, 482 206, 528 254" fill="none" stroke="#1E3A8A" stroke-width="7" marker-end="url(#window-arrow)"></path>
+          <text x="126" y="146" font-size="28" fill="#2563EB" font-family="Source Sans 3">source window</text>
+          <text x="574" y="88" font-size="28" fill="#0F766E" font-family="Source Sans 3">target viewport</text>
+          <text x="98" y="396" font-size="25" fill="#B45309" font-family="Source Sans 3">source low</text>
+          <text x="548" y="486" font-size="25" fill="#B45309" font-family="Source Sans 3">target low</text>
+          <path d="M 130 320 L 335 210" stroke="#2563EB" stroke-width="5" stroke-dasharray="12 10"></path>
+          <path d="M 586 388 L 744 176" stroke="#0F766E" stroke-width="5" stroke-dasharray="12 10"></path>
+          <text x="314" y="518" font-size="29" fill="#111827" font-family="Source Sans 3">The constructive sequence is easier to audit than the multiplied-out entries.</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Windowing is a concrete example where the product is more transparent than the final matrix entries. The point is not to memorize a large formula. The point is to build the mapping from operations whose intent is inspectable, then multiply them only when the renderer needs a single matrix.</aside>
+  </section>
+
+  <section data-label="Inverses">
+    <p class="eyebrow">10. Inverses undo the geometric story</p>
+    <h2>Reverse the Order and Invert Each Step</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel indigo">
+          <p class="formula">(M<sub>1</sub> M<sub>2</sub> ... M<sub>n</sub>)<sup>-1</sup> = M<sub>n</sub><sup>-1</sup> ... M<sub>2</sub><sup>-1</sup> M<sub>1</sub><sup>-1</sup></p>
+        </div>
+        <ul class="clean">
+          <li>Scale inverse: reciprocal scale factors.</li>
+          <li>Rotation inverse: transpose when orthogonal.</li>
+          <li>Translation inverse: move by the opposite vector.</li>
+          <li>Near-zero determinant: inverse may be unstable or impossible.</li>
+        </ul>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="Forward transform path and reverse inverse path.">
+          <defs>
+            <marker id="inv-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="inv-back" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#B45309"></path>
+            </marker>
+          </defs>
+          <g font-family="Source Sans 3" font-size="28" text-anchor="middle">
+            <rect x="74" y="210" width="132" height="86" fill="#EFF6FF" stroke="#2563EB" stroke-width="4" rx="8"></rect>
+            <text x="140" y="263" fill="#111827">p</text>
+            <rect x="292" y="210" width="132" height="86" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4" rx="8"></rect>
+            <text x="358" y="263" fill="#111827">S p</text>
+            <rect x="510" y="210" width="132" height="86" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4" rx="8"></rect>
+            <text x="576" y="263" fill="#111827">R S p</text>
+            <rect x="694" y="210" width="132" height="86" fill="#F0FDFA" stroke="#0F766E" stroke-width="4" rx="8"></rect>
+            <text x="760" y="263" fill="#111827">M p</text>
+          </g>
+          <path d="M 210 252 H 278" stroke="#2563EB" stroke-width="6" marker-end="url(#inv-arrow)"></path>
+          <path d="M 428 252 H 496" stroke="#2563EB" stroke-width="6" marker-end="url(#inv-arrow)"></path>
+          <path d="M 646 252 H 680" stroke="#2563EB" stroke-width="6" marker-end="url(#inv-arrow)"></path>
+          <path d="M 760 326 C 646 438, 285 438, 154 326" fill="none" stroke="#B45309" stroke-width="6" marker-end="url(#inv-back)"></path>
+          <text x="333" y="155" font-size="31" fill="#2563EB" font-family="STIX Two Text">forward: T R S</text>
+          <text x="310" y="494" font-size="31" fill="#B45309" font-family="STIX Two Text">inverse: S<sup>-1</sup> R<sup>-1</sup> T<sup>-1</sup></text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">The inverse rule should be taught as undoing a recipe, not as a formal trick. If shoes go on before laces, laces come off before shoes. In graphics terms, this is why object-to-world and world-to-object matrices are paired, and why cached inverses must be updated after composition changes.</aside>
+  </section>
+
+  <section data-label="3D Rotations">
+    <p class="eyebrow">11. 3D rotations are frame operations</p>
+    <h2>An Axis Rotation Keeps One Direction Fixed</h2>
+    <div class="stage-grid">
+      <div class="diagram">
+        <svg viewBox="0 0 900 600" role="img" aria-label="Wire cube rotated around a fixed axis with basis arrows.">
+          <defs>
+            <marker id="rot3-arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="rot3-arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(450 310)">
+            <g stroke="#CBD5E1" stroke-width="4" fill="none">
+              <polygon points="-150,-90 60,-130 168,4 -42,44"></polygon>
+              <polygon points="-150,-90 -72,84 138,44 60,-130"></polygon>
+              <polygon points="-42,44 138,44 168,4 60,-130"></polygon>
+            </g>
+            <g stroke="#2563EB" stroke-width="5" fill="none" transform="rotate(-34)">
+              <polygon points="-120,-78 78,-78 78,120 -120,120"></polygon>
+              <polygon points="-70,-126 128,-126 128,72 -70,72"></polygon>
+              <path d="M -120 -78 L -70 -126 M 78 -78 L 128 -126 M 78 120 L 128 72 M -120 120 L -70 72"></path>
+            </g>
+            <path d="M -12 168 L 30 -230" stroke="#B45309" stroke-width="8" marker-end="url(#rot3-arrow-blue)"></path>
+            <path d="M 0 0 L 150 -34" stroke="#2563EB" stroke-width="7" marker-end="url(#rot3-arrow-blue)"></path>
+            <path d="M 0 0 L -42 -136" stroke="#0F766E" stroke-width="7" marker-end="url(#rot3-arrow-teal)"></path>
+            <path d="M 96 -42 A 118 118 0 0 1 24 -136" fill="none" stroke="#6D28D9" stroke-width="6" marker-end="url(#rot3-arrow-teal)"></path>
+            <text x="42" y="-238" font-size="27" fill="#B45309" font-family="Source Sans 3">fixed axis</text>
+          </g>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <p class="body">Choose an orthonormal frame whose third basis vector is the desired axis.</p>
+        </div>
+        <div class="panel teal">
+          <p class="body">Rotate in the simple local z-axis frame, then convert back.</p>
+        </div>
+        <div class="panel indigo">
+          <p class="formula small">R<sup>T</sup> R = I, &nbsp; det(R) = +1</p>
+          <p class="body">Those two checks separate pure rotations from scaled or reflected impostors.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">In three dimensions, a rotation angle alone is incomplete; the axis and frame matter. Guide students to think constructively: build a basis around the axis, perform the familiar z-axis rotation locally, then convert back. Orthogonality and determinant checks are the quick sanity tests.</aside>
+  </section>
+
+  <section data-label="Normal Matrix">
+    <p class="eyebrow">12. Normals are covectors in disguise</p>
+    <h2>Normals Need the Inverse Transpose</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel amber">
+          <p class="body">Tangents follow the surface: <span class="math">t' = M t</span>.</p>
+        </div>
+        <div class="panel blue">
+          <p class="body">Normals must remain perpendicular to every transformed tangent.</p>
+        </div>
+        <div class="panel indigo">
+          <p class="formula small">n' = (M<sup>-1</sup>)<sup>T</sup> n</p>
+          <p class="body">Then <span class="math">(n')<sup>T</sup>(M t) = n<sup>T</sup>t = 0</span>.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 880 580" role="img" aria-label="A tangent plane under nonuniform transform with wrong and correct normals.">
+          <defs>
+            <marker id="normal-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="normal-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#B45309"></path>
+            </marker>
+            <marker id="normal-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(445 330)">
+            <polygon points="-230,42 90,-26 262,58 -54,128" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+            <path d="M -74 82 L 164 30" stroke="#2563EB" stroke-width="7" marker-end="url(#normal-blue)"></path>
+            <path d="M -74 82 L -176 4" stroke="#0F766E" stroke-width="7" marker-end="url(#normal-teal)"></path>
+            <path d="M -74 82 L -40 -146" stroke="#B45309" stroke-width="7" marker-end="url(#normal-amber)"></path>
+            <path d="M -74 82 L 56 -102" stroke="#0F766E" stroke-width="7" stroke-dasharray="14 10" marker-end="url(#normal-teal)"></path>
+            <text x="-18" y="-154" font-size="26" fill="#B45309" font-family="Source Sans 3">wrong M n</text>
+            <text x="72" y="-110" font-size="26" fill="#0F766E" font-family="Source Sans 3">correct normal matrix</text>
+            <text x="172" y="34" font-size="25" fill="#2563EB" font-family="Source Sans 3">transformed tangent</text>
+          </g>
+          <text x="96" y="90" font-size="30" fill="#111827" font-family="Source Sans 3">Nonuniform scale can tilt the naive normal away from perpendicular.</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">The normal matrix is often presented as a rule to memorize, so ground it in the dot product invariant. A normal is defined by what it annihilates: all tangent directions. After a nonuniform transform, applying M to the normal usually breaks that zero dot product condition.</aside>
+  </section>
+
+  <section data-label="Coordinate Frames">
+    <p class="eyebrow">13. Coordinate transformations</p>
+    <h2>A Frame Matrix Stores Basis Vectors and Origin as Columns</h2>
+    <div class="stage-grid">
+      <div class="diagram">
+        <svg viewBox="0 0 900 600" role="img" aria-label="World frame and a local frame with basis vectors and origin.">
+          <defs>
+            <marker id="frame-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="frame-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(156 456)">
+            <path d="M 0 0 H 620" stroke="#94A3B8" stroke-width="5" marker-end="url(#frame-blue)"></path>
+            <path d="M 0 0 V -370" stroke="#94A3B8" stroke-width="5" marker-end="url(#frame-teal)"></path>
+            <text x="624" y="10" font-size="27" fill="#64748B" font-family="Source Sans 3">world x</text>
+            <text x="14" y="-378" font-size="27" fill="#64748B" font-family="Source Sans 3">world y</text>
+          </g>
+          <g transform="translate(426 318) rotate(-32)">
+            <circle cx="0" cy="0" r="10" fill="#111827"></circle>
+            <path d="M 0 0 H 190" stroke="#2563EB" stroke-width="8" marker-end="url(#frame-blue)"></path>
+            <path d="M 0 0 V -170" stroke="#0F766E" stroke-width="8" marker-end="url(#frame-teal)"></path>
+            <text x="196" y="8" font-size="30" fill="#2563EB" font-family="STIX Two Text">u</text>
+            <text x="12" y="-176" font-size="30" fill="#0F766E" font-family="STIX Two Text">v</text>
+          </g>
+          <circle cx="560" cy="260" r="10" fill="#6D28D9"></circle>
+          <path d="M 426 318 L 560 260" stroke="#6D28D9" stroke-width="5" stroke-dasharray="12 10"></path>
+          <text x="574" y="252" font-size="28" fill="#6D28D9" font-family="Source Sans 3">local point</text>
+          <text x="462" y="352" font-size="28" fill="#111827" font-family="Source Sans 3">origin e</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel indigo">
+          <p class="formula small">F = [ u v e ; 0 0 1 ]</p>
+          <p class="body">Frame-to-canonical: local coordinates become world coordinates.</p>
+        </div>
+        <div class="panel blue">
+          <p class="body">The inverse converts world coordinates back into the local frame.</p>
+        </div>
+        <div class="panel amber">
+          <p class="body">The same matrix can be read as moving geometry or changing the coordinate language.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">This frame slide is the bridge from algebra to scene organization. A frame is not just a drawing of axes; it is a coordinate converter. Encourage students to say the source space and destination space aloud before multiplying, because the same numbers can represent movement or re-expression.</aside>
+  </section>
+
+  <section data-label="Object World Camera">
+    <p class="eyebrow">14. Graphics code labels every space</p>
+    <h2>Model, World, and Camera Matrices Are Coordinate Converters</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel blue">
+          <p class="body"><span class="mono">model_to_world</span> places object-local vertices into the shared scene frame.</p>
+        </div>
+        <div class="panel teal">
+          <p class="body"><span class="mono">world_to_camera</span> expresses the same world points in the viewer's frame.</p>
+        </div>
+        <div class="panel violet">
+          <p class="body">The inverse names the opposite conversion and should be treated as a different object in code.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 900 600" role="img" aria-label="Pipeline of model, world, and camera coordinate spaces.">
+          <defs>
+            <marker id="pipe-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g font-family="Source Sans 3" font-size="28" text-anchor="middle">
+            <rect x="70" y="204" width="190" height="150" fill="#EFF6FF" stroke="#2563EB" stroke-width="5" rx="8"></rect>
+            <text x="165" y="268" fill="#111827">object</text>
+            <text x="165" y="310" fill="#475569">local</text>
+            <rect x="354" y="204" width="190" height="150" fill="#F0FDFA" stroke="#0F766E" stroke-width="5" rx="8"></rect>
+            <text x="449" y="268" fill="#111827">world</text>
+            <text x="449" y="310" fill="#475569">scene</text>
+            <rect x="638" y="204" width="190" height="150" fill="#F5F3FF" stroke="#6D28D9" stroke-width="5" rx="8"></rect>
+            <text x="733" y="268" fill="#111827">camera</text>
+            <text x="733" y="310" fill="#475569">view</text>
+          </g>
+          <path d="M 270 278 H 338" stroke="#1E3A8A" stroke-width="7" marker-end="url(#pipe-arrow)"></path>
+          <path d="M 554 278 H 622" stroke="#1E3A8A" stroke-width="7" marker-end="url(#pipe-arrow)"></path>
+          <text x="304" y="228" font-size="24" fill="#1E3A8A" font-family="JetBrains Mono">M_ow</text>
+          <text x="588" y="228" font-size="24" fill="#1E3A8A" font-family="JetBrains Mono">M_wc</text>
+          <path d="M 638 382 C 526 490, 362 490, 260 382" fill="none" stroke="#B45309" stroke-width="6" stroke-dasharray="14 10" marker-end="url(#pipe-arrow)"></path>
+          <text x="408" y="526" font-size="26" fill="#B45309" font-family="Source Sans 3">inverse conversions go the other direction</text>
+          <text x="118" y="110" font-size="30" fill="#111827" font-family="Source Sans 3">Annotate matrix names by source and destination spaces.</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Relate the formal frame discussion to naming habits in a renderer. Matrix variables are safer when their names include both source and destination spaces. A matrix that looks mathematically valid can still be semantically wrong if it converts camera coordinates when the shader expects world coordinates.</aside>
+  </section>
+
+  <section data-label="Matrix Diagnostics">
+    <p class="eyebrow">15. Debugging matrix payloads</p>
+    <h2>A Practical Transform Checklist</h2>
+    <div class="three-grid">
+      <div class="panel blue">
+        <h3>Affine?</h3>
+        <p class="body">Bottom row should be <span class="math">0 0 0 1</span> before treating a 4 x 4 as affine.</p>
+      </div>
+      <div class="panel teal">
+        <h3>Rigid?</h3>
+        <p class="body">Check <span class="math">A<sup>T</sup>A = I</span> and determinant +1 before using transpose as inverse.</p>
+      </div>
+      <div class="panel amber">
+        <h3>Invertible?</h3>
+        <p class="body">A determinant near zero means flattened geometry and unstable inverse calculations.</p>
+      </div>
+      <div class="panel violet">
+        <h3>Handedness?</h3>
+        <p class="body">Negative determinant means orientation flipped; normals and winding may need attention.</p>
+      </div>
+      <div class="panel indigo">
+        <h3>Normals?</h3>
+        <p class="body">Use inverse-transpose unless the linear block is a pure rotation.</p>
+      </div>
+      <div class="panel">
+        <h3>Spaces?</h3>
+        <p class="body">Every vector should carry its coordinate frame in code, comments, or type names.</p>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 1640 230" role="img" aria-label="A compact diagnostic dashboard for transform matrices.">
+        <g font-family="Source Sans 3">
+          <rect x="60" y="42" width="300" height="136" fill="#EFF6FF" stroke="#2563EB" stroke-width="4" rx="8"></rect>
+          <rect x="390" y="42" width="300" height="136" fill="#F0FDFA" stroke="#0F766E" stroke-width="4" rx="8"></rect>
+          <rect x="720" y="42" width="300" height="136" fill="#FFFBEB" stroke="#B45309" stroke-width="4" rx="8"></rect>
+          <rect x="1050" y="42" width="300" height="136" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4" rx="8"></rect>
+          <text x="104" y="94" font-size="27" fill="#1E3A8A">bottom row</text>
+          <text x="104" y="136" font-size="31" fill="#111827">0 0 0 1</text>
+          <text x="428" y="94" font-size="27" fill="#0F766E">det(A)</text>
+          <text x="428" y="136" font-size="31" fill="#111827">sign and scale</text>
+          <text x="758" y="94" font-size="27" fill="#B45309">condition</text>
+          <text x="758" y="136" font-size="31" fill="#111827">safe inverse?</text>
+          <text x="1088" y="94" font-size="27" fill="#6D28D9">normal matrix</text>
+          <text x="1088" y="136" font-size="31" fill="#111827">A inverse transpose</text>
+        </g>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Make the checklist feel operational. In real graphics code, matrices arrive from loaders, animation systems, UI widgets, and shaders. The fastest way to find the bug is to ask small invariant questions: affine bottom row, determinant sign, orthogonality, conditioning, and whether normals are being transformed with the right matrix.</aside>
+  </section>
+
+  <section data-label="Worked Classification">
+    <p class="eyebrow">16. Worked classification</p>
+    <h2>What Does This Matrix Claim?</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel indigo">
+          <p class="formula">M = [ 0 -2 4 ; 1 0 3 ; 0 0 1 ]</p>
+        </div>
+        <ul class="clean">
+          <li>Column one sends the x basis to (0,1).</li>
+          <li>Column two sends the y basis to (-2,0).</li>
+          <li>Translation sends the origin to (4,3).</li>
+          <li>det(A) = 2, so signed area doubles without flipping.</li>
+        </ul>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="A classified affine transform with basis images and translation.">
+          <defs>
+            <marker id="class-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563EB"></path>
+            </marker>
+            <marker id="class-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(260 418)">
+            <g stroke="#E2E8F0" stroke-width="2">
+              <path d="M -180 0 H 480 M 0 -330 V 78"></path>
+              <path d="M -120 -330 V 78 M -60 -330 V 78 M 60 -330 V 78 M 120 -330 V 78 M 180 -330 V 78 M 240 -330 V 78 M 300 -330 V 78 M 360 -330 V 78 M 420 -330 V 78"></path>
+              <path d="M -180 -60 H 480 M -180 -120 H 480 M -180 -180 H 480 M -180 -240 H 480 M -180 -300 H 480"></path>
+            </g>
+            <circle cx="240" cy="-180" r="10" fill="#111827"></circle>
+            <path d="M 240 -180 L 240 -240" stroke="#2563EB" stroke-width="7" marker-end="url(#class-blue)"></path>
+            <path d="M 240 -180 L 120 -180" stroke="#0F766E" stroke-width="7" marker-end="url(#class-teal)"></path>
+            <polygon points="240,-180 240,-240 120,-240 120,-180" fill="#DBEAFE" stroke="#2563EB" stroke-width="4" opacity="0.72"></polygon>
+            <text x="252" y="-246" font-size="26" fill="#2563EB" font-family="STIX Two Text">A e1</text>
+            <text x="62" y="-172" font-size="26" fill="#0F766E" font-family="STIX Two Text">A e2</text>
+            <text x="252" y="-158" font-size="26" fill="#111827" font-family="Source Sans 3">t = (4,3)</text>
+          </g>
+          <text x="94" y="74" font-size="29" fill="#475569" font-family="Source Sans 3">A matrix can be read without applying it to every vertex.</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this as a short board exercise before revealing the annotations. Students should identify the linear block, the translation column, the images of the basis vectors, and the determinant. The example reinforces that reading a transform is faster and less error-prone than sampling many unrelated points.</aside>
+  </section>
+
+  <section class="quiet" data-label="Takeaways">
+    <p class="eyebrow">17. Takeaways</p>
+    <h2>Transformation Matrices Are Compact Geometric Claims</h2>
+    <div class="stage-grid">
+      <div class="stack">
+        <div class="panel blue">
+          <p class="body">Columns tell where basis vectors go; determinants tell signed area or volume scale.</p>
+        </div>
+        <div class="panel teal">
+          <p class="body">Products encode operation order; inverses undo the story in reverse.</p>
+        </div>
+        <div class="panel amber">
+          <p class="body">Points, directions, and normals are different geometric types and transform differently.</p>
+        </div>
+        <div class="panel violet">
+          <p class="body">Frame labels prevent model, world, camera, and shader-space confusion.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="Summary map of transformation matrix diagnostics.">
+          <defs>
+            <marker id="sum-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <circle cx="430" cy="278" r="90" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="6"></circle>
+          <text x="430" y="268" font-size="34" fill="#1E3A8A" font-family="Source Sans 3" text-anchor="middle">matrix</text>
+          <text x="430" y="310" font-size="26" fill="#475569" font-family="Source Sans 3" text-anchor="middle">A, t, frame</text>
+          <g font-family="Source Sans 3" font-size="27" text-anchor="middle">
+            <rect x="78" y="92" width="214" height="94" fill="#EFF6FF" stroke="#2563EB" stroke-width="4" rx="8"></rect>
+            <text x="185" y="148" fill="#111827">basis images</text>
+            <rect x="568" y="92" width="214" height="94" fill="#F0FDFA" stroke="#0F766E" stroke-width="4" rx="8"></rect>
+            <text x="675" y="148" fill="#111827">composition</text>
+            <rect x="78" y="372" width="214" height="94" fill="#FFFBEB" stroke="#B45309" stroke-width="4" rx="8"></rect>
+            <text x="185" y="428" fill="#111827">inverse</text>
+            <rect x="568" y="372" width="214" height="94" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4" rx="8"></rect>
+            <text x="675" y="428" fill="#111827">normal matrix</text>
+          </g>
+          <path d="M 350 224 L 296 174" stroke="#1E3A8A" stroke-width="5" marker-end="url(#sum-arrow)"></path>
+          <path d="M 510 224 L 564 174" stroke="#1E3A8A" stroke-width="5" marker-end="url(#sum-arrow)"></path>
+          <path d="M 350 332 L 296 382" stroke="#1E3A8A" stroke-width="5" marker-end="url(#sum-arrow)"></path>
+          <path d="M 510 332 L 564 382" stroke="#1E3A8A" stroke-width="5" marker-end="url(#sum-arrow)"></path>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close by gathering the habits rather than listing formulas. The durable skill is to interrogate a matrix: what spaces does it connect, where do its columns send the basis, what happens to area or volume, how is it inverted, and which geometric type is being transformed.</aside>
+  </section>
+</deck-stage>
+
+<script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open by framing transformation matrices as a compact contract between geometry and code. The chapter is not just about memorizing scale or rotation patterns; it is about learning to read what a matrix promises to do, test that promise on basis vectors, and keep coordinate spaces explicit."
+    },
+    {
+      "slide": 2,
+      "notes": "Use this slide to make the column convention physical. Ask students where the canonical x and y arrows land, then reconstruct a generic point as a weighted sum of those two images. The determinant is introduced as a measurement tool, not an abstract number floating above the diagram."
+    },
+    {
+      "slide": 3,
+      "notes": "The asymmetric marker prevents a false sense that all transformations are interchangeable. A circle becoming an ellipse diagnoses stretching or shearing, while the little protrusion exposes rotations and reflections. Emphasize that matrix patterns are memorable because they describe where basis arrows and simple test shapes land."
+    },
+    {
+      "slide": 4,
+      "notes": "Slow down on the convention, because many graphics bugs begin here. With column vectors, the rightmost matrix touches the point first. The same pair of matrices can preserve the same area scale while giving a visibly different result, so visual debugging should always include the intended order."
+    },
+    {
+      "slide": 5,
+      "notes": "This pivot slide turns composition into a design pattern. Students already know translation and rotation separately; the useful graphics move is to surround a simple operation with coordinate changes. The pivot formula also prepares them for camera and object transforms, where moving the frame is often clearer than moving every point."
+    },
+    {
+      "slide": 6,
+      "notes": "Present the symmetric case as a readable special case rather than as a prerequisite for numerical linear algebra. The picture says that a symmetric matrix has no hidden twist between input and output frames. It only chooses perpendicular axes, stretches by factors, and returns those axes to the plane."
+    },
+    {
+      "slide": 7,
+      "notes": "The SVD slide extends the eigen-decomposition picture without making the algebra feel mysterious. For a general matrix, the useful diagnostic is that the best input axes and output axes need not coincide. That distinction explains shear-like behavior and previews why numerical conditioning matters for inverse transforms."
+    },
+    {
+      "slide": 8,
+      "notes": "This is the conceptual payoff for homogeneous coordinates. The final coordinate is not a technical nuisance; it is a type tag. Points have locations and should move under translation, while directions describe offsets and should keep the same arrow when the origin changes."
+    },
+    {
+      "slide": 9,
+      "notes": "Connect the matrix layout to what students will see in APIs and shaders. The block form makes debugging practical: the upper-left block answers what happened to directions, the right column answers what happened to points, and the bottom row tells whether this is still an affine transform."
+    },
+    {
+      "slide": 10,
+      "notes": "Windowing is a concrete example where the product is more transparent than the final matrix entries. The point is not to memorize a large formula. The point is to build the mapping from operations whose intent is inspectable, then multiply them only when the renderer needs a single matrix."
+    },
+    {
+      "slide": 11,
+      "notes": "The inverse rule should be taught as undoing a recipe, not as a formal trick. If shoes go on before laces, laces come off before shoes. In graphics terms, this is why object-to-world and world-to-object matrices are paired, and why cached inverses must be updated after composition changes."
+    },
+    {
+      "slide": 12,
+      "notes": "In three dimensions, a rotation angle alone is incomplete; the axis and frame matter. Guide students to think constructively: build a basis around the axis, perform the familiar z-axis rotation locally, then convert back. Orthogonality and determinant checks are the quick sanity tests."
+    },
+    {
+      "slide": 13,
+      "notes": "The normal matrix is often presented as a rule to memorize, so ground it in the dot product invariant. A normal is defined by what it annihilates: all tangent directions. After a nonuniform transform, applying M to the normal usually breaks that zero dot product condition."
+    },
+    {
+      "slide": 14,
+      "notes": "This frame slide is the bridge from algebra to scene organization. A frame is not just a drawing of axes; it is a coordinate converter. Encourage students to say the source space and destination space aloud before multiplying, because the same numbers can represent movement or re-expression."
+    },
+    {
+      "slide": 15,
+      "notes": "Relate the formal frame discussion to naming habits in a renderer. Matrix variables are safer when their names include both source and destination spaces. A matrix that looks mathematically valid can still be semantically wrong if it converts camera coordinates when the shader expects world coordinates."
+    },
+    {
+      "slide": 16,
+      "notes": "Make the checklist feel operational. In real graphics code, matrices arrive from loaders, animation systems, UI widgets, and shaders. The fastest way to find the bug is to ask small invariant questions: affine bottom row, determinant sign, orthogonality, conditioning, and whether normals are being transformed with the right matrix."
+    },
+    {
+      "slide": 17,
+      "notes": "Use this as a short board exercise before revealing the annotations. Students should identify the linear block, the translation column, the images of the basis vectors, and the determinant. The example reinforces that reading a transform is faster and less error-prone than sampling many unrelated points."
+    },
+    {
+      "slide": 18,
+      "notes": "Close by gathering the habits rather than listing formulas. The durable skill is to interrogate a matrix: what spaces does it connect, where do its columns send the basis, what happens to area or volume, how is it inverted, and which geometric type is being transformed."
+    }
+  ]
+}
+</script>
+<script id="deck-metadata" type="application/json">
+{
+  "course": "Fundamentals of Computer Graphics",
+  "chapter_id": "chapter-07",
+  "notebook_path": "Fundamentals-of-Computer-Graphics/chapter-07-transformation-matrices/07-transformation-matrices.ipynb",
+  "source_span": "printed pages 127-156; PDF pages 144-173.",
+  "source_pdf": "Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf",
+  "design_system_version": "Geometry Lecture Design System 1.0"
+}
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) {
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '\\(', right: '\\)', display: false },
+          { left: '\\[', right: '\\]', display: true }
+        ],
+        throwOnError: false
+      });
+    }
+  });
+</script>
+</body>
+</html>

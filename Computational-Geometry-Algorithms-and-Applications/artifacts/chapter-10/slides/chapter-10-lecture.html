@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="86">
+  <meta name="course_root" content="Computational-Geometry-Algorithms-and-Applications">
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-10">
+  <meta name="chapter_title" content="10 - More Geometric Data Structures">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-10-more-geometric-data-structures/10-more-geometric-data-structures.ipynb">
+  <meta name="source_span" content="printed pages 219-242; PDF pages 230-253.">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>10 - More Geometric Data Structures</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 86,
+  "course_root": "Computational-Geometry-Algorithms-and-Applications",
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-10",
+  "chapter_title": "10 - More Geometric Data Structures",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-10-more-geometric-data-structures/10-more-geometric-data-structures.ipynb",
+  "source_span": "printed pages 219-242; PDF pages 230-253.",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "title": "Title Source Contract And The Windowing Problem",
+    "notes": "Open by naming the contract for the lecture: the deck follows manifest row 86, keeps the printed span 219-242 and PDF span 230-253 as metadata, and uses the notebook as the teaching source. The motivating operation is windowing: given a rectangular viewport into a large geometric scene, report only the objects that intersect the window without scanning the whole scene."
+  },
+  {
+    "slide": 2,
+    "title": "Windowing Problem Setup",
+    "notes": "Set up the formal query. We store a set of segments and receive an axis-parallel rectangle W. The answer contains every segment that touches W, whether the contact is an endpoint inside, a crossing through a side, or a portion lying across the box. This slide makes the reporting target concrete before data structures enter."
+  },
+  {
+    "slide": 3,
+    "title": "Endpoint Versus Boundary-Crossing Cases",
+    "notes": "Separate the easy reports from the hard reports. If an endpoint lies in W, a point range-search structure can find it, with duplicate suppression for segments whose two endpoints both lie inside. If no endpoint is inside but the segment still intersects W, then the segment must cross the boundary, so the problem turns into side-intersection queries."
+  },
+  {
+    "slide": 4,
+    "title": "Reduction To Interval Stabbing",
+    "notes": "For horizontal segments hit by a vertical query line, forget the y-coordinate for one moment and project each segment to its x-interval. A vertical line at x equals qx intersects exactly the projected intervals that contain qx. This is the one-dimensional stabbing problem that interval trees solve."
+  },
+  {
+    "slide": 5,
+    "title": "Interval-Tree Split Node Structure",
+    "notes": "Explain the invariant at one interval-tree node. The split value xmid partitions intervals into three groups: completely left, completely right, and crossing xmid. Only the crossing intervals are stored at the node, twice: sorted by left endpoint for queries from the left and sorted by right endpoint for queries from the right."
+  },
+  {
+    "slide": 6,
+    "title": "Interval-Tree Query Path",
+    "notes": "Walk a stabbing query down one root-to-leaf path. At each visited node, choose the sorted list that makes the stopping test monotone. If qx is left of xmid, scan by left endpoint until intervals start after qx; if qx is right of xmid, scan by right endpoint in the symmetric direction. Then recurse only into the side that can still contain qx."
+  },
+  {
+    "slide": 7,
+    "title": "Interval-Tree Bounds And Output Sensitivity",
+    "notes": "State the performance as the payoff for the split invariant. The structure stores each interval at exactly one node, so storage is linear and the tree depth is logarithmic. Query time is logarithmic plus the number of reported intervals because the traversal follows one path and each reported interval is charged where it is emitted."
+  },
+  {
+    "slide": 8,
+    "title": "Vertical Segment Complication",
+    "notes": "Now restore the second coordinate. A vertical query segment is not the full vertical line, so an interval that contains qx is only a candidate. The segment's y-coordinate must also lie in the query y-range. This is the moment when a one-dimensional list becomes an associated two-dimensional reporting structure."
+  },
+  {
+    "slide": 9,
+    "title": "Associated Structures For Windowing",
+    "notes": "At every interval-tree node, replace the plain sorted lists by associated structures on segment endpoints. Range trees give the first version, and priority search trees later exploit the fact that the query rectangle is unbounded on one x-side. The point is not a new outer tree; it is the same split tree carrying richer local reports."
+  },
+  {
+    "slide": 10,
+    "title": "Priority Search Tree Idea",
+    "notes": "Introduce the priority search tree as a hybrid. It is search-tree-like in y, because subtrees represent y-ranges, and heap-like in x, because each subtree exposes the point with smallest x-coordinate near its root. That combination is tailored to queries of the form x <= qx and qy <= y <= qy_prime."
+  },
+  {
+    "slide": 11,
+    "title": "Priority Search Query Path",
+    "notes": "Show the query algorithm geometrically. Search for qy and qy_prime to find a split path in the y-search tree. Subtrees hanging between the two paths already have all their y-values inside the query slab, so they only need the heap-style x <= qx reporting subroutine. Points on the two boundary paths are tested explicitly."
+  },
+  {
+    "slide": 12,
+    "title": "Priority Search Invariant",
+    "notes": "Summarize why the priority search tree improves the associated structures. The y partition keeps the number of boundary nodes logarithmic. The x-priority property lets a rejected heap root prune the entire subtree for the unbounded side query. This yields linear storage and O(log n + k) query time for the special three-sided rectangle."
+  },
+  {
+    "slide": 13,
+    "title": "Bounding-Box Failure Mode",
+    "notes": "Use the tempting bounding-box shortcut as a warning. For arbitrary segments, a segment's axis-aligned bounding box can intersect the query object even when the segment itself does not. Bounding boxes are useful filters, but they are not correctness certificates; the data structure must preserve the actual crossing geometry."
+  },
+  {
+    "slide": 14,
+    "title": "Segment-Tree Canonical Cover",
+    "notes": "Introduce segment trees through canonical decomposition. The skeleton is built from sorted endpoints and elementary intervals. Any stored interval is represented as a disjoint union of canonical node ranges, with only logarithmically many pieces in the balanced tree. Queries then inspect the nodes on one search path."
+  },
+  {
+    "slide": 15,
+    "title": "Segment Tree For Disjoint Segments",
+    "notes": "For disjoint non-axis-parallel segments, the segment tree stores canonical subsets according to x-projection. Each canonical subset can be equipped with a structure ordered by vertical position, because disjoint segments have a stable vertical order over an elementary x-slab. This supports vertical segment intersection queries in O(log squared n plus k) time."
+  },
+  {
+    "slide": 16,
+    "title": "Synthesis And Extensions",
+    "notes": "Close by connecting the chapter's recurring design pattern. Start with a geometric report, reduce part of it to a one-dimensional stabbing question, carry associated structures when another coordinate matters, and use canonical decompositions when intervals must be shared across many queries. The same language extends to counting, dynamic variants, and multi-level structures."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 60px 88px 48px;
+      gap: 18px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 76px 76px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 62px; line-height: 1.04; font-weight: 700; max-width: 1540px; }
+    h2 { font-size: 50px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 29px; line-height: 1.1; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 25px; line-height: 1.28; }
+    ul { margin: 0; padding-left: 29px; }
+    li + li { margin-top: 8px; }
+    a { color: var(--slide-accent); text-decoration: none; border-bottom: 2px solid rgba(30,58,138,.25); }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 22px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.23; color: var(--slide-muted); max-width: 1320px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 28px; align-items: stretch; }
+    .cols { grid-template-columns: 1fr 1fr; }
+    .wide-left { grid-template-columns: 1.13fr .87fr; }
+    .wide-right { grid-template-columns: .88fr 1.12fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 17px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 19px 22px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .panel p, .panel li { font-size: 23px; }
+    .math-box { padding: 20px 23px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.25; text-align: center; }
+    .big-formula { font-family: var(--font-math); font-size: 42px; line-height: 1.24; text-align: center; }
+    .small { font-size: 21px; line-height: 1.25; color: var(--slide-muted); }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .tag { border: 1px solid var(--slide-border); border-radius: 6px; padding: 7px 11px; background: #fff; color: var(--slide-accent); font-size: 21px; font-weight: 700; }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .route { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .route div { border: 2px solid var(--slide-border); border-radius: 8px; min-height: 88px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-size: 22px; font-weight: 700; background: #fff; }
+    .route .hot { border-color: var(--slide-amber); color: var(--slide-amber); background: #fffbeb; }
+    .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .kpi div { padding: 17px 16px; border-radius: 8px; border: 1px solid var(--slide-border-light); background: #fff; text-align: center; }
+    .kpi strong { display: block; color: var(--slide-accent); font-size: 31px; margin-bottom: 5px; }
+    .svg-label { font: 700 25px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-tiny { font: 600 16px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 24px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-big { font: 700 32px 'Source Sans 3', Arial, sans-serif; fill: #1e3a8a; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Windowing Problem">
+      <div class="topline"><div class="eyebrow">More Geometric Data Structures</div><div class="badge">manifest row 86</div></div>
+      <h1>Title Source Contract And The Windowing Problem</h1>
+      <p class="lead">A rectangular view into a large geometric scene should return only the objects that touch the view, without scanning every object.</p>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="route">
+            <div class="hot">window</div><div>interval tree</div><div>priority search</div><div>segment tree</div>
+          </div>
+          <div class="panel blue">
+            <h3>Source Contract</h3>
+            <ul>
+              <li>Course: Computational Geometry Algorithms and Applications.</li>
+              <li>Chapter: 10 - More Geometric Data Structures.</li>
+              <li>Source span: printed pages 219-242; PDF pages 230-253.</li>
+              <li>Notebook: <a href="../../../chapter-10-more-geometric-data-structures/10-more-geometric-data-structures.ipynb">chapter 10 notebook</a>.</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>Lecture Promise</h3>
+            <p>Split by endpoints, carry associated structures when dimensions rise, and use canonical decompositions to control reporting cost.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Window over a large segment map">
+          <svg viewBox="0 0 820 560" role="img">
+            <rect x="46" y="54" width="728" height="450" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <g stroke="#94a3b8" stroke-width="4" opacity=".9">
+              <path d="M80 410 C180 350 250 360 326 278 S530 186 724 168" fill="none"/>
+              <path d="M75 150 L235 214 L415 184 L724 270" fill="none"/>
+              <path d="M112 480 L255 330 L412 376 L690 345" fill="none"/>
+              <path d="M170 86 L245 470" fill="none"/>
+              <path d="M530 78 L445 504" fill="none"/>
+            </g>
+            <rect x="285" y="165" width="260" height="205" fill="rgba(37,99,235,.12)" stroke="#2563eb" stroke-width="6"/>
+            <g stroke="#0f766e" stroke-width="7" stroke-linecap="round">
+              <line x1="308" y1="248" x2="514" y2="210"/>
+              <line x1="330" y1="356" x2="545" y2="356"/>
+              <line x1="448" y1="172" x2="409" y2="365"/>
+            </g>
+            <text x="300" y="145" class="svg-big">query window W</text>
+            <text x="118" y="535" class="svg-small">large scene stored once; query reports only intersections with W</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>CGAA chapter 10</span><span>HTML source of record, original redraws</span></div>
+      <aside class="speaker-notes">Open by naming the contract for the lecture: the deck follows manifest row 86, keeps the printed span 219-242 and PDF span 230-253 as metadata, and uses the notebook as the teaching source. The motivating operation is windowing: given a rectangular viewport into a large geometric scene, report only the objects that intersect the window without scanning the whole scene.</aside>
+    </section>
+
+    <section class="slide" data-label="Window Setup">
+      <div class="topline"><div class="eyebrow">Problem Setup</div><div class="badge">segments + axis-parallel rectangle</div></div>
+      <h2>Windowing Problem Setup With Query Rectangle And Segments</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Axis-parallel rectangular window and segments">
+          <svg viewBox="0 0 850 570" role="img">
+            <rect x="55" y="55" width="740" height="455" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <rect x="265" y="160" width="310" height="235" fill="rgba(37,99,235,.1)" stroke="#2563eb" stroke-width="6"/>
+            <g stroke-width="8" stroke-linecap="round">
+              <line x1="102" y1="240" x2="365" y2="240" stroke="#0f766e"/>
+              <line x1="328" y1="95" x2="328" y2="460" stroke="#0f766e"/>
+              <line x1="585" y1="185" x2="760" y2="320" stroke="#b45309"/>
+              <line x1="110" y1="445" x2="240" y2="372" stroke="#94a3b8"/>
+              <line x1="410" y1="265" x2="530" y2="350" stroke="#0f766e"/>
+              <line x1="612" y1="430" x2="760" y2="430" stroke="#94a3b8"/>
+            </g>
+            <g fill="#111827">
+              <circle cx="102" cy="240" r="7"/><circle cx="365" cy="240" r="7"/>
+              <circle cx="328" cy="95" r="7"/><circle cx="328" cy="460" r="7"/>
+              <circle cx="410" cy="265" r="7"/><circle cx="530" cy="350" r="7"/>
+            </g>
+            <text x="286" y="145" class="svg-big">W</text>
+            <text x="300" y="428" class="svg-math">W = [x_l,x_r] x [y_b,y_t]</text>
+            <text x="602" y="183" class="svg-small">candidate segment</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Definition</div>
+            <p>Store a set \(S\) of line segments. Query with an axis-parallel rectangle \(W\), and report all \(s \in S\) with \(s \cap W \ne \emptyset\).</p>
+          </div>
+          <div class="panel teal">
+            <h3>Reporting Semantics</h3>
+            <ul>
+              <li>Endpoint inside \(W\).</li>
+              <li>Crossing one or two sides of \(W\).</li>
+              <li>Touching or overlapping the boundary.</li>
+            </ul>
+          </div>
+          <div class="panel amber">
+            <h3>Algorithmic Pressure</h3>
+            <p>The answer size \(k\) may be large, so the goal is query time close to search overhead plus \(k\), not a full scan of \(n\) objects.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Windowing = geometric reporting</span><span>target: output-sensitive query time</span></div>
+      <aside class="speaker-notes">Set up the formal query. We store a set of segments and receive an axis-parallel rectangle W. The answer contains every segment that touches W, whether the contact is an endpoint inside, a crossing through a side, or a portion lying across the box. This slide makes the reporting target concrete before data structures enter.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Cases">
+      <div class="topline"><div class="eyebrow">Case Split</div><div class="badge">endpoint reports vs side reports</div></div>
+      <h2>Endpoint Versus Boundary-Crossing Cases</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Endpoints Inside</h3>
+            <p>Treat segment endpoints as points and use rectangular range reporting. A segment with both endpoints inside is marked once.</p>
+          </div>
+          <div class="panel amber">
+            <h3>No Endpoint Inside</h3>
+            <p>If a segment still intersects \(W\), it must cross the boundary or lie along it. The query becomes a set of side-intersection tests.</p>
+          </div>
+          <div class="math-box math-box--remark">
+            <div class="math-box-label">Design Move</div>
+            <p>Reduce two-dimensional windowing to point range reports plus segment-side intersection reports.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Endpoint and crossing cases">
+          <svg viewBox="0 0 850 570" role="img">
+            <rect x="55" y="55" width="740" height="455" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <rect x="288" y="155" width="290" height="250" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="6"/>
+            <g stroke-width="8" stroke-linecap="round">
+              <line x1="330" y1="215" x2="488" y2="300" stroke="#0f766e"/>
+              <line x1="110" y1="285" x2="720" y2="285" stroke="#b45309"/>
+              <line x1="425" y1="95" x2="425" y2="470" stroke="#b45309"/>
+              <line x1="625" y1="180" x2="770" y2="240" stroke="#94a3b8"/>
+            </g>
+            <g fill="#0f766e"><circle cx="330" cy="215" r="10"/><circle cx="488" cy="300" r="10"/></g>
+            <g fill="#b45309"><circle cx="110" cy="285" r="8"/><circle cx="720" cy="285" r="8"/><circle cx="425" cy="95" r="8"/><circle cx="425" cy="470" r="8"/></g>
+            <text x="320" y="197" class="svg-label" fill="#0f766e">endpoint case</text>
+            <text x="122" y="270" class="svg-label" fill="#b45309">boundary crossing</text>
+            <text x="600" y="420" class="svg-small">range tree handles green endpoints</text>
+            <text x="600" y="450" class="svg-small">side structures handle amber crossings</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Lemma 10.1 orientation: endpoints by range reporting</span><span>remaining work: boundary intersections</span></div>
+      <aside class="speaker-notes">Separate the easy reports from the hard reports. If an endpoint lies in W, a point range-search structure can find it, with duplicate suppression for segments whose two endpoints both lie inside. If no endpoint is inside but the segment still intersects W, then the segment must cross the boundary, so the problem turns into side-intersection queries.</aside>
+    </section>
+
+    <section class="slide" data-label="Interval Stabbing">
+      <div class="topline"><div class="eyebrow">One-Dimensional Core</div><div class="badge">stabbing query</div></div>
+      <h2>Reduction To Interval Stabbing</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Stabbing Query</div>
+            <p>Given intervals \(I\) on the real line and a point \(q_x\), report all intervals \([a,b]\) with \(a \le q_x \le b\).</p>
+          </div>
+          <div class="panel teal">
+            <h3>Segment Interpretation</h3>
+            <p>A horizontal segment intersects the vertical line \(x=q_x\) exactly when its x-projection contains \(q_x\).</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Horizontal segments projected to intervals stabbed by a vertical line">
+          <svg viewBox="0 0 930 570" role="img">
+            <defs><marker id="arrow4" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <rect x="60" y="55" width="815" height="450" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="510" y1="70" x2="510" y2="500" stroke="#2563eb" stroke-width="6" stroke-dasharray="12 10"/>
+            <g stroke-width="8" stroke-linecap="round">
+              <line x1="165" y1="135" x2="610" y2="135" stroke="#0f766e"/>
+              <line x1="260" y1="215" x2="470" y2="215" stroke="#94a3b8"/>
+              <line x1="420" y1="295" x2="790" y2="295" stroke="#0f766e"/>
+              <line x1="110" y1="375" x2="300" y2="375" stroke="#94a3b8"/>
+              <line x1="500" y1="455" x2="725" y2="455" stroke="#0f766e"/>
+            </g>
+            <g fill="#0f766e"><circle cx="510" cy="135" r="12"/><circle cx="510" cy="295" r="12"/><circle cx="510" cy="455" r="12"/></g>
+            <text x="526" y="95" class="svg-big">x = qx</text>
+            <path d="M170 520 L800 520" stroke="#111827" stroke-width="3" marker-end="url(#arrow4)"/>
+            <text x="380" y="552" class="svg-math">project segments to intervals</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>horizontal segment + vertical line</span><span>interval contains query coordinate</span></div>
+      <aside class="speaker-notes">For horizontal segments hit by a vertical query line, forget the y-coordinate for one moment and project each segment to its x-interval. A vertical line at x equals qx intersects exactly the projected intervals that contain qx. This is the one-dimensional stabbing problem that interval trees solve.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Interval Split">
+      <div class="topline"><div class="eyebrow">Interval Tree</div><div class="badge">split by median endpoint</div></div>
+      <h2>Interval-Tree Split Node Structure</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Interval tree split into left middle and right sets">
+          <svg viewBox="0 0 850 570" role="img">
+            <rect x="55" y="70" width="740" height="390" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="425" y1="70" x2="425" y2="460" stroke="#1e3a8a" stroke-width="5" stroke-dasharray="12 9"/>
+            <text x="385" y="55" class="svg-big">xmid</text>
+            <g stroke-width="8" stroke-linecap="round">
+              <line x1="105" y1="135" x2="270" y2="135" stroke="#94a3b8"/>
+              <line x1="140" y1="205" x2="360" y2="205" stroke="#94a3b8"/>
+              <line x1="305" y1="285" x2="540" y2="285" stroke="#0f766e"/>
+              <line x1="235" y1="355" x2="650" y2="355" stroke="#0f766e"/>
+              <line x1="515" y1="170" x2="750" y2="170" stroke="#b45309"/>
+              <line x1="610" y1="245" x2="778" y2="245" stroke="#b45309"/>
+            </g>
+            <text x="117" y="505" class="svg-label">Ileft</text>
+            <text x="354" y="505" class="svg-label" fill="#0f766e">Imid</text>
+            <text x="636" y="505" class="svg-label" fill="#b45309">Iright</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Partition At Node v</h3>
+            <ul>
+              <li>\(I_{left}\): intervals fully left of \(x_{mid}\).</li>
+              <li>\(I_{right}\): intervals fully right of \(x_{mid}\).</li>
+              <li>\(I_{mid}\): intervals containing \(x_{mid}\).</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>Stored Twice</h3>
+            <p>\(I_{mid}\) is kept as \(L_{left}(v)\) sorted by left endpoint and \(L_{right}(v)\) sorted by right endpoint.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Recursive Shape</h3>
+            <p>Left and right subtrees repeat the same construction on \(I_{left}\) and \(I_{right}\).</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>crossing intervals stored at this node</span><span>left/right leftovers recurse</span></div>
+      <aside class="speaker-notes">Explain the invariant at one interval-tree node. The split value xmid partitions intervals into three groups: completely left, completely right, and crossing xmid. Only the crossing intervals are stored at the node, twice: sorted by left endpoint for queries from the left and sorted by right endpoint for queries from the right.</aside>
+    </section>
+
+    <section class="slide" data-label="Interval Query">
+      <div class="topline"><div class="eyebrow">Interval Tree</div><div class="badge">one search path</div></div>
+      <h2>Interval-Tree Query Path</h2>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>If \(q_x < x_{mid}\)</h3>
+            <p>Scan \(L_{left}(v)\) until the left endpoint is greater than \(q_x\); every earlier middle interval contains \(q_x\).</p>
+          </div>
+          <div class="panel teal">
+            <h3>Then Recurse Left</h3>
+            <p>Intervals completely right of \(x_{mid}\) cannot contain \(q_x\), so exactly one child remains relevant.</p>
+          </div>
+          <div class="math-box math-box--proof">
+            <div class="math-box-label">Charging Argument</div>
+            <p>Cost per visited node is \(O(1+k_v)\); one node per depth gives \(O(\log n + k)\).</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Interval tree search path and sorted list scan">
+          <svg viewBox="0 0 930 570" role="img">
+            <defs><marker id="arrow6" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <rect x="55" y="55" width="820" height="455" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g stroke="#cbd5e1" stroke-width="3"><line x1="465" y1="115" x2="285" y2="230"/><line x1="465" y1="115" x2="645" y2="230"/><line x1="285" y1="230" x2="195" y2="355"/><line x1="285" y1="230" x2="375" y2="355"/></g>
+            <g fill="#eff6ff" stroke="#2563eb" stroke-width="4">
+              <circle cx="465" cy="115" r="42"/><circle cx="285" cy="230" r="42"/><circle cx="195" cy="355" r="42"/>
+            </g>
+            <g fill="#fff" stroke="#94a3b8" stroke-width="4"><circle cx="645" cy="230" r="42"/><circle cx="375" cy="355" r="42"/></g>
+            <text x="436" y="123" class="svg-label">50</text><text x="258" y="238" class="svg-label">31</text><text x="169" y="363" class="svg-label">18</text><text x="618" y="238" class="svg-label">72</text><text x="348" y="363" class="svg-label">39</text>
+            <line x1="465" y1="115" x2="285" y2="230" stroke="#2563eb" stroke-width="6" marker-end="url(#arrow6)"/>
+            <line x1="285" y1="230" x2="195" y2="355" stroke="#2563eb" stroke-width="6" marker-end="url(#arrow6)"/>
+            <text x="78" y="87" class="svg-big">query qx = 27</text>
+            <rect x="540" y="330" width="275" height="118" fill="#f0fdfa" stroke="#0f766e" stroke-width="3" rx="8"/>
+            <text x="560" y="364" class="svg-label">Lleft(v)</text>
+            <text x="560" y="400" class="svg-small">[12,62], [24,77], [30,51] ...</text>
+            <path d="M555 420 H715" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow6)"/>
+            <text x="560" y="462" class="svg-small">stop when left endpoint > qx</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>monotone list scan</span><span>one child per level</span></div>
+      <aside class="speaker-notes">Walk a stabbing query down one root-to-leaf path. At each visited node, choose the sorted list that makes the stopping test monotone. If qx is left of xmid, scan by left endpoint until intervals start after qx; if qx is right of xmid, scan by right endpoint in the symmetric direction. Then recurse only into the side that can still contain qx.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Interval Bounds">
+      <div class="topline"><div class="eyebrow">Performance</div><div class="badge">output sensitive</div></div>
+      <h2>Interval-Tree Bounds And Output Sensitivity</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Theorem 10.4 Shape</div>
+            <p>An interval tree for \(n\) intervals uses \(O(n)\) storage, builds in \(O(n\log n)\) time, and reports stabbed intervals in \(O(\log n+k)\) time.</p>
+          </div>
+          <div class="kpi">
+            <div><strong>1 node</strong><span class="small">per interval storage location</span></div>
+            <div><strong>log n</strong><span class="small">tree depth</span></div>
+            <div><strong>k</strong><span class="small">reported intervals</span></div>
+          </div>
+          <div class="panel teal">
+            <h3>Why \(+k\)</h3>
+            <p>The algorithm is allowed to spend time writing the answer. It is not allowed to inspect unrelated intervals.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Interval tree cost accounting">
+          <svg viewBox="0 0 850 570" role="img">
+            <rect x="70" y="80" width="710" height="390" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g stroke-width="24" stroke-linecap="round">
+              <line x1="160" y1="390" x2="360" y2="390" stroke="#2563eb"/>
+              <line x1="160" y1="310" x2="280" y2="310" stroke="#2563eb"/>
+              <line x1="160" y1="230" x2="650" y2="230" stroke="#0f766e"/>
+              <line x1="160" y1="150" x2="720" y2="150" stroke="#0f766e"/>
+            </g>
+            <text x="108" y="398" class="svg-label">search</text>
+            <text x="106" y="238" class="svg-label">output</text>
+            <text x="400" y="398" class="svg-math">O(log n)</text>
+            <text x="440" y="238" class="svg-math">O(k)</text>
+            <text x="240" y="525" class="svg-big">query time = O(log n + k)</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>linear storage</span><span>logarithmic navigation plus reported output</span></div>
+      <aside class="speaker-notes">State the performance as the payoff for the split invariant. The structure stores each interval at exactly one node, so storage is linear and the tree depth is logarithmic. Query time is logarithmic plus the number of reported intervals because the traversal follows one path and each reported interval is charged where it is emitted.</aside>
+    </section>
+
+    <section class="slide" data-label="Vertical Segment">
+      <div class="topline"><div class="eyebrow">Back To Windowing</div><div class="badge">full line is not enough</div></div>
+      <h2>Vertical Segment Complication</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="panel amber">
+            <h3>Candidate Is Not Answer</h3>
+            <p>An x-interval containing \(q_x\) only says the horizontal segment meets the full vertical line.</p>
+          </div>
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Extra Test</div>
+            <p>Report the segment only if its height \(y_s\) also satisfies \(q_y \le y_s \le q'_y\).</p>
+          </div>
+          <div class="panel blue">
+            <h3>Consequence</h3>
+            <p>The node list must answer a two-coordinate query on endpoint data, not just a one-dimensional prefix scan.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Vertical query segment with horizontal candidates and y filtering">
+          <svg viewBox="0 0 930 570" role="img">
+            <rect x="60" y="55" width="820" height="455" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="485" y1="80" x2="485" y2="490" stroke="#cbd5e1" stroke-width="4" stroke-dasharray="9 9"/>
+            <line x1="485" y1="185" x2="485" y2="382" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+            <g stroke-width="8" stroke-linecap="round">
+              <line x1="160" y1="135" x2="680" y2="135" stroke="#94a3b8"/>
+              <line x1="210" y1="225" x2="610" y2="225" stroke="#0f766e"/>
+              <line x1="128" y1="320" x2="720" y2="320" stroke="#0f766e"/>
+              <line x1="250" y1="445" x2="650" y2="445" stroke="#94a3b8"/>
+            </g>
+            <rect x="102" y="185" width="735" height="197" fill="rgba(37,99,235,.07)" stroke="#2563eb" stroke-width="2" stroke-dasharray="10 8"/>
+            <text x="505" y="176" class="svg-label">qy'</text>
+            <text x="505" y="403" class="svg-label">qy</text>
+            <text x="555" y="260" class="svg-big">only green segments pass y-filter</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>vertical query segment</span><span>x stabbing plus y range</span></div>
+      <aside class="speaker-notes">Now restore the second coordinate. A vertical query segment is not the full vertical line, so an interval that contains qx is only a candidate. The segment's y-coordinate must also lie in the query y-range. This is the moment when a one-dimensional list becomes an associated two-dimensional reporting structure.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Associated Structures">
+      <div class="topline"><div class="eyebrow">Associated Structures</div><div class="badge">dimension lift</div></div>
+      <h2>Associated Range Trees For Windowing</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Interval tree nodes carrying associated structures">
+          <svg viewBox="0 0 850 570" role="img">
+            <g stroke="#cbd5e1" stroke-width="3"><line x1="425" y1="110" x2="255" y2="250"/><line x1="425" y1="110" x2="595" y2="250"/><line x1="255" y1="250" x2="165" y2="390"/><line x1="255" y1="250" x2="345" y2="390"/><line x1="595" y1="250" x2="505" y2="390"/><line x1="595" y1="250" x2="685" y2="390"/></g>
+            <g fill="#eff6ff" stroke="#2563eb" stroke-width="4">
+              <rect x="360" y="64" width="130" height="92" rx="12"/>
+              <rect x="190" y="204" width="130" height="92" rx="12"/>
+              <rect x="530" y="204" width="130" height="92" rx="12"/>
+            </g>
+            <g fill="#fff" stroke="#94a3b8" stroke-width="4"><rect x="100" y="344" width="130" height="92" rx="12"/><rect x="280" y="344" width="130" height="92" rx="12"/><rect x="440" y="344" width="130" height="92" rx="12"/><rect x="620" y="344" width="130" height="92" rx="12"/></g>
+            <g class="svg-label" text-anchor="middle"><text x="425" y="102">xmid</text><text x="255" y="242">xmid</text><text x="595" y="242">xmid</text></g>
+            <g fill="#f0fdfa" stroke="#0f766e" stroke-width="3">
+              <rect x="346" y="160" width="158" height="44" rx="6"/><rect x="176" y="300" width="158" height="44" rx="6"/><rect x="516" y="300" width="158" height="44" rx="6"/>
+            </g>
+            <text x="362" y="189" class="svg-small">associated report</text>
+            <text x="198" y="329" class="svg-small">endpoint structure</text>
+            <text x="536" y="329" class="svg-small">endpoint structure</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>At Each Visited Node</h3>
+            <p>Middle intervals have already passed the x-test. The associated structure filters the relevant endpoint coordinates by y-range.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Two Choices</h3>
+            <ul>
+              <li>Range tree: general rectangular report, more storage.</li>
+              <li>Priority search tree: three-sided report, linear storage per associated set.</li>
+            </ul>
+          </div>
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Windowing Bound</div>
+            <p>Axis-parallel segment windowing reaches \(O(\log^2 n+k)\) query time with \(O(n\log n)\) storage.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>same outer interval tree</span><span>richer local reporting</span></div>
+      <aside class="speaker-notes">At every interval-tree node, replace the plain sorted lists by associated structures on segment endpoints. Range trees give the first version, and priority search trees later exploit the fact that the query rectangle is unbounded on one x-side. The point is not a new outer tree; it is the same split tree carrying richer local reports.</aside>
+    </section>
+
+    <section class="slide" data-label="Priority Search Idea">
+      <div class="topline"><div class="eyebrow">Priority Search Trees</div><div class="badge">three-sided range report</div></div>
+      <h2>Priority Search Tree Idea</h2>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Target Query</div>
+            <p>Report points in \((-\infty,q_x] \times [q_y,q'_y]\).</p>
+          </div>
+          <div class="panel blue">
+            <h3>Two Invariants</h3>
+            <ul>
+              <li>Search-tree partition by y-coordinate.</li>
+              <li>Heap priority by smallest x-coordinate in each subtree.</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>Why It Fits</h3>
+            <p>The query is bounded in y but unbounded to the left in x, exactly the shape exposed by the two invariants.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Priority search tree combines y split and x priority">
+          <svg viewBox="0 0 930 570" role="img">
+            <rect x="55" y="55" width="820" height="455" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="120" y1="420" x2="780" y2="420" stroke="#111827" stroke-width="3"/>
+            <line x1="120" y1="420" x2="120" y2="95" stroke="#111827" stroke-width="3"/>
+            <rect x="120" y="185" width="520" height="170" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="4"/>
+            <g fill="#0f766e"><circle cx="210" cy="330" r="10"/><circle cx="285" cy="160" r="10"/><circle cx="350" cy="245" r="10"/><circle cx="450" cy="305" r="10"/><circle cx="555" cy="210" r="10"/><circle cx="690" cy="280" r="10"/></g>
+            <circle cx="210" cy="330" r="18" fill="none" stroke="#b45309" stroke-width="5"/>
+            <text x="645" y="350" class="svg-label">query slab</text>
+            <text x="195" y="365" class="svg-small">minimum x rises to root</text>
+            <g transform="translate(620 85)">
+              <g stroke="#cbd5e1" stroke-width="2"><line x1="70" y1="34" x2="25" y2="95"/><line x1="70" y1="34" x2="115" y2="95"/></g>
+              <g fill="#eff6ff" stroke="#2563eb" stroke-width="3"><circle cx="70" cy="34" r="28"/><circle cx="25" cy="95" r="24"/><circle cx="115" cy="95" r="24"/></g>
+              <text x="55" y="40" class="svg-tiny">min x</text><text x="12" y="101" class="svg-tiny">low y</text><text x="98" y="101" class="svg-tiny">high y</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>bounded in y</span><span>unbounded in x</span></div>
+      <aside class="speaker-notes">Introduce the priority search tree as a hybrid. It is search-tree-like in y, because subtrees represent y-ranges, and heap-like in x, because each subtree exposes the point with smallest x-coordinate near its root. That combination is tailored to queries of the form x <= qx and qy <= y <= qy_prime.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Priority Query">
+      <div class="topline"><div class="eyebrow">Priority Search Trees</div><div class="badge">split path + heap reports</div></div>
+      <h2>Priority Search Query Path</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Priority search tree query paths and hanging subtrees">
+          <svg viewBox="0 0 850 570" role="img">
+            <defs><marker id="arrow11" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <g stroke="#cbd5e1" stroke-width="3">
+              <line x1="425" y1="85" x2="250" y2="205"/><line x1="425" y1="85" x2="600" y2="205"/>
+              <line x1="250" y1="205" x2="165" y2="335"/><line x1="250" y1="205" x2="335" y2="335"/>
+              <line x1="600" y1="205" x2="515" y2="335"/><line x1="600" y1="205" x2="685" y2="335"/>
+            </g>
+            <g fill="#fff" stroke="#94a3b8" stroke-width="4"><circle cx="425" cy="85" r="38"/><circle cx="250" cy="205" r="38"/><circle cx="600" cy="205" r="38"/><circle cx="165" cy="335" r="38"/><circle cx="335" cy="335" r="38"/><circle cx="515" cy="335" r="38"/><circle cx="685" cy="335" r="38"/></g>
+            <g fill="#f0fdfa" stroke="#0f766e" stroke-width="5"><circle cx="335" cy="335" r="42"/><circle cx="515" cy="335" r="42"/></g>
+            <path d="M425 85 L250 205 L165 335" stroke="#2563eb" stroke-width="6" fill="none" marker-end="url(#arrow11)"/>
+            <path d="M425 85 L600 205 L685 335" stroke="#2563eb" stroke-width="6" fill="none" marker-end="url(#arrow11)"/>
+            <text x="107" y="430" class="svg-label">path to qy</text>
+            <text x="595" y="430" class="svg-label">path to qy'</text>
+            <text x="276" y="502" class="svg-big">green hanging subtrees already lie in the y-range</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Boundary Paths</h3>
+            <p>Search with \(q_y\) and \(q'_y\). Points stored on the two paths are tested directly against the rectangle.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Hanging Subtrees</h3>
+            <p>Their y-range is entirely inside the query slab. Call the heap-style report routine with \(q_x\).</p>
+          </div>
+          <div class="panel amber">
+            <h3>Prune Rule</h3>
+            <p>If the exposed minimum-x point of a subtree is larger than \(q_x\), no point in that subtree can be reported.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>two y-searches</span><span>x-priority reports inside selected subtrees</span></div>
+      <aside class="speaker-notes">Show the query algorithm geometrically. Search for qy and qy_prime to find a split path in the y-search tree. Subtrees hanging between the two paths already have all their y-values inside the query slab, so they only need the heap-style x <= qx reporting subroutine. Points on the two boundary paths are tested explicitly.</aside>
+    </section>
+
+    <section class="slide" data-label="Priority Invariant">
+      <div class="topline"><div class="eyebrow">Priority Search Trees</div><div class="badge">linear storage</div></div>
+      <h2>Priority Search Invariant</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Theorem 10.9 Shape</div>
+            <p>A priority search tree uses \(O(n)\) storage, builds in \(O(n\log n)\) time, and reports three-sided ranges in \(O(\log n+k)\) time.</p>
+          </div>
+          <div class="panel blue">
+            <h3>Search Invariant</h3>
+            <p>Subtrees partition the y-axis, so only \(O(\log n)\) boundary nodes are ambiguous.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Heap Invariant</h3>
+            <p>Every subtree exposes its minimum x-coordinate, enabling fast reporting or pruning for \(x \le q_x\).</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Two priority search tree invariants">
+          <svg viewBox="0 0 850 570" role="img">
+            <rect x="70" y="70" width="710" height="390" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="125" y1="390" x2="730" y2="390" stroke="#111827" stroke-width="3"/>
+            <line x1="125" y1="390" x2="125" y2="105" stroke="#111827" stroke-width="3"/>
+            <g fill="#0f766e"><circle cx="210" cy="315" r="9"/><circle cx="265" cy="190" r="9"/><circle cx="340" cy="260" r="9"/><circle cx="430" cy="165" r="9"/><circle cx="520" cy="315" r="9"/><circle cx="640" cy="230" r="9"/></g>
+            <rect x="125" y="205" width="515" height="135" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="4"/>
+            <line x1="210" y1="105" x2="210" y2="390" stroke="#b45309" stroke-width="5" stroke-dasharray="10 8"/>
+            <text x="222" y="118" class="svg-label" fill="#b45309">first x root</text>
+            <text x="585" y="190" class="svg-small">y-slab selected by search tree</text>
+            <text x="455" y="455" class="svg-big">balanced in y, prioritized in x</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>associated structure upgrade</span><span>same query time, less storage than range trees locally</span></div>
+      <aside class="speaker-notes">Summarize why the priority search tree improves the associated structures. The y partition keeps the number of boundary nodes logarithmic. The x-priority property lets a rejected heap root prune the entire subtree for the unbounded side query. This yields linear storage and O(log n + k) query time for the special three-sided rectangle.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Bounding Box Failure">
+      <div class="topline"><div class="eyebrow">Caution</div><div class="badge">filters are not certificates</div></div>
+      <h2>Bounding-Box Failure Mode</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="panel amber">
+            <h3>Tempting Shortcut</h3>
+            <p>Store each arbitrary segment by its axis-aligned bounding box and report all boxes hit by the query.</p>
+          </div>
+          <div class="panel blue">
+            <h3>Failure</h3>
+            <p>The box can intersect a query side even when the segment itself misses it. This creates false positives unless the actual geometry is checked.</p>
+          </div>
+          <div class="math-box math-box--warning">
+            <div class="math-box-label">Correctness Rule</div>
+            <p>Bounding boxes may filter candidates; they cannot replace the segment-intersection certificate.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Bounding box intersects query but segment misses">
+          <svg viewBox="0 0 930 570" role="img">
+            <rect x="70" y="60" width="800" height="455" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <rect x="245" y="145" width="380" height="240" fill="rgba(180,83,9,.08)" stroke="#b45309" stroke-width="5" stroke-dasharray="14 10"/>
+            <line x1="245" y1="385" x2="625" y2="145" stroke="#0f766e" stroke-width="9" stroke-linecap="round"/>
+            <line x1="655" y1="100" x2="655" y2="455" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+            <rect x="620" y="260" width="130" height="90" fill="rgba(37,99,235,.1)" stroke="#2563eb" stroke-width="4"/>
+            <text x="278" y="132" class="svg-label" fill="#b45309">segment bounding box</text>
+            <text x="665" y="95" class="svg-label" fill="#2563eb">query side</text>
+            <text x="600" y="405" class="svg-big">box says maybe; segment says no</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>arbitrary segments need stronger structure</span><span>avoid overreporting by geometry</span></div>
+      <aside class="speaker-notes">Use the tempting bounding-box shortcut as a warning. For arbitrary segments, a segment's axis-aligned bounding box can intersect the query object even when the segment itself does not. Bounding boxes are useful filters, but they are not correctness certificates; the data structure must preserve the actual crossing geometry.</aside>
+    </section>
+
+    <section class="slide" data-label="Canonical Cover">
+      <div class="topline"><div class="eyebrow">Segment Trees</div><div class="badge">canonical decomposition</div></div>
+      <h2>Segment-Tree Canonical Cover</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Segment tree canonical cover on elementary intervals">
+          <svg viewBox="0 0 850 570" role="img">
+            <defs><marker id="arrow14" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <line x1="95" y1="430" x2="760" y2="430" stroke="#111827" stroke-width="4" marker-end="url(#arrow14)"/>
+            <g stroke="#94a3b8" stroke-width="3"><line x1="150" y1="410" x2="150" y2="450"/><line x1="250" y1="410" x2="250" y2="450"/><line x1="350" y1="410" x2="350" y2="450"/><line x1="450" y1="410" x2="450" y2="450"/><line x1="550" y1="410" x2="550" y2="450"/><line x1="650" y1="410" x2="650" y2="450"/></g>
+            <line x1="215" y1="380" x2="615" y2="380" stroke="#0f766e" stroke-width="10" stroke-linecap="round"/>
+            <g stroke="#cbd5e1" stroke-width="3"><line x1="425" y1="75" x2="250" y2="185"/><line x1="425" y1="75" x2="600" y2="185"/><line x1="250" y1="185" x2="160" y2="300"/><line x1="250" y1="185" x2="340" y2="300"/><line x1="600" y1="185" x2="510" y2="300"/><line x1="600" y1="185" x2="690" y2="300"/></g>
+            <g fill="#fff" stroke="#94a3b8" stroke-width="4"><rect x="365" y="35" width="120" height="76" rx="10"/><rect x="190" y="145" width="120" height="76" rx="10"/><rect x="540" y="145" width="120" height="76" rx="10"/><rect x="100" y="260" width="120" height="76" rx="10"/><rect x="280" y="260" width="120" height="76" rx="10"/><rect x="450" y="260" width="120" height="76" rx="10"/><rect x="630" y="260" width="120" height="76" rx="10"/></g>
+            <g fill="rgba(15,118,110,.2)" stroke="#0f766e" stroke-width="5"><rect x="280" y="260" width="120" height="76" rx="10"/><rect x="450" y="260" width="120" height="76" rx="10"/></g>
+            <text x="292" y="306" class="svg-label">C1</text><text x="462" y="306" class="svg-label">C2</text>
+            <text x="185" y="508" class="svg-big">stored interval becomes disjoint canonical nodes</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Skeleton</h3>
+            <p>Sort all interval endpoints and build a balanced tree over elementary intervals between consecutive endpoints.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Canonical Cover</h3>
+            <p>Store an interval in the highest nodes whose ranges are fully contained in the interval.</p>
+          </div>
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Bound</div>
+            <p>Each interval is copied to \(O(\log n)\) canonical nodes; point stabbing follows one search path.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>copy intervals deliberately</span><span>gain flexible associated structures</span></div>
+      <aside class="speaker-notes">Introduce segment trees through canonical decomposition. The skeleton is built from sorted endpoints and elementary intervals. Any stored interval is represented as a disjoint union of canonical node ranges, with only logarithmically many pieces in the balanced tree. Queries then inspect the nodes on one search path.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Disjoint Segments">
+      <div class="topline"><div class="eyebrow">Segment Trees</div><div class="badge">disjoint segment windowing</div></div>
+      <h2>Segment Tree For Disjoint Segments</h2>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Outer Structure</h3>
+            <p>Use a segment tree on x-projections. A vertical query visits canonical subsets whose x-slabs contain \(q_x\).</p>
+          </div>
+          <div class="panel teal">
+            <h3>Associated Structure</h3>
+            <p>For disjoint segments inside a slab, vertical order is stable. A sorted structure reports which segments lie between the query endpoints.</p>
+          </div>
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Theorem 10.13 Shape</div>
+            <p>Vertical segment intersection for disjoint segments: \(O(n\log n)\) storage and \(O(\log^2 n+k)\) query time.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Disjoint segments and vertical query using segment-tree slabs">
+          <svg viewBox="0 0 930 570" role="img">
+            <rect x="60" y="55" width="820" height="455" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g stroke="#e2e8f0" stroke-width="3"><line x1="210" y1="55" x2="210" y2="510"/><line x1="370" y1="55" x2="370" y2="510"/><line x1="530" y1="55" x2="530" y2="510"/><line x1="690" y1="55" x2="690" y2="510"/></g>
+            <g stroke-width="8" stroke-linecap="round">
+              <line x1="125" y1="410" x2="345" y2="330" stroke="#0f766e"/>
+              <line x1="180" y1="250" x2="470" y2="155" stroke="#0f766e"/>
+              <line x1="400" y1="420" x2="725" y2="300" stroke="#0f766e"/>
+              <line x1="565" y1="195" x2="810" y2="125" stroke="#94a3b8"/>
+            </g>
+            <line x1="500" y1="120" x2="500" y2="440" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+            <circle cx="500" cy="383" r="12" fill="#b45309"/><circle cx="500" cy="383" r="20" fill="none" stroke="#b45309" stroke-width="4"/>
+            <text x="518" y="130" class="svg-label">vertical query</text>
+            <text x="105" y="515" class="svg-small">slabs from endpoint skeleton</text>
+            <text x="500" y="535" class="svg-big">canonical subset + vertical-order report</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>non-axis-parallel but disjoint</span><span>actual intersections, not boxes</span></div>
+      <aside class="speaker-notes">For disjoint non-axis-parallel segments, the segment tree stores canonical subsets according to x-projection. Each canonical subset can be equipped with a structure ordered by vertical position, because disjoint segments have a stable vertical order over an elementary x-slab. This supports vertical segment intersection queries in O(log squared n plus k) time.</aside>
+    </section>
+
+    <section class="slide" data-label="Synthesis">
+      <div class="topline"><div class="eyebrow">Synthesis</div><div class="badge">extensions</div></div>
+      <h2>Synthesis And Extensions</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="route">
+            <div class="hot">model query</div><div>reduce to 1D</div><div>add associations</div><div>canonical cover</div>
+          </div>
+          <div class="panel blue">
+            <h3>Recurring Pattern</h3>
+            <ul>
+              <li>Use endpoints for easy window reports.</li>
+              <li>Use stabbing for side intersections.</li>
+              <li>Use associated structures when a second coordinate matters.</li>
+              <li>Use segment-tree copies when intervals must support richer local data.</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>Where It Goes Next</h3>
+            <p>Counting versions, dynamic updates, multi-level rectangle stabbing, and practical spatial indexes reuse the same vocabulary.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Data-structure synthesis map">
+          <svg viewBox="0 0 850 570" role="img">
+            <defs><marker id="arrow16" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <g fill="#fff" stroke="#cbd5e1" stroke-width="3">
+              <rect x="72" y="80" width="220" height="110" rx="10"/>
+              <rect x="315" y="80" width="220" height="110" rx="10"/>
+              <rect x="558" y="80" width="220" height="110" rx="10"/>
+              <rect x="190" y="305" width="220" height="110" rx="10"/>
+              <rect x="440" y="305" width="220" height="110" rx="10"/>
+            </g>
+            <g stroke="#1e3a8a" stroke-width="5" fill="none" marker-end="url(#arrow16)">
+              <path d="M292 135 H315"/><path d="M535 135 H558"/>
+              <path d="M668 190 C650 260 590 305 548 305"/><path d="M302 190 C260 245 250 285 292 305"/>
+              <path d="M410 360 H440"/>
+            </g>
+            <text x="100" y="128" class="svg-label">window query</text><text x="98" y="160" class="svg-small">rectangular report</text>
+            <text x="345" y="128" class="svg-label">interval tree</text><text x="344" y="160" class="svg-small">stabbing split</text>
+            <text x="584" y="128" class="svg-label">priority search</text><text x="586" y="160" class="svg-small">three-sided range</text>
+            <text x="212" y="353" class="svg-label">range tree</text><text x="212" y="385" class="svg-small">endpoint reports</text>
+            <text x="468" y="353" class="svg-label">segment tree</text><text x="468" y="385" class="svg-small">canonical subsets</text>
+            <text x="172" y="505" class="svg-big">design principle: decompose geometry until each report is local</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>chapter goal achieved</span><span>compact tour of geometric data-structure design</span></div>
+      <aside class="speaker-notes">Close by connecting the chapter's recurring design pattern. Start with a geometric report, reduce part of it to a one-dimensional stabbing question, carry associated structures when another coordinate matters, and use canonical decompositions when intervals must be shared across many queries. The same language extends to counting, dynamic variants, and multi-level structures.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

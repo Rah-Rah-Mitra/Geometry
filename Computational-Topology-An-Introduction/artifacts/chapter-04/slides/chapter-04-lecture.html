@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 04: Homology</title>
+  <meta name="course" content="Computational Topology: An Introduction">
+  <meta name="chapter_id" content="chapter-04">
+  <meta name="chapter_title" content="Chapter 04: Homology">
+  <meta name="notebook_path" content="Computational-Topology-An-Introduction/chapter-04-homology/04-homology.ipynb">
+  <meta name="source_span" content="printed pages 79-102; physical PDF pages 92-115. Chapter V starts physical PDF 116, printed page 103. Verified sections: IV.1 printed 79-84 / PDF 92-97; IV.2 printed 85-90 / PDF 98-103; IV.3 printed 90-95 / PDF 103-108; IV.4 printed 95-100 / PDF 108-113; exercises printed 101-102 / PDF 114-115 for orientation only.">
+  <meta name="source_pdf" content="Computational-Topology-An-Introduction/Computational Topology An Introduction.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 64px 92px 50px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 76px 76px, 76px 76px, auto;
+    }
+    h1, h2, h3, p, ul, ol, figure { margin-top: 0; letter-spacing: 0; }
+    h1 { font-size: 60px; line-height: 1.05; margin-bottom: 18px; }
+    h2 { font-size: 50px; line-height: 1.1; margin-bottom: 18px; }
+    h3 { font-size: 31px; line-height: 1.16; color: var(--slide-accent); margin-bottom: 10px; }
+    p, li { font-size: 25px; line-height: 1.28; }
+    ul, ol { padding-left: 31px; margin-bottom: 0; }
+    li { margin-bottom: 7px; }
+    svg { width: 100%; height: auto; display: block; }
+    table { width: 100%; border-collapse: collapse; font-size: 23px; line-height: 1.16; }
+    th, td { border-bottom: 1px solid var(--slide-border-light); padding: 10px 12px; text-align: left; vertical-align: middle; }
+    th { background: #EEF2FF; color: var(--slide-accent); font-weight: 700; }
+    code { font-family: var(--font-mono); font-size: 23px; }
+    .eyebrow {
+      font-size: 23px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .rule { width: 110px; height: 6px; border-radius: 4px; background: var(--slide-accent); margin: 8px 0 24px; }
+    .subtitle { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1240px; }
+    .content { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 38px; flex: 1; min-height: 0; align-items: center; }
+    .cols.left-wide { grid-template-columns: 1.16fr 0.84fr; }
+    .cols.right-wide { grid-template-columns: 0.84fr 1.16fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 19px 23px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.indigo { background: var(--math-theorem-bg); border-left: 6px solid var(--slide-accent); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel h3 { font-size: 29px; margin-bottom: 9px; }
+    .panel p, .panel li { font-size: 24px; }
+    .compact p, .compact li { font-size: 22px; line-height: 1.22; }
+    .math-box { margin: 0; padding: 20px 22px 20px 26px; border-radius: 8px; }
+    .math-box-label { letter-spacing: 0; }
+    .math-box-title { font-size: 27px; margin-bottom: 8px; }
+    .math-box p, .math-box li { font-size: 24px; line-height: 1.28; }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 35px;
+      line-height: 1.24;
+      text-align: center;
+      padding: 15px 18px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid var(--slide-border-light);
+    }
+    .formula.large { font-size: 43px; }
+    .caption { font-size: 21px; line-height: 1.26; color: var(--slide-dimmed); margin: 8px 0 0; }
+    .visual-card {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      min-height: 0;
+    }
+    .visual-card.flat { border: 0; background: transparent; padding: 0; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .badge {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      border-radius: 6px;
+      border: 1px solid rgba(15, 118, 110, 0.28);
+      background: #F0FDFA;
+      color: var(--slide-teal);
+      padding: 5px 12px;
+      font-size: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge.blue { background: #EFF6FF; color: var(--slide-blue); border-color: rgba(37, 99, 235, 0.28); }
+    .badge.amber { background: #FFFBEB; color: var(--slide-amber); border-color: rgba(180, 83, 9, 0.28); }
+    .badge.violet { background: #F5F3FF; color: var(--slide-violet); border-color: rgba(109, 40, 217, 0.28); }
+    .footer { display: flex; justify-content: space-between; gap: 24px; color: var(--slide-dimmed); font-size: 20px; font-weight: 700; margin-top: 18px; }
+    .ledger { border: 1px solid var(--slide-border); border-radius: 8px; overflow: hidden; background: #fff; }
+    .matrix {
+      font-family: var(--font-mono);
+      font-size: 27px;
+      line-height: 1.22;
+      white-space: pre;
+      color: var(--slide-ink);
+      background: #F8FAFC;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .source-note { font-size: 21px; color: var(--slide-dimmed); line-height: 1.24; max-width: 1260px; }
+  </style>
+</head>
+<body>
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "label": "Homology: Holes As Linear Algebra",
+    "notes": "Open by framing the chapter as a translation problem. The visible objects are simplices and holes, but the computation runs through vector spaces, boundary matrices, kernels, images, and quotient groups. The verified source span is printed pages 79 through 102, with exercises used only for orientation."
+  },
+  {
+    "slide": 2,
+    "label": "From Simplices To Chain Groups",
+    "notes": "Make the algebra concrete by naming the basis elements. A p-chain is a finite formal sum of p-simplices, and over F2 the coefficients act like on and off switches. The important move is that geometry has become a coordinate vector."
+  },
+  {
+    "slide": 3,
+    "label": "Addition Cancels Shared Pieces",
+    "notes": "Use the paired triangles to show why F2 addition is natural for computation. When two chains share an edge, that edge appears twice and disappears. This is the same cancellation that makes symmetric difference and mod two arithmetic agree."
+  },
+  {
+    "slide": 4,
+    "label": "Boundary Maps",
+    "notes": "Present the boundary operator as the machine that drops dimension. Vertices are the boundary of an edge, edges are the boundary of a triangle, and the linear extension is what lets one assemble complicated chains from simple columns."
+  },
+  {
+    "slide": 5,
+    "label": "Why Partial Partial Equals Zero",
+    "notes": "Slow down on this lemma because it licenses the quotient definition later. Each lower-dimensional face of a simplex appears exactly twice in the boundary of the boundary. Over F2 those paired appearances cancel, so every boundary is automatically a cycle."
+  },
+  {
+    "slide": 6,
+    "label": "Cycles, Boundaries, Homology",
+    "notes": "Distinguish the two subgroups before taking the quotient. Cycles are chains whose boundary has vanished, while boundaries are cycles already explained by a higher-dimensional chain. Homology keeps the cycles left over after those explained ones are identified."
+  },
+  {
+    "slide": 7,
+    "label": "Betti Numbers Read The Shape",
+    "notes": "Read the Betti vector as a compact summary rather than a full classification. The table shows that components, tunnels, voids, and filled regions contribute in different dimensions. The rank formula is the computational bridge from matrices to shape."
+  },
+  {
+    "slide": 8,
+    "label": "Chain Maps Preserve Boundaries",
+    "notes": "Explain functoriality as a compatibility rule. A map of complexes induces linear maps on chains, and the square says mapping then taking boundary agrees with taking boundary then mapping. Without this commutation, homology classes would not be transported reliably."
+  },
+  {
+    "slide": 9,
+    "label": "Boundary Matrices",
+    "notes": "Turn the boundary operator into a board of zeros and ones. Rows name lower-dimensional simplices, columns name higher-dimensional simplices, and a one records incidence. The product check D1 times D2 equals zero is the matrix version of boundary squared zero."
+  },
+  {
+    "slide": 10,
+    "label": "Reduction Worked Example",
+    "notes": "Walk through the small circle example as a rank computation. Column operations over F2 preserve rank, and the reduced D1 matrix has two pivots. With three edges and three vertices, the formula gives one connected component and one independent loop."
+  },
+  {
+    "slide": 11,
+    "label": "Euler-Poincare Tracker",
+    "notes": "Use Euler-Poincare as an audit trail. Alternating simplex counts and alternating Betti counts agree because ranks cancel across the chain complex. It is not a complete invariant, but it is an excellent consistency check for a homology computation."
+  },
+  {
+    "slide": 12,
+    "label": "Relative Homology Of A Pair",
+    "notes": "Describe relative chains as chains of K with the subcomplex K0 treated as invisible. Boundaries are allowed to land in K0, so a chain that was not an absolute cycle can become a relative cycle. This is the algebra of collapsing the reference part of the space."
+  },
+  {
+    "slide": 13,
+    "label": "Excision As Local Replacement",
+    "notes": "Present excision as permission to replace local clutter without changing the relative answer. Once the same complement is kept, the lower-right incidence block carries the relative computation. The slide's check names that the relative quotient ranks match."
+  },
+  {
+    "slide": 14,
+    "label": "Exactness: Image Equals Kernel",
+    "notes": "Exactness should sound operational: everything that dies at the next map was born from the previous map. The toy sequence verifies image equals kernel at the middle term. This is stronger than merely saying the composite is zero."
+  },
+  {
+    "slide": 15,
+    "label": "Long Exact Sequence And Connecting Map",
+    "notes": "Focus on the connecting map as the non-obvious arrow. A relative cycle may have a boundary inside K0, and that boundary becomes a lower-dimensional class in K0. The long exact sequence organizes the absolute and relative groups into one diagnostic line."
+  },
+  {
+    "slide": 16,
+    "label": "Snake / Mayer-Vietoris Recap",
+    "notes": "Close by linking the chapter's two global devices. The snake construction turns short exact sequences of chain complexes into long exact sequences in homology, and Mayer-Vietoris applies this to a union. The final message is divide, compute, and glue through exactness."
+  }
+]
+  </script>
+
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Homology: Holes As Linear Algebra">
+      <div class="eyebrow">Computational Topology: An Introduction / Chapter 04</div>
+      <h1>Homology: Holes As Linear Algebra</h1>
+      <div class="rule"></div>
+      <p class="subtitle">Chains, boundaries, cycles, quotient groups, Betti numbers, matrix reduction, relative homology, and exact sequences.</p>
+      <div class="content">
+        <div class="cols left-wide">
+          <div class="visual-card flat">
+            <svg viewBox="0 0 1040 520" role="img" aria-label="Pipeline from simplicial geometry to linear algebra homology">
+              <defs>
+                <marker id="arrow-title" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker>
+              </defs>
+              <rect x="34" y="50" width="230" height="360" rx="18" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="406" y="50" width="230" height="360" rx="18" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+              <rect x="778" y="50" width="230" height="360" rx="18" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <polygon points="86,288 160,118 228,288" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="6"/>
+              <line x1="86" y1="288" x2="228" y2="288" stroke="#2563EB" stroke-width="7"/>
+              <line x1="86" y1="288" x2="160" y2="118" stroke="#2563EB" stroke-width="7"/>
+              <line x1="160" y1="118" x2="228" y2="288" stroke="#2563EB" stroke-width="7"/>
+              <circle cx="86" cy="288" r="10" fill="#1E3A8A"/><circle cx="160" cy="118" r="10" fill="#1E3A8A"/><circle cx="228" cy="288" r="10" fill="#1E3A8A"/>
+              <text x="149" y="358" text-anchor="middle" font-family="Source Sans 3" font-size="34" font-weight="700" fill="#1E3A8A">simplices</text>
+              <text x="520" y="132" text-anchor="middle" font-family="JetBrains Mono" font-size="30" fill="#111827">D2 D1</text>
+              <text x="520" y="198" text-anchor="middle" font-family="JetBrains Mono" font-size="30" fill="#111827">ker Dp</text>
+              <text x="520" y="264" text-anchor="middle" font-family="JetBrains Mono" font-size="30" fill="#111827">im Dp+1</text>
+              <text x="520" y="335" text-anchor="middle" font-family="Source Sans 3" font-size="34" font-weight="700" fill="#1E3A8A">matrices</text>
+              <circle cx="858" cy="170" r="48" fill="none" stroke="#0F766E" stroke-width="10"/>
+              <circle cx="929" cy="250" r="48" fill="none" stroke="#0F766E" stroke-width="10"/>
+              <circle cx="875" cy="307" r="48" fill="none" stroke="#0F766E" stroke-width="10"/>
+              <text x="893" y="385" text-anchor="middle" font-family="Source Sans 3" font-size="34" font-weight="700" fill="#0F766E">Betti data</text>
+              <line x1="280" y1="230" x2="380" y2="230" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-title)"/>
+              <line x1="652" y1="230" x2="752" y2="230" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-title)"/>
+              <text x="520" y="474" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#475569">visible geometry -> computable algebra -> interpretable holes</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Chapter Contract</div>
+              <p>Work over \(\mathbb F_2\) unless stated otherwise. A finite complex gives chain groups \(C_p\), boundary maps \(\partial_p\), and homology groups \(H_p=Z_p/B_p\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Verified Provenance</h3>
+              <p>Printed pages 79-102; physical PDF pages 92-115. Chapter V starts on physical PDF page 116, printed page 103.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>source orientation only: original wording and redrawn visuals</span><span>manifest row 105</span></div>
+      <aside class="speaker-notes">Open by framing the chapter as a translation problem. The visible objects are simplices and holes, but the computation runs through vector spaces, boundary matrices, kernels, images, and quotient groups. The verified source span is printed pages 79 through 102, with exercises used only for orientation.</aside>
+    </section>
+
+    <section class="slide" data-label="From Simplices To Chain Groups">
+      <div class="eyebrow">IV.1 / Homology groups</div>
+      <h2>From Simplices To Chain Groups</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="visual-card">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Simplices become coordinate basis vectors">
+              <rect x="28" y="28" width="704" height="420" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <g stroke="#2563EB" stroke-width="6" fill="rgba(37,99,235,0.08)">
+                <circle cx="120" cy="350" r="10" fill="#1E3A8A" stroke="none"/><circle cx="240" cy="350" r="10" fill="#1E3A8A" stroke="none"/><circle cx="180" cy="230" r="10" fill="#1E3A8A" stroke="none"/>
+                <line x1="120" y1="350" x2="240" y2="350"/><line x1="240" y1="350" x2="180" y2="230"/><line x1="180" y1="230" x2="120" y2="350"/>
+                <polygon points="380,350 500,350 440,230" fill="rgba(15,118,110,0.13)" stroke="#0F766E"/>
+                <line x1="380" y1="350" x2="500" y2="350" stroke="#0F766E"/><line x1="500" y1="350" x2="440" y2="230" stroke="#0F766E"/><line x1="440" y1="230" x2="380" y2="350" stroke="#0F766E"/>
+              </g>
+              <text x="126" y="390" font-family="STIX Two Text" font-size="30" fill="#1E3A8A">v0</text>
+              <text x="246" y="390" font-family="STIX Two Text" font-size="30" fill="#1E3A8A">v1</text>
+              <text x="185" y="220" font-family="STIX Two Text" font-size="30" fill="#1E3A8A">v2</text>
+              <text x="438" y="215" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#0F766E">one 2-simplex</text>
+              <text x="95" y="100" font-family="Source Sans 3" font-size="32" font-weight="700" fill="#1E3A8A">Geometry basis</text>
+              <text x="562" y="142" font-family="JetBrains Mono" font-size="27" fill="#111827">C0 = F2^3</text>
+              <text x="562" y="206" font-family="JetBrains Mono" font-size="27" fill="#111827">C1 = F2^3</text>
+              <text x="562" y="270" font-family="JetBrains Mono" font-size="27" fill="#111827">C2 = F2^1</text>
+              <text x="562" y="352" font-family="JetBrains Mono" font-size="27" fill="#0F766E">c = 101</text>
+            </svg>
+            <p class="caption">Choosing an ordering of simplices turns p-chains into coordinate vectors over \(\mathbb F_2\).</p>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Definition</div>
+              <p>A p-chain is a finite sum \(c=\sum_i a_i\sigma_i\), with \(a_i\in\mathbb F_2\). The p-chains form a vector space \(C_p(K)\).</p>
+            </div>
+            <div class="panel blue">
+              <h3>Computational Reading</h3>
+              <ul>
+                <li>Basis vector = one simplex.</li>
+                <li>Coefficient 1 = selected; coefficient 0 = absent.</li>
+                <li>Dimension \(n_p=\dim C_p\) counts p-simplices.</li>
+              </ul>
+            </div>
+            <div class="badge-row">
+              <span class="badge blue">n0 = 3</span>
+              <span class="badge blue">n1 = 3</span>
+              <span class="badge">n2 = 1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>simplices become basis vectors</span><span>chains are inspectable finite data</span></div>
+      <aside class="speaker-notes">Make the algebra concrete by naming the basis elements. A p-chain is a finite formal sum of p-simplices, and over F2 the coefficients act like on and off switches. The important move is that geometry has become a coordinate vector.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Addition Cancels Shared Pieces">
+      <div class="eyebrow">Chains add by mod two arithmetic</div>
+      <h2>Addition Cancels Shared Pieces</h2>
+      <div class="content">
+        <div class="cols left-wide">
+          <div class="visual-card">
+            <svg viewBox="0 0 920 500" role="img" aria-label="Two triangles share an edge that cancels under addition">
+              <defs><marker id="arr-cancel" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="30" y="35" width="860" height="390" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <g transform="translate(80,70)">
+                <polygon points="70,270 210,270 140,120" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="6"/>
+                <line x1="210" y1="270" x2="140" y2="120" stroke="#B45309" stroke-width="10"/>
+                <text x="140" y="330" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#2563EB">chain a</text>
+              </g>
+              <text x="340" y="260" text-anchor="middle" font-family="Source Sans 3" font-size="54" font-weight="700" fill="#1E3A8A">+</text>
+              <g transform="translate(380,70)">
+                <polygon points="70,270 210,270 140,120" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="6"/>
+                <line x1="70" y1="270" x2="140" y2="120" stroke="#B45309" stroke-width="10"/>
+                <text x="140" y="330" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#0F766E">chain b</text>
+              </g>
+              <line x1="615" y1="260" x2="700" y2="260" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-cancel)"/>
+              <g transform="translate(690,70)">
+                <polygon points="70,270 210,270 140,120" fill="none" stroke="#1E3A8A" stroke-width="6"/>
+                <line x1="70" y1="270" x2="210" y2="270" stroke="#1E3A8A" stroke-width="8"/>
+                <path d="M72 268 L208 268" stroke="#0F766E" stroke-width="3" stroke-dasharray="11 8"/>
+                <text x="140" y="330" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#1E3A8A">shared edge gone</text>
+              </g>
+              <text x="460" y="460" text-anchor="middle" font-family="JetBrains Mono" font-size="28" fill="#475569">1 + 1 = 0 in F2</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Symmetric Difference</div>
+              <p>For mod two chains, \(a+b\) keeps exactly the simplices that appear in one chain but not both.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Why This Matters</h3>
+              <p>Cancellation is not a visual trick. It is the arithmetic that makes shared internal faces vanish in a combined chain.</p>
+            </div>
+            <div class="formula">edge \(e\): \(1+1\equiv 0 \pmod 2\)</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>addition = XOR of simplex indicators</span><span>shared pieces cancel exactly</span></div>
+      <aside class="speaker-notes">Use the paired triangles to show why F2 addition is natural for computation. When two chains share an edge, that edge appears twice and disappears. This is the same cancellation that makes symmetric difference and mod two arithmetic agree.</aside>
+    </section>
+
+    <section class="slide" data-label="Boundary Maps">
+      <div class="eyebrow">The operator that drops dimension</div>
+      <h2>Boundary Maps</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="visual-card">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Boundary of an edge and triangle">
+              <defs><marker id="arr-bound" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="28" y="34" width="704" height="390" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <line x1="100" y1="145" x2="270" y2="145" stroke="#2563EB" stroke-width="8" marker-end="url(#arr-bound)"/>
+              <circle cx="100" cy="145" r="13" fill="#1E3A8A"/><circle cx="270" cy="145" r="13" fill="#1E3A8A"/>
+              <text x="185" y="205" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#2563EB">1-simplex</text>
+              <line x1="325" y1="145" x2="425" y2="145" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-bound)"/>
+              <circle cx="500" cy="145" r="13" fill="#0F766E"/><circle cx="625" cy="145" r="13" fill="#0F766E"/>
+              <text x="562" y="205" text-anchor="middle" font-family="JetBrains Mono" font-size="27" fill="#0F766E">v0 + v1</text>
+              <polygon points="110,360 260,360 185,240" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="6"/>
+              <line x1="110" y1="360" x2="260" y2="360" stroke="#2563EB" stroke-width="8"/>
+              <line x1="260" y1="360" x2="185" y2="240" stroke="#2563EB" stroke-width="8"/>
+              <line x1="185" y1="240" x2="110" y2="360" stroke="#2563EB" stroke-width="8"/>
+              <line x1="330" y1="305" x2="430" y2="305" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-bound)"/>
+              <text x="555" y="292" text-anchor="middle" font-family="JetBrains Mono" font-size="26" fill="#0F766E">e01 + e12 + e02</text>
+              <text x="555" y="350" text-anchor="middle" font-family="Source Sans 3" font-size="25" fill="#475569">three exposed edges</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Boundary Homomorphism</div>
+              <p>The map \(\partial_p:C_p\to C_{p-1}\) sends each p-simplex to the sum of its codimension-one faces, then extends linearly.</p>
+            </div>
+            <div class="panel blue">
+              <h3>Linear Extension</h3>
+              <p>If \(c=\sigma_1+\sigma_2+\sigma_3\), then \(\partial c=\partial\sigma_1+\partial\sigma_2+\partial\sigma_3\).</p>
+            </div>
+            <div class="badge-row">
+              <span class="badge blue">C2 -> C1</span>
+              <span class="badge">C1 -> C0</span>
+              <span class="badge amber">C0 -> 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>boundary maps are homomorphisms</span><span>one formula covers every chain</span></div>
+      <aside class="speaker-notes">Present the boundary operator as the machine that drops dimension. Vertices are the boundary of an edge, edges are the boundary of a triangle, and the linear extension is what lets one assemble complicated chains from simple columns.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Why Partial Partial Equals Zero">
+      <div class="eyebrow">Fundamental lemma of homology</div>
+      <h2>Why \(\partial\partial = 0\)</h2>
+      <div class="content">
+        <div class="cols right-wide">
+          <div class="stack">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Fundamental Lemma</div>
+              <p>For every p, \(\partial_p\partial_{p+1}=0\). Therefore every p-boundary is a p-cycle.</p>
+            </div>
+            <div class="panel teal">
+              <h3>GF(2) Check</h3>
+              <p><code>D_p @ D_{p+1} % 2 == 0</code></p>
+              <div class="badge-row"><span class="badge">triangle check: true</span><span class="badge blue">all vertices cancel twice</span></div>
+            </div>
+          </div>
+          <div class="visual-card">
+            <svg viewBox="0 0 860 500" role="img" aria-label="Boundary of boundary of triangle cancels all vertices">
+              <rect x="30" y="30" width="800" height="400" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <polygon points="170,350 360,350 265,155" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="7"/>
+              <circle cx="170" cy="350" r="13" fill="#1E3A8A"/><circle cx="360" cy="350" r="13" fill="#1E3A8A"/><circle cx="265" cy="155" r="13" fill="#1E3A8A"/>
+              <text x="168" y="392" text-anchor="middle" font-family="STIX Two Text" font-size="30" fill="#1E3A8A">a</text>
+              <text x="360" y="392" text-anchor="middle" font-family="STIX Two Text" font-size="30" fill="#1E3A8A">b</text>
+              <text x="266" y="140" text-anchor="middle" font-family="STIX Two Text" font-size="30" fill="#1E3A8A">c</text>
+              <g font-family="JetBrains Mono" font-size="27" fill="#111827">
+                <text x="470" y="150">partial(abc) = ab + bc + ac</text>
+                <text x="470" y="225">partial ab = a + b</text>
+                <text x="470" y="278">partial bc = b + c</text>
+                <text x="470" y="331">partial ac = a + c</text>
+                <text x="470" y="390" fill="#0F766E">sum = 2a + 2b + 2c = 0</text>
+              </g>
+              <path d="M170 350 C125 260 160 190 245 158" fill="none" stroke="#B45309" stroke-width="4" stroke-dasharray="10 8"/>
+              <path d="M360 350 C410 260 365 185 285 158" fill="none" stroke="#B45309" stroke-width="4" stroke-dasharray="10 8"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>faces of faces appear in pairs</span><span>boundaries land inside cycles</span></div>
+      <aside class="speaker-notes">Slow down on this lemma because it licenses the quotient definition later. Each lower-dimensional face of a simplex appears exactly twice in the boundary of the boundary. Over F2 those paired appearances cancel, so every boundary is automatically a cycle.</aside>
+    </section>
+
+    <section class="slide" data-label="Cycles, Boundaries, Homology">
+      <div class="eyebrow">The quotient where holes live</div>
+      <h2>Cycles, Boundaries, Homology</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="visual-card">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Cycles modulo boundaries as quotient classes">
+              <defs><marker id="arr-quot" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="30" y="38" width="700" height="392" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <ellipse cx="260" cy="232" rx="185" ry="135" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="5"/>
+              <ellipse cx="260" cy="232" rx="92" ry="58" fill="rgba(15,118,110,0.14)" stroke="#0F766E" stroke-width="5"/>
+              <text x="260" y="112" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#2563EB">Zp = ker partial</text>
+              <text x="260" y="242" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#0F766E">Bp = im partial</text>
+              <line x1="465" y1="232" x2="555" y2="232" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-quot)"/>
+              <ellipse cx="620" cy="162" rx="58" ry="34" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <ellipse cx="620" cy="242" rx="58" ry="34" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <ellipse cx="620" cy="322" rx="58" ry="34" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <text x="620" y="167" text-anchor="middle" font-family="JetBrains Mono" font-size="24">[c]</text>
+              <text x="620" y="247" text-anchor="middle" font-family="JetBrains Mono" font-size="24">[d]</text>
+              <text x="620" y="327" text-anchor="middle" font-family="JetBrains Mono" font-size="24">[e]</text>
+              <text x="620" y="395" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#1E3A8A">Hp = Zp / Bp</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Definitions</div>
+              <p>\(Z_p=\ker \partial_p\), \(B_p=\operatorname{im}\partial_{p+1}\), and \(H_p=Z_p/B_p\).</p>
+            </div>
+            <div class="panel blue">
+              <h3>Interpretation</h3>
+              <ul>
+                <li>Cycle: closes up.</li>
+                <li>Boundary: closes because it surrounds a higher chain.</li>
+                <li>Homology class: a surviving cycle modulo filled-in cycles.</li>
+              </ul>
+            </div>
+            <div class="formula">\(B_p\subseteq Z_p\) because \(\partial\partial=0\)</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>homology is cycles modulo boundaries</span><span>quotients remove explained cycles</span></div>
+      <aside class="speaker-notes">Distinguish the two subgroups before taking the quotient. Cycles are chains whose boundary has vanished, while boundaries are cycles already explained by a higher-dimensional chain. Homology keeps the cycles left over after those explained ones are identified.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Betti Numbers Read The Shape">
+      <div class="eyebrow">Ranks of homology groups</div>
+      <h2>Betti Numbers Read The Shape</h2>
+      <div class="content">
+        <div class="cols left-wide">
+          <div class="stack">
+            <table class="ledger" aria-label="Betti number examples">
+              <thead><tr><th>Finite model</th><th>\(\beta_0\)</th><th>\(\beta_1\)</th><th>\(\beta_2\)</th><th>Reading</th></tr></thead>
+              <tbody>
+                <tr><td>interval</td><td>1</td><td>0</td><td>0</td><td>one component, no loop</td></tr>
+                <tr><td>circle graph</td><td>1</td><td>1</td><td>0</td><td>one independent 1-cycle</td></tr>
+                <tr><td>filled triangle</td><td>1</td><td>0</td><td>0</td><td>the loop is a boundary</td></tr>
+                <tr><td>annulus mesh</td><td>1</td><td>1</td><td>0</td><td>one tunnel remains</td></tr>
+                <tr><td>sphere boundary</td><td>1</td><td>0</td><td>1</td><td>one void shell</td></tr>
+              </tbody>
+            </table>
+            <div class="formula">$$\beta_p=n_p-\operatorname{rank}D_p-\operatorname{rank}D_{p+1}$$</div>
+          </div>
+          <div class="visual-card">
+            <svg viewBox="0 0 620 500" role="img" aria-label="Mini shape catalogue with Betti vectors">
+              <rect x="28" y="28" width="564" height="414" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <g transform="translate(70,75)" font-family="Source Sans 3" font-size="23" font-weight="700">
+                <line x1="10" y1="52" x2="110" y2="52" stroke="#2563EB" stroke-width="8"/><circle cx="10" cy="52" r="8" fill="#1E3A8A"/><circle cx="110" cy="52" r="8" fill="#1E3A8A"/>
+                <text x="60" y="106" text-anchor="middle" fill="#475569">(1,0,0)</text>
+                <circle cx="260" cy="52" r="47" fill="none" stroke="#2563EB" stroke-width="8"/>
+                <text x="260" y="106" text-anchor="middle" fill="#475569">(1,1,0)</text>
+                <polygon points="395,96 488,96 441,8" fill="rgba(15,118,110,0.16)" stroke="#0F766E" stroke-width="7"/>
+                <text x="441" y="134" text-anchor="middle" fill="#475569">(1,0,0)</text>
+                <path d="M35 270 A70 46 0 1 0 165 270 A70 46 0 1 0 35 270 M78 270 A28 18 0 1 1 122 270 A28 18 0 1 1 78 270" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="6" fill-rule="evenodd"/>
+                <text x="100" y="345" text-anchor="middle" fill="#475569">(1,1,0)</text>
+                <circle cx="360" cy="270" r="66" fill="rgba(109,40,217,0.06)" stroke="#6D28D9" stroke-width="7"/>
+                <ellipse cx="360" cy="270" rx="66" ry="22" fill="none" stroke="#6D28D9" stroke-width="3" stroke-dasharray="10 8"/>
+                <text x="360" y="345" text-anchor="middle" fill="#475569">(1,0,1)</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Betti numbers are ranks, not pictures</span><span>examples checked over F2</span></div>
+      <aside class="speaker-notes">Read the Betti vector as a compact summary rather than a full classification. The table shows that components, tunnels, voids, and filled regions contribute in different dimensions. The rank formula is the computational bridge from matrices to shape.</aside>
+    </section>
+
+    <section class="slide" data-label="Chain Maps Preserve Boundaries">
+      <div class="eyebrow">Maps of complexes become maps of homology</div>
+      <h2>Chain Maps Preserve Boundaries</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="visual-card">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Commutative square for a chain map">
+              <defs><marker id="arr-chain" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="40" y="36" width="680" height="398" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <g font-family="STIX Two Text" font-size="42" font-weight="700">
+                <text x="125" y="140" fill="#2563EB">C_p(K)</text>
+                <text x="500" y="140" fill="#0F766E">C_p(L)</text>
+                <text x="125" y="350" fill="#2563EB">C_{p-1}(K)</text>
+                <text x="500" y="350" fill="#0F766E">C_{p-1}(L)</text>
+              </g>
+              <line x1="260" y1="125" x2="455" y2="125" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-chain)"/>
+              <line x1="320" y1="335" x2="455" y2="335" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-chain)"/>
+              <line x1="170" y1="160" x2="170" y2="295" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-chain)"/>
+              <line x1="540" y1="160" x2="540" y2="295" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-chain)"/>
+              <g font-family="Source Sans 3" font-size="30" font-weight="700" fill="#475569">
+                <text x="350" y="96" text-anchor="middle">f_p</text>
+                <text x="390" y="306" text-anchor="middle">f_{p-1}</text>
+                <text x="132" y="235">partial</text>
+                <text x="552" y="235">partial</text>
+              </g>
+              <text x="380" y="438" text-anchor="middle" font-family="JetBrains Mono" font-size="28" fill="#0F766E">D_L F_p = F_{p-1} D_K</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Chain Map</div>
+              <p>A sequence \(f_p:C_p(K)\to C_p(L)\) is a chain map when \(\partial f_p=f_{p-1}\partial\) for every p.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Consequence</h3>
+              <p>Cycles map to cycles, boundaries map to boundaries, and \(f\) induces a well-defined map \(H_p(K)\to H_p(L)\).</p>
+            </div>
+            <div class="badge-row">
+              <span class="badge blue">commuting square</span>
+              <span class="badge">homology functor</span>
+              <span class="badge amber">boundary-compatible</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>structure-preserving maps survive quotienting</span><span>chain level controls homology level</span></div>
+      <aside class="speaker-notes">Explain functoriality as a compatibility rule. A map of complexes induces linear maps on chains, and the square says mapping then taking boundary agrees with taking boundary then mapping. Without this commutation, homology classes would not be transported reliably.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Boundary Matrices">
+      <div class="eyebrow">IV.2 / Matrix reduction begins</div>
+      <h2>Boundary Matrices</h2>
+      <div class="content">
+        <div class="cols left-wide">
+          <div class="visual-card">
+            <svg viewBox="0 0 880 500" role="img" aria-label="Boundary matrices for filled triangle">
+              <rect x="30" y="30" width="820" height="400" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <g transform="translate(70,92)">
+                <polygon points="85,250 245,250 165,85" fill="rgba(15,118,110,0.13)" stroke="#0F766E" stroke-width="6"/>
+                <line x1="85" y1="250" x2="245" y2="250" stroke="#2563EB" stroke-width="7"/>
+                <line x1="245" y1="250" x2="165" y2="85" stroke="#2563EB" stroke-width="7"/>
+                <line x1="165" y1="85" x2="85" y2="250" stroke="#2563EB" stroke-width="7"/>
+                <circle cx="85" cy="250" r="9" fill="#1E3A8A"/><circle cx="245" cy="250" r="9" fill="#1E3A8A"/><circle cx="165" cy="85" r="9" fill="#1E3A8A"/>
+              </g>
+              <g font-family="JetBrains Mono" font-size="24" fill="#111827">
+                <text x="405" y="110">D1 rows v0 v1 v2 / cols e01 e12 e02</text>
+                <text x="405" y="154">[1 0 1]</text>
+                <text x="405" y="190">[1 1 0]</text>
+                <text x="405" y="226">[0 1 1]</text>
+                <text x="405" y="300">D2 rows e01 e12 e02 / col t012</text>
+                <text x="405" y="344">[1]</text>
+                <text x="405" y="380">[1]</text>
+                <text x="405" y="416">[1]</text>
+              </g>
+              <text x="210" y="425" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#1E3A8A">filled triangle complex</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Matrix Convention</div>
+              <p>The p-th boundary matrix \(D_p\) has \((p-1)\)-simplices as rows and p-simplices as columns.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Surface Check</h3>
+              <p><code>D1 @ D2 % 2 == [[0],[0],[0]]</code></p>
+              <div class="badge-row"><span class="badge">true</span><span class="badge blue">three zero rows</span></div>
+            </div>
+            <div class="formula">entry \(D_p[i,j]=1\) iff face \(i\subset\sigma_j\)</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>incidence data becomes linear algebra</span><span>matrix product verifies chain-complex law</span></div>
+      <aside class="speaker-notes">Turn the boundary operator into a board of zeros and ones. Rows name lower-dimensional simplices, columns name higher-dimensional simplices, and a one records incidence. The product check D1 times D2 equals zero is the matrix version of boundary squared zero.</aside>
+    </section>
+
+    <section class="slide" data-label="Reduction Worked Example">
+      <div class="eyebrow">Column operations over \(\mathbb F_2\)</div>
+      <h2>Reduction Worked Example</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="stack">
+            <div class="matrix">circle graph D1
+      e01 e12 e20
+v0    1   0   1
+v1    1   1   0
+v2    0   1   1</div>
+            <div class="matrix">after GF(2) column reduction
+      p1  p2  free
+v0    1   0   0
+v1    0   1   0
+v2    0   0   0</div>
+          </div>
+          <div class="stack">
+            <div class="visual-card">
+              <svg viewBox="0 0 620 330" role="img" aria-label="Circle graph reduction rank">
+                <rect x="28" y="28" width="564" height="250" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+                <circle cx="195" cy="158" r="92" fill="none" stroke="#2563EB" stroke-width="8"/>
+                <circle cx="195" cy="66" r="10" fill="#1E3A8A"/><circle cx="115" cy="204" r="10" fill="#1E3A8A"/><circle cx="275" cy="204" r="10" fill="#1E3A8A"/>
+                <text x="420" y="98" text-anchor="middle" font-family="JetBrains Mono" font-size="27" fill="#111827">rank D1 = 2</text>
+                <text x="420" y="160" text-anchor="middle" font-family="JetBrains Mono" font-size="27" fill="#111827">rank D2 = 0</text>
+                <text x="420" y="222" text-anchor="middle" font-family="JetBrains Mono" font-size="27" fill="#0F766E">beta1 = 1</text>
+              </svg>
+            </div>
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Rank Formula</div>
+              <p>\(\beta_0=3-\operatorname{rank}D_0-\operatorname{rank}D_1=1\), and \(\beta_1=3-\operatorname{rank}D_1-\operatorname{rank}D_2=1\).</p>
+            </div>
+            <div class="badge-row">
+              <span class="badge blue">row/column operations preserve rank</span>
+              <span class="badge">circle: (1,1,0)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>rank survives elementary operations</span><span>one free column = one loop class</span></div>
+      <aside class="speaker-notes">Walk through the small circle example as a rank computation. Column operations over F2 preserve rank, and the reduced D1 matrix has two pivots. With three edges and three vertices, the formula gives one connected component and one independent loop.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Euler-Poincare Tracker">
+      <div class="eyebrow">Alternating counts as a consistency check</div>
+      <h2>Euler-Poincare Tracker</h2>
+      <div class="content">
+        <div class="cols left-wide">
+          <div class="stack">
+            <table class="ledger" aria-label="Euler-Poincare tracker">
+              <thead><tr><th>Complex</th><th>simplex counts \(n_0,n_1,n_2\)</th><th>\(\chi=\sum(-1)^pn_p\)</th><th>Betti check</th></tr></thead>
+              <tbody>
+                <tr><td>interval</td><td>2, 1, 0</td><td>1</td><td>1 - 0 + 0 = 1</td></tr>
+                <tr><td>circle graph</td><td>3, 3, 0</td><td>0</td><td>1 - 1 + 0 = 0</td></tr>
+                <tr><td>filled triangle</td><td>3, 3, 1</td><td>1</td><td>1 - 0 + 0 = 1</td></tr>
+                <tr><td>tetrahedron boundary</td><td>4, 6, 4</td><td>2</td><td>1 - 0 + 1 = 2</td></tr>
+              </tbody>
+            </table>
+            <div class="badge-row">
+              <span class="badge">Euler-Poincare equality true</span>
+              <span class="badge blue">finite-complex audit</span>
+              <span class="badge amber">not a complete invariant</span>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Euler-Poincare</div>
+              <p>For a finite simplicial complex, $$\chi(K)=\sum_{p\ge 0}(-1)^p n_p=\sum_{p\ge 0}(-1)^p\beta_p.$$</p>
+            </div>
+            <div class="visual-card">
+              <svg viewBox="0 0 620 250" role="img" aria-label="Euler-Poincare balance between simplex counts and Betti counts">
+                <defs><marker id="arr-euler" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+                <rect x="28" y="30" width="564" height="176" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+                <rect x="70" y="78" width="150" height="82" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                <rect x="400" y="78" width="150" height="82" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+                <line x1="235" y1="119" x2="382" y2="119" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-euler)"/>
+                <text x="145" y="111" text-anchor="middle" font-family="JetBrains Mono" font-size="25" fill="#2563EB">n0-n1+n2</text>
+                <text x="475" y="111" text-anchor="middle" font-family="JetBrains Mono" font-size="25" fill="#0F766E">b0-b1+b2</text>
+                <text x="310" y="156" text-anchor="middle" font-family="Source Sans 3" font-size="27" font-weight="700" fill="#1E3A8A">same chi</text>
+                <text x="310" y="232" text-anchor="middle" font-family="Source Sans 3" font-size="22" font-weight="700" fill="#64748B">rank cancellation is the bridge</text>
+              </svg>
+            </div>
+            <div class="panel blue">
+              <h3>Why It Works</h3>
+              <p>Cycle and boundary ranks cancel in adjacent dimensions when the alternating sum is expanded.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>same chain complex, two alternating traces</span><span>use after every computed Betti vector</span></div>
+      <aside class="speaker-notes">Use Euler-Poincare as an audit trail. Alternating simplex counts and alternating Betti counts agree because ranks cancel across the chain complex. It is not a complete invariant, but it is an excellent consistency check for a homology computation.</aside>
+    </section>
+
+    <section class="slide" data-label="Relative Homology Of A Pair">
+      <div class="eyebrow">IV.3 / Chains modulo a subcomplex</div>
+      <h2>Relative Homology Of A Pair</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="visual-card">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Relative homology of pair K K0">
+              <defs><marker id="arr-rel" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="32" y="36" width="696" height="392" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <circle cx="225" cy="236" r="130" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="6"/>
+              <path d="M98 236 A127 127 0 0 0 352 236" fill="none" stroke="#B45309" stroke-width="12"/>
+              <path d="M120 170 C165 90 285 90 330 170" fill="none" stroke="#0F766E" stroke-width="9"/>
+              <text x="225" y="398" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#2563EB">K with K0 marked amber</text>
+              <line x1="405" y1="236" x2="505" y2="236" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-rel)"/>
+              <circle cx="610" cy="236" r="130" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="6"/>
+              <path d="M505 236 A105 105 0 0 0 715 236" fill="none" stroke="#CBD5E1" stroke-width="12" stroke-dasharray="14 10"/>
+              <path d="M525 170 C570 96 650 96 695 170" fill="none" stroke="#0F766E" stroke-width="9"/>
+              <text x="610" y="398" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#0F766E">chains in K0 vanish</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Relative Chain Group</div>
+              <p>\(C_p(K,K_0)=C_p(K)/C_p(K_0)\). The same boundary descends because \(K_0\) is a subcomplex.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Relative Cycle</h3>
+              <p>A chain c may satisfy \(\partial c\neq 0\) in K, but become a relative cycle when \(\partial c\) is carried by \(K_0\).</p>
+            </div>
+            <div class="badge-row">
+              <span class="badge blue">relative quotient check true</span>
+              <span class="badge">collapse reference part</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>relative homology measures what remains after K0</span><span>new classes can appear relative to a pair</span></div>
+      <aside class="speaker-notes">Describe relative chains as chains of K with the subcomplex K0 treated as invisible. Boundaries are allowed to land in K0, so a chain that was not an absolute cycle can become a relative cycle. This is the algebra of collapsing the reference part of the space.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Excision As Local Replacement">
+      <div class="eyebrow">Relative computations ignore removable interior clutter</div>
+      <h2>Excision As Local Replacement</h2>
+      <div class="content">
+        <div class="cols right-wide">
+          <div class="stack">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Excision Motif</div>
+              <p>If two pairs keep the same outside data, their relative homology can agree after removing a safely contained part.</p>
+            </div>
+            <div class="panel blue">
+              <h3>Matrix Reading</h3>
+              <p>Order simplices in \(K_0\) first. The lower-right incidence block controls the quotient complex.</p>
+            </div>
+            <div class="badge-row"><span class="badge">relative ranks match</span><span class="badge blue">same complement block</span></div>
+          </div>
+          <div class="visual-card">
+            <svg viewBox="0 0 860 500" role="img" aria-label="Excision as replacing local region while keeping relative block">
+              <defs><marker id="arr-excision" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="30" y="30" width="800" height="400" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <rect x="80" y="105" width="225" height="225" rx="18" fill="rgba(37,99,235,0.07)" stroke="#2563EB" stroke-width="5"/>
+              <circle cx="150" cy="175" r="48" fill="rgba(180,83,9,0.12)" stroke="#B45309" stroke-width="5"/>
+              <path d="M198 300 L278 145 L285 300 Z" fill="rgba(15,118,110,0.14)" stroke="#0F766E" stroke-width="5"/>
+              <text x="192" y="372" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#2563EB">(K,K0)</text>
+              <line x1="335" y1="218" x2="460" y2="218" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-excision)"/>
+              <rect x="515" y="105" width="225" height="225" rx="18" fill="rgba(37,99,235,0.07)" stroke="#2563EB" stroke-width="5"/>
+              <circle cx="585" cy="175" r="48" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="5" stroke-dasharray="12 9"/>
+              <path d="M633 300 L713 145 L720 300 Z" fill="rgba(15,118,110,0.14)" stroke="#0F766E" stroke-width="5"/>
+              <text x="628" y="372" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#0F766E">(L,L0)</text>
+              <text x="430" y="86" text-anchor="middle" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#475569">remove local clutter, keep relative data</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>excision is a local replacement theorem</span><span>relative block carries the answer</span></div>
+      <aside class="speaker-notes">Present excision as permission to replace local clutter without changing the relative answer. Once the same complement is kept, the lower-right incidence block carries the relative computation. The slide's check names that the relative quotient ranks match.</aside>
+    </section>
+
+    <section class="slide" data-label="Exactness: Image Equals Kernel">
+      <div class="eyebrow">IV.3-IV.4 / The image-kernel rule</div>
+      <h2>Exactness: Image Equals Kernel</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="visual-card">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Short exact sequence image equals kernel">
+              <defs><marker id="arr-exact" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="30" y="40" width="700" height="380" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <g font-family="STIX Two Text" font-size="42" font-weight="700" fill="#1E3A8A">
+                <text x="80" y="150">0</text><text x="170" y="150">U</text><text x="330" y="150">V</text><text x="500" y="150">W</text><text x="640" y="150">0</text>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-exact)">
+                <line x1="110" y1="137" x2="150" y2="137"/><line x1="205" y1="137" x2="305" y2="137"/><line x1="365" y1="137" x2="475" y2="137"/><line x1="535" y1="137" x2="620" y2="137"/>
+              </g>
+              <ellipse cx="352" cy="260" rx="155" ry="82" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="5"/>
+              <ellipse cx="292" cy="260" rx="74" ry="45" fill="rgba(15,118,110,0.15)" stroke="#0F766E" stroke-width="5"/>
+              <ellipse cx="414" cy="260" rx="54" ry="45" fill="rgba(180,83,9,0.12)" stroke="#B45309" stroke-width="5"/>
+              <text x="292" y="268" text-anchor="middle" font-family="Source Sans 3" font-size="26" font-weight="700" fill="#0F766E">im f</text>
+              <text x="414" y="268" text-anchor="middle" font-family="Source Sans 3" font-size="26" font-weight="700" fill="#B45309">ker g</text>
+              <text x="355" y="360" text-anchor="middle" font-family="JetBrains Mono" font-size="27" fill="#0F766E">im f = ker g</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Exact At V</div>
+              <p>For \(U\xrightarrow{f}V\xrightarrow{g}W\), exactness at V means \(\operatorname{im}f=\ker g\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Toy Sequence Check</h3>
+              <p><code>rank(im f) == dim(ker g)</code> and <code>g @ f == 0</code>.</p>
+              <div class="badge-row"><span class="badge">im = ker true</span><span class="badge blue">composite zero true</span></div>
+            </div>
+            <div class="panel amber compact">
+              <h3>Common Misread</h3>
+              <p>The condition \(g\circ f=0\) is necessary, but exactness also says all elements killed by g came from f.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>exactness is a local diagnostic at a term</span><span>dies next = born before</span></div>
+      <aside class="speaker-notes">Exactness should sound operational: everything that dies at the next map was born from the previous map. The toy sequence verifies image equals kernel at the middle term. This is stronger than merely saying the composite is zero.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Long Exact Sequence And Connecting Map">
+      <div class="eyebrow">The pair sequence organizes absolute and relative data</div>
+      <h2>Long Exact Sequence And Connecting Map</h2>
+      <div class="content">
+        <div class="cols left-wide">
+          <div class="visual-card">
+            <svg viewBox="0 0 960 500" role="img" aria-label="Long exact sequence of a pair with connecting map">
+              <defs><marker id="arr-les" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="30" y="38" width="900" height="382" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <g font-family="STIX Two Text" font-size="34" font-weight="700" fill="#1E3A8A">
+                <text x="78" y="155">H_p(K0)</text>
+                <text x="285" y="155">H_p(K)</text>
+                <text x="470" y="155">H_p(K,K0)</text>
+                <text x="740" y="155">H_{p-1}(K0)</text>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-les)">
+                <line x1="218" y1="142" x2="263" y2="142"/>
+                <line x1="408" y1="142" x2="452" y2="142"/>
+                <line x1="650" y1="142" x2="715" y2="142"/>
+              </g>
+              <path d="M610 214 C600 318 460 348 352 305" fill="none" stroke="#B45309" stroke-width="6" stroke-dasharray="12 8" marker-end="url(#arr-les)"/>
+              <text x="515" y="348" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#B45309">connecting map D</text>
+              <circle cx="190" cy="295" r="66" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="6"/>
+              <path d="M150 295 C172 235 220 235 240 295" fill="none" stroke="#0F766E" stroke-width="7"/>
+              <path d="M150 295 C172 355 220 355 240 295" fill="none" stroke="#CBD5E1" stroke-width="7" stroke-dasharray="12 9"/>
+              <text x="190" y="395" text-anchor="middle" font-family="Source Sans 3" font-size="25" font-weight="700" fill="#475569">relative cycle boundary lies in K0</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Exact Sequence Of A Pair</div>
+              <p>\(\cdots\to H_p(K_0)\to H_p(K)\to H_p(K,K_0)\xrightarrow{D}H_{p-1}(K_0)\to\cdots\)</p>
+            </div>
+            <div class="panel blue">
+              <h3>Connecting Map</h3>
+              <p>Choose a representative relative cycle c. Its boundary lies in \(K_0\), and \(D[c]=[\partial c]\) one dimension lower.</p>
+            </div>
+            <div class="badge-row"><span class="badge">exact at every station</span><span class="badge amber">connecting map well-defined</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>relative classes reveal absolute boundary data</span><span>exactness constrains all neighboring groups</span></div>
+      <aside class="speaker-notes">Focus on the connecting map as the non-obvious arrow. A relative cycle may have a boundary inside K0, and that boundary becomes a lower-dimensional class in K0. The long exact sequence organizes the absolute and relative groups into one diagnostic line.</aside>
+    </section>
+
+    <section class="slide" data-label="Snake / Mayer-Vietoris Recap">
+      <div class="eyebrow">IV.4 / Exact sequences as divide-and-conquer</div>
+      <h2>Snake / Mayer-Vietoris Recap</h2>
+      <div class="content">
+        <div class="cols">
+          <div class="visual-card">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Mayer-Vietoris union and exact sequence recap">
+              <defs><marker id="arr-mv" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1E3A8A"/></marker></defs>
+              <rect x="30" y="34" width="700" height="392" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="4"/>
+              <circle cx="235" cy="210" r="110" fill="rgba(37,99,235,0.13)" stroke="#2563EB" stroke-width="6"/>
+              <circle cx="355" cy="210" r="110" fill="rgba(15,118,110,0.13)" stroke="#0F766E" stroke-width="6"/>
+              <path d="M295 118 A110 110 0 0 1 295 302 A110 110 0 0 1 295 118" fill="rgba(180,83,9,0.14)" stroke="#B45309" stroke-width="5"/>
+              <text x="185" y="214" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#2563EB">K'</text>
+              <text x="405" y="214" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#0F766E">K''</text>
+              <text x="295" y="214" text-anchor="middle" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#B45309">A</text>
+              <g font-family="STIX Two Text" font-size="29" font-weight="700" fill="#1E3A8A">
+                <text x="90" y="385">H_p(A)</text><text x="240" y="385">H_p(K')+H_p(K'')</text><text x="555" y="385">H_p(K)</text>
+              </g>
+              <line x1="185" y1="374" x2="220" y2="374" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arr-mv)"/>
+              <line x1="495" y1="374" x2="535" y2="374" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arr-mv)"/>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Snake Lemma Pattern</div>
+              <p>A short exact sequence of chain complexes produces a long exact sequence of homology groups with a connecting homomorphism.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Mayer-Vietoris</h3>
+              <p>For \(K=K'\cup K''\) and \(A=K'\cap K''\), exactness accounts for overlap, separate pieces, the union, and the connecting boundary data.</p>
+            </div>
+            <div class="three">
+              <div class="panel blue compact"><h3>Divide</h3><p>Choose two computable pieces.</p></div>
+              <div class="panel teal compact"><h3>Correct</h3><p>Subtract the intersection through exactness.</p></div>
+              <div class="panel amber compact"><h3>Glue</h3><p>Read the union from the sequence.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>the bridge: geometry -> chains -> exactness -> homology</span><span>chapter 04 complete arc</span></div>
+      <aside class="speaker-notes">Close by linking the chapter's two global devices. The snake construction turns short exact sequences of chain complexes into long exact sequences in homology, and Mayer-Vietoris applies this to a union. The final message is divide, compute, and glue through exactness.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

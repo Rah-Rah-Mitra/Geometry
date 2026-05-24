@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="90">
+  <meta name="course_root" content="Computational-Geometry-Algorithms-and-Applications">
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-14">
+  <meta name="chapter_title" content="14 - Quadtrees">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-14-quadtrees/14-quadtrees.ipynb">
+  <meta name="source_span" content="printed pages 307-322; PDF pages 318-333.">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>14 - Quadtrees</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 90,
+  "course_root": "Computational-Geometry-Algorithms-and-Applications",
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-14",
+  "chapter_title": "14 - Quadtrees",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-14-quadtrees/14-quadtrees.ipynb",
+  "source_span": "printed pages 307-322; PDF pages 318-333.",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "title": "Quadtrees: Non-Uniform Mesh Generation",
+    "notes": "Open from the printed circuit board motivation: a solver wants small elements near material boundaries and fewer elements elsewhere. This lecture turns that modeling pressure into a data structure story. The route is quadtree subdivision, balancing, and then a conforming triangular mesh whose pieces have controlled angles."
+  },
+  {
+    "slide": 2,
+    "title": "Mesh Generation Problem",
+    "notes": "Use the domain square as the contract. The mesh must be conforming, must respect component boundaries, must avoid badly shaped triangles, and must place fine detail only where it is needed. Emphasize that these goals compete: respecting input edges alone does not guarantee shape quality, and uniform refinement wastes elements."
+  },
+  {
+    "slide": 3,
+    "title": "Why Uniform Grids Waste Work",
+    "notes": "Compare the two grids with the notebook checks in mind: the toy adaptive subdivision has eight leaf cells, while a same-depth uniform grid would have sixteen. The real chapter example is more dramatic, but the teaching point is the same: resolution should follow geometric detail, not the full bounding square."
+  },
+  {
+    "slide": 4,
+    "title": "Quadtree As Two Synchronized Objects",
+    "notes": "A quadtree is both a rooted four-child tree and a square subdivision. Students should keep these objects synchronized mentally: a tree edge means a geometric split, and a leaf means a square that remains in the subdivision. Algorithms will move between these views constantly."
+  },
+  {
+    "slide": 5,
+    "title": "Quadrant Rule And Boundary Ties",
+    "notes": "The quadrant convention is a small implementation detail that prevents large ambiguity later. Points on splitting lines must be routed deterministically, so every recursive call owns a disjoint subset. The exact less-than and greater-than choices are less important than the fact that they are fixed and used consistently."
+  },
+  {
+    "slide": 6,
+    "title": "Depth Bound",
+    "notes": "The depth argument is a packing argument inside one square. At depth i, a cell has side length s over 2 to the i, so its diagonal is s times square-root two over 2 to the i. If an internal cell still contains two points, that diagonal must be at least the minimum point separation c."
+  },
+  {
+    "slide": 7,
+    "title": "Size And Construction Cost",
+    "notes": "Bound the tree one level at a time. At any fixed depth, internal nodes occupy disjoint cells and each contains at least one input point, so there are at most n internal nodes on that layer. Summing over d plus one layers gives the size and recursive construction cost."
+  },
+  {
+    "slide": 8,
+    "title": "Neighbor Finding",
+    "notes": "Neighbor finding is the first place where the tree view pays for the subdivision view. For a north neighbor, a southern child can cross to its sibling immediately. A northern child must climb until a crossing is possible, then descend on the opposite side if a leaf neighbor is required."
+  },
+  {
+    "slide": 9,
+    "title": "Balanced Quadtree Invariant",
+    "notes": "Balanced means adjacent leaves differ by at most one depth level, or equivalently by at most a factor two in side length. This prevents a large square from having a long side broken into many tiny pieces, which is exactly the situation that makes conforming triangulation awkward."
+  },
+  {
+    "slide": 10,
+    "title": "Balancing Algorithm State",
+    "notes": "Present balancing as a local repair loop. The queue contains leaves that might violate the invariant with some neighbor. Splitting one square can fix a current violation but expose a new one nearby, so the algorithm checks neighbors after each split and pushes newly threatened leaves."
+  },
+  {
+    "slide": 11,
+    "title": "The Linear Blowup Proof",
+    "notes": "The charging proof explains why local repair does not cascade into a superlinear explosion. A newly created split can be charged to one of a constant number of nearby old squares at a comparable scale. The contradiction idea is that the first unchargeable split would have needed an even earlier unchargeable neighbor."
+  },
+  {
+    "slide": 12,
+    "title": "From Points To Polygonal Components",
+    "notes": "For meshing, the stopping rule changes from point occupancy to boundary interaction. A square keeps splitting while it is larger than unit size and its closure intersects a component boundary. This concentrates cells around polygon edges and leaves large calm regions coarse."
+  },
+  {
+    "slide": 13,
+    "title": "Why Diagonals Appear",
+    "notes": "The input restrictions make the final triangulation simple. With integer grid coordinates and component edges at horizontal, vertical, or forty-five degree orientations, any component segment crossing a unit cell runs as an allowed grid edge or diagonal. Those diagonals can become mesh edges rather than obstacles."
+  },
+  {
+    "slide": 14,
+    "title": "Balanced Cells Triangulate Cleanly",
+    "notes": "Once the balanced subdivision is stored in a DCEL, every face has only a small set of boundary configurations. A cell cut by a component diagonal already has its triangulating edge. An ordinary cell gets one diagonal. If side midpoints appear, balancing ensures at most one per side, and a center Steiner point creates only forty-five, forty-five, ninety triangles."
+  },
+  {
+    "slide": 15,
+    "title": "Complexity Pipeline",
+    "notes": "Walk through the bound as a pipeline rather than a theorem recital. Component edges intersect only O of p of S cells at each grid level. There are O log U levels down to unit cells. Balancing preserves asymptotic size, and triangulation adds only a constant number of triangles per balanced cell."
+  },
+  {
+    "slide": 16,
+    "title": "Recap And Extensions",
+    "notes": "Close by naming the algorithmic transformation: adaptive square subdivision becomes useful only after balancing and local triangulation rules. Then place quadtrees in context: compressed quadtrees remove long one-child chains, octrees extend the idea to three dimensions, and related variants support images, range queries, and graphics workloads."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 58px 88px 46px;
+      gap: 16px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(37,99,235,.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px, 72px 72px, auto;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 60px; line-height: 1.04; font-weight: 700; max-width: 1500px; }
+    h2 { font-size: 48px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 28px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 24px; line-height: 1.25; }
+    ul { margin: 0; padding-left: 29px; }
+    li + li { margin-top: 8px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 22px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 7px 12px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 29px; line-height: 1.23; color: var(--slide-muted); max-width: 1350px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 26px; align-items: stretch; }
+    .cols { grid-template-columns: .95fr 1.05fr; }
+    .wide-left { grid-template-columns: 1.12fr .88fr; }
+    .wide-right { grid-template-columns: .86fr 1.14fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 19px 22px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .panel p, .panel li { font-size: 23px; }
+    .math-box { padding: 19px 22px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 20px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 7px; }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.25; }
+    .big-formula { font-family: var(--font-math); font-size: 41px; line-height: 1.22; text-align: center; }
+    .small { font-size: 21px; line-height: 1.2; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 22px; border-top: 1px solid var(--slide-border-light); padding-top: 10px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .route { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+    .route div { border: 1px solid var(--slide-border); border-radius: 8px; padding: 13px 10px; background: #fff; text-align: center; color: var(--slide-accent); font-weight: 700; font-size: 22px; min-height: 72px; display: flex; align-items: center; justify-content: center; }
+    .route .hot { border-color: var(--slide-amber); color: var(--slide-amber); background: #fffbeb; }
+    .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .metric { border: 1px solid var(--slide-border); border-radius: 8px; padding: 15px; background: #fff; text-align: center; }
+    .metric .num { font-size: 36px; font-weight: 700; color: var(--slide-accent); line-height: 1; }
+    .metric .cap { font-size: 21px; color: var(--slide-muted); margin-top: 8px; }
+    .svg-label { font: 700 25px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-tiny { font: 600 16px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 25px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-code { font: 600 18px 'JetBrains Mono', Consolas, monospace; fill: #111827; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Title">
+      <div class="topline"><div class="eyebrow">Computational Geometry Algorithms and Applications</div><div class="badge">Manifest row 90</div></div>
+      <h1>Quadtrees: Non-Uniform Mesh Generation</h1>
+      <p class="lead">Adaptive square subdivision becomes a usable mesh-generation algorithm by adding balance, local neighbor repair, and constant-size triangulation rules.</p>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Lecture Route</h3>
+            <div class="route">
+              <div class="hot">adaptive cells</div><div>tree and subdivision</div><div>balanced leaves</div><div>triangular mesh</div>
+            </div>
+          </div>
+          <div class="panel teal">
+            <h3>Source Grounding</h3>
+            <p>Printed pages 307-322, PDF pages 318-333 in the manifest. Local extraction was verified on physical pages 311-326 for printed pages 307-322.</p>
+          </div>
+          <div class="metric-row">
+            <div class="metric"><div class="num">8</div><div class="cap">toy input points</div></div>
+            <div class="metric"><div class="num">8</div><div class="cap">adaptive leaves</div></div>
+            <div class="metric"><div class="num">16</div><div class="cap">same-depth grid cells</div></div>
+          </div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 820 620" role="img" aria-label="Adaptive quadtree cells beside a sparse triangular mesh">
+            <rect x="55" y="55" width="330" height="330" fill="#f8fafc" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M220 55 V385 M55 220 H385" stroke="#2563eb" stroke-width="4"/>
+            <path d="M55 137.5 H220 M137.5 55 V220 M220 302.5 H385 M302.5 220 V385" stroke="#2563eb" stroke-width="3"/>
+            <path d="M220 261.25 H302.5 M261.25 220 V302.5" stroke="#2563eb" stroke-width="3"/>
+            <g fill="#b45309">
+              <circle cx="101" cy="98" r="8"/><circle cx="158" cy="127" r="8"/><circle cx="128" cy="176" r="8"/><circle cx="248" cy="246" r="8"/>
+              <circle cx="277" cy="273" r="8"/><circle cx="333" cy="254" r="8"/><circle cx="111" cy="314" r="8"/><circle cx="344" cy="347" r="8"/>
+            </g>
+            <text x="55" y="430" class="svg-label">adaptive square subdivision</text>
+            <g transform="translate(455 55)">
+              <rect x="0" y="0" width="300" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+              <path d="M15 285 L70 215 L120 295 L180 210 L265 285 Z" fill="#dbeafe" opacity=".45" stroke="#2563eb" stroke-width="4"/>
+              <path d="M15 285 L70 215 L120 295 M70 215 L180 210 L120 295 M180 210 L265 285 L120 295 M70 215 L110 125 L180 210 M110 125 L210 95 L180 210" fill="none" stroke="#0f766e" stroke-width="4"/>
+              <path d="M110 125 L210 95 L250 150 L180 210" fill="none" stroke="#0f766e" stroke-width="4"/>
+              <g fill="#b45309"><circle cx="70" cy="215" r="7"/><circle cx="120" cy="295" r="7"/><circle cx="180" cy="210" r="7"/><circle cx="110" cy="125" r="7"/><circle cx="210" cy="95" r="7"/><circle cx="250" cy="150" r="7"/></g>
+              <text x="0" y="375" class="svg-label">sparse triangular mesh</text>
+            </g>
+            <path d="M400 220 C430 210 435 210 455 220" fill="none" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow-title)"/>
+            <defs><marker id="arrow-title" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#94a3b8"/></marker></defs>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Chapter 14 - Quadtrees</span><span>HTML source deck with mirrored speaker notes</span></div>
+      <aside class="speaker-notes">Open from the printed circuit board motivation: a solver wants small elements near material boundaries and fewer elements elsewhere. This lecture turns that modeling pressure into a data structure story. The route is quadtree subdivision, balancing, and then a conforming triangular mesh whose pieces have controlled angles.</aside>
+    </section>
+
+    <section class="slide" data-label="Problem">
+      <div class="topline"><div class="eyebrow">Motivation And Contract</div><div class="badge">Printed pages 307-308</div></div>
+      <h2>Mesh Generation Problem</h2>
+      <p class="lead">The board is a square domain with polygonal components; the mesh must support numerical simulation without exploding in size.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 820 610" role="img" aria-label="Square PCB domain with component boundaries and mesh requirements">
+            <rect x="70" y="60" width="500" height="500" fill="#f8fafc" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M145 145 H285 V245 H145 Z" fill="#ccfbf1" stroke="#0f766e" stroke-width="5"/>
+            <path d="M360 125 L495 185 L455 305 L330 260 Z" fill="#fef3c7" stroke="#b45309" stroke-width="5"/>
+            <path d="M170 385 L260 330 L350 390 L315 495 L190 485 Z" fill="#ede9fe" stroke="#6d28d9" stroke-width="5"/>
+            <path d="M70 310 H570 M320 60 V560 M70 185 H570 M70 435 H570 M195 60 V560 M445 60 V560" stroke="#cbd5e1" stroke-width="2"/>
+            <g stroke="#2563eb" stroke-width="3" fill="none" opacity=".75">
+              <path d="M70 60 L195 185 L70 185 M195 60 L195 185 L320 60 M320 185 L445 60 L445 185 L570 60"/>
+              <path d="M70 310 L195 185 L320 310 L445 185 L570 310"/>
+              <path d="M70 435 L195 310 L320 435 L445 310 L570 435"/>
+              <path d="M70 560 L195 435 L320 560 L445 435 L570 560"/>
+            </g>
+            <g class="svg-label">
+              <text x="600" y="135">conforming</text>
+              <text x="600" y="240">respects input</text>
+              <text x="600" y="345">well-shaped</text>
+              <text x="600" y="450">non-uniform</text>
+            </g>
+            <g stroke="#64748b" stroke-width="3" marker-end="url(#arrow-problem)">
+              <path d="M585 130 L510 180"/><path d="M585 235 L455 305"/><path d="M585 340 L445 435"/><path d="M585 445 L290 500"/>
+            </g>
+            <defs><marker id="arrow-problem" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Mesh Goals</div>
+            <ul>
+              <li>Conforming: no triangle edge contains another triangle vertex in its interior.</li>
+              <li>Input-respecting: polygonal component edges are unions of mesh edges.</li>
+              <li>Well-shaped: target triangles have angles in \([45^\circ,90^\circ]\).</li>
+              <li>Non-uniform: refinement follows component boundaries.</li>
+            </ul>
+          </div>
+          <div class="panel amber">
+            <h3>Why Steiner Points Matter</h3>
+            <p>Mesh vertices need not be only input vertices. Extra points allow a mesh to repair shape and conformity while still respecting the domain.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Implementation Substrate</h3>
+            <p>The final mesh is naturally stored as a DCEL: faces are cells or triangles, half-edges support local splits, and component diagonals become explicit edges.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Domain: \([0,U]\times[0,U]\), with \(U=2^j\)</span><span>Finite element quality drives the geometry</span></div>
+      <aside class="speaker-notes">Use the domain square as the contract. The mesh must be conforming, must respect component boundaries, must avoid badly shaped triangles, and must place fine detail only where it is needed. Emphasize that these goals compete: respecting input edges alone does not guarantee shape quality, and uniform refinement wastes elements.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Uniform Waste">
+      <div class="topline"><div class="eyebrow">Uniform Versus Adaptive</div><div class="badge">Notebook check values</div></div>
+      <h2>Why Uniform Grids Waste Work</h2>
+      <p class="lead">Uniform resolution pays the finest-cell price everywhere. A quadtree pays it only where geometry asks for it.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 850 610" role="img" aria-label="Uniform grid compared with adaptive grid">
+            <g transform="translate(60 70)">
+              <rect x="0" y="0" width="300" height="300" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <g stroke="#cbd5e1" stroke-width="3">
+                <path d="M75 0 V300 M150 0 V300 M225 0 V300 M0 75 H300 M0 150 H300 M0 225 H300"/>
+              </g>
+              <path d="M40 55 L100 38 L132 92 L82 140 Z" fill="#fef3c7" stroke="#b45309" stroke-width="4"/>
+              <text x="0" y="355" class="svg-label">uniform: 16 cells</text>
+            </g>
+            <g transform="translate(470 70)">
+              <rect x="0" y="0" width="300" height="300" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M150 0 V300 M0 150 H300" stroke="#2563eb" stroke-width="4"/>
+              <path d="M0 75 H150 M75 0 V150 M150 225 H300 M225 150 V300" stroke="#2563eb" stroke-width="4"/>
+              <path d="M0 37.5 H75 M37.5 0 V75" stroke="#2563eb" stroke-width="3"/>
+              <path d="M40 55 L100 38 L132 92 L82 140 Z" fill="#fef3c7" stroke="#b45309" stroke-width="4"/>
+              <text x="0" y="355" class="svg-label">adaptive: 8 leaves</text>
+            </g>
+            <path d="M385 220 H445" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-waste)"/>
+            <text x="318" y="470" class="svg-label">same finest scale, fewer far-field cells</text>
+            <defs><marker id="arrow-waste" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="metric-row">
+            <div class="metric"><div class="num">8</div><div class="cap">point count</div></div>
+            <div class="metric"><div class="num">8</div><div class="cap">adaptive leaf cells</div></div>
+            <div class="metric"><div class="num">16</div><div class="cap">uniform same-depth cells</div></div>
+          </div>
+          <div class="math-box math-box--example">
+            <div class="math-box-label">Inspection Target</div>
+            <p>Both drawings can resolve the small component. Only the adaptive one allows large cells away from the component.</p>
+          </div>
+          <div class="panel blue">
+            <h3>Core Tradeoff</h3>
+            <p>Adaptive meshes introduce bookkeeping: leaf sizes differ, neighbors are harder to find, and nonconforming boundaries must be repaired.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Visual summary: adaptive leaves fewer than a same-depth uniform grid</span><span>Refinement follows detail</span></div>
+      <aside class="speaker-notes">Compare the two grids with the notebook checks in mind: the toy adaptive subdivision has eight leaf cells, while a same-depth uniform grid would have sixteen. The real chapter example is more dramatic, but the teaching point is the same: resolution should follow geometric detail, not the full bounding square.</aside>
+    </section>
+
+    <section class="slide" data-label="Two Objects">
+      <div class="topline"><div class="eyebrow">Data Structure</div><div class="badge">Tree plus subdivision</div></div>
+      <h2>Quadtree As Two Synchronized Objects</h2>
+      <p class="lead">Every node stores a square; every internal node splits that square into four quadrant children.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 820 610" role="img" aria-label="Four-ary tree synchronized with square subdivision">
+            <g transform="translate(65 60)">
+              <circle cx="170" cy="40" r="24" fill="#dbeafe" stroke="#2563eb" stroke-width="4"/>
+              <g stroke="#64748b" stroke-width="4">
+                <path d="M170 65 L65 150 M170 65 L135 150 M170 65 L205 150 M170 65 L275 150"/>
+                <path d="M65 175 L30 260 M65 175 L65 260 M65 175 L100 260 M65 175 L135 260"/>
+                <path d="M205 175 L170 260 M205 175 L205 260 M205 175 L240 260 M205 175 L275 260"/>
+              </g>
+              <g fill="#f8fafc" stroke="#1e3a8a" stroke-width="4">
+                <circle cx="65" cy="160" r="20"/><circle cx="135" cy="160" r="20"/><circle cx="205" cy="160" r="20"/><circle cx="275" cy="160" r="20"/>
+                <circle cx="30" cy="270" r="17"/><circle cx="65" cy="270" r="17"/><circle cx="100" cy="270" r="17"/><circle cx="135" cy="270" r="17"/>
+                <circle cx="170" cy="270" r="17"/><circle cx="205" cy="270" r="17"/><circle cx="240" cy="270" r="17"/><circle cx="275" cy="270" r="17"/>
+              </g>
+              <text x="8" y="365" class="svg-label">rooted 4-ary tree</text>
+            </g>
+            <g transform="translate(455 70)">
+              <rect x="0" y="0" width="300" height="300" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M150 0 V300 M0 150 H300" stroke="#2563eb" stroke-width="4"/>
+              <path d="M0 75 H150 M75 0 V150 M150 225 H300 M225 150 V300" stroke="#2563eb" stroke-width="4"/>
+              <rect x="0" y="0" width="75" height="75" fill="#dbeafe" opacity=".65"/>
+              <rect x="150" y="150" width="75" height="75" fill="#ccfbf1" opacity=".65"/>
+              <text x="0" y="365" class="svg-label">leaf squares cover the root</text>
+            </g>
+            <path d="M370 215 H430" stroke="#94a3b8" stroke-width="5" marker-end="url(#arrow-sync)"/>
+            <text x="340" y="260" class="svg-small">node split</text>
+            <text x="345" y="287" class="svg-small">= square split</text>
+            <defs><marker id="arrow-sync" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#94a3b8"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Quadtree Node</div>
+            <p>A node \(\nu\) owns a square \(\sigma(\nu)\). If \(\nu\) is internal, its children own the NE, NW, SW, and SE quadrants of \(\sigma(\nu)\).</p>
+          </div>
+          <div class="panel teal">
+            <h3>Leaf Subdivision</h3>
+            <p>The leaves are disjoint in their interiors and exactly cover the initial square, so the tree encodes a planar subdivision.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Storage Choice</h3>
+            <p>Storing each square makes queries simple. Storing only the root square saves memory but forces square coordinates to be recomputed during traversal.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Tree depth becomes geometric resolution</span><span>Leaves become mesh cells later</span></div>
+      <aside class="speaker-notes">A quadtree is both a rooted four-child tree and a square subdivision. Students should keep these objects synchronized mentally: a tree edge means a geometric split, and a leaf means a square that remains in the subdivision. Algorithms will move between these views constantly.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Quadrants">
+      <div class="topline"><div class="eyebrow">Implementation Detail</div><div class="badge">Tie convention</div></div>
+      <h2>Quadrant Rule And Boundary Ties</h2>
+      <p class="lead">A deterministic split rule assigns every point to exactly one recursive child, even on median lines.</p>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Routing Rule</div>
+            <p>For a square midpoint \((m_x,m_y)\), choose one fixed policy for points with \(x=m_x\) or \(y=m_y\). The deck uses east and north ownership for ties.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Why It Matters</h3>
+            <p>Without a tie policy, a point on a split line could be duplicated, dropped, or routed differently by neighboring implementations.</p>
+          </div>
+          <div class="panel blue">
+            <h3>Invariant</h3>
+            <p>Each recursive call receives a disjoint subset, and the union of the four subsets is the parent set.</p>
+          </div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 900 610" role="img" aria-label="Quadrant labels and boundary tie routing">
+            <rect x="130" y="70" width="430" height="430" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M345 70 V500 M130 285 H560" stroke="#2563eb" stroke-width="5"/>
+            <g fill="#eff6ff" stroke="#2563eb" stroke-width="3">
+              <rect x="345" y="70" width="215" height="215"/>
+              <rect x="130" y="70" width="215" height="215"/>
+              <rect x="130" y="285" width="215" height="215"/>
+              <rect x="345" y="285" width="215" height="215"/>
+            </g>
+            <g class="svg-label">
+              <text x="438" y="170">NE</text><text x="218" y="170">NW</text><text x="218" y="395">SW</text><text x="438" y="395">SE</text>
+            </g>
+            <g fill="#b45309">
+              <circle cx="345" cy="205" r="10"/><circle cx="263" cy="285" r="10"/><circle cx="345" cy="285" r="11"/><circle cx="450" cy="285" r="10"/>
+            </g>
+            <g stroke="#b45309" stroke-width="4" marker-end="url(#arrow-ties)">
+              <path d="M345 205 C410 205 430 190 445 175"/>
+              <path d="M263 285 C255 230 235 205 220 190"/>
+              <path d="M345 285 C400 250 418 220 438 188"/>
+            </g>
+            <g class="svg-small">
+              <text x="595" y="165">vertical tie: east child</text>
+              <text x="595" y="210">horizontal tie: north child</text>
+              <text x="595" y="255">center tie: NE child</text>
+              <text x="595" y="340">Any fixed convention works</text>
+              <text x="595" y="370">if used everywhere.</text>
+            </g>
+            <defs><marker id="arrow-ties" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#b45309"/></marker></defs>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Boundary ties are algorithmic choices, not geometry changes</span><span>Determinism makes recursion testable</span></div>
+      <aside class="speaker-notes">The quadrant convention is a small implementation detail that prevents large ambiguity later. Points on splitting lines must be routed deterministically, so every recursive call owns a disjoint subset. The exact less-than and greater-than choices are less important than the fact that they are fixed and used consistently.</aside>
+    </section>
+
+    <section class="slide" data-label="Depth">
+      <div class="topline"><div class="eyebrow">Lemma Lens</div><div class="badge">Printed pages 311-312</div></div>
+      <h2>Depth Bound</h2>
+      <p class="lead">A deep internal cell must still contain two separated points, so its diagonal cannot be smaller than the minimum separation.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 820 610" role="img" aria-label="Nested squares with diagonal shrink bound">
+            <rect x="90" y="70" width="430" height="430" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <rect x="90" y="70" width="215" height="215" fill="#dbeafe" opacity=".25" stroke="#2563eb" stroke-width="4"/>
+            <rect x="197.5" y="177.5" width="107.5" height="107.5" fill="#ccfbf1" opacity=".35" stroke="#0f766e" stroke-width="4"/>
+            <rect x="251.25" y="231.25" width="53.75" height="53.75" fill="#fef3c7" opacity=".7" stroke="#b45309" stroke-width="4"/>
+            <path d="M251.25 231.25 L305 285" stroke="#b45309" stroke-width="5"/>
+            <circle cx="264" cy="248" r="9" fill="#6d28d9"/><circle cx="292" cy="272" r="9" fill="#6d28d9"/>
+            <path d="M264 248 L292 272" stroke="#6d28d9" stroke-width="4"/>
+            <text x="318" y="265" class="svg-math">c</text>
+            <g class="svg-label"><text x="86" y="540">side length \(s/2^i\)</text></g>
+            <g class="svg-small"><text x="330" y="310">cell diagonal</text><text x="330" y="338">bounds all pair distances inside</text></g>
+            <g transform="translate(575 100)">
+              <rect x="0" y="0" width="170" height="170" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+              <path d="M0 0 L170 170" stroke="#b45309" stroke-width="4"/>
+              <text x="0" y="215" class="svg-math">diag = s sqrt(2) / 2^i</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Depth Bound</div>
+            <p class="formula">If \(c\) is the smallest input-point distance and \(s\) is the root side length, then a point quadtree has depth \(O(\log(s/c))\).</p>
+          </div>
+          <div class="math-box math-box--proof">
+            <div class="math-box-label">Proof Sketch</div>
+            <p>An internal node at depth \(i\) contains at least two points. Their distance is at least \(c\), while any two points in the cell are at most the diagonal apart.</p>
+            <p class="big-formula">\(c \le s\sqrt{2}/2^i\)</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Depth depends on geometry, not only on \(n\)</span><span>Close points can force long chains</span></div>
+      <aside class="speaker-notes">The depth argument is a packing argument inside one square. At depth i, a cell has side length s over 2 to the i, so its diagonal is s times square-root two over 2 to the i. If an internal cell still contains two points, that diagonal must be at least the minimum point separation c.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Size">
+      <div class="topline"><div class="eyebrow">Theorem Lens</div><div class="badge">Size and construction</div></div>
+      <h2>Size And Construction Cost</h2>
+      <p class="lead">Even if the tree is geometrically deep, each depth layer has only linearly many internal nodes.</p>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Layer Bound</div>
+            <p class="formula">For \(n\) input points and depth \(d\):</p>
+            <p class="big-formula">\(\#\text{nodes}=O((d+1)n)\)</p>
+            <p class="big-formula">\(\text{construction time}=O((d+1)n)\)</p>
+          </div>
+          <div class="math-box math-box--proof">
+            <div class="math-box-label">Counting Idea</div>
+            <p>At a fixed depth, cells are interior-disjoint. Every internal node has at least one input point in its cell, so at most \(n\) internal nodes appear on that layer.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Why Leaves Follow</h3>
+            <p>Each split replaces one leaf by four children, so leaves and internal nodes differ by only a constant factor.</p>
+          </div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 820 610" role="img" aria-label="Depth layers with at most n occupied internal nodes">
+            <g transform="translate(70 60)">
+              <rect x="0" y="0" width="520" height="420" fill="#fff" stroke="#1e3a8a" stroke-width="4"/>
+              <g stroke="#cbd5e1" stroke-width="2">
+                <path d="M0 105 H520 M0 210 H520 M0 315 H520"/>
+                <path d="M130 0 V420 M260 0 V420 M390 0 V420"/>
+              </g>
+              <g>
+                <rect x="10" y="15" width="105" height="75" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+                <rect x="145" y="15" width="105" height="75" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+                <rect x="285" y="120" width="105" height="75" fill="#ccfbf1" stroke="#0f766e" stroke-width="3"/>
+                <rect x="400" y="225" width="105" height="75" fill="#fef3c7" stroke="#b45309" stroke-width="3"/>
+                <rect x="20" y="330" width="105" height="75" fill="#ede9fe" stroke="#6d28d9" stroke-width="3"/>
+              </g>
+              <g fill="#111827">
+                <circle cx="65" cy="55" r="7"/><circle cx="190" cy="60" r="7"/><circle cx="338" cy="160" r="7"/><circle cx="455" cy="265" r="7"/><circle cx="72" cy="370" r="7"/>
+              </g>
+              <g class="svg-label"><text x="545" y="58">depth 0</text><text x="545" y="163">depth 1</text><text x="545" y="268">depth 2</text><text x="545" y="373">depth d</text></g>
+              <text x="0" y="475" class="svg-label">charge each internal node to a point on its layer</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Layer sum: \((d+1)\) layers times at most \(n\)</span><span>Construction partitions points by quadrants</span></div>
+      <aside class="speaker-notes">Bound the tree one level at a time. At any fixed depth, internal nodes occupy disjoint cells and each contains at least one input point, so there are at most n internal nodes on that layer. Summing over d plus one layers gives the size and recursive construction cost.</aside>
+    </section>
+
+    <section class="slide" data-label="Neighbors">
+      <div class="topline"><div class="eyebrow">Local Navigation</div><div class="badge">Neighbor finding</div></div>
+      <h2>Neighbor Finding</h2>
+      <p class="lead">To find a north neighbor, either cross to a sibling immediately or climb until crossing is possible.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 850 610" role="img" aria-label="North neighbor cases for quadtree nodes">
+            <rect x="70" y="70" width="360" height="360" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M250 70 V430 M70 250 H430" stroke="#2563eb" stroke-width="4"/>
+            <rect x="70" y="250" width="180" height="180" fill="#fef3c7" stroke="#b45309" stroke-width="5"/>
+            <rect x="70" y="70" width="180" height="180" fill="#dbeafe" stroke="#2563eb" stroke-width="5"/>
+            <path d="M160 250 V430 M70 340 H250" stroke="#b45309" stroke-width="3"/>
+            <rect x="70" y="340" width="90" height="90" fill="#fff7ed" stroke="#b45309" stroke-width="5"/>
+            <path d="M115 340 V250" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-neighbor)"/>
+            <text x="92" y="396" class="svg-label">nu</text>
+            <text x="112" y="168" class="svg-label">sibling</text>
+            <g transform="translate(520 70)">
+              <rect x="0" y="0" width="260" height="360" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M130 0 V360 M0 180 H260" stroke="#2563eb" stroke-width="4"/>
+              <rect x="130" y="0" width="130" height="180" fill="#dbeafe" stroke="#2563eb" stroke-width="4"/>
+              <rect x="130" y="180" width="130" height="180" fill="#fef3c7" stroke="#b45309" stroke-width="4"/>
+              <path d="M195 180 C195 110 80 105 80 35" fill="none" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-neighbor)"/>
+              <path d="M80 35 C80 5 145 5 195 30" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-neighbor)"/>
+              <text x="150" y="280" class="svg-label">nu</text>
+              <text x="10" y="410" class="svg-label">climb, cross, then descend</text>
+            </g>
+            <defs><marker id="arrow-neighbor" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">North Neighbor Recipe</div>
+            <ul>
+              <li>If \(\nu\) is a southern child, cross to the corresponding northern sibling.</li>
+              <li>If \(\nu\) is a northern child, recursively find the north neighbor of its parent.</li>
+              <li>If the found node is internal and a leaf is needed, descend through south children.</li>
+            </ul>
+          </div>
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Runtime</div>
+            <p>Each climb reduces depth by one. The search takes \(O(d+1)\) time in a tree of depth \(d\).</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Neighbor queries drive balancing and DCEL construction</span><span>Same idea rotates to east, south, and west</span></div>
+      <aside class="speaker-notes">Neighbor finding is the first place where the tree view pays for the subdivision view. For a north neighbor, a southern child can cross to its sibling immediately. A northern child must climb until a crossing is possible, then descend on the opposite side if a leaf neighbor is required.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Balanced">
+      <div class="topline"><div class="eyebrow">Mesh-Friendly Invariant</div><div class="badge">Balanced quadtree</div></div>
+      <h2>Balanced Quadtree Invariant</h2>
+      <p class="lead">Adjacent leaf squares may differ by at most one depth level, or by a factor two in side length.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 850 610" role="img" aria-label="Unbalanced and balanced quadtree adjacency">
+            <g transform="translate(55 70)">
+              <rect x="0" y="0" width="300" height="300" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M150 0 V300 M0 150 H300" stroke="#2563eb" stroke-width="4"/>
+              <path d="M150 75 H300 M225 0 V150 M225 75 H300 M262.5 0 V75" stroke="#b45309" stroke-width="4"/>
+              <rect x="0" y="0" width="150" height="300" fill="#fef3c7" opacity=".45"/>
+              <text x="0" y="355" class="svg-label">bad: large-small adjacency</text>
+            </g>
+            <g transform="translate(485 70)">
+              <rect x="0" y="0" width="300" height="300" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M150 0 V300 M0 150 H300" stroke="#2563eb" stroke-width="4"/>
+              <path d="M0 75 H150 M75 0 V150 M150 75 H300 M225 0 V150 M150 225 H300 M225 150 V300" stroke="#0f766e" stroke-width="4"/>
+              <path d="M225 75 H300 M262.5 0 V75" stroke="#2563eb" stroke-width="3"/>
+              <text x="0" y="355" class="svg-label">good: factor-two adjacency</text>
+            </g>
+            <g class="svg-small">
+              <text x="310" y="225">repair</text><text x="318" y="252">neighbors</text>
+            </g>
+            <path d="M380 220 H455" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-balance)"/>
+            <defs><marker id="arrow-balance" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Balance</div>
+            <p>For every pair of neighboring leaves \(a,b\):</p>
+            <p class="big-formula">\(|\operatorname{depth}(a)-\operatorname{depth}(b)| \le 1\)</p>
+          </div>
+          <div class="panel teal">
+            <h3>Check Reflected In Notebook</h3>
+            <p>The toy balanced leaves satisfy neighboring depth difference at most one.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Why It Helps</h3>
+            <p>No side has more than one interior subdivision vertex after balancing, so cells can be triangulated with constant local templates.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Balanced cells are the bridge from squares to conforming triangles</span><span>Local invariant, global usability</span></div>
+      <aside class="speaker-notes">Balanced means adjacent leaves differ by at most one depth level, or equivalently by at most a factor two in side length. This prevents a large square from having a long side broken into many tiny pieces, which is exactly the situation that makes conforming triangulation awkward.</aside>
+    </section>
+
+    <section class="slide" data-label="Balancing Queue">
+      <div class="topline"><div class="eyebrow">Algorithm State</div><div class="badge">Queue repair loop</div></div>
+      <h2>Balancing Algorithm State</h2>
+      <p class="lead">Balancing is a queue of local violations: split a leaf, then inspect the neighbors that the split exposed.</p>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="math-box math-box--example">
+            <div class="math-box-label">State Machine</div>
+            <ul>
+              <li>Initialize \(L\) with leaves to inspect.</li>
+              <li>Pop a leaf \(\mu\).</li>
+              <li>If a neighbor is less than half its size, split \(\mu\).</li>
+              <li>Push new leaves and newly threatened neighbors.</li>
+            </ul>
+          </div>
+          <div class="panel blue">
+            <h3>Neighbor-Finding Role</h3>
+            <p>The north, east, south, and west neighbor routines identify whether a smaller or larger adjacent leaf exists.</p>
+          </div>
+          <div class="metric-row">
+            <div class="metric"><div class="num">19</div><div class="cap">checkpoint total</div></div>
+            <div class="metric"><div class="num">4</div><div class="cap">new leaves per split</div></div>
+            <div class="metric"><div class="num">O(d)</div><div class="cap">neighbor query time</div></div>
+          </div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 820 610" role="img" aria-label="Balancing queue and newly exposed neighbors">
+            <g transform="translate(45 70)">
+              <rect x="0" y="0" width="360" height="360" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M180 0 V360 M0 180 H360" stroke="#2563eb" stroke-width="4"/>
+              <path d="M180 90 H360 M270 0 V180" stroke="#2563eb" stroke-width="4"/>
+              <rect x="0" y="180" width="180" height="180" fill="#fef3c7" opacity=".75" stroke="#b45309" stroke-width="5"/>
+              <path d="M90 180 V360 M0 270 H180" stroke="#b45309" stroke-width="5"/>
+              <g fill="#0f766e">
+                <circle cx="90" cy="165" r="9"/><circle cx="185" cy="270" r="9"/><circle cx="90" cy="365" r="9"/><circle cx="-5" cy="270" r="9"/>
+              </g>
+              <text x="20" y="430" class="svg-label">split leaf exposes four sides</text>
+            </g>
+            <g transform="translate(500 80)">
+              <rect x="0" y="0" width="255" height="58" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+              <rect x="0" y="78" width="255" height="58" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+              <rect x="0" y="156" width="255" height="58" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+              <rect x="0" y="234" width="255" height="58" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+              <text x="24" y="38" class="svg-code">pop leaf mu</text>
+              <text x="24" y="116" class="svg-code">find neighbors</text>
+              <text x="24" y="194" class="svg-code">split if needed</text>
+              <text x="24" y="272" class="svg-code">push exposed leaves</text>
+              <path d="M128 58 V78 M128 136 V156 M128 214 V234" stroke="#64748b" stroke-width="4" marker-end="url(#arrow-queue)"/>
+            </g>
+            <defs><marker id="arrow-queue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Local repair can propagate, but only locally per event</span><span>Queue state is algorithm-state-checkpoint friendly</span></div>
+      <aside class="speaker-notes">Present balancing as a local repair loop. The queue contains leaves that might violate the invariant with some neighbor. Splitting one square can fix a current violation but expose a new one nearby, so the algorithm checks neighbors after each split and pushes newly threatened leaves.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Linear Blowup">
+      <div class="topline"><div class="eyebrow">Proof Dashboard</div><div class="badge">Linear blowup</div></div>
+      <h2>The Linear Blowup Proof</h2>
+      <p class="lead">Balancing may propagate, but every new split can be charged to a constant-size neighborhood of old structure.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 850 610" role="img" aria-label="Eight-neighbor charge ledger around a split square">
+            <g transform="translate(95 70)">
+              <rect x="0" y="0" width="420" height="420" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <g stroke="#cbd5e1" stroke-width="3">
+                <path d="M140 0 V420 M280 0 V420 M0 140 H420 M0 280 H420"/>
+              </g>
+              <rect x="140" y="140" width="140" height="140" fill="#fef3c7" stroke="#b45309" stroke-width="6"/>
+              <g fill="#dbeafe" stroke="#2563eb" stroke-width="3">
+                <rect x="0" y="0" width="140" height="140"/><rect x="140" y="0" width="140" height="140"/><rect x="280" y="0" width="140" height="140"/>
+                <rect x="0" y="140" width="140" height="140"/><rect x="280" y="140" width="140" height="140"/>
+                <rect x="0" y="280" width="140" height="140"/><rect x="140" y="280" width="140" height="140"/><rect x="280" y="280" width="140" height="140"/>
+              </g>
+              <text x="178" y="220" class="svg-label">sigma</text>
+              <g class="svg-small">
+                <text x="55" y="75">1</text><text x="198" y="75">2</text><text x="338" y="75">3</text><text x="55" y="218">4</text>
+                <text x="338" y="218">5</text><text x="55" y="358">6</text><text x="198" y="358">7</text><text x="338" y="358">8</text>
+              </g>
+            </g>
+            <g transform="translate(590 115)">
+              <rect x="0" y="0" width="200" height="280" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+              <text x="22" y="45" class="svg-label">charge ledger</text>
+              <text x="22" y="92" class="svg-code">old square</text>
+              <text x="22" y="128" class="svg-code">comparable scale</text>
+              <text x="22" y="164" class="svg-code">one of 8 slots</text>
+              <line x1="25" y1="195" x2="175" y2="195" stroke="#cbd5e1" stroke-width="3"/>
+              <text x="22" y="238" class="svg-code">toy: splits <= 8m</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Balance Size</div>
+            <p>If the original quadtree has \(m\) nodes, its balanced version has \(O(m)\) nodes.</p>
+          </div>
+          <div class="math-box math-box--proof">
+            <div class="math-box-label">Contradiction Idea</div>
+            <p>Assume the first split cannot be charged. The local geometry forces a still-earlier nearby split of comparable size, contradicting the choice of the first unchargeable event.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Computational Check</h3>
+            <p>A toy charge demonstration records split count bounded by \(8m\), matching the constant-neighborhood proof intuition.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Constant neighborhood charges imply linear blowup</span><span>Time adds neighbor-query factors</span></div>
+      <aside class="speaker-notes">The charging proof explains why local repair does not cascade into a superlinear explosion. A newly created split can be charged to one of a constant number of nearby old squares at a comparable scale. The contradiction idea is that the first unchargeable split would have needed an even earlier unchargeable neighbor.</aside>
+    </section>
+
+    <section class="slide" data-label="Polygons">
+      <div class="topline"><div class="eyebrow">From Point Sets To Components</div><div class="badge">Stopping criterion</div></div>
+      <h2>From Points To Polygonal Components</h2>
+      <p class="lead">For mesh generation, split cells near component boundaries until they reach unit size.</p>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Polygon-Edge Stopping Rule</div>
+            <p>Split a square while it is larger than unit size and its closure intersects the boundary of at least one polygonal component.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Effect</h3>
+            <p>Cells close to edges refine. Cells far from input boundaries remain coarse, preserving non-uniformity.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Boundary Check</h3>
+            <p>The generated mesh must contain every component segment as a union of mesh edges after the triangulation step.</p>
+          </div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 900 610" role="img" aria-label="Polygon edges crossing quadtree cells and stopping rule">
+            <rect x="85" y="65" width="520" height="420" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <g stroke="#cbd5e1" stroke-width="2">
+              <path d="M215 65 V485 M345 65 V485 M475 65 V485 M85 170 H605 M85 275 H605 M85 380 H605"/>
+            </g>
+            <g stroke="#2563eb" stroke-width="4">
+              <path d="M85 170 H345 M215 65 V275"/>
+              <path d="M345 222.5 H475 M410 170 V275 M475 327.5 H605 M540 275 V380"/>
+            </g>
+            <path d="M145 390 L235 225 L390 155 L550 330 L430 430 Z" fill="#fef3c7" opacity=".55" stroke="#b45309" stroke-width="6"/>
+            <g fill="#b45309">
+              <circle cx="145" cy="390" r="8"/><circle cx="235" cy="225" r="8"/><circle cx="390" cy="155" r="8"/><circle cx="550" cy="330" r="8"/><circle cx="430" cy="430" r="8"/>
+            </g>
+            <g class="svg-small">
+              <text x="635" y="150">coarse cells</text>
+              <text x="635" y="182">far from boundary</text>
+              <text x="635" y="310">refined cells</text>
+              <text x="635" y="342">near crossing edges</text>
+            </g>
+            <g stroke="#64748b" stroke-width="4" marker-end="url(#arrow-poly)">
+              <path d="M625 155 L515 120"/><path d="M625 315 L470 330"/>
+            </g>
+            <defs><marker id="arrow-poly" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Depth becomes \(O(\log U)\) because splitting stops at unit cells</span><span>Boundary-driven refinement</span></div>
+      <aside class="speaker-notes">For meshing, the stopping rule changes from point occupancy to boundary interaction. A square keeps splitting while it is larger than unit size and its closure intersects a component boundary. This concentrates cells around polygon edges and leaves large calm regions coarse.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Diagonals">
+      <div class="topline"><div class="eyebrow">Allowed Orientations</div><div class="badge">Unit cells</div></div>
+      <h2>Why Diagonals Appear</h2>
+      <p class="lead">The input orientation restriction makes edge-cell intersections behave like grid lines or diagonals inside unit cells.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 850 610" role="img" aria-label="Unit cell with horizontal vertical and diagonal allowed edge orientations">
+            <g transform="translate(100 70)">
+              <rect x="0" y="0" width="420" height="420" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <g stroke="#e2e8f0" stroke-width="2">
+                <path d="M105 0 V420 M210 0 V420 M315 0 V420 M0 105 H420 M0 210 H420 M0 315 H420"/>
+              </g>
+              <path d="M0 210 H420" stroke="#2563eb" stroke-width="7"/>
+              <path d="M210 0 V420" stroke="#0f766e" stroke-width="7"/>
+              <path d="M0 420 L420 0" stroke="#b45309" stroke-width="7"/>
+              <path d="M0 0 L420 420" stroke="#6d28d9" stroke-width="7"/>
+              <g fill="#111827">
+                <circle cx="0" cy="210" r="7"/><circle cx="420" cy="210" r="7"/><circle cx="210" cy="0" r="7"/><circle cx="210" cy="420" r="7"/>
+                <circle cx="0" cy="0" r="7"/><circle cx="420" cy="420" r="7"/><circle cx="0" cy="420" r="7"/><circle cx="420" cy="0" r="7"/>
+              </g>
+            </g>
+            <g transform="translate(595 125)">
+              <rect x="0" y="0" width="200" height="270" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+              <text x="20" y="42" class="svg-label">edge angles</text>
+              <line x1="24" y1="82" x2="80" y2="82" stroke="#2563eb" stroke-width="7"/><text x="100" y="90" class="svg-math">0^\circ</text>
+              <line x1="52" y1="112" x2="52" y2="168" stroke="#0f766e" stroke-width="7"/><text x="100" y="148" class="svg-math">90^\circ</text>
+              <line x1="24" y1="220" x2="80" y2="164" stroke="#b45309" stroke-width="7"/><text x="100" y="196" class="svg-math">45^\circ</text>
+              <line x1="24" y1="240" x2="80" y2="296" stroke="#6d28d9" stroke-width="7"/><text x="100" y="265" class="svg-math">135^\circ</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Unit-Cell Consequence</div>
+            <p>At unit resolution, an allowed component edge cuts a cell as a full side segment or as a cell diagonal. Those cuts are valid mesh edges.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Diagonal Intersections</h3>
+            <p>When a component boundary crosses a square diagonally, the DCEL can insert that diagonal as an edge of the mesh face.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Shape Payoff</h3>
+            <p>A square cut by a diagonal yields two right isosceles triangles with angles \(45^\circ,45^\circ,90^\circ\).</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Orientation restrictions simplify local topology</span><span>Boundary segments can be represented by mesh edges</span></div>
+      <aside class="speaker-notes">The input restrictions make the final triangulation simple. With integer grid coordinates and component edges at horizontal, vertical, or forty-five degree orientations, any component segment crossing a unit cell runs as an allowed grid edge or diagonal. Those diagonals can become mesh edges rather than obstacles.</aside>
+    </section>
+
+    <section class="slide" data-label="Triangulate">
+      <div class="topline"><div class="eyebrow">Local Templates</div><div class="badge">Triangulation cases</div></div>
+      <h2>Balanced Cells Triangulate Cleanly</h2>
+      <p class="lead">After balancing, each cell has only constant local complexity, so a small template set completes the mesh.</p>
+      <div class="content three">
+        <figure class="diagram">
+          <svg viewBox="0 0 520 610" role="img" aria-label="Component diagonal triangulates a square">
+            <rect x="80" y="70" width="340" height="340" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M80 410 L420 70" stroke="#b45309" stroke-width="7"/>
+            <path d="M80 410 L80 70 L420 70 Z" fill="#dbeafe" opacity=".45"/>
+            <path d="M80 410 L420 70 L420 410 Z" fill="#ccfbf1" opacity=".45"/>
+            <text x="80" y="465" class="svg-label">component diagonal</text>
+            <text x="80" y="500" class="svg-small">already a mesh edge</text>
+          </svg>
+        </figure>
+        <figure class="diagram">
+          <svg viewBox="0 0 520 610" role="img" aria-label="Ordinary cell gets one diagonal">
+            <rect x="80" y="70" width="340" height="340" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M80 70 L420 410" stroke="#2563eb" stroke-width="7"/>
+            <path d="M80 70 L420 70 L420 410 Z" fill="#dbeafe" opacity=".45"/>
+            <path d="M80 70 L80 410 L420 410 Z" fill="#ccfbf1" opacity=".45"/>
+            <text x="80" y="465" class="svg-label">ordinary cell</text>
+            <text x="80" y="500" class="svg-small">add either diagonal</text>
+          </svg>
+        </figure>
+        <figure class="diagram">
+          <svg viewBox="0 0 520 610" role="img" aria-label="Cell with side midpoints and center Steiner point">
+            <rect x="80" y="70" width="340" height="340" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+            <g fill="#b45309">
+              <circle cx="250" cy="70" r="8"/><circle cx="420" cy="240" r="8"/><circle cx="250" cy="410" r="8"/><circle cx="80" cy="240" r="8"/>
+            </g>
+            <circle cx="250" cy="240" r="10" fill="#6d28d9"/>
+            <g stroke="#0f766e" stroke-width="5" fill="none">
+              <path d="M250 240 L80 70 L250 70 L420 70 L420 240 L420 410 L250 410 L80 410 L80 240 L80 70"/>
+              <path d="M250 240 L250 70 M250 240 L420 240 M250 240 L250 410 M250 240 L80 240 M250 240 L80 70 M250 240 L420 70 M250 240 L420 410 M250 240 L80 410"/>
+            </g>
+            <text x="80" y="465" class="svg-label">midpoints on sides</text>
+            <text x="80" y="500" class="svg-small">center Steiner point</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="content" style="grid-template-columns: 1fr; flex: 0 0 150px;">
+        <div class="math-box math-box--theorem">
+          <div class="math-box-label">Angle Check</div>
+          <p>Every template uses right isosceles triangles; generated angles are in \(\{45^\circ,45^\circ,90^\circ\}\), up to numeric tolerance in computational checks.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Balance guarantees no side has more than one interior subdivision vertex</span><span>DCEL updates are local</span></div>
+      <aside class="speaker-notes">Once the balanced subdivision is stored in a DCEL, every face has only a small set of boundary configurations. A cell cut by a component diagonal already has its triangulating edge. An ordinary cell gets one diagonal. If side midpoints appear, balancing ensures at most one per side, and a center Steiner point creates only forty-five, forty-five, ninety triangles.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Complexity">
+      <div class="topline"><div class="eyebrow">Complexity Pipeline</div><div class="badge">Mesh size and time</div></div>
+      <h2>Complexity Pipeline</h2>
+      <p class="lead">The construction cost is the product of boundary complexity, depth, and balancing overhead.</p>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Mesh Bound</div>
+            <p class="big-formula">\(\#\text{triangles}=O(p(S)\log U)\)</p>
+            <p class="big-formula">\(\text{construction}=O(p(S)\log^2 U)\)</p>
+          </div>
+          <div class="panel blue">
+            <h3>Pipeline</h3>
+            <ul>
+              <li>At any fixed grid level, component edges intersect \(O(p(S))\) cells.</li>
+              <li>There are \(O(\log U)\) levels before unit cells.</li>
+              <li>Balancing preserves size up to a constant factor.</li>
+              <li>Triangulation adds \(O(1)\) triangles per balanced cell.</li>
+            </ul>
+          </div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 850 610" role="img" aria-label="Complexity pipeline from edge intersections to mesh triangulation">
+            <g transform="translate(45 115)">
+              <rect x="0" y="0" width="170" height="250" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+              <text x="22" y="54" class="svg-label">edge</text><text x="22" y="88" class="svg-label">intersections</text>
+              <text x="30" y="150" class="svg-math">O(p(S))</text><text x="30" y="185" class="svg-small">per level</text>
+            </g>
+            <g transform="translate(245 115)">
+              <rect x="0" y="0" width="170" height="250" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+              <text x="22" y="54" class="svg-label">quadtree</text><text x="22" y="88" class="svg-label">depth</text>
+              <text x="30" y="150" class="svg-math">O(log U)</text><text x="30" y="185" class="svg-small">unit stop</text>
+            </g>
+            <g transform="translate(445 115)">
+              <rect x="0" y="0" width="170" height="250" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+              <text x="22" y="54" class="svg-label">balance</text><text x="22" y="88" class="svg-label">repair</text>
+              <text x="30" y="150" class="svg-math">O(size)</text><text x="30" y="185" class="svg-small">nodes</text>
+            </g>
+            <g transform="translate(645 115)">
+              <rect x="0" y="0" width="170" height="250" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/>
+              <text x="22" y="54" class="svg-label">triangulate</text><text x="22" y="88" class="svg-label">cells</text>
+              <text x="30" y="150" class="svg-math">O(1)</text><text x="30" y="185" class="svg-small">per cell</text>
+            </g>
+            <g stroke="#64748b" stroke-width="5" marker-end="url(#arrow-pipe)">
+              <path d="M220 240 H240"/><path d="M420 240 H440"/><path d="M620 240 H640"/>
+            </g>
+            <text x="120" y="465" class="svg-label">size: O(p(S) log U)</text>
+            <text x="120" y="510" class="svg-label">time: balancing introduces another O(log U) factor</text>
+            <defs><marker id="arrow-pipe" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>\(p(S)\) is the total perimeter of polygonal components</span><span>Constant triangulation per cell preserves asymptotic size</span></div>
+      <aside class="speaker-notes">Walk through the bound as a pipeline rather than a theorem recital. Component edges intersect only O of p of S cells at each grid level. There are O log U levels down to unit cells. Balancing preserves asymptotic size, and triangulation adds only a constant number of triangles per balanced cell.</aside>
+    </section>
+
+    <section class="slide" data-label="Recap">
+      <div class="topline"><div class="eyebrow">Recap And Extensions</div><div class="badge">Printed pages 319-322</div></div>
+      <h2>Recap And Extensions</h2>
+      <p class="lead">The algorithmic arc is simple: adaptive squares become useful after balancing, then templates turn them into a conforming triangular mesh.</p>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 850 610" role="img" aria-label="Pipeline from quadtree to balanced subdivision to mesh and extensions">
+            <g transform="translate(55 95)">
+              <rect x="0" y="0" width="180" height="180" fill="#fff" stroke="#1e3a8a" stroke-width="4"/>
+              <path d="M90 0 V180 M0 90 H180 M0 45 H90 M45 0 V90" stroke="#2563eb" stroke-width="4"/>
+              <text x="0" y="230" class="svg-label">quadtree</text>
+            </g>
+            <g transform="translate(330 95)">
+              <rect x="0" y="0" width="180" height="180" fill="#fff" stroke="#1e3a8a" stroke-width="4"/>
+              <path d="M90 0 V180 M0 90 H180 M0 45 H90 M45 0 V90 M90 45 H180 M135 0 V90 M90 135 H180 M135 90 V180" stroke="#0f766e" stroke-width="4"/>
+              <text x="-18" y="230" class="svg-label">balanced cells</text>
+            </g>
+            <g transform="translate(605 95)">
+              <rect x="0" y="0" width="180" height="180" fill="#fff" stroke="#1e3a8a" stroke-width="4"/>
+              <path d="M0 0 L180 180 M180 0 L0 180 M90 0 V180 M0 90 H180" stroke="#b45309" stroke-width="4"/>
+              <circle cx="90" cy="90" r="7" fill="#6d28d9"/>
+              <text x="10" y="230" class="svg-label">mesh</text>
+            </g>
+            <g stroke="#64748b" stroke-width="5" marker-end="url(#arrow-recap)">
+              <path d="M250 185 H315"/><path d="M525 185 H590"/>
+            </g>
+            <g transform="translate(85 415)">
+              <rect x="0" y="0" width="670" height="90" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+              <text x="24" y="38" class="svg-label">extensions: compressed quadtrees, octrees, range queries, image quadtrees</text>
+              <text x="24" y="70" class="svg-small">same subdivision idea, different stopping rules and query contracts</text>
+            </g>
+            <defs><marker id="arrow-recap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Takeaway</div>
+            <p>Adaptive subdivision saves cells. Balance makes local topology tame. Triangulation templates produce conforming, input-respecting, well-shaped triangles.</p>
+          </div>
+          <div class="panel blue">
+            <h3>Beyond This Chapter</h3>
+            <ul>
+              <li>Compressed quadtrees remove long one-child chains.</li>
+              <li>Octrees generalize subdivision to three dimensions.</li>
+              <li>Image quadtrees split by intensity homogeneity.</li>
+              <li>Range queries use squares as coarse spatial filters.</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>Inspection Checklist</h3>
+            <p>Leaf occupancy/depth, fewer leaves than uniform grid, neighbor depth difference at most one, boundary segments represented, and \(45^\circ,45^\circ,90^\circ\) triangle templates.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Quadtree - balanced subdivision - triangular mesh</span><span>End of Chapter 14</span></div>
+      <aside class="speaker-notes">Close by naming the algorithmic transformation: adaptive square subdivision becomes useful only after balancing and local triangulation rules. Then place quadtrees in context: compressed quadtrees remove long one-child chains, octrees extend the idea to three dimensions, and related variants support images, range queries, and graphics workloads.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

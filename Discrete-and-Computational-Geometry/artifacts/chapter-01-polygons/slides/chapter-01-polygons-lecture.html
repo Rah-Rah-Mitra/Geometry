@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Discrete and Computational Geometry">
+  <meta name="chapter_id" content="chapter-01-polygons">
+  <meta name="notebook_path" content="Discrete-and-Computational-Geometry/chapter-01-polygons/01-polygons.ipynb">
+  <meta name="source_span" content="printed pages 1-37">
+  <meta name="source_pdf" content="Discrete-and-Computational-Geometry/Discrete and Computational Geometry, 2nd Edition.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text">
+  <title>Chapter 1: Polygons</title>
+  <link rel="stylesheet" href="colors_and_type.css">
+  <script src="deck-stage.js"></script>
+  <style>
+    deck-stage:not(:defined) { visibility: hidden; }
+    body { margin: 0; background: #000; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      padding: 76px 96px 64px;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 34px;
+    }
+    .slide.alt { background: linear-gradient(135deg, #f8fafc 0%, #fff 42%, #f0fdfa 100%); }
+    .slide.mesh {
+      background-color: #fff;
+      background-image:
+        linear-gradient(60deg, rgba(37,99,235,.05) 1px, transparent 1px),
+        linear-gradient(120deg, rgba(15,118,110,.045) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .kicker { color: var(--slide-teal); font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    h1, h2 { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 68px; line-height: 1.04; color: var(--slide-accent); }
+    h2 { font-size: 52px; line-height: 1.08; color: var(--slide-ink); }
+    .subtitle { margin-top: 18px; max-width: 1150px; color: var(--slide-muted); font-size: 30px; line-height: 1.42; }
+    .topline { display: flex; align-items: end; justify-content: space-between; gap: 32px; }
+    .folio { color: var(--slide-dimmed); font: 600 22px var(--font-mono); }
+    .content { min-height: 0; display: grid; gap: 34px; align-items: center; }
+    .cols { display: grid; grid-template-columns: 1.02fr .98fr; gap: 56px; align-items: center; }
+    .cols.wide-left { grid-template-columns: 1.18fr .82fr; }
+    .cols.wide-right { grid-template-columns: .82fr 1.18fr; }
+    .stack { display: grid; gap: 24px; }
+    .bullets { margin: 0; padding-left: 30px; color: var(--slide-ink); font-size: 29px; line-height: 1.38; }
+    .bullets li { margin: 11px 0; }
+    .math-box {
+      border-left: 5px solid var(--slide-blue);
+      background: #eff6ff;
+      border-radius: 8px;
+      padding: 24px 28px;
+      font-size: 28px;
+      line-height: 1.36;
+      box-shadow: var(--shadow-sm);
+    }
+    .math-box.theorem { border-color: var(--slide-accent); background: #eef2ff; }
+    .math-box.example { border-color: var(--slide-teal); background: #f0fdfa; }
+    .math-box.warning { border-color: var(--slide-amber); background: #fffbeb; }
+    .box-title { display: block; color: var(--slide-accent); font-weight: 800; font-size: 23px; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 10px; }
+    .formula { font-family: var(--font-math); font-size: 38px; line-height: 1.42; text-align: center; color: var(--slide-ink); }
+    .small-formula { font-family: var(--font-math); font-size: 32px; line-height: 1.35; }
+    .caption { color: var(--slide-dimmed); font-size: 22px; line-height: 1.3; font-weight: 600; }
+    .diagram {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+    svg { width: 100%; height: auto; display: block; }
+    .label { font: 700 24px var(--font-sans); fill: #475569; }
+    .math-label { font: italic 26px var(--font-math); fill: #111827; }
+    .tiny { font: 600 20px var(--font-sans); fill: #64748b; }
+    .node { fill: #fff; stroke: #2563eb; stroke-width: 4; }
+    .edge { stroke: #2563eb; stroke-width: 5; fill: none; stroke-linejoin: round; }
+    .diag { stroke: #0f766e; stroke-width: 4; fill: none; stroke-dasharray: 12 10; }
+    .bad { stroke: #b45309; stroke-width: 5; fill: none; stroke-dasharray: 16 10; }
+    .fill-blue { fill: rgba(37,99,235,.1); stroke: #2563eb; stroke-width: 5; }
+    .fill-teal { fill: rgba(15,118,110,.12); stroke: #0f766e; stroke-width: 5; }
+    .fill-amber { fill: rgba(180,83,9,.13); stroke: #b45309; stroke-width: 5; }
+    .ledger { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .tile { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 22px; background: #fff; }
+    .tile strong { display: block; color: var(--slide-accent); font-size: 44px; line-height: 1; margin-bottom: 10px; }
+    .tile span { color: var(--slide-muted); font-size: 24px; line-height: 1.25; }
+    .ribbon { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .pill { border: 1px solid var(--slide-border); border-radius: 6px; padding: 10px 14px; font-size: 23px; font-weight: 700; color: var(--slide-accent); background: #fff; }
+    .title-grid { grid-template-columns: 1fr 650px; gap: 64px; align-items: center; }
+    .brand { display: flex; gap: 18px; align-items: center; margin-bottom: 22px; }
+    .brand img { width: 54px; height: 54px; }
+  </style>
+</head>
+<body>
+<script id="speaker-notes" type="application/json">[
+  {
+    "slide": 1,
+    "title": "Polygons As Finite Geometry",
+    "notes": "Open with the promise of the chapter: a polygon is simple enough to draw, but rich enough to support algorithms, invariants, and impossibility results. The visual sequence previews the lecture path from inside-outside decisions to triangulations, guards, dissections, and finally the three-dimensional obstruction."
+  },
+  {
+    "slide": 2,
+    "title": "A Polygon Replaces Ambiguous Pictures",
+    "notes": "Stress that the boundary is a finite cyclic list of straight segments. That finite representation lets an algorithm ask crisp questions: is a query on the boundary, inside, or outside; which segments can be used as diagonals; and which vertices can see a point or a triangle."
+  },
+  {
+    "slide": 3,
+    "title": "Ray Crossing Is A Parity Test",
+    "notes": "Use the horizontal ray as a computational version of the Jordan curve intuition. Crossings toggle the state from outside to inside or back again. Boundary and vertex hits require conventions, so the clean statement is: away from the boundary, parity gives a stable inside-outside classifier."
+  },
+  {
+    "slide": 4,
+    "title": "Diagonals Are Interior Chords",
+    "notes": "A diagonal is not just any segment between nonadjacent vertices. It must stay inside the polygon except at its endpoints. This distinction is where nonconvexity first matters: one candidate chord can be legal while another visibly exits the region."
+  },
+  {
+    "slide": 5,
+    "title": "Ears Make Induction Visible",
+    "notes": "The ear theorem turns triangulation from a global mystery into a local removal move. If a vertex has an interior diagonal between its neighbors, that triangle can be clipped away and the remaining boundary is a smaller polygon. Repeating this move produces a triangulation."
+  },
+  {
+    "slide": 6,
+    "title": "Every Triangulation Has The Same Ledger",
+    "notes": "After triangulation, the numerical invariants no longer depend on the particular diagonal choices. The triangle count is n minus 2 and the diagonal count is n minus 3. Present these as a planar graph ledger, not as a property of one drawing."
+  },
+  {
+    "slide": 7,
+    "title": "Euler Explains The Counts",
+    "notes": "Walk through the bookkeeping. There are n boundary edges, d diagonals, and t triangular faces inside the polygon. Counting triangle sides gives 3t equals n plus 2d, and Euler's formula for the disk gives the second equation. Solving yields t equals n minus 2 and d equals n minus 3."
+  },
+  {
+    "slide": 8,
+    "title": "Convex Polygons Reveal Catalan Growth",
+    "notes": "In a convex polygon every noncrossing chord is legal, so the remaining difficulty is combinatorial. Choosing the triangle incident to a marked edge splits the polygon into independent smaller polygons. That split is exactly the Catalan recurrence."
+  },
+  {
+    "slide": 9,
+    "title": "Triangulations As Graphs",
+    "notes": "Shift attention from the geometry of segments to the graph carried by the triangulation. Vertices are polygon corners and edges are boundary edges plus diagonals. This graph is maximal outerplanar, which is why local triangle information controls global guarding arguments."
+  },
+  {
+    "slide": 10,
+    "title": "Fisk Coloring Turns Triangles Into Guards",
+    "notes": "Fisk's proof colors the triangulation graph with three colors so that every triangle receives all three colors. The smallest color class then has at most floor n over 3 vertices, and because every triangle has a vertex of that color, those guards see the whole polygon."
+  },
+  {
+    "slide": 11,
+    "title": "Why The Least Color Class Guards",
+    "notes": "Make the visibility argument geometric. A triangulation partitions the polygon into triangles. A guard placed at a vertex of a triangle sees that triangle because triangles are convex. If every triangle has a selected-color vertex, the union of visible triangles is the whole polygon."
+  },
+  {
+    "slide": 12,
+    "title": "Guard Bounds Change With The Rules",
+    "notes": "The art-gallery theorem is a template, not a single universal number. Orthogonal galleries, exterior fortress guarding, and visibility restrictions change the combinatorial object being covered. The slide is a comparison map: the proof strategy remains triangulate, color, and count, while the bound changes."
+  },
+  {
+    "slide": 13,
+    "title": "Area Is A Complete 2D Dissection Invariant",
+    "notes": "Introduce scissors congruence in the plane as an optimistic result. Polygonal pieces can be cut and rearranged, and equal area is the only obstruction for polygonal regions. The teaching point is that triangulation reduces arbitrary polygons to pieces that can be compared through area-preserving rearrangements."
+  },
+  {
+    "slide": 14,
+    "title": "A Triangle Can Become A Rectangle",
+    "notes": "Use the diagram as a proof roadmap rather than a recipe for physical cutting. A triangle can be decomposed into pieces that reassemble as a rectangle with the same base-height area. Once polygons have been triangulated, this move lets area bookkeeping drive dissection."
+  },
+  {
+    "slide": 15,
+    "title": "Equal Volume Is Not Enough In 3D",
+    "notes": "The three-dimensional story breaks the plane analogy. Tetrahedral dissections preserve volume, but they also preserve an angle-weighted ledger now called a Dehn invariant. Two polyhedra can have equal volume and still fail this second test, so they cannot be scissors congruent."
+  },
+  {
+    "slide": 16,
+    "title": "Chapter 1 Invariants To Reuse",
+    "notes": "Close by naming the reusable mental tools. Parity classifies points, ears drive induction, Euler counts triangulations, Catalan recurrence counts convex choices, three-coloring gives guards, area controls planar dissections, and Dehn-angle data blocks the naive three-dimensional extension."
+  }
+]</script>
+
+<deck-stage width="1920" height="1080">
+  <section data-screen-label="01 Polygons As Finite Geometry">
+    <div class="slide alt">
+      <div class="brand"><img src="icon.svg" alt=""><div><div class="kicker">Discrete and Computational Geometry</div><h1>Polygons As Finite Geometry</h1><div class="subtitle">Chapter 1 turns hand-drawn regions into algorithms, proofs, and invariant ledgers.</div></div></div>
+      <div class="content title-grid">
+        <div class="stack">
+          <div class="math-box theorem"><span class="box-title">Lecture spine</span>Inside-outside parity -> diagonals and ears -> triangulation counts -> Catalan choices -> guards -> dissections.</div>
+          <div class="ribbon"><span class="pill">printed pages 1-37</span><span class="pill">16 slides</span><span class="pill">original SVG visuals</span></div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 620 460" role="img" aria-label="Polygon lecture path">
+            <polygon points="80,310 150,90 315,125 390,245 510,170 560,360 350,390 250,330" class="fill-blue"/>
+            <path d="M150 90 L390 245 M315 125 L250 330 M390 245 L350 390" class="diag"/>
+            <circle cx="210" cy="205" r="18" fill="#0f766e"/><circle cx="465" cy="270" r="18" fill="#6d28d9"/>
+            <path d="M90 420 C180 390 220 395 290 420 S430 448 540 410" fill="none" stroke="#b45309" stroke-width="5"/>
+            <text x="64" y="44" class="label">boundary</text><text x="370" y="118" class="label">diagonals</text><text x="38" y="405" class="label">invariants</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open with the promise of the chapter: a polygon is simple enough to draw, but rich enough to support algorithms, invariants, and impossibility results. The visual sequence previews the lecture path from inside-outside decisions to triangulations, guards, dissections, and finally the three-dimensional obstruction.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="02 A Polygon Replaces Ambiguous Pictures">
+    <div class="slide">
+      <div class="topline"><div><div class="kicker">finite input</div><h2>A Polygon Replaces Ambiguous Pictures</h2></div><div class="folio">02 / 16</div></div>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 820 560">
+            <polygon points="95,370 165,115 330,95 448,190 655,130 725,400 520,465 370,385 230,465" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <g fill="#fff" stroke="#2563eb" stroke-width="5">
+              <circle cx="95" cy="370" r="12"/><circle cx="165" cy="115" r="12"/><circle cx="330" cy="95" r="12"/><circle cx="448" cy="190" r="12"/><circle cx="655" cy="130" r="12"/><circle cx="725" cy="400" r="12"/><circle cx="520" cy="465" r="12"/><circle cx="370" cy="385" r="12"/><circle cx="230" cy="465" r="12"/>
+            </g>
+            <text x="76" y="414" class="math-label">v0</text><text x="145" y="90" class="math-label">v1</text><text x="314" y="70" class="math-label">v2</text><text x="452" y="178" class="math-label">v3</text><text x="650" y="110" class="math-label">v4</text><text x="731" y="414" class="math-label">v5</text>
+            <path d="M88 510 H730" stroke="#cbd5e1" stroke-width="3"/><text x="115" y="540" class="tiny">cyclic vertex list, oriented boundary, straight edges</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="math-box"><span class="box-title">Representation</span>A polygon is an ordered cycle <span class="small-formula">v0, v1, ..., v(n-1)</span> joined by noncrossing line segments.</div>
+          <ul class="bullets">
+            <li>Membership becomes a predicate.</li>
+            <li>Diagonals become segment tests.</li>
+            <li>Visibility becomes triangle coverage.</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="speaker-notes">Stress that the boundary is a finite cyclic list of straight segments. That finite representation lets an algorithm ask crisp questions: is a query on the boundary, inside, or outside; which segments can be used as diagonals; and which vertices can see a point or a triangle.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="03 Ray Crossing Is A Parity Test">
+    <div class="slide mesh">
+      <div class="topline"><div><div class="kicker">inside versus outside</div><h2>Ray Crossing Is A Parity Test</h2></div><div class="folio">03 / 16</div></div>
+      <div class="content cols wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 920 560">
+            <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#64748b"/></marker></defs>
+            <polygon points="95,380 190,100 420,150 510,285 690,170 800,420 540,465 385,340 230,465" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <line x1="300" y1="275" x2="850" y2="275" stroke="#64748b" stroke-width="4" marker-end="url(#arrow)"/>
+            <line x1="88" y1="505" x2="850" y2="505" stroke="#64748b" stroke-width="4" marker-end="url(#arrow)"/>
+            <circle cx="300" cy="275" r="13" fill="#0f766e"/><circle cx="88" cy="505" r="13" fill="#b45309"/>
+            <circle cx="505" cy="275" r="10" fill="#b45309"/><circle cx="735" cy="275" r="10" fill="#b45309"/>
+            <text x="282" y="252" class="label">q</text><text x="68" y="482" class="label">r</text>
+            <text x="545" y="256" class="tiny">2 crossings -> even outside after q-ray endpoint? count past q gives inside state</text>
+            <text x="190" y="536" class="tiny">0 crossings -> outside</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="math-box theorem"><span class="box-title">Parity rule</span>A generic ray from a query point toggles inside/outside at each boundary crossing.</div>
+          <div class="formula">inside(q) iff crossings(q) is odd</div>
+          <div class="caption">Boundary cases are handled first; parity is the stable test away from the boundary.</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the horizontal ray as a computational version of the Jordan curve intuition. Crossings toggle the state from outside to inside or back again. Boundary and vertex hits require conventions, so the clean statement is: away from the boundary, parity gives a stable inside-outside classifier.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="04 Diagonals Are Interior Chords">
+    <div class="slide">
+      <div class="topline"><div><div class="kicker">legal splits</div><h2>Diagonals Are Interior Chords</h2></div><div class="folio">04 / 16</div></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box"><span class="box-title">Definition</span>A diagonal joins two nonadjacent vertices and lies in the polygonal region except at its endpoints.</div>
+          <ul class="bullets">
+            <li>Convex polygons accept every noncrossing vertex chord.</li>
+            <li>Nonconvex polygons require an interior test.</li>
+            <li>A legal diagonal splits one polygon into two smaller polygons.</li>
+          </ul>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 760 560">
+            <polygon points="80,375 165,100 335,120 455,280 650,135 705,415 505,465 380,350 230,455" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <line x1="165" y1="100" x2="380" y2="350" class="diag"/>
+            <line x1="80" y1="375" x2="650" y2="135" class="bad"/>
+            <text x="190" y="205" class="label" fill="#0f766e">legal</text>
+            <text x="455" y="205" class="label" fill="#b45309">exits region</text>
+            <g fill="#fff" stroke="#2563eb" stroke-width="5"><circle cx="165" cy="100" r="11"/><circle cx="380" cy="350" r="11"/><circle cx="80" cy="375" r="11"/><circle cx="650" cy="135" r="11"/></g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">A diagonal is not just any segment between nonadjacent vertices. It must stay inside the polygon except at its endpoints. This distinction is where nonconvexity first matters: one candidate chord can be legal while another visibly exits the region.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="05 Ears Make Induction Visible">
+    <div class="slide alt">
+      <div class="topline"><div><div class="kicker">triangulation engine</div><h2>Ears Make Induction Visible</h2></div><div class="folio">05 / 16</div></div>
+      <div class="content cols wide-right">
+        <div class="diagram">
+          <svg viewBox="0 0 700 560">
+            <polygon points="70,390 155,120 325,110 420,250 610,160 650,410 470,455 330,350 205,460" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <polygon points="70,390 155,120 205,460" class="fill-amber"/>
+            <line x1="155" y1="120" x2="205" y2="460" class="diag"/>
+            <text x="103" y="334" class="label">ear</text>
+            <path d="M210 105 C245 75 288 72 320 101" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#earArrow)"/>
+            <defs><marker id="earArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#0f766e"/></marker></defs>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="math-box theorem"><span class="box-title">Ear move</span>Find a triangle formed by three consecutive boundary vertices whose closing chord is a diagonal. Clip it, then repeat.</div>
+          <div class="ledger">
+            <div class="tile"><strong>1</strong><span>local triangle</span></div>
+            <div class="tile"><strong>n-1</strong><span>smaller polygon</span></div>
+            <div class="tile"><strong>induct</strong><span>same problem</span></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The ear theorem turns triangulation from a global mystery into a local removal move. If a vertex has an interior diagonal between its neighbors, that triangle can be clipped away and the remaining boundary is a smaller polygon. Repeating this move produces a triangulation.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="06 Every Triangulation Has The Same Ledger">
+    <div class="slide">
+      <div class="topline"><div><div class="kicker">invariant counts</div><h2>Every Triangulation Has The Same Ledger</h2></div><div class="folio">06 / 16</div></div>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 800 560">
+            <polygon points="80,380 150,105 320,90 445,180 650,130 720,405 520,470 370,360 225,460" fill="rgba(37,99,235,.07)" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <path d="M150 105 L370 360 M320 90 L370 360 M445 180 L370 360 M650 130 L370 360 M720 405 L370 360 M225 460 L370 360" class="diag"/>
+            <circle cx="370" cy="360" r="16" fill="#0f766e"/>
+            <text x="334" y="340" class="label">fan</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="ledger">
+            <div class="tile"><strong>n</strong><span>vertices and boundary edges</span></div>
+            <div class="tile"><strong>n - 3</strong><span>diagonals in any triangulation</span></div>
+            <div class="tile"><strong>n - 2</strong><span>triangles inside the polygon</span></div>
+          </div>
+          <div class="math-box example"><span class="box-title">For n = 9</span>Any triangulation has 6 diagonals and 7 triangles, even if the diagonals look very different.</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">After triangulation, the numerical invariants no longer depend on the particular diagonal choices. The triangle count is n minus 2 and the diagonal count is n minus 3. Present these as a planar graph ledger, not as a property of one drawing.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="07 Euler Explains The Counts">
+    <div class="slide mesh">
+      <div class="topline"><div><div class="kicker">bookkeeping proof</div><h2>Euler Explains The Counts</h2></div><div class="folio">07 / 16</div></div>
+      <div class="content cols wide-right">
+        <div class="stack">
+          <div class="math-box theorem"><span class="box-title">Two equations</span><div class="small-formula">3t = n + 2d</div><div class="small-formula">n - (n+d) + (t+1) = 2</div></div>
+          <div class="formula">t = n - 2, &nbsp; d = n - 3</div>
+          <div class="caption">The outside face accounts for the +1 in Euler's formula.</div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 760 520">
+            <rect x="70" y="70" width="210" height="120" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="105" y="142" class="label">edge sides</text>
+            <rect x="310" y="70" width="210" height="120" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="355" y="142" class="label">Euler disk</text>
+            <rect x="550" y="70" width="140" height="120" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="588" y="142" class="label">solve</text>
+            <path d="M280 130 H310 M520 130 H550" stroke="#64748b" stroke-width="5"/>
+            <text x="90" y="285" class="math-label">each diagonal counted twice</text>
+            <text x="90" y="340" class="math-label">each boundary edge counted once</text>
+            <text x="90" y="395" class="math-label">one exterior face completes the planar graph</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Walk through the bookkeeping. There are n boundary edges, d diagonals, and t triangular faces inside the polygon. Counting triangle sides gives 3t equals n plus 2d, and Euler's formula for the disk gives the second equation. Solving yields t equals n minus 2 and d equals n minus 3.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="08 Convex Polygons Reveal Catalan Growth">
+    <div class="slide">
+      <div class="topline"><div><div class="kicker">counting choices</div><h2>Convex Polygons Reveal Catalan Growth</h2></div><div class="folio">08 / 16</div></div>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 760 560">
+            <polygon points="380,55 565,125 690,280 635,455 455,520 270,500 105,385 85,205 205,85" fill="rgba(37,99,235,.07)" stroke="#2563eb" stroke-width="6"/>
+            <path d="M85 205 L635 455 M85 205 L455 520 M85 205 L270 500" class="diag"/>
+            <polygon points="85,205 205,85 380,55 565,125 690,280 635,455" fill="rgba(15,118,110,.1)" stroke="#0f766e" stroke-width="4"/>
+            <polygon points="85,205 635,455 455,520 270,500" fill="rgba(109,40,217,.1)" stroke="#6d28d9" stroke-width="4"/>
+            <text x="215" y="270" class="label">left subproblem</text><text x="410" y="470" class="label">right subproblem</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="math-box theorem"><span class="box-title">Catalan recurrence</span><div class="formula">T_n = sum T_{k+1} T_{n-k}</div></div>
+          <ul class="bullets">
+            <li>Mark one boundary edge.</li>
+            <li>Choose the third vertex of its triangle.</li>
+            <li>The remaining choices split independently.</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="speaker-notes">In a convex polygon every noncrossing chord is legal, so the remaining difficulty is combinatorial. Choosing the triangle incident to a marked edge splits the polygon into independent smaller polygons. That split is exactly the Catalan recurrence.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="09 Triangulations As Graphs">
+    <div class="slide alt">
+      <div class="topline"><div><div class="kicker">outerplanar structure</div><h2>Triangulations As Graphs</h2></div><div class="folio">09 / 16</div></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box"><span class="box-title">Graph viewpoint</span>The triangulation graph has the polygon vertices, boundary edges, and diagonals. All vertices lie on the outer face.</div>
+          <div class="math-box example"><span class="box-title">Why it matters</span>Triangle adjacency gives an induction path for coloring, guarding, and local-to-global proofs.</div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 760 560">
+            <polygon points="95,380 165,115 330,95 448,190 655,130 725,400 520,465 370,385 230,465" fill="none" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <path d="M165 115 L370 385 M330 95 L370 385 M448 190 L370 385 M655 130 L370 385 M725 400 L370 385 M230 465 L370 385" class="diag"/>
+            <g fill="#fff" stroke="#1e3a8a" stroke-width="5">
+              <circle cx="95" cy="380" r="13"/><circle cx="165" cy="115" r="13"/><circle cx="330" cy="95" r="13"/><circle cx="448" cy="190" r="13"/><circle cx="655" cy="130" r="13"/><circle cx="725" cy="400" r="13"/><circle cx="520" cy="465" r="13"/><circle cx="370" cy="385" r="13"/><circle cx="230" cy="465" r="13"/>
+            </g>
+            <text x="266" y="535" class="label">maximal outerplanar graph</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Shift attention from the geometry of segments to the graph carried by the triangulation. Vertices are polygon corners and edges are boundary edges plus diagonals. This graph is maximal outerplanar, which is why local triangle information controls global guarding arguments.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="10 Fisk Coloring Turns Triangles Into Guards">
+    <div class="slide">
+      <div class="topline"><div><div class="kicker">art gallery theorem</div><h2>Fisk Coloring Turns Triangles Into Guards</h2></div><div class="folio">10 / 16</div></div>
+      <div class="content cols wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 860 560">
+            <polygon points="90,380 160,110 330,95 450,185 650,135 730,405 525,465 375,360 230,460" fill="rgba(37,99,235,.05)" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <path d="M160 110 L375 360 M330 95 L375 360 M450 185 L375 360 M650 135 L375 360 M730 405 L375 360 M230 460 L375 360" stroke="#94a3b8" stroke-width="4"/>
+            <g stroke="#fff" stroke-width="4">
+              <circle cx="90" cy="380" r="18" fill="#2563eb"/><circle cx="160" cy="110" r="18" fill="#0f766e"/><circle cx="330" cy="95" r="18" fill="#6d28d9"/><circle cx="450" cy="185" r="18" fill="#2563eb"/><circle cx="650" cy="135" r="18" fill="#0f766e"/><circle cx="730" cy="405" r="18" fill="#6d28d9"/><circle cx="525" cy="465" r="18" fill="#2563eb"/><circle cx="375" cy="360" r="18" fill="#0f766e"/><circle cx="230" cy="460" r="18" fill="#6d28d9"/>
+            </g>
+            <text x="128" y="525" class="label">least color class <= floor(n/3)</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="math-box theorem"><span class="box-title">Fisk's strategy</span>Three-color the triangulation so every triangle has one vertex of each color. Choose the smallest color class.</div>
+          <div class="formula">guards <= floor(n / 3)</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Fisk's proof colors the triangulation graph with three colors so that every triangle receives all three colors. The smallest color class then has at most floor n over 3 vertices, and because every triangle has a vertex of that color, those guards see the whole polygon.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="11 Why The Least Color Class Guards">
+    <div class="slide mesh">
+      <div class="topline"><div><div class="kicker">visibility covering</div><h2>Why The Least Color Class Guards</h2></div><div class="folio">11 / 16</div></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box example"><span class="box-title">Triangle visibility</span>A guard at a triangle vertex sees the whole triangle because triangles are convex.</div>
+          <ul class="bullets">
+            <li>Triangulation covers the polygon with closed triangles.</li>
+            <li>Every triangle contains a vertex of the selected color.</li>
+            <li>The selected guards cover the union.</li>
+          </ul>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 760 560">
+            <polygon points="80,380 150,105 320,90 445,180 650,130 720,405 520,470 370,360 225,460" fill="rgba(37,99,235,.05)" stroke="#2563eb" stroke-width="6" stroke-linejoin="round"/>
+            <polygon points="150,105 320,90 370,360" fill="rgba(15,118,110,.14)" stroke="#0f766e" stroke-width="4"/>
+            <polygon points="320,90 445,180 370,360" fill="rgba(15,118,110,.08)" stroke="#0f766e" stroke-width="4"/>
+            <polygon points="445,180 650,130 370,360" fill="rgba(15,118,110,.14)" stroke="#0f766e" stroke-width="4"/>
+            <path d="M370 360 L150 105 M370 360 L320 90 M370 360 L445 180 M370 360 L650 130 M370 360 L720 405 M370 360 L520 470 M370 360 L225 460" stroke="#94a3b8" stroke-width="3"/>
+            <circle cx="370" cy="360" r="22" fill="#0f766e" stroke="#fff" stroke-width="5"/>
+            <text x="392" y="350" class="label">guard</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Make the visibility argument geometric. A triangulation partitions the polygon into triangles. A guard placed at a vertex of a triangle sees that triangle because triangles are convex. If every triangle has a selected-color vertex, the union of visible triangles is the whole polygon.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="12 Guard Bounds Change With The Rules">
+    <div class="slide">
+      <div class="topline"><div><div class="kicker">variants</div><h2>Guard Bounds Change With The Rules</h2></div><div class="folio">12 / 16</div></div>
+      <div class="content">
+        <div class="ledger">
+          <div class="tile"><strong>floor(n/3)</strong><span>general simple polygon, vertex guards</span></div>
+          <div class="tile"><strong>floor(n/4)</strong><span>orthogonal gallery, right-angle structure</span></div>
+          <div class="tile"><strong>ceil(n/2)</strong><span>fortress-style exterior watching</span></div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 1500 430">
+            <polygon points="80,320 130,90 310,80 390,210 560,150 620,330 405,365 250,300" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="5"/>
+            <path d="M130 90 L405 365 M310 80 L405 365 M390 210 L405 365" stroke="#94a3b8" stroke-width="3"/>
+            <text x="155" y="398" class="label">triangulate + color</text>
+            <path d="M760 95 H910 V170 H1015 V325 H830 V260 H760 Z" fill="rgba(15,118,110,.1)" stroke="#0f766e" stroke-width="5"/>
+            <path d="M760 170 H910 M830 260 V325 M910 170 V260 H1015" stroke="#94a3b8" stroke-width="3"/>
+            <text x="765" y="398" class="label">orthogonal structure</text>
+            <polygon points="1190,320 1245,105 1410,130 1460,310 1345,375" fill="none" stroke="#b45309" stroke-width="5"/>
+            <circle cx="1150" cy="260" r="16" fill="#b45309"/><circle cx="1485" cy="235" r="16" fill="#b45309"/><circle cx="1320" cy="80" r="16" fill="#b45309"/>
+            <text x="1196" y="398" class="label">exterior coverage</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">The art-gallery theorem is a template, not a single universal number. Orthogonal galleries, exterior fortress guarding, and visibility restrictions change the combinatorial object being covered. The slide is a comparison map: the proof strategy remains triangulate, color, and count, while the bound changes.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="13 Area Is A Complete 2D Dissection Invariant">
+    <div class="slide alt">
+      <div class="topline"><div><div class="kicker">scissors congruence in the plane</div><h2>Area Is A Complete 2D Dissection Invariant</h2></div><div class="folio">13 / 16</div></div>
+      <div class="content cols">
+        <div class="diagram">
+          <svg viewBox="0 0 760 560">
+            <polygon points="70,415 160,125 325,105 450,245 650,160 705,420 505,470 365,355 225,460" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="5"/>
+            <path d="M160 125 L365 355 M325 105 L365 355 M450 245 L365 355 M650 160 L365 355 M705 420 L365 355 M225 460 L365 355" stroke="#94a3b8" stroke-width="3"/>
+            <path d="M110 505 H650" stroke="#64748b" stroke-width="4"/>
+            <rect x="140" y="460" width="75" height="45" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/><rect x="215" y="435" width="110" height="70" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/><rect x="325" y="470" width="80" height="35" fill="#fffbeb" stroke="#b45309" stroke-width="3"/><rect x="405" y="420" width="150" height="85" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"/>
+            <text x="245" y="535" class="label">same total area ledger</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="math-box theorem"><span class="box-title">Plane result</span>For polygonal regions in the plane, equal area is enough for scissors congruence.</div>
+          <div class="formula">area(P) = area(Q) -> P ~ Q</div>
+          <div class="caption">Triangulation supplies the pieces; area bookkeeping supplies the invariant.</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Introduce scissors congruence in the plane as an optimistic result. Polygonal pieces can be cut and rearranged, and equal area is the only obstruction for polygonal regions. The teaching point is that triangulation reduces arbitrary polygons to pieces that can be compared through area-preserving rearrangements.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="14 A Triangle Can Become A Rectangle">
+    <div class="slide">
+      <div class="topline"><div><div class="kicker">proof move</div><h2>A Triangle Can Become A Rectangle</h2></div><div class="folio">14 / 16</div></div>
+      <div class="content cols wide-left">
+        <div class="diagram">
+          <svg viewBox="0 0 940 560">
+            <polygon points="90,430 430,430 300,110" class="fill-blue"/>
+            <line x1="300" y1="110" x2="300" y2="430" stroke="#b45309" stroke-width="4" stroke-dasharray="10 8"/>
+            <text x="212" y="470" class="label">base b</text><text x="315" y="270" class="label">height h</text>
+            <path d="M485 270 H570" stroke="#64748b" stroke-width="5" marker-end="url(#moveArrow)"/>
+            <defs><marker id="moveArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#64748b"/></marker></defs>
+            <rect x="625" y="270" width="240" height="160" class="fill-teal"/>
+            <path d="M625 350 H865 M745 270 V430" stroke="#fff" stroke-width="4"/>
+            <text x="640" y="470" class="label">rectangle area = b h / 2</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="math-box example"><span class="box-title">Dissection roadmap</span>Reduce polygon -> triangles -> rectangles with equal area -> common rectangle.</div>
+          <div class="formula">A_triangle = (1/2) b h</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the diagram as a proof roadmap rather than a recipe for physical cutting. A triangle can be decomposed into pieces that reassemble as a rectangle with the same base-height area. Once polygons have been triangulated, this move lets area bookkeeping drive dissection.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="15 Equal Volume Is Not Enough In 3D">
+    <div class="slide mesh">
+      <div class="topline"><div><div class="kicker">Dehn obstruction</div><h2>Equal Volume Is Not Enough In 3D</h2></div><div class="folio">15 / 16</div></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box warning"><span class="box-title">3D obstruction</span>Scissors cuts in space preserve more than volume: edge lengths weighted by dihedral angle data also matter.</div>
+          <div class="formula">D(P) = sum l_e \otimes theta_e</div>
+          <div class="caption">Equal volume can coexist with incompatible angle ledgers.</div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 760 560">
+            <polygon points="120,405 320,115 520,415" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="5"/>
+            <path d="M120 405 L430 300 L520 415 M320 115 L430 300" stroke="#2563eb" stroke-width="5" fill="none"/>
+            <path d="M120 405 L520 415" stroke="#0f766e" stroke-width="7"/>
+            <path d="M188 405 A80 80 0 0 1 230 340" fill="none" stroke="#b45309" stroke-width="5"/>
+            <text x="205" y="385" class="math-label">theta</text>
+            <rect x="510" y="80" width="185" height="300" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="540" y="130" class="label">ledger</text>
+            <text x="540" y="190" class="tiny">volume</text><text x="540" y="245" class="tiny">edge lengths</text><text x="540" y="300" class="tiny">dihedral angles</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">The three-dimensional story breaks the plane analogy. Tetrahedral dissections preserve volume, but they also preserve an angle-weighted ledger now called a Dehn invariant. Two polyhedra can have equal volume and still fail this second test, so they cannot be scissors congruent.</aside>
+    </div>
+  </section>
+
+  <section data-screen-label="16 Chapter 1 Invariants To Reuse">
+    <div class="slide alt">
+      <div class="topline"><div><div class="kicker">recap</div><h2>Chapter 1 Invariants To Reuse</h2></div><div class="folio">16 / 16</div></div>
+      <div class="content">
+        <div class="ledger">
+          <div class="tile"><strong>parity</strong><span>inside/outside classification</span></div>
+          <div class="tile"><strong>ears</strong><span>induction and construction</span></div>
+          <div class="tile"><strong>Euler</strong><span>triangles n - 2, diagonals n - 3</span></div>
+        </div>
+        <div class="ledger">
+          <div class="tile"><strong>Catalan</strong><span>convex triangulation growth</span></div>
+          <div class="tile"><strong>3-color</strong><span>guards from smallest color class</span></div>
+          <div class="tile"><strong>Dehn</strong><span>angle data beyond volume</span></div>
+        </div>
+        <div class="math-box theorem"><span class="box-title">Takeaway</span>Computational geometry begins by converting pictures into finite tests and proof ledgers.</div>
+      </div>
+      <aside class="speaker-notes">Close by naming the reusable mental tools. Parity classifies points, ears drive induction, Euler counts triangulations, Catalan recurrence counts convex choices, three-coloring gives guards, area controls planar dissections, and Dehn-angle data blocks the naive three-dimensional extension.</aside>
+    </div>
+  </section>
+</deck-stage>
+</body>
+</html>

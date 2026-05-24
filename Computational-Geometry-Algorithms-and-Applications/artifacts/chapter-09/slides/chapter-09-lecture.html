@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="85">
+  <meta name="course_root" content="Computational-Geometry-Algorithms-and-Applications">
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-09">
+  <meta name="chapter_title" content="09 - Delaunay Triangulations">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-09-delaunay-triangulations/09-delaunay-triangulations.ipynb">
+  <meta name="source_span" content="printed pages 191-218; PDF pages 202-229.">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>09 - Delaunay Triangulations</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 85,
+  "course_root": "Computational-Geometry-Algorithms-and-Applications",
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-09",
+  "chapter_title": "09 - Delaunay Triangulations",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-09-delaunay-triangulations/09-delaunay-triangulations.ipynb",
+  "source_span": "printed pages 191-218; PDF pages 202-229.",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "title": "Manifest And Route: Delaunay Triangulations",
+    "notes": "Open by grounding the lecture in the assigned source span and the chapter notebook. The through-line is not a catalogue of equivalent definitions; it is a conversion from terrain interpolation pressure into a computable planar graph. Preview the sequence: triangulations and flips, Voronoi duality, empty-circle tests, randomized insertion, point location, and the abstract configuration-space analysis."
+  },
+  {
+    "slide": 2,
+    "title": "Terrain Samples To A Polyhedral Surface",
+    "notes": "Use the terrain story only long enough to motivate why a triangulation matters. Heights are known at sample points, so a triangulation chooses which triples define planar facets between samples. The geometric quality of those triangles changes the interpolated surface even when all measured heights are identical at the vertices."
+  },
+  {
+    "slide": 3,
+    "title": "A Bad Flip Can Manufacture A Bad Ridge",
+    "notes": "Focus attention on one quadrilateral. Two diagonal choices interpolate the same four heights, but one diagonal may create long, skinny triangles whose planes connect distant samples across the feature. This is the informal reason the chapter ranks triangulations by angles before it ever names the Delaunay graph."
+  },
+  {
+    "slide": 4,
+    "title": "Triangulation Counts And Local Moves",
+    "notes": "Now formalize the finite object. For n non-collinear points and k points on the convex-hull boundary, every triangulation has the same number of triangles and edges. That invariant makes local edge flips meaningful: flips move through a finite state space without changing the global count."
+  },
+  {
+    "slide": 5,
+    "title": "Angle Vector And Illegal Edge",
+    "notes": "Introduce the angle vector as a lexicographic quality certificate. The illegal-edge definition is local: in a convex quadrilateral, the current diagonal is illegal when replacing it increases the sorted angle vector. Students should see that this is a local move designed to improve the global smallest-angle priority."
+  },
+  {
+    "slide": 6,
+    "title": "In-Circle Predicate",
+    "notes": "The local angle test becomes practical through the in-circle predicate. For an oriented triangle, the sign of a lifted determinant tells whether the fourth point lies inside, on, or outside the circumcircle. The determinant visual is intentionally small; the main message is that legal-edge testing is a robust geometric predicate."
+  },
+  {
+    "slide": 7,
+    "title": "Legal Triangulation Terminates",
+    "notes": "Describe the all-flips procedure as a proof device rather than as the efficient algorithm. Each illegal flip strictly improves the angle vector in a finite set of triangulations, so infinite cycling is impossible. When the process stops, every edge is legal, which will later match the Delaunay condition."
+  },
+  {
+    "slide": 8,
+    "title": "Voronoi Dual Becomes DG(P)",
+    "notes": "Reconnect to Chapter 7. Join two sites when their Voronoi cells share an edge; the resulting straight-line graph is the Delaunay graph. The deck deliberately centers this duality instead of the lower convex hull, because dual Voronoi edges make the empty-circle and adjacency tests visually immediate."
+  },
+  {
+    "slide": 9,
+    "title": "Empty Circle Characterization",
+    "notes": "Present the central certificate. Two sites form a Delaunay edge exactly when some empty circle has both sites on its boundary, and a Delaunay triangle has an empty circumcircle. This is the bridge between Voronoi vertices, legal edge tests, and the randomized construction."
+  },
+  {
+    "slide": 10,
+    "title": "Delaunay Optimizes Angles",
+    "notes": "Tie the quality criterion back to Delaunay structure. Legal triangulations are Delaunay triangulations, and Delaunay triangulations maximize the angle vector among triangulations, up to degeneracies where several triangulations complete the same Delaunay graph. This explains why the data-independent rule improves terrain interpolation."
+  },
+  {
+    "slide": 11,
+    "title": "Randomized Incremental Setup",
+    "notes": "Move from characterization to construction. The randomized algorithm shuffles the points, surrounds them with symbolic sentinel points, and inserts one point at a time into the current Delaunay triangulation. Only the region near the inserted point can change, so the global update becomes a set of local legalizations."
+  },
+  {
+    "slide": 12,
+    "title": "Insert Point: Triangle Case Versus Edge Case",
+    "notes": "Separate the two geometric insertion cases. If the new point lies inside one triangle, replace that triangle by three. If it lies on an existing edge, remove the two adjacent triangles and replace them by four. The following legalization phase is identical in spirit: test the old boundary edges that may now be illegal."
+  },
+  {
+    "slide": 13,
+    "title": "LEGALIZE_EDGE Cascade",
+    "notes": "Paraphrase the recursive procedure without copying pseudocode. When a boundary edge fails the in-circle test, flip it, then test the two newly exposed edges opposite the inserted point. The cascade is finite because each flip is a legalizing move, and it is local because only triangles incident to the changed region need attention."
+  },
+  {
+    "slide": 14,
+    "title": "Correctness: New Edges Are Delaunay",
+    "notes": "Give the correctness proof as a certificate story. Edges from the inserted point to vertices of the containing triangle are supported by circles that can be tightened around the new point. After a flip, the new diagonal is also supported by an empty-circle witness. Therefore the algorithm never creates a fundamentally non-Delaunay new edge."
+  },
+  {
+    "slide": 15,
+    "title": "Point-Location DAG With Sentinels",
+    "notes": "The algorithm still needs to find the triangle containing the next point. The history DAG records replaced triangles and points queries through the replacement children. Sentinels give a stable outer frame, so every real input point is inside the maintained triangulation and the search has a well-defined starting triangle."
+  },
+  {
+    "slide": 16,
+    "title": "Backwards Analysis Dashboard",
+    "notes": "Summarize the expected-time lens. Look backward from a random stage: the last inserted point is equally likely among the r current points, and only features incident to that point disappear when it is removed. Since a planar Delaunay graph has linear complexity, the expected structural change per stage is constant."
+  },
+  {
+    "slide": 17,
+    "title": "Configuration Space And Consequences",
+    "notes": "Close with the starred framework. A configuration space packages the objects that can appear, the small defining set that creates one, and the conflict set that destroys it. Delaunay corners fit this pattern, giving the cost bound for point location history and the final expected O(n log n) construction result."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 58px 88px 46px;
+      gap: 15px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 60px; line-height: 1.04; font-weight: 700; max-width: 1500px; }
+    h2 { font-size: 46px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 28px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 7px; }
+    p, li { font-size: 24px; line-height: 1.25; }
+    ul { margin: 0; padding-left: 28px; }
+    li + li { margin-top: 7px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 22px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 7px 12px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 29px; line-height: 1.23; color: var(--slide-muted); max-width: 1320px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 26px; align-items: stretch; }
+    .cols { grid-template-columns: .95fr 1.05fr; }
+    .wide-left { grid-template-columns: 1.12fr .88fr; }
+    .wide-right { grid-template-columns: .86fr 1.14fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 19px 22px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .panel p, .panel li { font-size: 23px; }
+    .math-box { padding: 20px 23px; border-radius: 8px; }
+    .math-box-label { font-size: 20px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 7px; color: var(--slide-accent); }
+    .formula { font-family: var(--font-math); font-size: 33px; line-height: 1.26; }
+    .big-formula { font-family: var(--font-math); font-size: 40px; line-height: 1.24; text-align: center; }
+    .small { font-size: 21px; line-height: 1.22; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 22px; border-top: 1px solid var(--slide-border-light); padding-top: 11px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .route { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 15px; }
+    .route div { border: 1px solid var(--slide-border); border-radius: 8px; padding: 12px 8px; background: #fff; text-align: center; color: var(--slide-accent); font-weight: 700; font-size: 21px; min-height: 66px; display: flex; align-items: center; justify-content: center; }
+    .route .hot { border-color: var(--slide-amber); color: var(--slide-amber); background: #fffbeb; }
+    .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .metric { border: 1px solid var(--slide-border); border-radius: 8px; padding: 16px; background: #fff; text-align: center; }
+    .metric .num { font-size: 36px; font-weight: 700; color: var(--slide-accent); line-height: 1; }
+    .metric .cap { font-size: 21px; color: var(--slide-muted); margin-top: 8px; }
+    .svg-label { font: 700 25px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 25px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-blue { fill: #2563eb; }
+    .svg-teal { fill: #0f766e; }
+    .svg-amber { fill: #b45309; }
+    .svg-violet { fill: #6d28d9; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Manifest">
+      <div class="topline"><div class="eyebrow">Computational Geometry Algorithms and Applications</div><div class="badge">Manifest row 85</div></div>
+      <h1>Manifest And Route: Delaunay Triangulations</h1>
+      <p class="lead">Source span: printed pages 191-218; PDF pages 202-229. Notebook: Computational-Geometry-Algorithms-and-Applications/chapter-09-delaunay-triangulations/09-delaunay-triangulations.ipynb</p>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Lecture Contract</h3>
+            <p>We want a triangulation that turns scattered height samples into stable piecewise-linear terrain and can be built with local, checkable predicates.</p>
+          </div>
+          <div class="route">
+            <div>terrain</div><div>flips</div><div>legal edges</div><div class="hot">Voronoi dual</div><div>random insert</div><div>analysis</div>
+          </div>
+          <div class="panel teal">
+            <h3>Core Objects</h3>
+            <p>Triangulation, angle vector, in-circle predicate, Delaunay graph \(DG(P)\), history DAG, and configuration space \((X,\Pi,D,K)\).</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Route diagram from point samples to Delaunay triangulation">
+          <svg viewBox="0 0 860 610" role="img">
+            <defs><marker id="arrow1" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="55" y="60" width="750" height="480" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <g fill="#0f766e">
+              <circle cx="160" cy="190" r="10"/><circle cx="230" cy="390" r="10"/><circle cx="335" cy="160" r="10"/><circle cx="430" cy="330" r="10"/><circle cx="560" cy="205" r="10"/><circle cx="650" cy="420" r="10"/>
+            </g>
+            <g stroke="#94a3b8" stroke-width="4">
+              <path d="M160 190 L335 160 L560 205 L650 420 L230 390 L160 190"/>
+              <path d="M335 160 L430 330 L230 390"/>
+              <path d="M335 160 L430 330 L560 205"/>
+              <path d="M430 330 L650 420"/>
+            </g>
+            <circle cx="407" cy="266" r="204" fill="none" stroke="#2563eb" stroke-width="5" stroke-dasharray="12 10"/>
+            <path d="M100 530 C180 460 260 460 340 505 S520 550 740 485" fill="none" stroke="#b45309" stroke-width="7"/>
+            <text x="115" y="125" class="svg-label">sample points</text>
+            <text x="462" y="120" class="svg-label">empty-circle certificates</text>
+            <text x="308" y="568" class="svg-label">piecewise-linear terrain goal</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>chapter-09</span><span>design system: lecture-design-system-2026-05-23</span></div>
+      <aside class="speaker-notes">Open by grounding the lecture in the assigned source span and the chapter notebook. The through-line is not a catalogue of equivalent definitions; it is a conversion from terrain interpolation pressure into a computable planar graph. Preview the sequence: triangulations and flips, Voronoi duality, empty-circle tests, randomized insertion, point location, and the abstract configuration-space analysis.</aside>
+    </section>
+
+    <section class="slide" data-label="Terrain">
+      <div class="topline"><div class="eyebrow">Motivation</div><div class="badge">height interpolation</div></div>
+      <h2>Terrain Samples To A Polyhedral Surface</h2>
+      <p class="lead">A triangulation chooses which measured heights share a planar facet; the same samples can produce very different interpolated surfaces.</p>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Height samples lifted to a polyhedral terrain">
+          <svg viewBox="0 0 860 610" role="img">
+            <defs><marker id="arrow2" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <g transform="translate(70 70)">
+              <path d="M40 390 L560 390 L730 490 L210 490 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+              <g stroke="#cbd5e1" stroke-width="2">
+                <path d="M100 390 L270 490"/><path d="M200 390 L370 490"/><path d="M300 390 L470 490"/><path d="M400 390 L570 490"/><path d="M500 390 L670 490"/>
+                <path d="M125 405 L645 405"/><path d="M155 425 L675 425"/><path d="M185 445 L705 445"/>
+              </g>
+              <g fill="#0f766e"><circle cx="145" cy="360" r="9"/><circle cx="285" cy="318" r="9"/><circle cx="410" cy="270" r="9"/><circle cx="555" cy="340" r="9"/><circle cx="330" cy="430" r="9"/></g>
+              <g stroke="#0f766e" stroke-width="3" stroke-dasharray="8 8"><line x1="145" y1="360" x2="145" y2="405"/><line x1="285" y1="318" x2="285" y2="425"/><line x1="410" y1="270" x2="410" y2="445"/><line x1="555" y1="340" x2="555" y2="433"/><line x1="330" y1="430" x2="330" y2="455"/></g>
+              <path d="M145 360 L285 318 L410 270 L555 340 L330 430 Z" fill="#dbeafe" stroke="#2563eb" stroke-width="5"/>
+              <path d="M145 360 L330 430 L285 318 M285 318 L330 430 L410 270 M410 270 L330 430 L555 340" fill="none" stroke="#1e3a8a" stroke-width="3"/>
+              <text x="70" y="58" class="svg-label">lift samples to measured heights</text>
+              <text x="465" y="535" class="svg-small">base domain in the plane</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Model</h3>
+            <p>A terrain is a height function over a planar domain. With finitely many samples, a triangulation supplies the domains for linear interpolation.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Why Triangles?</h3>
+            <ul>
+              <li>Each facet is determined by three lifted samples.</li>
+              <li>Shared edges keep the interpolated surface continuous.</li>
+              <li>Triangle shape controls which distant heights interact.</li>
+            </ul>
+          </div>
+          <div class="panel slate">
+            <h3>Context Only</h3>
+            <p>The paraboloid/lower-hull viewpoint is useful background, but this lecture centers the planar duality and flip algorithm.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the terrain story only long enough to motivate why a triangulation matters. Heights are known at sample points, so a triangulation chooses which triples define planar facets between samples. The geometric quality of those triangles changes the interpolated surface even when all measured heights are identical at the vertices.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Bad Flip">
+      <div class="topline"><div class="eyebrow">Local Intuition</div><div class="badge">one quadrilateral, two surfaces</div></div>
+      <h2>A Bad Flip Can Manufacture A Bad Ridge</h2>
+      <p class="lead">An edge flip changes only one quadrilateral, but it can force interpolation through long skinny triangles.</p>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Good and bad diagonal in the same quadrilateral">
+          <svg viewBox="0 0 900 610" role="img">
+            <g transform="translate(40 50)">
+              <rect x="20" y="30" width="380" height="470" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+              <polygon points="80,390 165,105 300,125 335,395" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+              <line x1="165" y1="105" x2="335" y2="395" stroke="#0f766e" stroke-width="7"/>
+              <g fill="#111827"><circle cx="80" cy="390" r="9"/><circle cx="165" cy="105" r="9"/><circle cx="300" cy="125" r="9"/><circle cx="335" cy="395" r="9"/></g>
+              <path d="M70 420 C130 310 210 270 350 245" fill="none" stroke="#b45309" stroke-width="6"/>
+              <text x="95" y="70" class="svg-label">ridge-aligned diagonal</text>
+              <text x="105" y="535" class="svg-small">triangles respect the trend</text>
+            </g>
+            <g transform="translate(470 50)">
+              <rect x="20" y="30" width="380" height="470" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+              <polygon points="80,390 165,105 300,125 335,395" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+              <line x1="80" y1="390" x2="300" y2="125" stroke="#b45309" stroke-width="7"/>
+              <g fill="#111827"><circle cx="80" cy="390" r="9"/><circle cx="165" cy="105" r="9"/><circle cx="300" cy="125" r="9"/><circle cx="335" cy="395" r="9"/></g>
+              <path d="M70 420 C160 245 240 430 350 245" fill="none" stroke="#b45309" stroke-width="6"/>
+              <text x="88" y="70" class="svg-label">cross-ridge diagonal</text>
+              <text x="95" y="535" class="svg-small">skinny triangles invent a valley</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel amber">
+            <h3>Failure Mode</h3>
+            <p>A bad diagonal lets a query point be controlled by samples that are geometrically far away across the feature.</p>
+          </div>
+          <div class="panel blue">
+            <h3>Angle Heuristic</h3>
+            <p>Long skinny triangles expose small angles. The chapter turns this visual discomfort into a lexicographic angle objective.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Local Move</h3>
+            <p>Flip one diagonal of a convex quadrilateral. If the local angle vector improves, the old edge was the wrong local choice.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Focus attention on one quadrilateral. Two diagonal choices interpolate the same four heights, but one diagonal may create long, skinny triangles whose planes connect distant samples across the feature. This is the informal reason the chapter ranks triangulations by angles before it ever names the Delaunay graph.</aside>
+    </section>
+
+    <section class="slide" data-label="Counts">
+      <div class="topline"><div class="eyebrow">Triangulations Of Point Sets</div><div class="badge">Euler accounting</div></div>
+      <h2>Triangulation Counts And Local Moves</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Invariant Counts</h3>
+            <p>For \(n\) non-collinear points and \(k\) points on the convex hull boundary:</p>
+            <p class="formula">triangles \(= 2n - 2 - k\)<br>edges \(= 3n - 3 - k\)</p>
+          </div>
+          <div class="metric-row">
+            <div class="metric"><div class="num">finite</div><div class="cap">many triangulations</div></div>
+            <div class="metric"><div class="num">same</div><div class="cap">edge and face counts</div></div>
+            <div class="metric"><div class="num">local</div><div class="cap">diagonal flips</div></div>
+          </div>
+          <div class="panel slate">
+            <p>Flips explore choices without changing the number of triangles; only the local adjacency changes.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Triangulation counts and a diagonal flip">
+          <svg viewBox="0 0 980 610" role="img">
+            <rect x="60" y="55" width="860" height="500" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <polygon points="155,420 210,160 430,95 705,145 815,380 610,505 300,500" fill="#fff" stroke="#111827" stroke-width="4"/>
+            <g stroke="#94a3b8" stroke-width="4">
+              <path d="M155 420 L210 160 L300 500 Z"/><path d="M210 160 L430 95 L300 500 Z"/><path d="M430 95 L610 505 L300 500 Z"/>
+              <path d="M430 95 L705 145 L610 505 Z"/><path d="M705 145 L815 380 L610 505 Z"/><path d="M430 95 L520 300 L610 505"/>
+            </g>
+            <g fill="#0f766e"><circle cx="155" cy="420" r="9"/><circle cx="210" cy="160" r="9"/><circle cx="430" cy="95" r="9"/><circle cx="705" cy="145" r="9"/><circle cx="815" cy="380" r="9"/><circle cx="610" cy="505" r="9"/><circle cx="300" cy="500" r="9"/><circle cx="520" cy="300" r="9"/></g>
+            <g stroke="#b45309" stroke-width="7">
+              <line x1="430" y1="95" x2="610" y2="505"/>
+              <path d="M448 132 C530 210 580 305 594 464" fill="none" marker-end="url(#arrow4)"/>
+            </g>
+            <defs><marker id="arrow4" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#b45309"/></marker></defs>
+            <line x1="705" y1="145" x2="520" y2="300" stroke="#2563eb" stroke-width="7" stroke-dasharray="16 12"/>
+            <text x="122" y="112" class="svg-label">one flip changes one quadrilateral</text>
+            <text x="640" y="95" class="svg-small">hull boundary counted by k</text>
+          </svg>
+        </figure>
+      </div>
+      <aside class="speaker-notes">Now formalize the finite object. For n non-collinear points and k points on the convex-hull boundary, every triangulation has the same number of triangles and edges. That invariant makes local edge flips meaningful: flips move through a finite state space without changing the global count.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Illegal Edge">
+      <div class="topline"><div class="eyebrow">Quality Criterion</div><div class="badge">lexicographic angles</div></div>
+      <h2>Angle Vector And Illegal Edge</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Angle vector and illegal edge in a convex quadrilateral">
+          <svg viewBox="0 0 900 610" role="img">
+            <rect x="65" y="60" width="770" height="490" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <polygon points="160,390 305,140 660,185 740,430" fill="#f8fafc" stroke="#111827" stroke-width="4"/>
+            <line x1="160" y1="390" x2="660" y2="185" stroke="#b45309" stroke-width="8"/>
+            <line x1="305" y1="140" x2="740" y2="430" stroke="#2563eb" stroke-width="6" stroke-dasharray="18 12"/>
+            <g fill="#111827"><circle cx="160" cy="390" r="10"/><circle cx="305" cy="140" r="10"/><circle cx="660" cy="185" r="10"/><circle cx="740" cy="430" r="10"/></g>
+            <path d="M190 380 A55 55 0 0 1 181 332" fill="none" stroke="#b45309" stroke-width="6"/>
+            <path d="M623 201 A55 55 0 0 1 654 239" fill="none" stroke="#b45309" stroke-width="6"/>
+            <text x="140" y="430" class="svg-math">p_i</text><text x="292" y="125" class="svg-math">p_k</text><text x="665" y="170" class="svg-math">p_j</text><text x="750" y="463" class="svg-math">p_l</text>
+            <text x="94" y="95" class="svg-label">current diagonal: test whether it is illegal</text>
+            <text x="300" y="515" class="svg-small">flip if the sorted local angles improve</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Angle Vector</h3>
+            <p>Sort all triangle angles increasingly:</p>
+            <p class="formula">\(A(T)=(\alpha_1,\alpha_2,\ldots,\alpha_{3m})\)</p>
+            <p>Compare triangulations lexicographically.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Illegal Edge</h3>
+            <p>An interior diagonal is illegal when the other diagonal of the same convex quadrilateral gives a larger local angle vector.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Introduce the angle vector as a lexicographic quality certificate. The illegal-edge definition is local: in a convex quadrilateral, the current diagonal is illegal when replacing it increases the sorted angle vector. Students should see that this is a local move designed to improve the global smallest-angle priority.</aside>
+    </section>
+
+    <section class="slide" data-label="In Circle">
+      <div class="topline"><div class="eyebrow">Predicate</div><div class="badge">determinant sign</div></div>
+      <h2>In-Circle Predicate</h2>
+      <p class="lead">A legal-edge test can be reduced to asking whether the opposite point lies inside the circumcircle of the adjacent triangle.</p>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Determinant Sketch</h3>
+            <p class="formula">\[
+\operatorname{InCircle}(a,b,c,d)=
+\det\begin{pmatrix}
+a_x&a_y&a_x^2+a_y^2&1\\
+b_x&b_y&b_x^2+b_y^2&1\\
+c_x&c_y&c_x^2+c_y^2&1\\
+d_x&d_y&d_x^2+d_y^2&1
+\end{pmatrix}
+\]</p>
+          </div>
+          <div class="panel teal">
+            <h3>Use</h3>
+            <p>With a consistent orientation convention, the sign reports inside, on, or outside the circle through three sites.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Numerical Caution</h3>
+            <p>Near cocircular inputs require robust predicates or symbolic tie handling; a wrong sign can flip the wrong edge.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="In-circle test with lifted determinant columns">
+          <svg viewBox="0 0 900 610" role="img">
+            <rect x="70" y="65" width="760" height="485" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <circle cx="430" cy="300" r="175" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="280,390 380,135 585,385" fill="none" stroke="#1e3a8a" stroke-width="5"/>
+            <circle cx="280" cy="390" r="10" fill="#111827"/><circle cx="380" cy="135" r="10" fill="#111827"/><circle cx="585" cy="385" r="10" fill="#111827"/>
+            <circle cx="470" cy="310" r="12" fill="#b45309"/><circle cx="690" cy="240" r="12" fill="#0f766e"/>
+            <text x="248" y="430" class="svg-math">a</text><text x="362" y="120" class="svg-math">b</text><text x="600" y="415" class="svg-math">c</text>
+            <text x="487" y="314" class="svg-label">inside?</text><text x="707" y="244" class="svg-label">outside</text>
+            <g transform="translate(120 95)">
+              <rect x="0" y="0" width="160" height="118" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+              <text x="18" y="33" class="svg-small">x</text><text x="55" y="33" class="svg-small">y</text><text x="91" y="33" class="svg-small">x^2+y^2</text>
+              <line x1="10" y1="47" x2="150" y2="47" stroke="#cbd5e1" stroke-width="2"/>
+              <text x="18" y="82" class="svg-small">rows = points</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <aside class="speaker-notes">The local angle test becomes practical through the in-circle predicate. For an oriented triangle, the sign of a lifted determinant tells whether the fourth point lies inside, on, or outside the circumcircle. The determinant visual is intentionally small; the main message is that legal-edge testing is a robust geometric predicate.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Termination">
+      <div class="topline"><div class="eyebrow">Flip Process</div><div class="badge">finite improvement</div></div>
+      <h2>Legal Triangulation Terminates</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Flip process as monotone path in finite triangulation state graph">
+          <svg viewBox="0 0 900 610" role="img">
+            <defs><marker id="arrow7" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="65" y="65" width="770" height="485" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <g fill="#fff" stroke="#1e3a8a" stroke-width="4">
+              <rect x="130" y="230" width="150" height="100" rx="8"/><rect x="375" y="155" width="150" height="100" rx="8"/><rect x="375" y="365" width="150" height="100" rx="8"/><rect x="625" y="250" width="150" height="100" rx="8"/>
+            </g>
+            <g stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow7)">
+              <path d="M280 260 C320 230 335 210 375 205"/>
+              <path d="M280 310 C335 355 345 405 375 415"/>
+              <path d="M525 205 C585 210 600 235 625 270"/>
+              <path d="M525 415 C585 400 600 350 625 330"/>
+            </g>
+            <g class="svg-label">
+              <text x="171" y="291">T</text><text x="417" y="216">T1</text><text x="417" y="426">T2</text><text x="667" y="312">legal</text>
+            </g>
+            <text x="120" y="105" class="svg-label">each illegal flip increases \(A(T)\)</text>
+            <text x="250" y="515" class="svg-small">finite state graph, no cycles under a strict angle-vector increase</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Algorithmic Idea</h3>
+            <ul>
+              <li>Find an illegal interior edge.</li>
+              <li>Flip it inside its convex quadrilateral.</li>
+              <li>Repeat until every edge is legal.</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>Termination Certificate</h3>
+            <p>The angle vector strictly increases, and only finitely many triangulations of \(P\) exist.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Role In The Chapter</h3>
+            <p>This is too slow as a construction strategy, but it proves that local legality has global force.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Describe the all-flips procedure as a proof device rather than as the efficient algorithm. Each illegal flip strictly improves the angle vector in a finite set of triangulations, so infinite cycling is impossible. When the process stops, every edge is legal, which will later match the Delaunay condition.</aside>
+    </section>
+
+    <section class="slide" data-label="Voronoi Dual">
+      <div class="topline"><div class="eyebrow">Duality</div><div class="badge">from Vor(P) to DG(P)</div></div>
+      <h2>Voronoi Dual Becomes DG(P)</h2>
+      <p class="lead">A Delaunay edge connects two sites whose Voronoi cells share a boundary segment.</p>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Definition</h3>
+            <p>The Delaunay graph \(DG(P)\) is the straight-line dual of the Voronoi diagram: adjacent cells give adjacent sites.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Plane Graph</h3>
+            <p>Voronoi adjacency prevents crossings in the straight-line dual, so \(DG(P)\) is embedded as a planar graph.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Terminology</h3>
+            <p>With no four cocircular points, \(DG(P)\) is already a triangulation. Otherwise its faces may need triangulating.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Voronoi diagram with Delaunay graph overlay">
+          <svg viewBox="0 0 980 610" role="img">
+            <rect x="55" y="55" width="870" height="500" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g stroke="#94a3b8" stroke-width="4">
+              <path d="M70 245 L240 215 L350 80 L560 70 L910 165"/>
+              <path d="M240 215 L300 365 L455 550"/>
+              <path d="M240 215 L455 255 L910 245"/>
+              <path d="M455 255 L540 70"/>
+              <path d="M455 255 L610 405 L890 520"/>
+            </g>
+            <g stroke="#2563eb" stroke-width="5" fill="none">
+              <path d="M170 160 L365 170 L610 160 L555 355 L260 420 L170 160"/>
+              <path d="M365 170 L555 355 L260 420"/>
+              <path d="M365 170 L555 355 L610 160"/>
+            </g>
+            <g fill="#b45309"><circle cx="170" cy="160" r="10"/><circle cx="365" cy="170" r="10"/><circle cx="610" cy="160" r="10"/><circle cx="260" cy="420" r="10"/><circle cx="555" cy="355" r="10"/></g>
+            <g class="svg-label"><text x="130" y="132">p1</text><text x="378" y="160">p2</text><text x="625" y="152">p3</text><text x="225" y="462">p4</text><text x="572" y="360">p5</text></g>
+            <text x="90" y="100" class="svg-small">gray: Voronoi edges</text>
+            <text x="650" y="100" class="svg-small">blue: Delaunay dual</text>
+          </svg>
+        </figure>
+      </div>
+      <aside class="speaker-notes">Reconnect to Chapter 7. Join two sites when their Voronoi cells share an edge; the resulting straight-line graph is the Delaunay graph. The deck deliberately centers this duality instead of the lower convex hull, because dual Voronoi edges make the empty-circle and adjacency tests visually immediate.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Empty Circle">
+      <div class="topline"><div class="eyebrow">Characterization</div><div class="badge">empty-circle witness</div></div>
+      <h2>Empty Circle Characterization</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Empty circles certifying Delaunay edges and triangles">
+          <svg viewBox="0 0 900 610" role="img">
+            <rect x="65" y="65" width="770" height="485" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <circle cx="380" cy="305" r="190" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="245,350 375,120 545,375" fill="none" stroke="#1e3a8a" stroke-width="6"/>
+            <g fill="#b45309"><circle cx="245" cy="350" r="11"/><circle cx="375" cy="120" r="11"/><circle cx="545" cy="375" r="11"/></g>
+            <g fill="#0f766e"><circle cx="660" cy="160" r="9"/><circle cx="165" cy="170" r="9"/><circle cx="650" cy="480" r="9"/><circle cx="280" cy="490" r="9"/></g>
+            <path d="M245 350 L545 375" stroke="#0f766e" stroke-width="8"/>
+            <text x="215" y="395" class="svg-math">p</text><text x="365" y="102" class="svg-math">q</text><text x="560" y="408" class="svg-math">r</text>
+            <text x="105" y="112" class="svg-label">circumcircle contains no other site</text>
+            <text x="455" y="525" class="svg-small">edge \(pr\) and triangle \(pqr\) are certified</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Edge Certificate</h3>
+            <p>Two sites \(p_i,p_j\) are adjacent in \(DG(P)\) iff some circle through both has no site of \(P\) in its interior.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Triangle Certificate</h3>
+            <p>A triangle belongs to a Delaunay triangulation when its circumcircle is empty, subject to completing degenerate faces consistently.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Degenerate Case</h3>
+            <p>Four cocircular sites can give a Delaunay face with more than three sides; multiple legal completions may exist.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Present the central certificate. Two sites form a Delaunay edge exactly when some empty circle has both sites on its boundary, and a Delaunay triangle has an empty circumcircle. This is the bridge between Voronoi vertices, legal edge tests, and the randomized construction.</aside>
+    </section>
+
+    <section class="slide" data-label="Angle Optimal">
+      <div class="topline"><div class="eyebrow">Optimality</div><div class="badge">legal equals Delaunay</div></div>
+      <h2>Delaunay Optimizes Angles</h2>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Implication Chain</h3>
+            <p class="big-formula">legal edges \(\Rightarrow\) Delaunay triangulation \(\Rightarrow\) angle-vector optimum</p>
+          </div>
+          <div class="panel teal">
+            <h3>Why It Matters</h3>
+            <p>The rule is data-independent: it uses point positions only, yet it avoids the skinny triangles that create unstable interpolation.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Limits</h3>
+            <p>Delaunay does not solve every meshing or terrain-quality objective, but it is a strong default with local certificates.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Angle distributions before and after Delaunay legalization">
+          <svg viewBox="0 0 900 610" role="img">
+            <rect x="75" y="75" width="760" height="455" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="145" y1="460" x2="760" y2="460" stroke="#111827" stroke-width="4"/>
+            <line x1="145" y1="150" x2="145" y2="460" stroke="#111827" stroke-width="4"/>
+            <g fill="#fef3c7" stroke="#b45309" stroke-width="3">
+              <rect x="190" y="230" width="46" height="230"/><rect x="250" y="310" width="46" height="150"/><rect x="310" y="355" width="46" height="105"/><rect x="370" y="390" width="46" height="70"/>
+            </g>
+            <g fill="#dbeafe" stroke="#2563eb" stroke-width="3">
+              <rect x="500" y="385" width="46" height="75"/><rect x="560" y="330" width="46" height="130"/><rect x="620" y="285" width="46" height="175"/><rect x="680" y="250" width="46" height="210"/>
+            </g>
+            <text x="190" y="505" class="svg-small">skinny</text><text x="558" y="505" class="svg-small">larger small angles</text>
+            <text x="125" y="125" class="svg-label">sorted angle vector shifts right</text>
+            <path d="M430 315 C470 290 485 285 520 310" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow10)"/>
+            <defs><marker id="arrow10" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+          </svg>
+        </figure>
+      </div>
+      <aside class="speaker-notes">Tie the quality criterion back to Delaunay structure. Legal triangulations are Delaunay triangulations, and Delaunay triangulations maximize the angle vector among triangulations, up to degeneracies where several triangulations complete the same Delaunay graph. This explains why the data-independent rule improves terrain interpolation.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Random Setup">
+      <div class="topline"><div class="eyebrow">Construction</div><div class="badge">randomized incremental</div></div>
+      <h2>Randomized Incremental Setup</h2>
+      <p class="lead">Insert points in random order, maintain a Delaunay triangulation of the prefix, and repair only the local damage.</p>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Random insertion order with sentinels">
+          <svg viewBox="0 0 900 610" role="img">
+            <defs><marker id="arrow11" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="70" y="75" width="760" height="455" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <polygon points="110,495 445,95 800,500" fill="#f8fafc" stroke="#94a3b8" stroke-width="5"/>
+            <g fill="#6d28d9"><circle cx="110" cy="495" r="12"/><circle cx="445" cy="95" r="12"/><circle cx="800" cy="500" r="12"/></g>
+            <g fill="#0f766e"><circle cx="300" cy="250" r="10"/><circle cx="560" cy="210" r="10"/><circle cx="450" cy="360" r="10"/><circle cx="245" cy="420" r="10"/><circle cx="635" cy="420" r="10"/></g>
+            <g stroke="#2563eb" stroke-width="4">
+              <path d="M110 495 L300 250 L445 95 L560 210 L800 500"/>
+              <path d="M300 250 L450 360 L560 210"/>
+              <path d="M110 495 L245 420 L450 360 L635 420 L800 500"/>
+              <path d="M300 250 L245 420 M450 360 L635 420 M560 210 L635 420"/>
+            </g>
+            <path d="M185 570 H725" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow11)"/>
+            <g class="svg-label"><text x="185" y="555">p3</text><text x="300" y="555">p1</text><text x="415" y="555">p5</text><text x="530" y="555">p2</text><text x="645" y="555">p4</text></g>
+            <text x="120" y="125" class="svg-small">sentinels create an enclosing start triangle</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>State At Stage r</h3>
+            <p>A Delaunay triangulation of the inserted prefix plus symbolic outer points.</p>
+          </div>
+          <div class="panel teal">
+            <h3>One Insertion</h3>
+            <ul>
+              <li>Locate the containing triangle or edge.</li>
+              <li>Connect the new point to local boundary vertices.</li>
+              <li>Legalize exposed edges recursively.</li>
+            </ul>
+          </div>
+          <div class="panel violet">
+            <h3>Why Random?</h3>
+            <p>The random order makes backwards analysis possible and bounds expected structural change.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Move from characterization to construction. The randomized algorithm shuffles the points, surrounds them with symbolic sentinel points, and inserts one point at a time into the current Delaunay triangulation. Only the region near the inserted point can change, so the global update becomes a set of local legalizations.</aside>
+    </section>
+
+    <section class="slide" data-label="Insert Cases">
+      <div class="topline"><div class="eyebrow">Local Update</div><div class="badge">split one or two faces</div></div>
+      <h2>Insert Point: Triangle Case Versus Edge Case</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Point insertion inside a triangle versus on an edge">
+          <svg viewBox="0 0 900 610" role="img">
+            <g transform="translate(45 55)">
+              <rect x="20" y="30" width="380" height="470" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+              <polygon points="85,410 190,100 335,390" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+              <circle cx="205" cy="295" r="11" fill="#b45309"/>
+              <line x1="205" y1="295" x2="85" y2="410" stroke="#2563eb" stroke-width="5"/><line x1="205" y1="295" x2="190" y2="100" stroke="#2563eb" stroke-width="5"/><line x1="205" y1="295" x2="335" y2="390" stroke="#2563eb" stroke-width="5"/>
+              <text x="75" y="70" class="svg-label">inside triangle</text>
+              <text x="100" y="515" class="svg-small">one face becomes three</text>
+            </g>
+            <g transform="translate(475 55)">
+              <rect x="20" y="30" width="380" height="470" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+              <polygon points="80,390 190,105 335,390" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+              <polygon points="80,390 335,390 220,485" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+              <circle cx="205" cy="390" r="11" fill="#b45309"/>
+              <line x1="205" y1="390" x2="190" y2="105" stroke="#2563eb" stroke-width="5"/><line x1="205" y1="390" x2="220" y2="485" stroke="#0f766e" stroke-width="5"/>
+              <text x="86" y="70" class="svg-label">on existing edge</text>
+              <text x="92" y="515" class="svg-small">two faces become four</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Inside A Triangle</h3>
+            <p>Replace the containing triangle by the star from \(p_r\) to its three vertices.</p>
+          </div>
+          <div class="panel teal">
+            <h3>On An Edge</h3>
+            <p>Replace the two adjacent triangles by four triangles around \(p_r\).</p>
+          </div>
+          <div class="panel amber">
+            <h3>After The Split</h3>
+            <p>Only old edges on the boundary of the changed patch can have become illegal.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Separate the two geometric insertion cases. If the new point lies inside one triangle, replace that triangle by three. If it lies on an existing edge, remove the two adjacent triangles and replace them by four. The following legalization phase is identical in spirit: test the old boundary edges that may now be illegal.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Legalize">
+      <div class="topline"><div class="eyebrow">Recursive Repair</div><div class="badge">paraphrased algorithm</div></div>
+      <h2>LEGALIZE_EDGE Cascade</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Procedure Logic</h3>
+            <ul>
+              <li>Test the edge opposite the inserted point.</li>
+              <li>If it is legal, stop along that branch.</li>
+              <li>If it is illegal, flip it and test the two newly exposed edges.</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>Cascade Shape</h3>
+            <p>The changed triangles spread outward from \(p_r\) until every boundary edge passes the in-circle test.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Implementation View</h3>
+            <p>A stack-based implementation can replace recursion; the mathematical invariant is the same.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Legalize edge cascade around inserted point">
+          <svg viewBox="0 0 980 610" role="img">
+            <defs><marker id="arrow13" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#b45309"/></marker></defs>
+            <rect x="60" y="55" width="860" height="500" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g stroke="#94a3b8" stroke-width="4">
+              <path d="M180 420 L280 150 L465 115 L680 170 L790 395 L610 505 L330 500 Z"/>
+              <path d="M280 150 L450 315 L330 500 M465 115 L450 315 L680 170 M680 170 L450 315 L790 395 M610 505 L450 315 L790 395 M330 500 L450 315 L610 505 M280 150 L465 115"/>
+            </g>
+            <g stroke="#2563eb" stroke-width="6"><path d="M450 315 L280 150"/><path d="M450 315 L465 115"/><path d="M450 315 L680 170"/><path d="M450 315 L790 395"/><path d="M450 315 L610 505"/><path d="M450 315 L330 500"/><path d="M450 315 L180 420"/></g>
+            <circle cx="450" cy="315" r="13" fill="#b45309"/><text x="468" y="323" class="svg-math">p_r</text>
+            <g fill="#0f766e"><circle cx="180" cy="420" r="9"/><circle cx="280" cy="150" r="9"/><circle cx="465" cy="115" r="9"/><circle cx="680" cy="170" r="9"/><circle cx="790" cy="395" r="9"/><circle cx="610" cy="505" r="9"/><circle cx="330" cy="500" r="9"/></g>
+            <g stroke="#b45309" stroke-width="7" marker-end="url(#arrow13)">
+              <path d="M520 250 C575 230 600 230 645 210"/>
+              <path d="M548 352 C610 368 660 382 720 393"/>
+              <path d="M395 395 C370 430 350 455 336 486"/>
+            </g>
+            <text x="115" y="105" class="svg-label">test boundary edges, flip failures, recurse</text>
+          </svg>
+        </figure>
+      </div>
+      <aside class="speaker-notes">Paraphrase the recursive procedure without copying pseudocode. When a boundary edge fails the in-circle test, flip it, then test the two newly exposed edges opposite the inserted point. The cascade is finite because each flip is a legalizing move, and it is local because only triangles incident to the changed region need attention.</aside>
+    </section>
+
+    <section class="slide" data-label="Correctness">
+      <div class="topline"><div class="eyebrow">Correctness</div><div class="badge">new edge certificates</div></div>
+      <h2>Correctness: New Edges Are Delaunay</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="New edges supported by empty circles">
+          <svg viewBox="0 0 900 610" role="img">
+            <rect x="70" y="65" width="760" height="485" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <polygon points="190,410 360,150 645,395" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/>
+            <circle cx="430" cy="315" r="165" fill="none" stroke="#2563eb" stroke-width="5"/>
+            <circle cx="375" cy="325" r="115" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 9"/>
+            <circle cx="430" cy="315" r="12" fill="#b45309"/>
+            <g fill="#111827"><circle cx="190" cy="410" r="10"/><circle cx="360" cy="150" r="10"/><circle cx="645" cy="395" r="10"/></g>
+            <g stroke="#2563eb" stroke-width="7"><line x1="430" y1="315" x2="190" y2="410"/><line x1="430" y1="315" x2="360" y2="150"/><line x1="430" y1="315" x2="645" y2="395"/></g>
+            <path d="M260 390 C320 350 345 335 430 315" stroke="#0f766e" stroke-width="5" fill="none" marker-end="url(#arrow14)"/>
+            <defs><marker id="arrow14" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#0f766e"/></marker></defs>
+            <text x="115" y="112" class="svg-label">shrink an empty witness circle to the new edge</text>
+            <text x="448" y="323" class="svg-math">p_r</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>After A Split</h3>
+            <p>Edges from \(p_r\) to the containing triangle's vertices have empty-circle witnesses, so they belong to the new Delaunay graph.</p>
+          </div>
+          <div class="panel teal">
+            <h3>After A Flip</h3>
+            <p>If an edge is flipped because \(p_r\) lies inside an adjacent circumcircle, the replacement diagonal has its own empty witness.</p>
+          </div>
+          <div class="panel amber">
+            <h3>What Remains</h3>
+            <p>Old edges untouched by the changed patch remain legal; boundary failures are exactly what legalization tests.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Give the correctness proof as a certificate story. Edges from the inserted point to vertices of the containing triangle are supported by circles that can be tightened around the new point. After a flip, the new diagonal is also supported by an empty-circle witness. Therefore the algorithm never creates a fundamentally non-Delaunay new edge.</aside>
+    </section>
+
+    <section class="slide alt" data-label="History DAG">
+      <div class="topline"><div class="eyebrow">Point Location</div><div class="badge">history DAG plus sentinels</div></div>
+      <h2>Point-Location DAG With Sentinels</h2>
+      <div class="content wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Query Route</h3>
+            <p>Start at the initial sentinel triangle. At each replaced triangle, test which child contains the query point.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Why A DAG?</h3>
+            <p>One old triangle may be replaced by several new triangles, and later replacements share descendants. The history is not a simple tree.</p>
+          </div>
+          <div class="panel violet">
+            <h3>Sentinels</h3>
+            <p>Artificial outer points keep all real points inside the maintained subdivision and simplify boundary cases.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="History DAG for locating new points">
+          <svg viewBox="0 0 900 610" role="img">
+            <defs><marker id="arrow15" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="75" y="60" width="750" height="500" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g fill="#eff6ff" stroke="#2563eb" stroke-width="4">
+              <polygon points="410,95 340,205 480,205"/><polygon points="240,285 170,395 310,395"/><polygon points="410,285 340,395 480,395"/><polygon points="580,285 510,395 650,395"/><polygon points="320,455 260,535 380,535"/><polygon points="500,455 440,535 560,535"/>
+            </g>
+            <g stroke="#1e3a8a" stroke-width="4" marker-end="url(#arrow15)">
+              <path d="M410 205 L240 285"/><path d="M410 205 L410 285"/><path d="M410 205 L580 285"/>
+              <path d="M410 395 L320 455"/><path d="M410 395 L500 455"/><path d="M580 395 L500 455"/>
+            </g>
+            <g class="svg-label"><text x="388" y="175">root</text><text x="196" y="365">old</text><text x="374" y="365">old</text><text x="545" y="365">old</text><text x="293" y="512">leaf</text><text x="474" y="512">leaf</text></g>
+            <path d="M660 105 L742 185 L700 270" fill="none" stroke="#b45309" stroke-width="6" stroke-dasharray="12 10" marker-end="url(#arrow15)"/>
+            <text x="590" y="92" class="svg-small">query follows containment tests</text>
+          </svg>
+        </figure>
+      </div>
+      <aside class="speaker-notes">The algorithm still needs to find the triangle containing the next point. The history DAG records replaced triangles and points queries through the replacement children. Sentinels give a stable outer frame, so every real input point is inside the maintained triangulation and the search has a well-defined starting triangle.</aside>
+    </section>
+
+    <section class="slide" data-label="Backwards">
+      <div class="topline"><div class="eyebrow">Analysis</div><div class="badge">expected structural change</div></div>
+      <h2>Backwards Analysis Dashboard</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Backward View</h3>
+            <p>At stage \(r\), remove the last inserted point from \(DG(P_r)\). Only edges and triangles incident to that point disappear.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Planar Graph Bound</h3>
+            <p>The Delaunay graph has linear size, so the average degree in the random prefix is constant.</p>
+          </div>
+          <div class="panel violet">
+            <h3>Resulting Lens</h3>
+            <p>Expected number of created triangles is \(O(n)\); point-location cost needs a conflict-size sum.</p>
+          </div>
+        </div>
+        <figure class="diagram" aria-label="Backwards analysis degree dashboard">
+          <svg viewBox="0 0 980 610" role="img">
+            <rect x="60" y="55" width="860" height="500" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g transform="translate(95 92)">
+              <rect x="0" y="0" width="320" height="375" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+              <g stroke="#94a3b8" stroke-width="4">
+                <path d="M55 270 L105 85 L205 90 L270 240 L170 320 Z"/>
+                <path d="M105 85 L160 210 L55 270 M205 90 L160 210 L270 240 M170 320 L160 210 M105 85 L205 90"/>
+              </g>
+              <g stroke="#b45309" stroke-width="7"><line x1="160" y1="210" x2="105" y2="85"/><line x1="160" y1="210" x2="205" y2="90"/><line x1="160" y1="210" x2="270" y2="240"/><line x1="160" y1="210" x2="170" y2="320"/><line x1="160" y1="210" x2="55" y2="270"/></g>
+              <circle cx="160" cy="210" r="13" fill="#b45309"/>
+              <text x="45" y="354" class="svg-small">delete random last point</text>
+            </g>
+            <g transform="translate(500 105)">
+              <text x="0" y="0" class="svg-label">Dashboard</text>
+              <rect x="0" y="35" width="350" height="78" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+              <rect x="0" y="137" width="350" height="78" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+              <rect x="0" y="239" width="350" height="78" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"/>
+              <text x="25" y="84" class="svg-label">Pr[last is v] = 1/r</text>
+              <text x="25" y="186" class="svg-label">sum degrees = O(r)</text>
+              <text x="25" y="288" class="svg-label">E[change] = O(1)</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <aside class="speaker-notes">Summarize the expected-time lens. Look backward from a random stage: the last inserted point is equally likely among the r current points, and only features incident to that point disappear when it is removed. Since a planar Delaunay graph has linear complexity, the expected structural change per stage is constant.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Configuration">
+      <div class="topline"><div class="eyebrow">Starred Framework</div><div class="badge">configuration spaces</div></div>
+      <h2>Configuration Space And Consequences</h2>
+      <p class="lead">The final abstraction packages randomized incremental proofs into definitions, conflicts, and active configurations.</p>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Configuration space components for Delaunay corners">
+          <svg viewBox="0 0 900 610" role="img">
+            <defs><marker id="arrow17" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="70" y="60" width="760" height="500" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <g fill="#eff6ff" stroke="#2563eb" stroke-width="4">
+              <rect x="115" y="115" width="230" height="95" rx="8"/><rect x="555" y="115" width="230" height="95" rx="8"/><rect x="115" y="380" width="230" height="95" rx="8"/><rect x="555" y="380" width="230" height="95" rx="8"/>
+            </g>
+            <g stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow17)">
+              <path d="M345 162 L555 162"/><path d="M670 210 L670 380"/><path d="M555 427 L345 427"/><path d="M230 380 L230 210"/>
+            </g>
+            <g class="svg-label"><text x="176" y="173">X</text><text x="622" y="173">D(Delta)</text><text x="611" y="438">K(Delta)</text><text x="170" y="438">active?</text></g>
+            <circle cx="450" cy="295" r="92" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <g fill="#b45309"><circle cx="410" cy="260" r="10"/><circle cx="475" cy="230" r="10"/><circle cx="500" cy="330" r="10"/></g>
+            <g fill="#64748b"><circle cx="425" cy="335" r="8"/><circle cx="535" cy="285" r="8"/></g>
+            <text x="378" y="520" class="svg-small">Delaunay corner: definers plus conflict set</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Four-Tuple</h3>
+            <p>\((X,\Pi,D,K)\): inputs, possible configurations, defining objects, and killing or conflict objects.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Delaunay Fit</h3>
+            <p>A corner is active when its defining sites appear on a Delaunay face boundary and its conflict set is absent.</p>
+          </div>
+          <div class="panel violet">
+            <h3>Consequence</h3>
+            <p>The framework bounds conflict traversal and yields expected \(O(n\log n)\) time for the randomized Delaunay construction.</p>
+          </div>
+          <div class="panel slate">
+            <h3>Takeaway</h3>
+            <p>Delaunay triangulations are where local predicates, planar duality, and randomized analysis meet cleanly.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close with the starred framework. A configuration space packages the objects that can appear, the small defining set that creates one, and the conflict set that destroys it. Delaunay corners fit this pattern, giving the cost bound for point location history and the final expected O(n log n) construction result.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

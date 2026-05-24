@@ -1,0 +1,82 @@
+[
+  {
+    "slide": 1,
+    "title": "Title Source Contract And The Windowing Problem",
+    "notes": "Open by naming the contract for the lecture: the deck follows manifest row 86, keeps the printed span 219-242 and PDF span 230-253 as metadata, and uses the notebook as the teaching source. The motivating operation is windowing: given a rectangular viewport into a large geometric scene, report only the objects that intersect the window without scanning the whole scene."
+  },
+  {
+    "slide": 2,
+    "title": "Windowing Problem Setup",
+    "notes": "Set up the formal query. We store a set of segments and receive an axis-parallel rectangle W. The answer contains every segment that touches W, whether the contact is an endpoint inside, a crossing through a side, or a portion lying across the box. This slide makes the reporting target concrete before data structures enter."
+  },
+  {
+    "slide": 3,
+    "title": "Endpoint Versus Boundary-Crossing Cases",
+    "notes": "Separate the easy reports from the hard reports. If an endpoint lies in W, a point range-search structure can find it, with duplicate suppression for segments whose two endpoints both lie inside. If no endpoint is inside but the segment still intersects W, then the segment must cross the boundary, so the problem turns into side-intersection queries."
+  },
+  {
+    "slide": 4,
+    "title": "Reduction To Interval Stabbing",
+    "notes": "For horizontal segments hit by a vertical query line, forget the y-coordinate for one moment and project each segment to its x-interval. A vertical line at x equals qx intersects exactly the projected intervals that contain qx. This is the one-dimensional stabbing problem that interval trees solve."
+  },
+  {
+    "slide": 5,
+    "title": "Interval-Tree Split Node Structure",
+    "notes": "Explain the invariant at one interval-tree node. The split value xmid partitions intervals into three groups: completely left, completely right, and crossing xmid. Only the crossing intervals are stored at the node, twice: sorted by left endpoint for queries from the left and sorted by right endpoint for queries from the right."
+  },
+  {
+    "slide": 6,
+    "title": "Interval-Tree Query Path",
+    "notes": "Walk a stabbing query down one root-to-leaf path. At each visited node, choose the sorted list that makes the stopping test monotone. If qx is left of xmid, scan by left endpoint until intervals start after qx; if qx is right of xmid, scan by right endpoint in the symmetric direction. Then recurse only into the side that can still contain qx."
+  },
+  {
+    "slide": 7,
+    "title": "Interval-Tree Bounds And Output Sensitivity",
+    "notes": "State the performance as the payoff for the split invariant. The structure stores each interval at exactly one node, so storage is linear and the tree depth is logarithmic. Query time is logarithmic plus the number of reported intervals because the traversal follows one path and each reported interval is charged where it is emitted."
+  },
+  {
+    "slide": 8,
+    "title": "Vertical Segment Complication",
+    "notes": "Now restore the second coordinate. A vertical query segment is not the full vertical line, so an interval that contains qx is only a candidate. The segment's y-coordinate must also lie in the query y-range. This is the moment when a one-dimensional list becomes an associated two-dimensional reporting structure."
+  },
+  {
+    "slide": 9,
+    "title": "Associated Structures For Windowing",
+    "notes": "At every interval-tree node, replace the plain sorted lists by associated structures on segment endpoints. Range trees give the first version, and priority search trees later exploit the fact that the query rectangle is unbounded on one x-side. The point is not a new outer tree; it is the same split tree carrying richer local reports."
+  },
+  {
+    "slide": 10,
+    "title": "Priority Search Tree Idea",
+    "notes": "Introduce the priority search tree as a hybrid. It is search-tree-like in y, because subtrees represent y-ranges, and heap-like in x, because each subtree exposes the point with smallest x-coordinate near its root. That combination is tailored to queries of the form x <= qx and qy <= y <= qy_prime."
+  },
+  {
+    "slide": 11,
+    "title": "Priority Search Query Path",
+    "notes": "Show the query algorithm geometrically. Search for qy and qy_prime to find a split path in the y-search tree. Subtrees hanging between the two paths already have all their y-values inside the query slab, so they only need the heap-style x <= qx reporting subroutine. Points on the two boundary paths are tested explicitly."
+  },
+  {
+    "slide": 12,
+    "title": "Priority Search Invariant",
+    "notes": "Summarize why the priority search tree improves the associated structures. The y partition keeps the number of boundary nodes logarithmic. The x-priority property lets a rejected heap root prune the entire subtree for the unbounded side query. This yields linear storage and O(log n + k) query time for the special three-sided rectangle."
+  },
+  {
+    "slide": 13,
+    "title": "Bounding-Box Failure Mode",
+    "notes": "Use the tempting bounding-box shortcut as a warning. For arbitrary segments, a segment's axis-aligned bounding box can intersect the query object even when the segment itself does not. Bounding boxes are useful filters, but they are not correctness certificates; the data structure must preserve the actual crossing geometry."
+  },
+  {
+    "slide": 14,
+    "title": "Segment-Tree Canonical Cover",
+    "notes": "Introduce segment trees through canonical decomposition. The skeleton is built from sorted endpoints and elementary intervals. Any stored interval is represented as a disjoint union of canonical node ranges, with only logarithmically many pieces in the balanced tree. Queries then inspect the nodes on one search path."
+  },
+  {
+    "slide": 15,
+    "title": "Segment Tree For Disjoint Segments",
+    "notes": "For disjoint non-axis-parallel segments, the segment tree stores canonical subsets according to x-projection. Each canonical subset can be equipped with a structure ordered by vertical position, because disjoint segments have a stable vertical order over an elementary x-slab. This supports vertical segment intersection queries in O(log squared n plus k) time."
+  },
+  {
+    "slide": 16,
+    "title": "Synthesis And Extensions",
+    "notes": "Close by connecting the chapter's recurring design pattern. Start with a geometric report, reduce part of it to a one-dimensional stabbing question, carry associated structures when another coordinate matters, and use canonical decompositions when intervals must be shared across many queries. The same language extends to counting, dynamic variants, and multi-level structures."
+  }
+]

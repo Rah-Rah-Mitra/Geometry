@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fundamentals of Computer Graphics - Chapter 02: Miscellaneous Math</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-02">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-02-miscellaneous-math/02-miscellaneous-math.ipynb">
+  <meta name="source_span" content="printed pages 13-62; PDF pages 30-79.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="Geometry Lecture Design System 1.0">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0F172A;
+      font-family: var(--font-sans);
+      color: var(--slide-ink);
+    }
+    deck-stage { display: block; }
+    section {
+      width: 1920px;
+      height: 1080px;
+      background: var(--slide-bg);
+    }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      padding: 72px 96px 56px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 72px 72px;
+    }
+    .plain { background: var(--slide-bg); }
+    .soft { background: var(--slide-bg-alt); }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 32px;
+    }
+    .eyebrow {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 66px;
+      line-height: 1.05;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+    h2 {
+      font-size: 52px;
+      line-height: 1.12;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+    h3 {
+      font-size: 32px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+    .subtitle {
+      font-size: 31px;
+      line-height: 1.42;
+      color: var(--slide-muted);
+    }
+    .body {
+      font-size: 28px;
+      line-height: 1.45;
+      color: var(--slide-ink);
+    }
+    .small {
+      font-size: 22px;
+      line-height: 1.42;
+      color: var(--slide-muted);
+    }
+    .rule {
+      width: 96px;
+      height: 5px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+    }
+    .footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      font-size: 22px;
+      color: var(--slide-dimmed);
+    }
+    .two { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 42px; align-items: stretch; }
+    .two-even { display: grid; grid-template-columns: 1fr 1fr; gap: 42px; align-items: stretch; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .box {
+      border-left: 5px solid var(--slide-blue);
+      background: var(--math-definition-bg);
+      border-radius: 8px;
+      padding: 22px 26px;
+    }
+    .box.teal { border-left-color: var(--slide-teal); background: var(--math-example-bg); }
+    .box.amber { border-left-color: var(--slide-amber); background: var(--math-warning-bg); }
+    .box.violet { border-left-color: var(--slide-violet); background: var(--math-exercise-bg); }
+    .box.indigo { border-left-color: var(--slide-accent); background: var(--math-theorem-bg); }
+    .label {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+    .math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 38px;
+      line-height: 1.35;
+      font-style: italic;
+      color: var(--slide-ink);
+    }
+    .formula-big {
+      font-family: var(--font-math);
+      font-size: 48px;
+      line-height: 1.25;
+      font-style: italic;
+      color: var(--slide-ink);
+    }
+    .bullets {
+      margin: 0;
+      padding-left: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 28px;
+      line-height: 1.38;
+    }
+    .bullets li::marker { color: var(--slide-accent); }
+    .mini {
+      display: inline-block;
+      padding: 8px 13px;
+      border-radius: 6px;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-muted);
+    }
+    .diagram {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px;
+      display: grid;
+      place-items: center;
+    }
+    .diagram svg { width: 100%; max-height: 560px; }
+    .tight svg { max-height: 440px; }
+    .caption {
+      font-size: 23px;
+      line-height: 1.35;
+      color: var(--slide-dimmed);
+      margin-top: 12px;
+    }
+    .row {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 25px;
+      line-height: 1.35;
+    }
+    th {
+      text-align: left;
+      color: var(--slide-accent);
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--slide-border);
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--slide-border-light);
+      vertical-align: top;
+    }
+    aside.speaker-notes { display: none; }
+  </style>
+  <script type="application/json" id="deck-metadata">
+    {
+      "course": "Fundamentals of Computer Graphics",
+      "chapter_id": "chapter-02",
+      "notebook_path": "Fundamentals-of-Computer-Graphics/chapter-02-miscellaneous-math/02-miscellaneous-math.ipynb",
+      "source_span": "printed pages 13-62; PDF pages 30-79.",
+      "source_pdf": "Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf",
+      "design_system_version": "Geometry Lecture Design System 1.0"
+    }
+  </script>
+</head>
+<body>
+  <deck-stage>
+    <section data-screen-label="01 Title">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Fundamentals of Computer Graphics</div>
+          <div class="small">Chapter 02 - printed pages 13-62 - PDF pages 30-79</div>
+        </div>
+        <div class="two" style="align-items:center; flex:1;">
+          <div>
+            <h1>Miscellaneous Math for Graphics</h1>
+            <div class="rule" style="margin: 22px 0 26px;"></div>
+            <p class="subtitle">A compact toolkit for turning geometric ideas into reliable rendering code: domains, roots, frames, surfaces, interpolation, probability, and sampled integration.</p>
+            <div class="row" style="margin-top:34px;">
+              <span class="mini">sets and mappings</span>
+              <span class="mini">stable roots</span>
+              <span class="mini">vectors and frames</span>
+              <span class="mini">Monte Carlo</span>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Graphics math pipeline from domains through sampling">
+              <defs>
+                <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="36" y="44" width="168" height="82" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="120" y="80" text-anchor="middle" font-size="26" font-weight="700" fill="#1E3A8A">Domain</text>
+              <text x="120" y="108" text-anchor="middle" font-size="22" fill="#475569">legal inputs</text>
+              <rect x="296" y="44" width="168" height="82" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="380" y="80" text-anchor="middle" font-size="26" font-weight="700" fill="#0F766E">Geometry</text>
+              <text x="380" y="108" text-anchor="middle" font-size="22" fill="#475569">vectors, frames</text>
+              <rect x="556" y="44" width="168" height="82" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="640" y="80" text-anchor="middle" font-size="26" font-weight="700" fill="#B45309">Sampling</text>
+              <text x="640" y="108" text-anchor="middle" font-size="22" fill="#475569">estimates</text>
+              <line x1="204" y1="85" x2="292" y2="85" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-title)"></line>
+              <line x1="464" y1="85" x2="552" y2="85" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-title)"></line>
+              <path d="M96 420 C160 260 288 380 360 250 C448 88 560 398 676 230" fill="none" stroke="#2563EB" stroke-width="5"></path>
+              <circle cx="96" cy="420" r="10" fill="#2563EB"></circle>
+              <circle cx="360" cy="250" r="10" fill="#0F766E"></circle>
+              <circle cx="676" cy="230" r="10" fill="#B45309"></circle>
+              <line x1="360" y1="250" x2="435" y2="200" stroke="#0F766E" stroke-width="4" marker-end="url(#arrow-title)"></line>
+              <line x1="360" y1="250" x2="304" y2="178" stroke="#6D28D9" stroke-width="4" marker-end="url(#arrow-title)"></line>
+              <text x="390" y="184" font-size="24" fill="#0F766E" font-weight="700">tangent</text>
+              <text x="232" y="168" font-size="24" fill="#6D28D9" font-weight="700">normal</text>
+              <g fill="#64748B" font-size="22">
+                <text x="56" y="482">Inputs must be legal</text>
+                <text x="288" y="482">Geometry must be testable</text>
+                <text x="544" y="482">Estimates must be unbiased</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Notebook: Fundamentals-of-Computer-Graphics/chapter-02-miscellaneous-math/02-miscellaneous-math.ipynb</span>
+          <span>STIX and KaTeX math support declared</span>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open by framing the chapter as a reliability layer for graphics, not as a disconnected survey. The learner should hear that every later rendering algorithm depends on small mathematical contracts: valid domains, stable numerical roots, auditable frames, well oriented normals, interpolation weights, and probability densities that keep sampled estimates honest.</aside>
+    </section>
+
+    <section data-screen-label="02 Roadmap">
+      <div class="slide soft">
+        <div class="topline">
+          <div class="eyebrow">Lecture Roadmap</div>
+          <div class="small">From mathematical vocabulary to graphics invariants</div>
+        </div>
+        <h2>Each Topic Becomes a Code Contract</h2>
+        <div class="rule"></div>
+        <div class="four">
+          <div class="card"><h3>Domains</h3><p class="body">State which inputs are legal before asking for an inverse, a logarithm, or an intersection.</p></div>
+          <div class="card"><h3>Roots</h3><p class="body">Use algebraic identities to avoid missing the small root in ray and visibility tests.</p></div>
+          <div class="card"><h3>Frames</h3><p class="body">Treat dot, cross, Gram, and determinant checks as diagnostics for coordinate systems.</p></div>
+          <div class="card"><h3>Surfaces</h3><p class="body">Choose implicit tests or parametric maps according to the information the algorithm needs.</p></div>
+        </div>
+        <div class="two-even">
+          <div class="box teal">
+            <div class="label">Computational Form</div>
+            <p class="body">The notebook turns chapter vocabulary into arrays, functions, invariants, plots, and small saved artifacts. Every visual has a check: round trips, residuals, orthogonality, area partition, normalization, or convergence.</p>
+          </div>
+          <div class="diagram tight">
+            <svg viewBox="0 0 720 300" role="img" aria-label="Roadmap graph of chapter concepts">
+              <defs>
+                <marker id="arrow-road" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                  <path d="M0,0 L10,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g font-size="23" font-weight="700" text-anchor="middle">
+                <circle cx="85" cy="150" r="48" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></circle>
+                <text x="85" y="144" fill="#1E3A8A">sets</text><text x="85" y="172" fill="#1E3A8A">maps</text>
+                <circle cx="235" cy="90" r="48" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></circle>
+                <text x="235" y="98" fill="#B45309">roots</text>
+                <circle cx="385" cy="150" r="48" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></circle>
+                <text x="385" y="144" fill="#0F766E">frames</text><text x="385" y="172" fill="#0F766E">normals</text>
+                <circle cx="535" cy="90" r="48" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></circle>
+                <text x="535" y="98" fill="#6D28D9">weights</text>
+                <circle cx="635" cy="210" r="48" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></circle>
+                <text x="635" y="204" fill="#1E3A8A">sample</text><text x="635" y="232" fill="#1E3A8A">average</text>
+              </g>
+              <path d="M132 132 C166 106 186 96 188 95" stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#arrow-road)"></path>
+              <path d="M278 106 C314 124 332 136 340 140" stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#arrow-road)"></path>
+              <path d="M433 132 C474 108 486 100 490 98" stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#arrow-road)"></path>
+              <path d="M557 133 C584 166 600 184 604 190" stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#arrow-road)"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Use the roadmap as a diagnostic checklist for later chapters.</span><span>Chapter 02 source span: pages 13-62 / 30-79</span></div>
+      </div>
+      <aside class="speaker-notes">Present the roadmap as a sequence of responsibilities. Domains decide whether a calculation is meaningful, stable roots decide whether an intersection is found, frames decide whether orientation and lengths are trustworthy, and probability decides whether a renderer's average converges to the intended quantity rather than to a biased accident.</aside>
+    </section>
+
+    <section data-screen-label="03 Sets And Mappings">
+      <div class="slide plain">
+        <div class="topline">
+          <div class="eyebrow">Sets, Mappings, Inverses</div>
+          <div class="small">A formula is not a function until its domain is fixed.</div>
+        </div>
+        <h2>Domains Control Whether Inverses Exist</h2>
+        <div class="two">
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Square map with two preimages and restricted domain inverse">
+              <defs>
+                <marker id="arrow-map" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="70" y="68" width="250" height="360" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <rect x="440" y="68" width="250" height="360" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="195" y="112" text-anchor="middle" font-size="28" font-weight="700" fill="#1E3A8A">Domain A</text>
+              <text x="565" y="112" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">Target B</text>
+              <line x1="195" y1="170" x2="195" y2="370" stroke="#CBD5E1" stroke-width="4"></line>
+              <circle cx="195" cy="190" r="12" fill="#2563EB"></circle>
+              <circle cx="195" cy="330" r="12" fill="#2563EB"></circle>
+              <text x="150" y="198" font-size="28" fill="#111827">-a</text>
+              <text x="162" y="338" font-size="28" fill="#111827">a</text>
+              <circle cx="565" cy="260" r="12" fill="#0F766E"></circle>
+              <text x="600" y="268" font-size="28" fill="#111827">a<tspan baseline-shift="super" font-size="20">2</tspan></text>
+              <path d="M212 190 C330 190 420 238 550 258" stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#arrow-map)"></path>
+              <path d="M212 330 C330 330 420 282 550 262" stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#arrow-map)"></path>
+              <text x="380" y="205" font-size="28" fill="#1E3A8A" font-family="STIX Two Text">x -> x<tspan baseline-shift="super" font-size="20">2</tspan></text>
+              <rect x="94" y="454" width="572" height="42" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="2"></rect>
+              <text x="380" y="483" text-anchor="middle" font-size="24" fill="#B45309" font-weight="700">Restrict to x >= 0 before asking for sqrt as an inverse</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div class="box">
+              <div class="label">Definition Pattern</div>
+              <p class="formula">f : A -> B, &nbsp; image f(S), &nbsp; inverse f<sup>-1</sup></p>
+              <p class="body" style="margin-top:12px;">The same expression can define different functions when the legal input set changes.</p>
+            </div>
+            <div class="box amber">
+              <div class="label">Failure Mode</div>
+              <p class="body">Two distinct inputs mapping to one output make a single-valued inverse impossible. Graphics code often hides this mistake as a branch ambiguity, a wrong sign, or a missing intersection.</p>
+            </div>
+            <div class="box teal">
+              <div class="label">Notebook Check</div>
+              <p class="body">After restricting the square map to nonnegative inputs, the round-trip error for <span class="math">sqrt(x^2)</span> is checked numerically.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Mapping notation behaves like a typed function signature.</span><span>Source section 2.1</span></div>
+      </div>
+      <aside class="speaker-notes">Emphasize that domain information is not cosmetic notation. A ray routine, texture lookup, or logarithm call has the same issue as the square function: the output can only be interpreted correctly when the allowed inputs and endpoint conventions are explicit. The square example is useful because everyone can see the inverse problem immediately.</aside>
+    </section>
+
+    <section data-screen-label="04 Intervals Logs Contracts">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Intervals And Logs</div>
+          <div class="small">Boundary conventions are algorithmic choices.</div>
+        </div>
+        <h2>Intervals Are Small Data Structures</h2>
+        <div class="two-even">
+          <div class="diagram">
+            <svg viewBox="0 0 740 480" role="img" aria-label="Interval endpoints, intersection, and log exponential inverse roundtrip">
+              <line x1="80" y1="130" x2="660" y2="130" stroke="#CBD5E1" stroke-width="5"></line>
+              <line x1="80" y1="260" x2="660" y2="260" stroke="#CBD5E1" stroke-width="5"></line>
+              <line x1="80" y1="390" x2="660" y2="390" stroke="#CBD5E1" stroke-width="5"></line>
+              <g font-size="24" fill="#475569">
+                <text x="70" y="92">interval A</text>
+                <text x="70" y="222">interval B</text>
+                <text x="70" y="352">A intersect B</text>
+              </g>
+              <line x1="180" y1="130" x2="500" y2="130" stroke="#2563EB" stroke-width="12"></line>
+              <circle cx="180" cy="130" r="17" fill="#FFFFFF" stroke="#2563EB" stroke-width="5"></circle>
+              <circle cx="500" cy="130" r="17" fill="#2563EB"></circle>
+              <line x1="300" y1="260" x2="620" y2="260" stroke="#0F766E" stroke-width="12"></line>
+              <circle cx="300" cy="260" r="17" fill="#0F766E"></circle>
+              <circle cx="620" cy="260" r="17" fill="#FFFFFF" stroke="#0F766E" stroke-width="5"></circle>
+              <line x1="300" y1="390" x2="500" y2="390" stroke="#B45309" stroke-width="12"></line>
+              <circle cx="300" cy="390" r="17" fill="#B45309"></circle>
+              <circle cx="500" cy="390" r="17" fill="#B45309"></circle>
+              <g font-size="24" fill="#111827" font-family="STIX Two Text">
+                <text x="164" y="168">open</text>
+                <text x="480" y="168">closed</text>
+                <text x="280" y="300">closed</text>
+                <text x="594" y="300">open</text>
+                <text x="330" y="440">accepted range</text>
+              </g>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div class="box indigo">
+              <div class="label">Contract</div>
+              <p class="formula">log(exp(x)) = x &nbsp; and &nbsp; exp(log(y)) = y only when y > 0</p>
+            </div>
+            <table>
+              <tr><th>Object</th><th>Question To Ask</th></tr>
+              <tr><td>Open endpoint</td><td>Is equality rejected by the predicate?</td></tr>
+              <tr><td>Closed endpoint</td><td>Can boundary samples be kept?</td></tr>
+              <tr><td>Intersection</td><td>Which interval survives all constraints?</td></tr>
+              <tr><td>Logarithm</td><td>Has the positive-domain test run first?</td></tr>
+            </table>
+            <p class="body">Boundary mistakes are especially visible in clipping, ray parameter intervals, and texture-coordinate wrapping.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Intervals encode both extent and membership rules.</span><span>Source sections 2.1.2-2.1.3</span></div>
+      </div>
+      <aside class="speaker-notes">Use this slide to slow down on endpoints. Many graphics algorithms carry an interval for a ray parameter, a clipping window, or a valid texture coordinate range. Whether an endpoint is included can decide if a hit is accepted twice, rejected entirely, or allowed to pass into an inverse such as a logarithm.</aside>
+    </section>
+
+    <section data-screen-label="05 Stable Quadratics">
+      <div class="slide plain">
+        <div class="topline">
+          <div class="eyebrow">Quadratics</div>
+          <div class="small">Ray intersections often reduce to a polynomial.</div>
+        </div>
+        <h2>Algebraically Correct Is Not Always Numerically Stable</h2>
+        <div class="two">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box amber">
+              <div class="label">Cancellation Risk</div>
+              <p class="formula">x = (-b +/- sqrt(b<sup>2</sup> - 4ac)) / (2a)</p>
+              <p class="body" style="margin-top:12px;">When <span class="math">b</span> and <span class="math">sqrt(D)</span> are nearly equal, the small root can lose significant digits.</p>
+            </div>
+            <div class="box teal">
+              <div class="label">Stable Pairing</div>
+              <p class="formula">q = -0.5(b + sign(b)sqrt(D)), &nbsp; r<sub>0</sub> = q/a, &nbsp; r<sub>1</sub> = c/q</p>
+            </div>
+            <ul class="bullets">
+              <li>Check the discriminant before taking the square root.</li>
+              <li>Sort roots according to the ray interval contract.</li>
+              <li>Verify residuals when debugging missed hits.</li>
+            </ul>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Quadratic curve with small root cancellation and residual comparison">
+              <line x1="80" y1="420" x2="700" y2="420" stroke="#CBD5E1" stroke-width="4"></line>
+              <line x1="120" y1="60" x2="120" y2="450" stroke="#CBD5E1" stroke-width="4"></line>
+              <path d="M110 90 C210 410 410 450 680 150" fill="none" stroke="#2563EB" stroke-width="5"></path>
+              <circle cx="154" cy="214" r="11" fill="#B45309"></circle>
+              <circle cx="606" cy="272" r="11" fill="#0F766E"></circle>
+              <line x1="154" y1="214" x2="154" y2="420" stroke="#B45309" stroke-width="3" stroke-dasharray="8 7"></line>
+              <line x1="606" y1="272" x2="606" y2="420" stroke="#0F766E" stroke-width="3" stroke-dasharray="8 7"></line>
+              <text x="138" y="462" font-size="25" fill="#B45309" font-weight="700">small root</text>
+              <text x="558" y="462" font-size="25" fill="#0F766E" font-weight="700">large root</text>
+              <rect x="218" y="72" width="436" height="98" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="2"></rect>
+              <text x="436" y="112" text-anchor="middle" font-size="25" fill="#B45309" font-weight="700">Subtraction can erase the root nearest the ray origin</text>
+              <text x="436" y="145" text-anchor="middle" font-size="24" fill="#475569">Use the product relation r0 r1 = c / a to recover the partner</text>
+              <g transform="translate(230 326)">
+                <rect x="0" y="0" width="360" height="48" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"></rect>
+                <rect x="0" y="64" width="360" height="48" fill="#F0FDFA" stroke="#0F766E" stroke-width="2"></rect>
+                <rect x="0" y="0" width="290" height="48" fill="#2563EB" opacity="0.22"></rect>
+                <rect x="0" y="64" width="70" height="48" fill="#0F766E" opacity="0.35"></rect>
+                <text x="18" y="31" font-size="23" fill="#1E3A8A" font-weight="700">naive residual</text>
+                <text x="18" y="95" font-size="23" fill="#0F766E" font-weight="700">stable residual</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Numerical stability is a geometric correctness issue.</span><span>Source section 2.2</span></div>
+      </div>
+      <aside class="speaker-notes">Connect the stable quadratic formula directly to graphics practice. A missed small root can mean a ray starts just outside an object but fails to find the first hit, or a visibility query jumps to a farther surface. The residual plot in the notebook is not decoration; it is a practical test for root quality.</aside>
+    </section>
+
+    <section data-screen-label="06 Angles And Measures">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Angles And Trigonometry</div>
+          <div class="small">Directions become ratios, areas, and solid-angle weights.</div>
+        </div>
+        <h2>Trigonometry Supplies Coordinate Conversions</h2>
+        <div class="two-even">
+          <div class="diagram">
+            <svg viewBox="0 0 720 520" role="img" aria-label="Unit circle, right triangle, polar direction, and solid angle patch">
+              <circle cx="260" cy="260" r="170" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></circle>
+              <line x1="90" y1="260" x2="430" y2="260" stroke="#CBD5E1" stroke-width="4"></line>
+              <line x1="260" y1="430" x2="260" y2="90" stroke="#CBD5E1" stroke-width="4"></line>
+              <line x1="260" y1="260" x2="390" y2="150" stroke="#1E3A8A" stroke-width="5"></line>
+              <line x1="390" y1="150" x2="390" y2="260" stroke="#0F766E" stroke-width="4" stroke-dasharray="8 7"></line>
+              <line x1="260" y1="260" x2="390" y2="260" stroke="#B45309" stroke-width="4" stroke-dasharray="8 7"></line>
+              <path d="M310 260 A50 50 0 0 0 298 226" fill="none" stroke="#6D28D9" stroke-width="4"></path>
+              <text x="328" y="238" font-size="28" fill="#6D28D9" font-family="STIX Two Text">theta</text>
+              <text x="330" y="292" font-size="26" fill="#B45309" font-weight="700">cos theta</text>
+              <text x="408" y="214" font-size="26" fill="#0F766E" font-weight="700">sin theta</text>
+              <ellipse cx="570" cy="260" rx="90" ry="150" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></ellipse>
+              <path d="M520 210 C555 178 603 178 630 210 C610 250 548 250 520 210" fill="#0F766E" opacity="0.20" stroke="#0F766E" stroke-width="3"></path>
+              <line x1="570" y1="260" x2="520" y2="210" stroke="#0F766E" stroke-width="3"></line>
+              <line x1="570" y1="260" x2="630" y2="210" stroke="#0F766E" stroke-width="3"></line>
+              <text x="520" y="452" font-size="26" fill="#0F766E" font-weight="700">solid-angle patch</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box indigo">
+              <div class="label">Angle Contract</div>
+              <p class="formula">radians in code, degrees at the interface, and units declared at every boundary</p>
+            </div>
+            <table>
+              <tr><th>Expression</th><th>Graphics Use</th></tr>
+              <tr><td><span class="math">cos theta</span></td><td>Projection, Lambertian shading, view alignment</td></tr>
+              <tr><td><span class="math">sin theta</span></td><td>Area factors, cross-product magnitude</td></tr>
+              <tr><td>polar coordinates</td><td>Sampling disks, circles, and directions</td></tr>
+              <tr><td>solid angle</td><td>Light transport and directional integration</td></tr>
+            </table>
+            <p class="body">The source span uses trigonometry as a bridge from Euclidean triangles to spherical and solid-angle measurements.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Angles are measurement data, not just drawing labels.</span><span>Source section 2.3</span></div>
+      </div>
+      <aside class="speaker-notes">The important teaching move is to connect familiar right-triangle trigonometry to the measurements used in rendering. Cosines measure directional agreement, sines carry area factors, and solid angle explains why light integrals are weighted by directions on a sphere rather than by flat image coordinates alone.</aside>
+    </section>
+
+    <section data-screen-label="07 Vector Products">
+      <div class="slide plain">
+        <div class="topline">
+          <div class="eyebrow">Vectors</div>
+          <div class="small">Length, direction, projection, area, and handedness.</div>
+        </div>
+        <h2>Dot And Cross Products Are Geometry Tests</h2>
+        <div class="two">
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Vector addition, projection, and cross product area">
+              <defs>
+                <marker id="arrow-vector" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#111827"></path>
+                </marker>
+              </defs>
+              <line x1="92" y1="420" x2="690" y2="420" stroke="#E2E8F0" stroke-width="3"></line>
+              <line x1="120" y1="462" x2="120" y2="74" stroke="#E2E8F0" stroke-width="3"></line>
+              <line x1="120" y1="420" x2="392" y2="250" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-vector)"></line>
+              <line x1="120" y1="420" x2="500" y2="356" stroke="#0F766E" stroke-width="6" marker-end="url(#arrow-vector)"></line>
+              <line x1="392" y1="250" x2="500" y2="356" stroke="#94A3B8" stroke-width="4" stroke-dasharray="9 8"></line>
+              <line x1="500" y1="356" x2="392" y2="250" stroke="#94A3B8" stroke-width="4" stroke-dasharray="9 8"></line>
+              <polygon points="120,420 392,250 652,206 500,356" fill="#2563EB" opacity="0.10" stroke="#B45309" stroke-width="4"></polygon>
+              <line x1="392" y1="250" x2="444" y2="329" stroke="#6D28D9" stroke-width="5" marker-end="url(#arrow-vector)"></line>
+              <text x="260" y="300" font-size="30" fill="#2563EB" font-weight="700">a</text>
+              <text x="328" y="392" font-size="30" fill="#0F766E" font-weight="700">b</text>
+              <text x="460" y="300" font-size="27" fill="#B45309" font-weight="700">area |a x b|</text>
+              <text x="456" y="345" font-size="27" fill="#6D28D9" font-weight="700">normal</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box">
+              <div class="label">Dot Product</div>
+              <p class="formula">a dot b = |a| |b| cos theta</p>
+              <p class="body" style="margin-top:10px;">Use it for projection, angle tests, and orthogonality.</p>
+            </div>
+            <div class="box teal">
+              <div class="label">Cross Product</div>
+              <p class="formula">|a x b| = |a| |b| sin theta</p>
+              <p class="body" style="margin-top:10px;">Use it for oriented area, normals, and right-handed frame construction.</p>
+            </div>
+            <div class="box amber">
+              <div class="label">Type Discipline</div>
+              <p class="body">A point is not a vector. A displacement can be added to a point, and two points can define a displacement, but adding two locations is usually a modeling error.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>The notebook checks dot, cross, angle, and area invariants.</span><span>Source section 2.4</span></div>
+      </div>
+      <aside class="speaker-notes">Stress that vector operations are not merely formulas to memorize. The dot product asks how much one direction agrees with another, while the cross product measures an oriented area and supplies a perpendicular direction. Those meanings are what let a renderer test normals, projections, handedness, and frame quality.</aside>
+    </section>
+
+    <section data-screen-label="08 Orthonormal Frames">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Coordinate Frames</div>
+          <div class="small">A frame is trustworthy only when it passes its checks.</div>
+        </div>
+        <h2>Build Frames, Then Audit Them</h2>
+        <div class="two-even">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box indigo">
+              <div class="label">Orthonormal Basis Check</div>
+              <p class="formula">G = [u v w]<sup>T</sup>[u v w] = I, &nbsp; det[u v w] > 0</p>
+            </div>
+            <ul class="bullets">
+              <li>Start with a known direction, often a surface normal.</li>
+              <li>Choose a helper vector that is not nearly collinear.</li>
+              <li>Use cross products to make perpendicular directions.</li>
+              <li>Use the Gram matrix and determinant as final tests.</li>
+            </ul>
+            <div class="box amber">
+              <div class="label">Common Failure</div>
+              <p class="body">Almost perpendicular is not enough. Tiny errors can accumulate when a camera, shading frame, or animation rig repeatedly updates a frame.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 740 520" role="img" aria-label="Frame construction and Gram matrix repair">
+              <defs>
+                <marker id="arrow-frame" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#111827"></path>
+                </marker>
+              </defs>
+              <circle cx="230" cy="300" r="150" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></circle>
+              <line x1="230" y1="300" x2="390" y2="240" stroke="#0F766E" stroke-width="6" marker-end="url(#arrow-frame)"></line>
+              <line x1="230" y1="300" x2="156" y2="158" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-frame)"></line>
+              <line x1="230" y1="300" x2="290" y2="130" stroke="#6D28D9" stroke-width="6" marker-end="url(#arrow-frame)"></line>
+              <text x="402" y="240" font-size="30" fill="#0F766E" font-weight="700">u</text>
+              <text x="126" y="150" font-size="30" fill="#2563EB" font-weight="700">v</text>
+              <text x="300" y="124" font-size="30" fill="#6D28D9" font-weight="700">w</text>
+              <rect x="450" y="132" width="230" height="230" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="565" y="92" text-anchor="middle" font-size="29" fill="#1E3A8A" font-weight="700">Gram Matrix</text>
+              <g font-family="STIX Two Text" font-size="34" fill="#111827" text-anchor="middle">
+                <text x="502" y="192">1</text><text x="565" y="192">0</text><text x="628" y="192">0</text>
+                <text x="502" y="255">0</text><text x="565" y="255">1</text><text x="628" y="255">0</text>
+                <text x="502" y="318">0</text><text x="565" y="318">0</text><text x="628" y="318">1</text>
+              </g>
+              <line x1="525" y1="150" x2="525" y2="348" stroke="#CBD5E1" stroke-width="2"></line>
+              <line x1="604" y1="150" x2="604" y2="348" stroke="#CBD5E1" stroke-width="2"></line>
+              <line x1="468" y1="214" x2="662" y2="214" stroke="#CBD5E1" stroke-width="2"></line>
+              <line x1="468" y1="277" x2="662" y2="277" stroke="#CBD5E1" stroke-width="2"></line>
+              <text x="565" y="420" text-anchor="middle" font-size="26" fill="#0F766E" font-weight="700">unit lengths, zero cross terms, positive handedness</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Frame repair is a debugging and rendering habit.</span><span>Source sections 2.4.5-2.4.8</span></div>
+      </div>
+      <aside class="speaker-notes">This slide should make the frame checks feel concrete. An orthonormal frame is not guaranteed because three vectors look roughly perpendicular on screen. The Gram matrix tests lengths and dot products, while the determinant detects a left-handed frame that would flip normals, texture orientation, or camera roll.</aside>
+    </section>
+
+    <section data-screen-label="09 Integration Density">
+      <div class="slide soft">
+        <div class="topline">
+          <div class="eyebrow">Integration And Density</div>
+          <div class="small">Units explain what an integral is accumulating.</div>
+        </div>
+        <h2>Read An Integral As Amount From Density</h2>
+        <div class="two">
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Density curve with area accumulation and solid angle weighting">
+              <line x1="92" y1="430" x2="690" y2="430" stroke="#CBD5E1" stroke-width="4"></line>
+              <line x1="118" y1="450" x2="118" y2="72" stroke="#CBD5E1" stroke-width="4"></line>
+              <path d="M118 390 C190 110 292 144 360 220 C438 310 524 188 650 108 L650 430 L118 430 Z" fill="#2563EB" opacity="0.16"></path>
+              <path d="M118 390 C190 110 292 144 360 220 C438 310 524 188 650 108" fill="none" stroke="#2563EB" stroke-width="5"></path>
+              <rect x="248" y="430" width="72" height="-230" fill="#0F766E" opacity="0.28" stroke="#0F766E" stroke-width="3"></rect>
+              <rect x="320" y="430" width="72" height="-205" fill="#0F766E" opacity="0.20" stroke="#0F766E" stroke-width="3"></rect>
+              <rect x="392" y="430" width="72" height="-165" fill="#0F766E" opacity="0.14" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="302" y="172" text-anchor="middle" font-size="28" fill="#0F766E" font-weight="700">density times width</text>
+              <path d="M522 330 C576 270 625 260 662 292" fill="none" stroke="#B45309" stroke-width="5"></path>
+              <circle cx="610" cy="300" r="72" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></circle>
+              <path d="M580 276 C602 260 630 263 646 285 C628 310 602 314 580 276" fill="#B45309" opacity="0.20"></path>
+              <text x="610" y="402" text-anchor="middle" font-size="25" fill="#B45309" font-weight="700">directional patch</text>
+              <text x="190" y="80" font-size="28" fill="#1E3A8A" font-weight="700">amount = integral of density over domain</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box indigo">
+              <div class="label">Reading Template</div>
+              <p class="formula">integral = density value x domain measure, accumulated over the domain</p>
+            </div>
+            <table>
+              <tr><th>Density Type</th><th>Domain Measure</th><th>Graphics Example</th></tr>
+              <tr><td>per length</td><td>distance</td><td>curve samples</td></tr>
+              <tr><td>per area</td><td>surface area</td><td>texture or irradiance</td></tr>
+              <tr><td>per direction</td><td>solid angle</td><td>incoming light</td></tr>
+            </table>
+            <div class="box teal">
+              <div class="label">Why It Matters</div>
+              <p class="body">A density cannot be compared to an amount until it is multiplied by the size of the domain it lives on.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Density language prepares the Monte Carlo estimator.</span><span>Source sections 2.5-2.6</span></div>
+      </div>
+      <aside class="speaker-notes">Treat integration as a unit-checking activity. Learners should ask what quantity is being accumulated, what domain it is accumulated over, and which measure belongs to that domain. This prevents common graphics mistakes such as treating a probability density, a surface density, or a solid-angle density as if it were already a plain amount.</aside>
+    </section>
+
+    <section data-screen-label="10 Implicit Geometry">
+      <div class="slide plain">
+        <div class="topline">
+          <div class="eyebrow">Implicit Curves And Surfaces</div>
+          <div class="small">Membership tests and normals come from scalar fields.</div>
+        </div>
+        <h2>Implicit Geometry Answers: Is This Point On The Shape?</h2>
+        <div class="two">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box">
+              <div class="label">Definition</div>
+              <p class="formula">curve: f(x,y) = 0 &nbsp;&nbsp; surface: f(x,y,z) = 0</p>
+              <p class="body" style="margin-top:10px;">The sign of <span class="math">f</span> often gives inside or outside information.</p>
+            </div>
+            <div class="box teal">
+              <div class="label">Normal Direction</div>
+              <p class="formula">normal proportional to grad f</p>
+              <p class="body" style="margin-top:10px;">The gradient points in the direction of fastest increase and is perpendicular to the level set.</p>
+            </div>
+            <div class="box amber">
+              <div class="label">Orientation Caveat</div>
+              <p class="body">Multiplying <span class="math">f</span> by a negative constant leaves the surface unchanged but reverses the gradient direction.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Implicit ellipse as zero contour with gradients and tangent directions">
+              <defs>
+                <marker id="arrow-implicit" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#111827"></path>
+                </marker>
+              </defs>
+              <ellipse cx="380" cy="270" rx="250" ry="130" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></ellipse>
+              <g stroke="#CBD5E1" stroke-width="2">
+                <line x1="110" y1="270" x2="650" y2="270"></line>
+                <line x1="380" y1="100" x2="380" y2="440"></line>
+              </g>
+              <g stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-implicit)">
+                <line x1="630" y1="270" x2="700" y2="270"></line>
+                <line x1="380" y1="140" x2="380" y2="70"></line>
+                <line x1="205" y1="362" x2="150" y2="420"></line>
+              </g>
+              <g stroke="#B45309" stroke-width="4" stroke-dasharray="9 7">
+                <line x1="608" y1="220" x2="652" y2="320"></line>
+                <line x1="320" y1="136" x2="442" y2="144"></line>
+                <line x1="168" y1="330" x2="245" y2="392"></line>
+              </g>
+              <text x="555" y="250" font-size="28" fill="#0F766E" font-weight="700">grad f</text>
+              <text x="420" y="94" font-size="28" fill="#0F766E" font-weight="700">normal</text>
+              <text x="478" y="366" font-size="28" fill="#B45309" font-weight="700">tangent directions</text>
+              <text x="312" y="484" font-size="30" fill="#1E3A8A" font-family="STIX Two Text">x<tspan baseline-shift="super" font-size="22">2</tspan>/a<tspan baseline-shift="super" font-size="22">2</tspan> + y<tspan baseline-shift="super" font-size="22">2</tspan>/b<tspan baseline-shift="super" font-size="22">2</tspan> - 1 = 0</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Implicit geometry is strong for tests, classification, and normals.</span><span>Source sections 2.7.1-2.7.5</span></div>
+      </div>
+      <aside class="speaker-notes">Point out that implicit geometry is excellent when an algorithm needs to ask whether a point satisfies a condition. The gradient gives a normal without explicitly walking over the shape, but the equation can be scaled or negated, so orientation must be chosen deliberately before using the normal in lighting.</aside>
+    </section>
+
+    <section data-screen-label="11 Parametric Geometry">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Parametric Curves And Surfaces</div>
+          <div class="small">Traversal and tangents come from a map.</div>
+        </div>
+        <h2>Parametric Geometry Answers: How Do We Generate Points?</h2>
+        <div class="two">
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Parametric surface patch with tangent vectors and normal">
+              <defs>
+                <marker id="arrow-param" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#111827"></path>
+                </marker>
+              </defs>
+              <path d="M110 330 C200 210 310 390 402 260 C495 128 585 310 650 210 L650 380 C560 472 468 330 380 440 C290 520 200 420 110 470 Z" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></path>
+              <g stroke="#94A3B8" stroke-width="2" opacity="0.8">
+                <path d="M145 328 C236 256 318 350 428 254 C520 174 590 250 636 212" fill="none"></path>
+                <path d="M132 392 C228 314 320 438 430 332 C528 240 596 318 648 280" fill="none"></path>
+                <path d="M190 280 C208 362 216 424 218 466" fill="none"></path>
+                <path d="M310 272 C330 350 344 398 350 454" fill="none"></path>
+                <path d="M455 232 C474 306 484 360 490 418" fill="none"></path>
+                <path d="M585 220 C595 286 606 328 612 376" fill="none"></path>
+              </g>
+              <circle cx="400" cy="310" r="12" fill="#1E3A8A"></circle>
+              <line x1="400" y1="310" x2="514" y2="278" stroke="#0F766E" stroke-width="6" marker-end="url(#arrow-param)"></line>
+              <line x1="400" y1="310" x2="360" y2="406" stroke="#B45309" stroke-width="6" marker-end="url(#arrow-param)"></line>
+              <line x1="400" y1="310" x2="438" y2="178" stroke="#6D28D9" stroke-width="6" marker-end="url(#arrow-param)"></line>
+              <text x="522" y="278" font-size="29" fill="#0F766E" font-weight="700">p_u</text>
+              <text x="324" y="426" font-size="29" fill="#B45309" font-weight="700">p_v</text>
+              <text x="446" y="170" font-size="29" fill="#6D28D9" font-weight="700">p_u x p_v</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box indigo">
+              <div class="label">Map Form</div>
+              <p class="formula">curve p(t) in R<sup>2</sup> or R<sup>3</sup>, &nbsp; surface p(u,v) in R<sup>3</sup></p>
+            </div>
+            <div class="box teal">
+              <div class="label">Differential Data</div>
+              <p class="formula">p<sub>u</sub>, p<sub>v</sub> are tangent; p<sub>u</sub> x p<sub>v</sub> is normal</p>
+            </div>
+            <ul class="bullets">
+              <li>Line segments, rays, circles, and surface patches are naturally parameterized.</li>
+              <li>Parameter domains define where traversal starts and stops.</li>
+              <li>Normals depend on parameter order through the right-hand rule.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer"><span>The notebook uses a rotatable torus surface to inspect tangents and normals.</span><span>Source sections 2.7.6-2.7.9</span></div>
+      </div>
+      <aside class="speaker-notes">Contrast this with the implicit slide. Parametric geometry is valuable when the renderer needs to generate points, walk along a curve, draw a surface patch, or sample a domain. The two tangent derivatives give local directions, and their cross product supplies a normal whose orientation depends on the chosen parameter order.</aside>
+    </section>
+
+    <section data-screen-label="12 Linear Interpolation">
+      <div class="slide plain">
+        <div class="topline">
+          <div class="eyebrow">Linear Interpolation</div>
+          <div class="small">A weighted average becomes a geometric position.</div>
+        </div>
+        <h2>Lerp Turns A Parameter Into A Point</h2>
+        <div class="two-even">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box">
+              <div class="label">Segment Formula</div>
+              <p class="formula">p(t) = (1 - t)a + tb</p>
+              <p class="body" style="margin-top:10px;">When <span class="math">0 <= t <= 1</span>, the point lies on the segment. Outside that interval, the same formula extrapolates.</p>
+            </div>
+            <div class="box teal">
+              <div class="label">Attribute Formula</div>
+              <p class="formula">c(t) = (1 - t)c<sub>a</sub> + tc<sub>b</sub></p>
+              <p class="body" style="margin-top:10px;">Positions, colors, depths, normals, and texture coordinates all use the same affine bookkeeping.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 740 520" role="img" aria-label="Linear interpolation along a segment with extrapolation and attribute ramp">
+              <defs>
+                <marker id="arrow-lerp" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <line x1="90" y1="250" x2="650" y2="250" stroke="#CBD5E1" stroke-width="6"></line>
+              <line x1="190" y1="250" x2="540" y2="250" stroke="#2563EB" stroke-width="11" marker-end="url(#arrow-lerp)"></line>
+              <circle cx="190" cy="250" r="18" fill="#2563EB"></circle>
+              <circle cx="540" cy="250" r="18" fill="#0F766E"></circle>
+              <circle cx="365" cy="250" r="18" fill="#B45309"></circle>
+              <text x="174" y="310" font-size="28" fill="#2563EB" font-weight="700">a, t=0</text>
+              <text x="506" y="310" font-size="28" fill="#0F766E" font-weight="700">b, t=1</text>
+              <text x="330" y="214" font-size="28" fill="#B45309" font-weight="700">p(0.5)</text>
+              <rect x="160" y="380" width="410" height="56" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"></rect>
+              <rect x="160" y="380" width="205" height="56" rx="8" fill="#2563EB" opacity="0.18"></rect>
+              <rect x="365" y="380" width="205" height="56" rx="8" fill="#0F766E" opacity="0.18"></rect>
+              <text x="365" y="418" text-anchor="middle" font-size="27" fill="#1E3A8A" font-weight="700">weights sum to one</text>
+              <text x="82" y="214" font-size="25" fill="#64748B">extrapolate</text>
+              <text x="590" y="214" font-size="25" fill="#64748B">extrapolate</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Affine weights are the bridge from positions to attributes.</span><span>Source section 2.8</span></div>
+      </div>
+      <aside class="speaker-notes">Make interpolation feel like a data movement rule. The same pair of weights that locates a point on a segment can also move an attribute between endpoint values. That is why linear interpolation reappears in rasterization, depth buffering, texture lookup, animation curves, and shading calculations.</aside>
+    </section>
+
+    <section data-screen-label="13 Barycentric Triangles">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Triangles And Barycentric Coordinates</div>
+          <div class="small">The segment idea extends to three weights.</div>
+        </div>
+        <h2>Barycentric Coordinates Are Triangle Weights</h2>
+        <div class="two">
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Triangle barycentric coordinates with subareas and outside negative weight">
+              <polygon points="150,420 620,380 300,100" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+              <circle cx="150" cy="420" r="13" fill="#2563EB"></circle>
+              <circle cx="620" cy="380" r="13" fill="#0F766E"></circle>
+              <circle cx="300" cy="100" r="13" fill="#6D28D9"></circle>
+              <circle cx="350" cy="300" r="15" fill="#B45309"></circle>
+              <line x1="350" y1="300" x2="150" y2="420" stroke="#B45309" stroke-width="3"></line>
+              <line x1="350" y1="300" x2="620" y2="380" stroke="#B45309" stroke-width="3"></line>
+              <line x1="350" y1="300" x2="300" y2="100" stroke="#B45309" stroke-width="3"></line>
+              <polygon points="350,300 620,380 300,100" fill="#2563EB" opacity="0.12"></polygon>
+              <polygon points="150,420 350,300 300,100" fill="#0F766E" opacity="0.12"></polygon>
+              <polygon points="150,420 620,380 350,300" fill="#6D28D9" opacity="0.12"></polygon>
+              <text x="118" y="462" font-size="29" fill="#2563EB" font-weight="700">A</text>
+              <text x="635" y="386" font-size="29" fill="#0F766E" font-weight="700">B</text>
+              <text x="298" y="76" font-size="29" fill="#6D28D9" font-weight="700">C</text>
+              <text x="365" y="292" font-size="29" fill="#B45309" font-weight="700">P</text>
+              <circle cx="628" cy="132" r="14" fill="#FFFFFF" stroke="#B45309" stroke-width="5"></circle>
+              <text x="556" y="118" font-size="25" fill="#B45309" font-weight="700">outside: one weight negative</text>
+              <rect x="92" y="24" width="426" height="50" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+              <text x="305" y="58" text-anchor="middle" font-size="28" fill="#1E3A8A" font-family="STIX Two Text">P = alpha A + beta B + gamma C, alpha + beta + gamma = 1</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box indigo">
+              <div class="label">Inside Test</div>
+              <p class="formula">alpha, beta, gamma >= 0 and alpha + beta + gamma = 1</p>
+            </div>
+            <div class="box teal">
+              <div class="label">Area Interpretation</div>
+              <p class="body">Each coordinate can be computed as a signed subtriangle area divided by the whole triangle area.</p>
+            </div>
+            <table>
+              <tr><th>Quantity</th><th>Interpolated By</th></tr>
+              <tr><td>color</td><td>vertex color weights</td></tr>
+              <tr><td>depth</td><td>screen-space triangle weights</td></tr>
+              <tr><td>texture coordinate</td><td>per-vertex UV weights</td></tr>
+              <tr><td>normal</td><td>weighted then normalized</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="footer"><span>Negative barycentric weights are useful diagnostics.</span><span>Source section 2.9</span></div>
+      </div>
+      <aside class="speaker-notes">Explain barycentric coordinates as interpolation weights rather than as abstract triangle algebra. If all three weights are nonnegative and sum to one, the point is inside. If one weight is negative, the point lies outside across the opposite edge. This makes barycentrics a compact language for rasterization and attribute interpolation.</aside>
+    </section>
+
+    <section data-screen-label="14 Probability">
+      <div class="slide soft">
+        <div class="topline">
+          <div class="eyebrow">Probability</div>
+          <div class="small">Normalization before expectation.</div>
+        </div>
+        <h2>PMFs And PDFs Are Bookkeeping Systems</h2>
+        <div class="two-even">
+          <div class="diagram">
+            <svg viewBox="0 0 740 520" role="img" aria-label="Discrete PMF and continuous PDF with CDF">
+              <line x1="70" y1="230" x2="330" y2="230" stroke="#CBD5E1" stroke-width="4"></line>
+              <line x1="90" y1="242" x2="90" y2="70" stroke="#CBD5E1" stroke-width="4"></line>
+              <g fill="#2563EB" opacity="0.72">
+                <rect x="110" y="170" width="28" height="60"></rect>
+                <rect x="150" y="134" width="28" height="96"></rect>
+                <rect x="190" y="88" width="28" height="142"></rect>
+                <rect x="230" y="112" width="28" height="118"></rect>
+                <rect x="270" y="150" width="28" height="80"></rect>
+              </g>
+              <text x="200" y="278" text-anchor="middle" font-size="27" fill="#1E3A8A" font-weight="700">PMF sums to 1</text>
+              <line x1="410" y1="230" x2="690" y2="230" stroke="#CBD5E1" stroke-width="4"></line>
+              <line x1="430" y1="242" x2="430" y2="70" stroke="#CBD5E1" stroke-width="4"></line>
+              <path d="M430 230 C500 222 590 154 674 78" fill="none" stroke="#0F766E" stroke-width="5"></path>
+              <path d="M430 230 C500 222 590 154 674 78 L674 230 Z" fill="#0F766E" opacity="0.14"></path>
+              <path d="M430 230 C510 188 594 128 674 90" fill="none" stroke="#B45309" stroke-width="4" stroke-dasharray="8 7"></path>
+              <text x="552" y="278" text-anchor="middle" font-size="27" fill="#0F766E" font-weight="700">PDF integrates to 1</text>
+              <rect x="116" y="350" width="500" height="82" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+              <text x="366" y="386" text-anchor="middle" font-size="29" fill="#1E3A8A" font-family="STIX Two Text">E[X] = sum x p(x)</text>
+              <text x="366" y="418" text-anchor="middle" font-size="25" fill="#475569">variance describes spread, not just center</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <table>
+              <tr><th>Concept</th><th>Discrete</th><th>Continuous</th></tr>
+              <tr><td>probability object</td><td>PMF</td><td>PDF</td></tr>
+              <tr><td>normalization</td><td>sum equals one</td><td>integral equals one</td></tr>
+              <tr><td>accumulation</td><td>CDF by sums</td><td>CDF by integrals</td></tr>
+              <tr><td>summary</td><td>expectation, variance</td><td>expectation, variance</td></tr>
+            </table>
+            <div class="box amber">
+              <div class="label">Crucial Distinction</div>
+              <p class="body">For a continuous variable, a single exact value has probability zero; intervals receive probability by integrating density.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Probability controls randomized graphics algorithms.</span><span>Source sections 2.10-2.11</span></div>
+      </div>
+      <aside class="speaker-notes">Keep the distinction between discrete and continuous probability explicit. A PMF assigns mass to outcomes, while a PDF assigns density that must be integrated over an interval. This prepares students to understand why renderers divide by the sampling density rather than by a raw count alone.</aside>
+    </section>
+
+    <section data-screen-label="15 Monte Carlo">
+      <div class="slide plain">
+        <div class="topline">
+          <div class="eyebrow">Monte Carlo Integration</div>
+          <div class="small">Random samples become unbiased estimates when weighted correctly.</div>
+        </div>
+        <h2>The Estimator Must Match The Sampling Density</h2>
+        <div class="two">
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box indigo">
+              <div class="label">Estimator</div>
+              <p class="formula">Integral of f approx (1/N) sum f(x_i) / p(x_i), &nbsp; x_i sampled from p</p>
+            </div>
+            <div class="box teal">
+              <div class="label">Importance Sampling</div>
+              <p class="body">Draw more samples where the integrand is large, then compensate by dividing by the density used to generate those samples.</p>
+            </div>
+            <div class="box amber">
+              <div class="label">Variance Warning</div>
+              <p class="body">Unbiased does not mean low noise. A poor sampling density can converge slowly even when the formula is correct.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Uniform sampling versus importance sampling convergence">
+              <line x1="80" y1="420" x2="690" y2="420" stroke="#CBD5E1" stroke-width="4"></line>
+              <line x1="104" y1="450" x2="104" y2="80" stroke="#CBD5E1" stroke-width="4"></line>
+              <path d="M104 380 C144 148 230 120 308 220 C408 350 518 310 660 190" fill="none" stroke="#111827" stroke-width="4"></path>
+              <path d="M104 380 C144 148 230 120 308 220 C408 350 518 310 660 190 L660 420 L104 420 Z" fill="#2563EB" opacity="0.10"></path>
+              <g fill="#2563EB">
+                <circle cx="132" cy="356" r="8"></circle><circle cx="198" cy="168" r="8"></circle><circle cx="268" cy="186" r="8"></circle>
+                <circle cx="338" cy="254" r="8"></circle><circle cx="410" cy="324" r="8"></circle><circle cx="492" cy="314" r="8"></circle><circle cx="620" cy="222" r="8"></circle>
+              </g>
+              <g fill="#0F766E">
+                <circle cx="150" cy="294" r="8"></circle><circle cx="168" cy="222" r="8"></circle><circle cx="190" cy="168" r="8"></circle><circle cx="214" cy="138" r="8"></circle>
+                <circle cx="240" cy="146" r="8"></circle><circle cx="270" cy="184" r="8"></circle><circle cx="322" cy="238" r="8"></circle><circle cx="610" cy="230" r="8"></circle>
+              </g>
+              <rect x="118" y="44" width="540" height="72" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+              <text x="388" y="78" text-anchor="middle" font-size="27" fill="#1E3A8A" font-weight="700">match sample density to the shape of f, then divide by p</text>
+              <g font-size="25" font-weight="700">
+                <text x="504" y="464" fill="#2563EB">uniform</text>
+                <text x="604" y="464" fill="#0F766E">importance</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>The notebook compares uniform and importance estimates for exp(-3x).</span><span>Source section 2.12</span></div>
+      </div>
+      <aside class="speaker-notes">The estimator is the heart of the probability portion. Students should read each term aloud: choose samples using density p, evaluate the function, divide by p to remove the sampling preference, and average. Importance sampling is not cheating; it is a change of sampling strategy with a required correction.</aside>
+    </section>
+
+    <section data-screen-label="16 Triangle Attribute Lab">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Applied Lab</div>
+          <div class="small">A miniature graphics task ties the chapter together.</div>
+        </div>
+        <h2>Average An Attribute Over A Triangle</h2>
+        <div class="two">
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Triangle attribute sampling with barycentric samples and running average">
+              <polygon points="130,430 640,390 310,86" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+              <circle cx="130" cy="430" r="16" fill="#2563EB"></circle>
+              <circle cx="640" cy="390" r="16" fill="#0F766E"></circle>
+              <circle cx="310" cy="86" r="16" fill="#6D28D9"></circle>
+              <text x="70" y="466" font-size="27" fill="#2563EB" font-weight="700">0.20</text>
+              <text x="656" y="394" font-size="27" fill="#0F766E" font-weight="700">0.92</text>
+              <text x="292" y="62" font-size="27" fill="#6D28D9" font-weight="700">0.48</text>
+              <g fill="#B45309" opacity="0.78">
+                <circle cx="262" cy="360" r="7"></circle><circle cx="364" cy="322" r="7"></circle><circle cx="410" cy="260" r="7"></circle>
+                <circle cx="246" cy="264" r="7"></circle><circle cx="500" cy="350" r="7"></circle><circle cx="330" cy="176" r="7"></circle>
+                <circle cx="520" cy="312" r="7"></circle><circle cx="198" cy="392" r="7"></circle><circle cx="404" cy="374" r="7"></circle>
+                <circle cx="308" cy="306" r="7"></circle><circle cx="456" cy="210" r="7"></circle><circle cx="570" cy="372" r="7"></circle>
+              </g>
+              <rect x="116" y="470" width="530" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+              <rect x="116" y="470" width="270" height="36" rx="8" fill="#0F766E" opacity="0.24"></rect>
+              <text x="382" y="498" text-anchor="middle" font-size="24" fill="#0F766E" font-weight="700">running estimate approaches vertex average for affine data</text>
+            </svg>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div class="box indigo">
+              <div class="label">Barycentric Sample</div>
+              <p class="formula">P = alpha A + beta B + gamma C</p>
+              <p class="formula" style="font-size:34px;">value(P) = alpha v_A + beta v_B + gamma v_C</p>
+            </div>
+            <ol class="bullets">
+              <li>Sample uniformly over triangle area.</li>
+              <li>Convert each sample to barycentric weights.</li>
+              <li>Interpolate the vertex attribute at that point.</li>
+              <li>Average the sampled values and compare to the exact affine average.</li>
+            </ol>
+            <div class="box teal">
+              <div class="label">Exact Check</div>
+              <p class="body">For an affine attribute, the mean over the triangle equals the mean of the three vertex values.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>This lab combines interpolation, triangles, probability, and Monte Carlo.</span><span>Notebook artifact: triangle-monte-carlo-lab.png</span></div>
+      </div>
+      <aside class="speaker-notes">Use the lab as a synthesis rather than as a separate application. The triangle provides a domain, barycentric coordinates provide weights, probability supplies random points, and Monte Carlo turns the sample values into an estimate. The exact affine average gives a clean correctness target for the experiment.</aside>
+    </section>
+
+    <section data-screen-label="17 Summary">
+      <div class="slide soft">
+        <div class="topline">
+          <div class="eyebrow">Takeaways</div>
+          <div class="small">Chapter 02 prepares the rest of the rendering pipeline.</div>
+        </div>
+        <h2>A Graphics Math Checklist</h2>
+        <div class="three">
+          <div class="card">
+            <h3>Inputs</h3>
+            <ul class="bullets" style="font-size:26px;">
+              <li>Declare domains and endpoint rules.</li>
+              <li>Restrict before requesting inverses.</li>
+              <li>Check units for angles and densities.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Geometry</h3>
+            <ul class="bullets" style="font-size:26px;">
+              <li>Prefer stable root formulas.</li>
+              <li>Audit frames using Gram and determinant tests.</li>
+              <li>Choose implicit or parametric form by task.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Estimates</h3>
+            <ul class="bullets" style="font-size:26px;">
+              <li>Use weights that sum to one.</li>
+              <li>Normalize PMFs and PDFs.</li>
+              <li>Divide sampled values by sampling density.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="diagram" style="margin-top:10px;">
+          <svg viewBox="0 0 1500 230" role="img" aria-label="Summary pipeline from domain to rendered estimate">
+            <defs>
+              <marker id="arrow-summary" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <g font-size="28" font-weight="700" text-anchor="middle">
+              <rect x="40" y="60" width="210" height="92" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="145" y="112" fill="#1E3A8A">domain</text>
+              <rect x="330" y="60" width="210" height="92" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="435" y="112" fill="#B45309">roots</text>
+              <rect x="620" y="60" width="210" height="92" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="725" y="112" fill="#0F766E">frames</text>
+              <rect x="910" y="60" width="210" height="92" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="1015" y="112" fill="#6D28D9">weights</text>
+              <rect x="1200" y="60" width="250" height="92" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+              <text x="1325" y="112" fill="#1E3A8A">sampled integral</text>
+            </g>
+            <g stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-summary)">
+              <line x1="250" y1="106" x2="326" y2="106"></line>
+              <line x1="540" y1="106" x2="616" y2="106"></line>
+              <line x1="830" y1="106" x2="906" y2="106"></line>
+              <line x1="1120" y1="106" x2="1196" y2="106"></line>
+            </g>
+            <text x="750" y="204" text-anchor="middle" font-size="27" fill="#475569">The same invariants reappear in ray tracing, rasterization, shading, sampling, and texture mapping.</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Original lecture deck authored from notebook and assigned source span.</span><span>Design system: Geometry Lecture Design System 1.0</span></div>
+      </div>
+      <aside class="speaker-notes">Close by returning to the checklist. Chapter 02 is miscellaneous only in title; the topics form a chain of responsibilities that later graphics code relies on. Encourage students to treat each formula as something with a domain, units, invariants, and failure modes that can be tested before a visual artifact is trusted.</aside>
+    </section>
+  </deck-stage>
+
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Miscellaneous Math for Graphics",
+      "notes": "Open by framing the chapter as a reliability layer for graphics, not as a disconnected survey. The learner should hear that every later rendering algorithm depends on small mathematical contracts: valid domains, stable numerical roots, auditable frames, well oriented normals, interpolation weights, and probability densities that keep sampled estimates honest."
+    },
+    {
+      "slide": 2,
+      "title": "Each Topic Becomes a Code Contract",
+      "notes": "Present the roadmap as a sequence of responsibilities. Domains decide whether a calculation is meaningful, stable roots decide whether an intersection is found, frames decide whether orientation and lengths are trustworthy, and probability decides whether a renderer's average converges to the intended quantity rather than to a biased accident."
+    },
+    {
+      "slide": 3,
+      "title": "Domains Control Whether Inverses Exist",
+      "notes": "Emphasize that domain information is not cosmetic notation. A ray routine, texture lookup, or logarithm call has the same issue as the square function: the output can only be interpreted correctly when the allowed inputs and endpoint conventions are explicit. The square example is useful because everyone can see the inverse problem immediately."
+    },
+    {
+      "slide": 4,
+      "title": "Intervals Are Small Data Structures",
+      "notes": "Use this slide to slow down on endpoints. Many graphics algorithms carry an interval for a ray parameter, a clipping window, or a valid texture coordinate range. Whether an endpoint is included can decide if a hit is accepted twice, rejected entirely, or allowed to pass into an inverse such as a logarithm."
+    },
+    {
+      "slide": 5,
+      "title": "Algebraically Correct Is Not Always Numerically Stable",
+      "notes": "Connect the stable quadratic formula directly to graphics practice. A missed small root can mean a ray starts just outside an object but fails to find the first hit, or a visibility query jumps to a farther surface. The residual plot in the notebook is not decoration; it is a practical test for root quality."
+    },
+    {
+      "slide": 6,
+      "title": "Trigonometry Supplies Coordinate Conversions",
+      "notes": "The important teaching move is to connect familiar right-triangle trigonometry to the measurements used in rendering. Cosines measure directional agreement, sines carry area factors, and solid angle explains why light integrals are weighted by directions on a sphere rather than by flat image coordinates alone."
+    },
+    {
+      "slide": 7,
+      "title": "Dot And Cross Products Are Geometry Tests",
+      "notes": "Stress that vector operations are not merely formulas to memorize. The dot product asks how much one direction agrees with another, while the cross product measures an oriented area and supplies a perpendicular direction. Those meanings are what let a renderer test normals, projections, handedness, and frame quality."
+    },
+    {
+      "slide": 8,
+      "title": "Build Frames, Then Audit Them",
+      "notes": "This slide should make the frame checks feel concrete. An orthonormal frame is not guaranteed because three vectors look roughly perpendicular on screen. The Gram matrix tests lengths and dot products, while the determinant detects a left-handed frame that would flip normals, texture orientation, or camera roll."
+    },
+    {
+      "slide": 9,
+      "title": "Read An Integral As Amount From Density",
+      "notes": "Treat integration as a unit-checking activity. Learners should ask what quantity is being accumulated, what domain it is accumulated over, and which measure belongs to that domain. This prevents common graphics mistakes such as treating a probability density, a surface density, or a solid-angle density as if it were already a plain amount."
+    },
+    {
+      "slide": 10,
+      "title": "Implicit Geometry Answers: Is This Point On The Shape?",
+      "notes": "Point out that implicit geometry is excellent when an algorithm needs to ask whether a point satisfies a condition. The gradient gives a normal without explicitly walking over the shape, but the equation can be scaled or negated, so orientation must be chosen deliberately before using the normal in lighting."
+    },
+    {
+      "slide": 11,
+      "title": "Parametric Geometry Answers: How Do We Generate Points?",
+      "notes": "Contrast this with the implicit slide. Parametric geometry is valuable when the renderer needs to generate points, walk along a curve, draw a surface patch, or sample a domain. The two tangent derivatives give local directions, and their cross product supplies a normal whose orientation depends on the chosen parameter order."
+    },
+    {
+      "slide": 12,
+      "title": "Lerp Turns A Parameter Into A Point",
+      "notes": "Make interpolation feel like a data movement rule. The same pair of weights that locates a point on a segment can also move an attribute between endpoint values. That is why linear interpolation reappears in rasterization, depth buffering, texture lookup, animation curves, and shading calculations."
+    },
+    {
+      "slide": 13,
+      "title": "Barycentric Coordinates Are Triangle Weights",
+      "notes": "Explain barycentric coordinates as interpolation weights rather than as abstract triangle algebra. If all three weights are nonnegative and sum to one, the point is inside. If one weight is negative, the point lies outside across the opposite edge. This makes barycentrics a compact language for rasterization and attribute interpolation."
+    },
+    {
+      "slide": 14,
+      "title": "PMFs And PDFs Are Bookkeeping Systems",
+      "notes": "Keep the distinction between discrete and continuous probability explicit. A PMF assigns mass to outcomes, while a PDF assigns density that must be integrated over an interval. This prepares students to understand why renderers divide by the sampling density rather than by a raw count alone."
+    },
+    {
+      "slide": 15,
+      "title": "The Estimator Must Match The Sampling Density",
+      "notes": "The estimator is the heart of the probability portion. Students should read each term aloud: choose samples using density p, evaluate the function, divide by p to remove the sampling preference, and average. Importance sampling is not cheating; it is a change of sampling strategy with a required correction."
+    },
+    {
+      "slide": 16,
+      "title": "Average An Attribute Over A Triangle",
+      "notes": "Use the lab as a synthesis rather than as a separate application. The triangle provides a domain, barycentric coordinates provide weights, probability supplies random points, and Monte Carlo turns the sample values into an estimate. The exact affine average gives a clean correctness target for the experiment."
+    },
+    {
+      "slide": 17,
+      "title": "A Graphics Math Checklist",
+      "notes": "Close by returning to the checklist. Chapter 02 is miscellaneous only in title; the topics form a chain of responsibilities that later graphics code relies on. Encourage students to treat each formula as something with a domain, units, invariants, and failure modes that can be tested before a visual artifact is trusted."
+    }
+  ]
+}
+  </script>
+</body>
+</html>

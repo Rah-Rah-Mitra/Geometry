@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Perception</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-19">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-19-visual-perception/19-visual-perception.ipynb">
+  <meta name="source_span" content="printed pages 525-568; PDF pages 542-585.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text fonts and KaTeX 0.16.11 auto-render support are enabled.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400;1,600&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open by naming the central translation in the chapter: graphics sends a proximal pattern of light, while the viewer infers surfaces, events, colors, and space. The lecture is about designing images with that inference loop in mind, not about replacing perception with simple pixel measurements."
+    },
+    {
+      "slide": 2,
+      "notes": "Use the map as the route through the chapter. Each block pairs a perceptual phenomenon with a graphics design decision. Tell students that the recurring question is not what value is stored in the framebuffer, but what constraint the viewer can recover from that value in context."
+    },
+    {
+      "slide": 3,
+      "notes": "Distal and proximal stimulus language is useful because it separates the world from the retinal or display pattern. A renderer controls only the proximal side. The viewer uses priors, context, and task demands to infer the distal scene, so identical pixels can support different perceptual conclusions."
+    },
+    {
+      "slide": 4,
+      "notes": "Treat contrast sensitivity as a design constraint rather than as trivia about the eye. Fine detail, low contrast, and viewing distance interact. The notebook grating check makes this operational by marking which frequency and contrast cells cross a visibility threshold under a simple synthetic model."
+    },
+    {
+      "slide": 5,
+      "notes": "Adaptation should be linked to tone mapping and display range. The visual system covers enormous physical luminance changes by moving a smaller useful discrimination window. A graphics system that ignores the adaptation state can preserve numeric luminance while still losing what the viewer needs to compare."
+    },
+    {
+      "slide": 6,
+      "notes": "Spend time on the equal centers because this is the chapter's practical warning for debugging appearance. The center samples can be numerically identical, yet the surrounds change the inferred lightness or color. Pixel equality is a local fact, while perceived appearance is a contextual inference."
+    },
+    {
+      "slide": 7,
+      "notes": "Use the cone diagram to explain why color management works at all and why it remains limited. Three broad cone responses collapse spectra into a smaller coordinate. Metamers are not mistakes in a display pipeline; they are consequences of compressive biological measurement."
+    },
+    {
+      "slide": 8,
+      "notes": "Frame spatial vision as constraint fusion. No single image cue simply writes depth into the picture. Vergence, disparity, motion, texture, shadows, and occlusion each carry assumptions. Reliable graphics aligns several cues so the visual system can settle on one coherent layout."
+    },
+    {
+      "slide": 9,
+      "notes": "Make the formulas concrete by tying each one to a picture operation. Vergence gives a metric constraint when eye geometry is known, while ground declination gives a distance relation when eye height and ground contact are plausible. Both are fragile when their assumptions are violated."
+    },
+    {
+      "slide": 10,
+      "notes": "The pictorial cue slide is a catalog of assumptions, not a list of tricks. Occlusion gives order, shadows attach objects to support surfaces, texture gradients imply slant, and shading constrains normals under a light model. Rendering errors often come from mixing these cues inconsistently."
+    },
+    {
+      "slide": 11,
+      "notes": "Motion needs both signal and sampling vocabulary. Optic flow can reveal heading and relative scene layout, but animation samples can also manufacture apparent motion that contradicts physical motion. The wagon-wheel style aliasing example connects perception directly to frame rate and temporal filtering."
+    },
+    {
+      "slide": 12,
+      "notes": "Separate grouping from identification. Proximity, similarity, continuity, and common fate organize primitives before a recognition strategy names the object. This distinction matters for graphics interfaces because a well-rendered target can still be hard to find if grouping fights the intended task."
+    },
+    {
+      "slide": 13,
+      "notes": "Attention and event perception give the chapter an interaction design edge. A single strong feature can pop out quickly, while conjunction search costs more. Expanding image motion can signal impending contact, so visual emphasis should respect how users discover events under time pressure."
+    },
+    {
+      "slide": 14,
+      "notes": "Picture perception returns to projection geometry. A perspective image is correct for a particular station point, but the actual viewer may sit closer or farther away. Human perception often tolerates the mismatch, yet large screens, simulators, and immersive displays must account for it explicitly."
+    },
+    {
+      "slide": 15,
+      "notes": "The stress matrix turns the chapter into an engineering checklist. Each row asks for a synthetic stimulus, a measurable failure signal, and a graphics decision. This is how perception becomes testable: not by claiming perfect prediction, but by catching conditions where appearance is likely to fail."
+    },
+    {
+      "slide": 16,
+      "notes": "Close by pulling the examples back to one habit: rendered output should be tested as an input to human inference. Pixel tests remain valuable, but they must be complemented by contrast, context, depth-cue, motion-sampling, object-search, and viewing-geometry checks when perception is the product."
+    }
+  ]
+}
+  </script>
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #475569;
+      --dim: #64748B;
+      --accent: #1E3A8A;
+      --blue: #2563EB;
+      --teal: #0F766E;
+      --amber: #B45309;
+      --violet: #6D28D9;
+      --border: #CBD5E1;
+      --soft-border: #E2E8F0;
+      --paper: #FFFFFF;
+      --soft: #F8FAFC;
+      --blue-soft: #EFF6FF;
+      --teal-soft: #F0FDFA;
+      --amber-soft: #FFFBEB;
+      --violet-soft: #F5F3FF;
+      --font-sans: 'Source Sans 3', Arial, sans-serif;
+      --font-math: 'STIX Two Text', Georgia, serif;
+      --font-code: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #020617;
+      color: var(--ink);
+      font-family: var(--font-sans);
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      overflow: clip;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      padding: 70px 96px 54px;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(to right, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px);
+      background-size: 80px 80px;
+      color: var(--ink);
+      border-top: 10px solid var(--accent);
+      font-family: var(--font-sans);
+    }
+
+    .slide.alt {
+      background-image:
+        linear-gradient(to right, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+      background-size: 80px 80px, 80px 80px, 100% 100%;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 1180px;
+      color: var(--accent);
+      font-size: 66px;
+      line-height: 1.04;
+      font-weight: 700;
+    }
+
+    h2 {
+      color: var(--ink);
+      font-size: 52px;
+      line-height: 1.08;
+      font-weight: 700;
+    }
+
+    h3 {
+      color: var(--accent);
+      font-size: 31px;
+      line-height: 1.16;
+      font-weight: 700;
+    }
+
+    p,
+    li {
+      color: var(--ink);
+      font-size: 28px;
+      line-height: 1.28;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 34px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    svg text {
+      font-family: var(--font-sans);
+      letter-spacing: 0;
+    }
+
+    .math,
+    .math text {
+      font-family: var(--font-math);
+    }
+
+    .code,
+    code {
+      font-family: var(--font-code);
+      font-size: 25px;
+    }
+
+    .kicker {
+      color: var(--teal);
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 34px;
+      line-height: 1.22;
+      max-width: 1280px;
+    }
+
+    .source-line {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      color: var(--dim);
+      font-size: 22px;
+      line-height: 1.24;
+    }
+
+    .source-line span {
+      font-size: 22px;
+      line-height: 1.24;
+    }
+
+    .slide-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 32px;
+      border-bottom: 1px solid var(--soft-border);
+      padding-bottom: 18px;
+    }
+
+    .slide-head p {
+      color: var(--dim);
+      font-size: 23px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .title-layout {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 58px;
+      align-items: center;
+    }
+
+    .rule {
+      width: 112px;
+      height: 6px;
+      border-radius: 6px;
+      background: var(--teal);
+      margin: 28px 0;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 30px;
+      align-items: stretch;
+    }
+
+    .two {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .two.wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .two.wide-right {
+      grid-template-columns: 0.88fr 1.12fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .panel {
+      background: rgba(248, 250, 252, 0.94);
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      padding: 24px;
+      min-height: 0;
+      overflow: clip;
+    }
+
+    .panel.white {
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .panel h3 {
+      margin-bottom: 12px;
+    }
+
+    .panel p {
+      color: var(--muted);
+      font-size: 25px;
+    }
+
+    .math-box {
+      border-left: 5px solid var(--blue);
+      background: var(--blue-soft);
+      border-radius: 8px;
+      padding: 22px 24px;
+    }
+
+    .math-box.teal {
+      border-left-color: var(--teal);
+      background: var(--teal-soft);
+    }
+
+    .math-box.amber {
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .math-box.violet {
+      border-left-color: var(--violet);
+      background: var(--violet-soft);
+    }
+
+    .math-label {
+      color: var(--accent);
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 8px;
+    }
+
+    .formula {
+      color: var(--ink);
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.18;
+    }
+
+    .small {
+      color: var(--dim);
+      font-size: 22px;
+      line-height: 1.24;
+    }
+
+    .caption {
+      color: var(--dim);
+      font-size: 22px;
+      line-height: 1.22;
+      margin-top: 12px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .chip {
+      border: 1px solid var(--soft-border);
+      border-radius: 999px;
+      padding: 8px 14px;
+      color: var(--muted);
+      background: #FFFFFF;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .map-grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .map-card {
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.96);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .map-card p {
+      color: var(--muted);
+      font-size: 24px;
+    }
+
+    .map-number {
+      color: var(--teal);
+      font-family: var(--font-code);
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      padding: 16px;
+      background: #FFFFFF;
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--accent);
+      font-size: 32px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--dim);
+      font-size: 21px;
+      line-height: 1.2;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-list p {
+      padding-left: 18px;
+      border-left: 4px solid var(--border);
+      color: var(--muted);
+      font-size: 25px;
+    }
+
+    .matrix {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #FFFFFF;
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      overflow: clip;
+    }
+
+    .matrix th,
+    .matrix td {
+      border-bottom: 1px solid var(--soft-border);
+      padding: 14px 16px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 23px;
+      line-height: 1.22;
+    }
+
+    .matrix th {
+      color: var(--accent);
+      background: #F8FAFC;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .matrix tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .takeaways {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-top: 10px;
+    }
+
+    .takeaway {
+      border-left: 5px solid var(--teal);
+      background: #FFFFFF;
+      border-radius: 8px;
+      padding: 20px 22px;
+      min-height: 122px;
+    }
+
+    .takeaway:nth-child(2) {
+      border-left-color: var(--blue);
+    }
+
+    .takeaway:nth-child(3) {
+      border-left-color: var(--amber);
+    }
+
+    .takeaway:nth-child(4) {
+      border-left-color: var(--violet);
+    }
+
+    .takeaway strong {
+      color: var(--accent);
+      display: block;
+      font-size: 27px;
+      margin-bottom: 8px;
+    }
+
+    .takeaway span {
+      color: var(--muted);
+      font-size: 24px;
+      line-height: 1.22;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Title">
+      <div class="title-layout">
+        <div>
+          <p class="kicker">Fundamentals of Computer Graphics - Chapter 19</p>
+          <h1>Visual Perception</h1>
+          <div class="rule"></div>
+          <p class="subtitle">Pixels are proximal stimuli. Viewers infer lightness, color, motion, object identity, and pictorial space from those patterns.</p>
+          <div class="chips">
+            <span class="chip">Sensitivity</span>
+            <span class="chip">Spatial Vision</span>
+            <span class="chip">Depth Cues</span>
+            <span class="chip">Motion</span>
+            <span class="chip">Objects</span>
+            <span class="chip">Pictures</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 840 540" role="img" aria-label="Display light pattern entering an eye and becoming perceptual inference">
+          <defs>
+            <linearGradient id="title-screen" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#EFF6FF"/>
+              <stop offset="1" stop-color="#F0FDFA"/>
+            </linearGradient>
+            <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563EB"/>
+            </marker>
+          </defs>
+          <rect x="40" y="68" width="270" height="360" rx="18" fill="url(#title-screen)" stroke="#1E3A8A" stroke-width="5"/>
+          <g opacity="0.95">
+            <rect x="70" y="102" width="52" height="52" fill="#2563EB" opacity="0.22"/>
+            <rect x="132" y="102" width="52" height="52" fill="#0F766E" opacity="0.28"/>
+            <rect x="194" y="102" width="52" height="52" fill="#B45309" opacity="0.26"/>
+            <rect x="70" y="164" width="52" height="52" fill="#6D28D9" opacity="0.24"/>
+            <rect x="132" y="164" width="52" height="52" fill="#1E3A8A" opacity="0.20"/>
+            <rect x="194" y="164" width="52" height="52" fill="#0F766E" opacity="0.20"/>
+            <path d="M70 268 C128 238 177 315 246 273" fill="none" stroke="#2563EB" stroke-width="8"/>
+            <path d="M70 330 C126 362 190 296 250 338" fill="none" stroke="#B45309" stroke-width="8"/>
+          </g>
+          <text x="60" y="468" font-size="24" fill="#475569">proximal pattern on display</text>
+          <path d="M322 150 C420 176 477 194 565 230" stroke="#2563EB" stroke-width="5" fill="none" marker-end="url(#arrow-title)"/>
+          <path d="M320 246 C430 252 482 260 575 270" stroke="#0F766E" stroke-width="5" fill="none" marker-end="url(#arrow-title)"/>
+          <path d="M320 350 C424 322 486 306 572 294" stroke="#B45309" stroke-width="5" fill="none" marker-end="url(#arrow-title)"/>
+          <ellipse cx="645" cy="268" rx="130" ry="74" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5"/>
+          <circle cx="642" cy="268" r="42" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+          <circle cx="642" cy="268" r="19" fill="#111827"/>
+          <path d="M566 268 C612 198 682 198 730 268 C683 338 611 338 566 268 Z" fill="none" stroke="#0F766E" stroke-width="4"/>
+          <g transform="translate(555 390)">
+            <rect x="0" y="0" width="230" height="78" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
+            <text x="18" y="32" font-size="24" fill="#1E3A8A" font-weight="700">inferred scene</text>
+            <text x="18" y="62" font-size="22" fill="#475569">surfaces, events, space</text>
+          </g>
+        </svg>
+      </div>
+      <div class="source-line">
+        <span>Source span: printed pages 525-568; PDF pages 542-585</span>
+        <span>Notebook: Fundamentals-of-Computer-Graphics/chapter-19-visual-perception/19-visual-perception.ipynb</span>
+      </div>
+      <aside class="speaker-notes">Open by naming the central translation in the chapter: graphics sends a proximal pattern of light, while the viewer infers surfaces, events, colors, and space. The lecture is about designing images with that inference loop in mind, not about replacing perception with simple pixel measurements.</aside>
+    </section>
+
+    <section class="slide" data-label="Lecture Map">
+      <div class="slide-head">
+        <h2>Perception As A Graphics Contract</h2>
+        <p>six linked design questions</p>
+      </div>
+      <div class="map-grid">
+        <div class="map-card">
+          <div class="map-number">01</div>
+          <h3>Sensitivity</h3>
+          <p>Which spatial, temporal, and luminance changes can the viewer detect?</p>
+          <svg viewBox="0 0 280 110" aria-label="Contrast bands">
+            <rect x="8" y="16" width="264" height="78" rx="8" fill="#EFF6FF" stroke="#CBD5E1"/>
+            <path d="M24 78 C56 26 88 26 120 78 S184 130 216 78 S248 26 264 44" fill="none" stroke="#2563EB" stroke-width="8"/>
+            <path d="M24 62 C56 36 88 36 120 62 S184 88 216 62 S248 36 264 45" fill="none" stroke="#0F766E" stroke-width="4"/>
+          </svg>
+        </div>
+        <div class="map-card">
+          <div class="map-number">02</div>
+          <h3>Context</h3>
+          <p>When do equal local pixels support unequal perceived lightness or color?</p>
+          <svg viewBox="0 0 280 110" aria-label="Equal center patches in different surrounds">
+            <rect x="28" y="18" width="92" height="76" fill="#1F2937"/>
+            <rect x="160" y="18" width="92" height="76" fill="#E5E7EB"/>
+            <rect x="58" y="42" width="32" height="32" fill="#94A3B8"/>
+            <rect x="190" y="42" width="32" height="32" fill="#94A3B8"/>
+          </svg>
+        </div>
+        <div class="map-card">
+          <div class="map-number">03</div>
+          <h3>Color</h3>
+          <p>How do spectra become low-dimensional cone responses and display values?</p>
+          <svg viewBox="0 0 280 110" aria-label="Cone response curves">
+            <path d="M18 88 H262" stroke="#CBD5E1" stroke-width="3"/>
+            <path d="M30 86 C58 28 86 28 114 86" fill="none" stroke="#2563EB" stroke-width="6"/>
+            <path d="M86 86 C120 18 154 18 188 86" fill="none" stroke="#0F766E" stroke-width="6"/>
+            <path d="M146 86 C182 26 218 26 252 86" fill="none" stroke="#B45309" stroke-width="6"/>
+          </svg>
+        </div>
+        <div class="map-card">
+          <div class="map-number">04</div>
+          <h3>Depth Cues</h3>
+          <p>Which assumptions turn image geometry into layout and distance?</p>
+          <svg viewBox="0 0 280 110" aria-label="Ground plane and depth cues">
+            <path d="M20 88 H260" stroke="#CBD5E1" stroke-width="4"/>
+            <path d="M70 88 L132 22 L218 88" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+            <circle cx="132" cy="22" r="8" fill="#B45309"/>
+            <path d="M102 88 C124 64 166 64 190 88" fill="none" stroke="#0F766E" stroke-width="5"/>
+          </svg>
+        </div>
+        <div class="map-card">
+          <div class="map-number">05</div>
+          <h3>Motion</h3>
+          <p>What does image motion reveal, and what does sampling distort?</p>
+          <svg viewBox="0 0 280 110" aria-label="Optic flow and sampled wheel">
+            <circle cx="74" cy="55" r="9" fill="#B45309"/>
+            <path d="M74 55 L26 24 M74 55 L28 86 M74 55 L132 28 M74 55 L140 86" stroke="#2563EB" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="210" cy="55" r="34" fill="none" stroke="#0F766E" stroke-width="5"/>
+            <path d="M210 55 L210 22 M210 55 L238 72 M210 55 L182 72" stroke="#0F766E" stroke-width="5"/>
+          </svg>
+        </div>
+        <div class="map-card">
+          <div class="map-number">06</div>
+          <h3>Pictures</h3>
+          <p>How does a flat display inherit viewpoint, frame, and cue conflicts?</p>
+          <svg viewBox="0 0 280 110" aria-label="Picture frustum">
+            <rect x="126" y="20" width="14" height="76" fill="#1E3A8A"/>
+            <path d="M132 24 L32 55 L132 94" fill="none" stroke="#2563EB" stroke-width="4"/>
+            <path d="M132 24 L246 40 M132 94 L246 78" fill="none" stroke="#B45309" stroke-width="4" stroke-dasharray="8 7"/>
+            <circle cx="32" cy="55" r="10" fill="#0F766E"/>
+            <circle cx="246" cy="59" r="10" fill="#B45309"/>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the map as the route through the chapter. Each block pairs a perceptual phenomenon with a graphics design decision. Tell students that the recurring question is not what value is stored in the framebuffer, but what constraint the viewer can recover from that value in context.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Stimulus Chain">
+      <div class="slide-head">
+        <h2>Distal Scene, Proximal Pattern, Perceived World</h2>
+        <p>vision science vocabulary for rendering</p>
+      </div>
+      <div class="content two wide-left">
+        <div class="panel white">
+          <svg viewBox="0 0 920 620" aria-label="Distal to proximal to perceptual inference chain">
+            <defs>
+              <marker id="arrow-chain" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563EB"/>
+              </marker>
+            </defs>
+            <rect x="32" y="70" width="210" height="430" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+            <path d="M86 404 L142 268 L200 404 Z" fill="#D1FAE5" stroke="#0F766E" stroke-width="4"/>
+            <circle cx="128" cy="182" r="46" fill="#FDE68A" stroke="#B45309" stroke-width="4"/>
+            <rect x="78" y="406" width="132" height="34" fill="#94A3B8"/>
+            <text x="58" y="548" font-size="28" fill="#0F766E" font-weight="700">distal scene</text>
+            <text x="58" y="584" font-size="22" fill="#475569">objects and illumination</text>
+            <rect x="354" y="70" width="210" height="430" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+            <g>
+              <rect x="388" y="118" width="40" height="40" fill="#2563EB" opacity="0.22"/>
+              <rect x="436" y="118" width="40" height="40" fill="#0F766E" opacity="0.28"/>
+              <rect x="484" y="118" width="40" height="40" fill="#B45309" opacity="0.24"/>
+              <rect x="388" y="166" width="40" height="40" fill="#6D28D9" opacity="0.24"/>
+              <rect x="436" y="166" width="40" height="40" fill="#111827" opacity="0.18"/>
+              <rect x="484" y="166" width="40" height="40" fill="#2563EB" opacity="0.12"/>
+              <path d="M390 272 C420 236 456 236 486 272 S544 308 548 270" fill="none" stroke="#2563EB" stroke-width="6"/>
+              <path d="M390 348 C428 372 470 318 524 346" fill="none" stroke="#0F766E" stroke-width="6"/>
+            </g>
+            <text x="380" y="548" font-size="28" fill="#2563EB" font-weight="700">proximal pattern</text>
+            <text x="380" y="584" font-size="22" fill="#475569">image, retina, display light</text>
+            <rect x="674" y="70" width="210" height="430" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+            <path d="M712 390 C736 298 802 220 844 160" fill="none" stroke="#6D28D9" stroke-width="6"/>
+            <circle cx="754" cy="296" r="26" fill="#EDE9FE" stroke="#6D28D9" stroke-width="4"/>
+            <rect x="790" y="292" width="52" height="86" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"/>
+            <path d="M722 180 C754 128 818 130 850 180 C817 232 754 232 722 180 Z" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="4"/>
+            <circle cx="786" cy="180" r="22" fill="#111827"/>
+            <text x="700" y="548" font-size="28" fill="#6D28D9" font-weight="700">perceived world</text>
+            <text x="700" y="584" font-size="22" fill="#475569">inferred layout and events</text>
+            <path d="M252 282 H338" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-chain)"/>
+            <path d="M574 282 H660" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-chain)"/>
+            <text x="268" y="246" font-size="24" fill="#475569">projection</text>
+            <text x="586" y="246" font-size="24" fill="#475569">inference</text>
+          </svg>
+        </div>
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Rendering Limit</div>
+            <p>A renderer controls emitted light and samples. It does not directly control lightness, object identity, or depth experience.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Perceptual Rule</div>
+            <p>Vision estimates stable world causes from changing image evidence, so context is part of the signal.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Graphics Warning</div>
+            <p>Numerically accurate pixels can still be perceptually misleading when the wrong cues dominate the interpretation.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Distal and proximal stimulus language is useful because it separates the world from the retinal or display pattern. A renderer controls only the proximal side. The viewer uses priors, context, and task demands to infer the distal scene, so identical pixels can support different perceptual conclusions.</aside>
+    </section>
+
+    <section class="slide" data-label="Contrast Sensitivity">
+      <div class="slide-head">
+        <h2>Sensitivity Is Pattern-Dependent</h2>
+        <p>contrast, frequency, and adaptation</p>
+      </div>
+      <div class="content two wide-left">
+        <div class="panel white">
+          <svg viewBox="0 0 950 620" aria-label="Synthetic contrast sensitivity grating and threshold curve">
+            <defs>
+              <pattern id="bars-low" width="36" height="36" patternUnits="userSpaceOnUse">
+                <rect width="18" height="36" fill="#CBD5E1"/>
+                <rect x="18" width="18" height="36" fill="#F8FAFC"/>
+              </pattern>
+              <pattern id="bars-mid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect width="10" height="20" fill="#94A3B8"/>
+                <rect x="10" width="10" height="20" fill="#FFFFFF"/>
+              </pattern>
+              <pattern id="bars-high" width="10" height="10" patternUnits="userSpaceOnUse">
+                <rect width="5" height="10" fill="#64748B"/>
+                <rect x="5" width="5" height="10" fill="#FFFFFF"/>
+              </pattern>
+            </defs>
+            <rect x="30" y="42" width="500" height="380" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+            <text x="54" y="82" font-size="26" fill="#1E3A8A" font-weight="700">frequency by contrast stimulus</text>
+            <rect x="70" y="118" width="120" height="230" fill="url(#bars-low)" opacity="0.45"/>
+            <rect x="210" y="118" width="120" height="230" fill="url(#bars-mid)" opacity="0.72"/>
+            <rect x="350" y="118" width="120" height="230" fill="url(#bars-high)" opacity="0.92"/>
+            <path d="M66 370 H476" stroke="#CBD5E1" stroke-width="4"/>
+            <path d="M70 370 L70 116" stroke="#CBD5E1" stroke-width="4"/>
+            <text x="72" y="404" font-size="22" fill="#475569">low</text>
+            <text x="218" y="404" font-size="22" fill="#475569">middle</text>
+            <text x="358" y="404" font-size="22" fill="#475569">high</text>
+            <text x="64" y="454" font-size="22" fill="#64748B">spatial frequency rises left to right</text>
+            <text x="55" y="106" font-size="22" fill="#64748B" transform="rotate(-90 55 106)">contrast</text>
+            <rect x="584" y="42" width="324" height="380" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+            <text x="610" y="82" font-size="26" fill="#1E3A8A" font-weight="700">threshold envelope</text>
+            <path d="M632 346 H858 M632 346 V118" stroke="#CBD5E1" stroke-width="4"/>
+            <path d="M636 310 C678 206 726 146 772 170 C812 192 835 252 856 326" fill="none" stroke="#2563EB" stroke-width="7"/>
+            <path d="M636 308 C684 296 730 286 778 292 C816 296 840 310 856 326" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <text x="646" y="382" font-size="22" fill="#475569">coarse</text>
+            <text x="796" y="382" font-size="22" fill="#475569">fine</text>
+            <text x="614" y="132" font-size="22" fill="#64748B" transform="rotate(-90 614 132)">sensitivity</text>
+            <circle cx="735" cy="168" r="9" fill="#0F766E"/>
+            <text x="752" y="164" font-size="22" fill="#0F766E" font-weight="700">best band</text>
+            <rect x="64" y="472" width="790" height="96" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+            <text x="92" y="512" font-size="28" fill="#1E3A8A" font-weight="700">Notebook diagnostic</text>
+            <text x="92" y="548" font-size="24" fill="#475569">30 synthetic cells exceed the threshold; minimum-frequency visibility occurs near 6.07 cycles/degree.</text>
+          </svg>
+        </div>
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Local Contrast</div>
+            <p class="formula">\( C \approx \Delta L / L \)</p>
+            <p class="caption">A 1 percent luminance change can matter at an edge, but visibility depends on the pattern around it.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Display Consequence</div>
+            <p>Small high-frequency texture may vanish at one viewing distance and become obvious at another.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Design Move</div>
+            <p>Audit fine detail with viewing geometry, not just with framebuffer differences.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Treat contrast sensitivity as a design constraint rather than as trivia about the eye. Fine detail, low contrast, and viewing distance interact. The notebook grating check makes this operational by marking which frequency and contrast cells cross a visibility threshold under a simple synthetic model.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Adaptation">
+      <div class="slide-head">
+        <h2>Adaptation Moves The Useful Window</h2>
+        <p>dynamic range is perceptual as well as physical</p>
+      </div>
+      <div class="content two">
+        <div class="panel white">
+          <svg viewBox="0 0 800 600" aria-label="Log luminance axis with adaptation windows">
+            <path d="M86 300 H720" stroke="#CBD5E1" stroke-width="6"/>
+            <g stroke="#CBD5E1" stroke-width="3">
+              <path d="M120 286 V314"/>
+              <path d="M240 286 V314"/>
+              <path d="M360 286 V314"/>
+              <path d="M480 286 V314"/>
+              <path d="M600 286 V314"/>
+              <path d="M720 286 V314"/>
+            </g>
+            <text x="90" y="356" font-size="24" fill="#64748B">dark</text>
+            <text x="655" y="356" font-size="24" fill="#64748B">bright</text>
+            <rect x="128" y="194" width="220" height="112" rx="12" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+            <text x="160" y="240" font-size="28" fill="#1E3A8A" font-weight="700">night window</text>
+            <text x="160" y="276" font-size="23" fill="#475569">rod-weighted detail</text>
+            <rect x="424" y="194" width="220" height="112" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+            <text x="458" y="240" font-size="28" fill="#0F766E" font-weight="700">day window</text>
+            <text x="458" y="276" font-size="23" fill="#475569">cone-rich color</text>
+            <path d="M238 194 C266 126 358 126 462 194" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <path d="M350 306 C392 382 468 382 534 306" fill="none" stroke="#2563EB" stroke-width="5" stroke-dasharray="12 10"/>
+            <text x="292" y="118" font-size="25" fill="#B45309" font-weight="700">state changes over time</text>
+            <rect x="98" y="420" width="594" height="100" rx="8" fill="#FFFFFF" stroke="#CBD5E1"/>
+            <path d="M132 486 C202 434 284 438 354 484 S514 540 652 444" fill="none" stroke="#2563EB" stroke-width="7"/>
+            <text x="138" y="454" font-size="24" fill="#475569">compressive response</text>
+            <text x="466" y="504" font-size="24" fill="#475569">preserve discriminability</text>
+          </svg>
+        </div>
+        <div class="panel">
+          <h3>Graphics Implications</h3>
+          <ul>
+            <li>HDR tone mapping should protect relative differences the viewer can use after adaptation.</li>
+            <li>Dark-to-bright transitions need temporal consideration, not only a static exposure choice.</li>
+            <li>Color-rich detail can become weak when the operating window shifts toward low light.</li>
+          </ul>
+          <div class="stat-grid">
+            <div class="stat">
+              <strong>local</strong>
+              <span>what changed near an edge</span>
+            </div>
+            <div class="stat">
+              <strong>state</strong>
+              <span>what the eye is adapted to</span>
+            </div>
+          </div>
+          <div class="math-box teal" style="margin-top: 20px;">
+            <div class="math-label">Lecture Cue</div>
+            <p>Ask whether the viewer is detecting energy, ratios, or a contrast pattern after adaptation.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Adaptation should be linked to tone mapping and display range. The visual system covers enormous physical luminance changes by moving a smaller useful discrimination window. A graphics system that ignores the adaptation state can preserve numeric luminance while still losing what the viewer needs to compare.</aside>
+    </section>
+
+    <section class="slide" data-label="Context And Lightness">
+      <div class="slide-head">
+        <h2>Equal Pixels Can Support Unequal Percepts</h2>
+        <p>lightness and color are contextual</p>
+      </div>
+      <div class="content two wide-left">
+        <div class="panel white">
+          <svg viewBox="0 0 940 620" aria-label="Equal center swatches with different surrounds and an edge response">
+            <rect x="46" y="66" width="300" height="310" rx="14" fill="#1F2937"/>
+            <rect x="96" y="140" width="200" height="160" rx="6" fill="#9CA3AF"/>
+            <rect x="430" y="66" width="300" height="310" rx="14" fill="#E5E7EB"/>
+            <rect x="480" y="140" width="200" height="160" rx="6" fill="#9CA3AF"/>
+            <text x="90" y="420" font-size="28" fill="#1E3A8A" font-weight="700">same center sample</text>
+            <text x="474" y="420" font-size="28" fill="#1E3A8A" font-weight="700">same center sample</text>
+            <path d="M346 220 H430" stroke="#CBD5E1" stroke-width="5" stroke-dasharray="10 8"/>
+            <text x="332" y="258" font-size="22" fill="#64748B">local equality</text>
+            <rect x="84" y="470" width="686" height="86" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+            <text x="112" y="506" font-size="25" fill="#1E3A8A" font-weight="700">Notebook invariant</text>
+            <text x="112" y="540" font-size="23" fill="#475569">gray center difference = 0.0; RGB and Lab center differences are also zero in the synthetic color panel.</text>
+            <g transform="translate(770 104)">
+              <rect x="0" y="0" width="130" height="260" rx="8" fill="#FFFFFF" stroke="#CBD5E1"/>
+              <path d="M18 130 C42 86 64 86 76 130 S104 174 120 130" fill="none" stroke="#B45309" stroke-width="6"/>
+              <path d="M64 38 V220" stroke="#CBD5E1" stroke-width="3"/>
+              <text x="18" y="246" font-size="22" fill="#64748B">edge signal</text>
+            </g>
+          </svg>
+        </div>
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Invariant Sample</div>
+            <p>The center values are held fixed; the perceptual report changes because the surround changes the inferred surface.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Common Failure</div>
+            <p>A color picker validates a local value, while the user judges the color inside a full scene.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Graphics Test</div>
+            <p>Preview colors, labels, and medical or design cues in their actual contrast context.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Spend time on the equal centers because this is the chapter's practical warning for debugging appearance. The center samples can be numerically identical, yet the surrounds change the inferred lightness or color. Pixel equality is a local fact, while perceived appearance is a contextual inference.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Color And Metamers">
+      <div class="slide-head">
+        <h2>Color Is A Perceptual Coordinate, Not A Spectrum</h2>
+        <p>spectral compression makes displays possible</p>
+      </div>
+      <div class="content two wide-left">
+        <div class="panel white">
+          <svg viewBox="0 0 950 620" aria-label="Spectra compressed by three cone sensitivity curves">
+            <defs>
+              <marker id="arrow-color" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563EB"/>
+              </marker>
+            </defs>
+            <rect x="40" y="58" width="370" height="250" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+            <path d="M80 260 H370 M80 260 V92" stroke="#CBD5E1" stroke-width="4"/>
+            <path d="M86 210 C126 98 170 108 210 196 S296 274 370 134" fill="none" stroke="#2563EB" stroke-width="6"/>
+            <path d="M86 188 C130 248 176 112 224 172 S316 240 370 154" fill="none" stroke="#B45309" stroke-width="6" stroke-dasharray="12 8"/>
+            <text x="84" y="298" font-size="23" fill="#475569">two different spectra</text>
+            <rect x="40" y="360" width="370" height="180" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+            <path d="M78 508 C112 392 150 392 184 508" fill="none" stroke="#2563EB" stroke-width="6"/>
+            <path d="M156 508 C198 376 246 376 288 508" fill="none" stroke="#0F766E" stroke-width="6"/>
+            <path d="M240 508 C286 398 326 398 374 508" fill="none" stroke="#B45309" stroke-width="6"/>
+            <text x="92" y="400" font-size="24" fill="#1E3A8A" font-weight="700">S</text>
+            <text x="216" y="392" font-size="24" fill="#0F766E" font-weight="700">M</text>
+            <text x="338" y="414" font-size="24" fill="#B45309" font-weight="700">L</text>
+            <path d="M428 196 H560" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-color)"/>
+            <path d="M428 452 H560" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-color)"/>
+            <rect x="590" y="116" width="300" height="360" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+            <text x="624" y="170" font-size="30" fill="#1E3A8A" font-weight="700">three responses</text>
+            <rect x="632" y="218" width="62" height="180" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="3"/>
+            <rect x="718" y="196" width="62" height="202" rx="8" fill="#CCFBF1" stroke="#0F766E" stroke-width="3"/>
+            <rect x="804" y="244" width="62" height="154" rx="8" fill="#FEF3C7" stroke="#B45309" stroke-width="3"/>
+            <text x="646" y="436" font-size="25" fill="#2563EB" font-weight="700">S</text>
+            <text x="732" y="436" font-size="25" fill="#0F766E" font-weight="700">M</text>
+            <text x="818" y="436" font-size="25" fill="#B45309" font-weight="700">L</text>
+            <text x="600" y="520" font-size="23" fill="#475569">metamer-style collapse in the notebook: response error near zero</text>
+          </svg>
+        </div>
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Cone Response Model</div>
+            <p class="formula">\( r_i = \int E(\lambda)s_i(\lambda)\,d\lambda \)</p>
+            <p class="caption">The viewer receives a small response vector, not the original spectrum.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Why RGB Works</div>
+            <p>Three display primaries can be mixed to match many cone-response triples.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Why RGB Is Limited</div>
+            <p>Device primaries, adaptation, and context still affect the perceived color.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the cone diagram to explain why color management works at all and why it remains limited. Three broad cone responses collapse spectra into a smaller coordinate. Metamers are not mistakes in a display pipeline; they are consequences of compressive biological measurement.</aside>
+    </section>
+
+    <section class="slide" data-label="Spatial Vision">
+      <div class="slide-head">
+        <h2>Spatial Vision Turns Cues Into Constraints</h2>
+        <p>depth is inferred from aligned assumptions</p>
+      </div>
+      <div class="content two wide-right">
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Oculomotor</div>
+            <p>Focus and eye rotation carry near-field information when the geometry is known.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Binocular</div>
+            <p>Disparity and vergence triangulate layout, but conflict with flat display surfaces.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Pictorial</div>
+            <p>Occlusion, perspective, texture, shading, and shadows are strong but assumption-heavy.</p>
+          </div>
+          <div class="math-box violet">
+            <div class="math-label">Motion</div>
+            <p>Parallax and optic flow reveal layout over time, while independent objects complicate the field.</p>
+          </div>
+        </div>
+        <div class="panel white">
+          <svg viewBox="0 0 930 620" aria-label="Eye viewing image cues that constrain spatial layout">
+            <defs>
+              <marker id="arrow-spatial" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#0F766E"/>
+              </marker>
+            </defs>
+            <ellipse cx="120" cy="306" rx="76" ry="46" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5"/>
+            <circle cx="130" cy="306" r="22" fill="#111827"/>
+            <rect x="278" y="78" width="22" height="462" fill="#1E3A8A"/>
+            <text x="250" y="580" font-size="24" fill="#475569">image plane</text>
+            <path d="M146 306 L288 120 M146 306 L288 504" stroke="#2563EB" stroke-width="4" stroke-dasharray="10 8"/>
+            <path d="M304 510 H842" stroke="#CBD5E1" stroke-width="5"/>
+            <path d="M348 510 L490 330 L792 510" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+            <rect x="528" y="286" width="112" height="178" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"/>
+            <ellipse cx="590" cy="510" rx="100" ry="28" fill="#B45309" opacity="0.16"/>
+            <path d="M438 510 C490 456 576 430 690 408" fill="none" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-spatial)"/>
+            <g fill="#6D28D9">
+              <circle cx="390" cy="482" r="8"/>
+              <circle cx="438" cy="462" r="7"/>
+              <circle cx="494" cy="438" r="6"/>
+              <circle cx="558" cy="410" r="5"/>
+              <circle cx="630" cy="378" r="4"/>
+            </g>
+            <path d="M352 198 H828" stroke="#CBD5E1" stroke-width="4"/>
+            <text x="364" y="188" font-size="23" fill="#64748B">horizon and perspective</text>
+            <text x="660" y="386" font-size="23" fill="#0F766E">motion path</text>
+            <text x="560" y="274" font-size="23" fill="#2563EB">occlusion</text>
+            <text x="650" y="554" font-size="23" fill="#B45309">shadow contact</text>
+            <text x="370" y="438" font-size="23" fill="#6D28D9">texture gradient</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Frame spatial vision as constraint fusion. No single image cue simply writes depth into the picture. Vergence, disparity, motion, texture, shadows, and occlusion each carry assumptions. Reliable graphics aligns several cues so the visual system can settle on one coherent layout.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Depth Geometry">
+      <div class="slide-head">
+        <h2>Depth Cues Have Geometry And Assumptions</h2>
+        <p>metric when calibrated, ordinal when not</p>
+      </div>
+      <div class="content two">
+        <div class="panel white">
+          <h3>Vergence triangulates near depth</h3>
+          <svg viewBox="0 0 760 400" aria-label="Vergence depth geometry">
+            <path d="M130 310 H630" stroke="#CBD5E1" stroke-width="5"/>
+            <circle cx="280" cy="310" r="18" fill="#1E3A8A"/>
+            <circle cx="480" cy="310" r="18" fill="#1E3A8A"/>
+            <circle cx="380" cy="82" r="18" fill="#B45309"/>
+            <path d="M280 310 L380 82 L480 310" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+            <path d="M280 310 C308 260 336 226 380 82" fill="none" stroke="#0F766E" stroke-width="4"/>
+            <path d="M480 310 C452 260 424 226 380 82" fill="none" stroke="#0F766E" stroke-width="4"/>
+            <text x="346" y="58" font-size="24" fill="#B45309" font-weight="700">target</text>
+            <text x="330" y="350" font-size="24" fill="#475569">baseline b</text>
+            <text x="486" y="210" font-size="24" fill="#0F766E">vergence angle</text>
+          </svg>
+          <p class="formula">\( d = \frac{b}{2\tan(\alpha/2)} \)</p>
+        </div>
+        <div class="panel white">
+          <h3>Ground declination uses eye height</h3>
+          <svg viewBox="0 0 760 400" aria-label="Ground declination depth geometry">
+            <path d="M100 320 H690" stroke="#CBD5E1" stroke-width="5"/>
+            <circle cx="160" cy="124" r="16" fill="#1E3A8A"/>
+            <path d="M160 124 V320" stroke="#1E3A8A" stroke-width="5"/>
+            <path d="M160 124 L580 320" stroke="#2563EB" stroke-width="6"/>
+            <path d="M160 320 H580" stroke="#0F766E" stroke-width="5"/>
+            <path d="M212 148 A70 70 0 0 1 230 182" fill="none" stroke="#B45309" stroke-width="5"/>
+            <text x="128" y="100" font-size="24" fill="#1E3A8A" font-weight="700">eye</text>
+            <text x="126" y="230" font-size="24" fill="#475569">height h</text>
+            <text x="350" y="360" font-size="24" fill="#0F766E">ground distance d</text>
+            <text x="236" y="172" font-size="24" fill="#B45309">theta</text>
+            <circle cx="580" cy="320" r="12" fill="#B45309"/>
+          </svg>
+          <p class="formula">\( d = h / \tan\theta \)</p>
+        </div>
+      </div>
+      <div class="caption">Notebook validation: vergence residual is zero in the synthetic check; ground declination distance decreases as the visual angle increases.</div>
+      <aside class="speaker-notes">Make the formulas concrete by tying each one to a picture operation. Vergence gives a metric constraint when eye geometry is known, while ground declination gives a distance relation when eye height and ground contact are plausible. Both are fragile when their assumptions are violated.</aside>
+    </section>
+
+    <section class="slide" data-label="Pictorial Depth Cues">
+      <div class="slide-head">
+        <h2>Pictorial Cues Are Strong Because They Are Structured</h2>
+        <p>order, contact, slant, and shape</p>
+      </div>
+      <div class="content two">
+        <div class="panel white">
+          <svg viewBox="0 0 820 640" aria-label="Four pictorial depth cue diagrams">
+            <g transform="translate(36 34)">
+              <rect x="0" y="0" width="340" height="246" rx="10" fill="#EFF6FF" stroke="#CBD5E1"/>
+              <rect x="76" y="64" width="150" height="118" fill="#BFDBFE" stroke="#2563EB" stroke-width="5"/>
+              <circle cx="232" cy="120" r="64" fill="#FDE68A" stroke="#B45309" stroke-width="5"/>
+              <text x="34" y="222" font-size="24" fill="#1E3A8A" font-weight="700">occlusion: ordinal order</text>
+            </g>
+            <g transform="translate(444 34)">
+              <rect x="0" y="0" width="340" height="246" rx="10" fill="#F0FDFA" stroke="#CBD5E1"/>
+              <path d="M34 196 H310" stroke="#CBD5E1" stroke-width="5"/>
+              <rect x="94" y="72" width="96" height="124" fill="#CCFBF1" stroke="#0F766E" stroke-width="5"/>
+              <ellipse cx="228" cy="208" rx="86" ry="24" fill="#B45309" opacity="0.2"/>
+              <path d="M190 196 C218 186 244 190 270 204" fill="none" stroke="#B45309" stroke-width="5"/>
+              <text x="32" y="222" font-size="24" fill="#0F766E" font-weight="700">shadow: contact cue</text>
+            </g>
+            <g transform="translate(36 342)">
+              <rect x="0" y="0" width="340" height="246" rx="10" fill="#F8FAFC" stroke="#CBD5E1"/>
+              <path d="M32 206 C84 168 142 142 306 92" fill="none" stroke="#6D28D9" stroke-width="5"/>
+              <g fill="#6D28D9">
+                <circle cx="68" cy="188" r="12"/>
+                <circle cx="116" cy="164" r="10"/>
+                <circle cx="174" cy="136" r="8"/>
+                <circle cx="236" cy="112" r="6"/>
+                <circle cx="286" cy="96" r="4"/>
+              </g>
+              <text x="32" y="222" font-size="24" fill="#6D28D9" font-weight="700">texture: slant cue</text>
+            </g>
+            <g transform="translate(444 342)">
+              <rect x="0" y="0" width="340" height="246" rx="10" fill="#FFFBEB" stroke="#CBD5E1"/>
+              <circle cx="160" cy="118" r="72" fill="#FDE68A"/>
+              <path d="M92 118 A72 72 0 0 0 228 118 A72 72 0 0 0 92 118" fill="#F59E0B" opacity="0.24"/>
+              <circle cx="134" cy="92" r="26" fill="#FFFFFF" opacity="0.55"/>
+              <path d="M94 164 C140 192 206 186 232 132" fill="none" stroke="#B45309" stroke-width="5"/>
+              <text x="32" y="222" font-size="24" fill="#B45309" font-weight="700">shading: normal cue</text>
+            </g>
+          </svg>
+        </div>
+        <div class="panel">
+          <h3>Consistent Cues Feel Effortless</h3>
+          <ul>
+            <li>Occlusion establishes which surface is in front, but not exact metric distance.</li>
+            <li>Cast shadows can attach floating objects to a support plane.</li>
+            <li>Texture gradients assume regular surface markings.</li>
+            <li>Shading assumes a light direction and material model.</li>
+          </ul>
+          <div class="math-box amber" style="margin-top: 22px;">
+            <div class="math-label">Cue Conflict</div>
+            <p>A realistic renderer can still look wrong when cues disagree about contact, scale, or surface orientation.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The pictorial cue slide is a catalog of assumptions, not a list of tricks. Occlusion gives order, shadows attach objects to support surfaces, texture gradients imply slant, and shading constrains normals under a light model. Rendering errors often come from mixing these cues inconsistently.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Motion">
+      <div class="slide-head">
+        <h2>Motion Reveals Layout, But Sampling Can Lie</h2>
+        <p>optic flow and temporal aliasing</p>
+      </div>
+      <div class="content two wide-left">
+        <div class="panel white">
+          <svg viewBox="0 0 940 620" aria-label="Optic flow field and sampled rotating wheel">
+            <defs>
+              <marker id="arrow-flow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563EB"/>
+              </marker>
+            </defs>
+            <rect x="42" y="54" width="408" height="470" rx="12" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="4"/>
+            <circle cx="246" cy="286" r="12" fill="#B45309"/>
+            <text x="268" y="292" font-size="23" fill="#B45309" font-weight="700">focus of expansion</text>
+            <g stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-flow)" fill="none">
+              <path d="M246 286 L110 142"/>
+              <path d="M246 286 L104 286"/>
+              <path d="M246 286 L116 438"/>
+              <path d="M246 286 L388 142"/>
+              <path d="M246 286 L396 286"/>
+              <path d="M246 286 L382 436"/>
+              <path d="M246 286 L246 118"/>
+              <path d="M246 286 L246 460"/>
+            </g>
+            <text x="78" y="488" font-size="24" fill="#1E3A8A" font-weight="700">translation flow field</text>
+            <rect x="506" y="54" width="386" height="470" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+            <circle cx="698" cy="244" r="112" fill="#F8FAFC" stroke="#0F766E" stroke-width="6"/>
+            <g stroke="#0F766E" stroke-width="7" stroke-linecap="round">
+              <path d="M698 244 L698 132"/>
+              <path d="M698 244 L788 310"/>
+              <path d="M698 244 L608 310"/>
+            </g>
+            <circle cx="698" cy="244" r="10" fill="#0F766E"/>
+            <path d="M594 406 C644 360 728 360 800 406" fill="none" stroke="#B45309" stroke-width="6" stroke-dasharray="12 10"/>
+            <text x="558" y="450" font-size="24" fill="#B45309" font-weight="700">sampled frames can reverse apparent direction</text>
+            <text x="558" y="490" font-size="23" fill="#475569">notebook check: true 1.9 rps, apparent -0.1 rps</text>
+          </svg>
+        </div>
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Heading Cue</div>
+            <p>Forward motion creates a flow field centered on the direction of travel when the scene is static.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Scale Ambiguity</div>
+            <p>Doubling scene scale and speed can leave translational flow unchanged in the notebook check.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Animation Risk</div>
+            <p>Periodic detail near the frame rate can generate a stable but wrong apparent motion.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Motion needs both signal and sampling vocabulary. Optic flow can reveal heading and relative scene layout, but animation samples can also manufacture apparent motion that contradicts physical motion. The wagon-wheel style aliasing example connects perception directly to frame rate and temporal filtering.</aside>
+    </section>
+
+    <section class="slide" data-label="Object Perception">
+      <div class="slide-head">
+        <h2>Object Perception: Group First, Then Identify</h2>
+        <p>segmentation and recognition are different jobs</p>
+      </div>
+      <div class="content two">
+        <div class="panel white">
+          <svg viewBox="0 0 820 620" aria-label="Grouping by proximity and similarity leading to recognition">
+            <rect x="38" y="56" width="334" height="456" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+            <text x="68" y="100" font-size="28" fill="#1E3A8A" font-weight="700">grouping</text>
+            <g fill="#2563EB">
+              <circle cx="104" cy="164" r="16"/>
+              <circle cx="150" cy="164" r="16"/>
+              <circle cx="104" cy="212" r="16"/>
+              <circle cx="150" cy="212" r="16"/>
+            </g>
+            <g fill="#0F766E">
+              <circle cx="252" cy="164" r="16"/>
+              <circle cx="300" cy="164" r="16"/>
+              <circle cx="252" cy="212" r="16"/>
+              <circle cx="300" cy="212" r="16"/>
+            </g>
+            <g>
+              <rect x="90" y="308" width="42" height="42" fill="#6D28D9"/>
+              <rect x="154" y="308" width="42" height="42" fill="#6D28D9"/>
+              <circle cx="270" cy="328" r="22" fill="#B45309"/>
+              <circle cx="326" cy="328" r="22" fill="#B45309"/>
+              <rect x="90" y="382" width="42" height="42" fill="#6D28D9"/>
+              <circle cx="154" cy="402" r="22" fill="#B45309"/>
+              <rect x="248" y="382" width="42" height="42" fill="#6D28D9"/>
+              <circle cx="326" cy="402" r="22" fill="#B45309"/>
+            </g>
+            <text x="72" y="468" font-size="23" fill="#475569">proximity, similarity, continuity, common fate</text>
+            <rect x="452" y="56" width="334" height="456" rx="12" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="4"/>
+            <text x="482" y="100" font-size="28" fill="#1E3A8A" font-weight="700">identification</text>
+            <path d="M544 280 L600 170 L676 280 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="6"/>
+            <rect x="576" y="280" width="116" height="70" fill="#DBEAFE" stroke="#2563EB" stroke-width="6"/>
+            <circle cx="574" cy="366" r="26" fill="#FFFFFF" stroke="#0F766E" stroke-width="6"/>
+            <circle cx="688" cy="366" r="26" fill="#FFFFFF" stroke="#0F766E" stroke-width="6"/>
+            <path d="M512 432 H744" stroke="#CBD5E1" stroke-width="5"/>
+            <rect x="514" y="132" width="88" height="62" rx="8" fill="#FFFFFF" stroke="#6D28D9" stroke-width="4"/>
+            <text x="528" y="171" font-size="22" fill="#6D28D9" font-weight="700">view</text>
+            <rect x="650" y="132" width="88" height="62" rx="8" fill="#FFFFFF" stroke="#B45309" stroke-width="4"/>
+            <text x="666" y="171" font-size="22" fill="#B45309" font-weight="700">parts</text>
+            <text x="486" y="468" font-size="23" fill="#475569">templates, structural descriptions, invariants</text>
+          </svg>
+        </div>
+        <div class="panel">
+          <h3>Why It Matters For Interfaces</h3>
+          <ul>
+            <li>Grouping can make several marks feel like one object before the viewer names it.</li>
+            <li>Similarity can hide a target even when its pixels are sharp and high contrast.</li>
+            <li>Recognition may depend on a canonical view, visible parts, or invariant features.</li>
+          </ul>
+          <div class="stat-grid">
+            <div class="stat">
+              <strong>4</strong>
+              <span>proximity groups recorded by the notebook object check</span>
+            </div>
+            <div class="stat">
+              <strong>0 px</strong>
+              <span>template location error in the synthetic match</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Separate grouping from identification. Proximity, similarity, continuity, and common fate organize primitives before a recognition strategy names the object. This distinction matters for graphics interfaces because a well-rendered target can still be hard to find if grouping fights the intended task.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Attention And Events">
+      <div class="slide-head">
+        <h2>Attention And Events Decide What Gets Used</h2>
+        <p>pop-out, search, and time-to-contact</p>
+      </div>
+      <div class="content two wide-left">
+        <div class="panel white">
+          <svg viewBox="0 0 940 620" aria-label="Pop-out search, conjunction search, and expanding event cue">
+            <g transform="translate(42 56)">
+              <rect x="0" y="0" width="258" height="430" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="28" y="42" font-size="26" fill="#1E3A8A" font-weight="700">feature pop-out</text>
+              <g fill="#2563EB">
+                <circle cx="62" cy="100" r="14"/>
+                <circle cx="120" cy="100" r="14"/>
+                <circle cx="178" cy="100" r="14"/>
+                <circle cx="62" cy="160" r="14"/>
+                <circle cx="120" cy="160" r="14"/>
+                <circle cx="178" cy="160" r="14"/>
+                <circle cx="62" cy="220" r="14"/>
+                <circle cx="178" cy="220" r="14"/>
+              </g>
+              <rect x="104" y="204" width="32" height="32" fill="#B45309"/>
+              <text x="34" y="366" font-size="24" fill="#0F766E" font-weight="700">one feature differs</text>
+            </g>
+            <g transform="translate(342 56)">
+              <rect x="0" y="0" width="258" height="430" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="28" y="42" font-size="26" fill="#1E3A8A" font-weight="700">conjunction search</text>
+              <g>
+                <circle cx="62" cy="100" r="15" fill="#2563EB"/>
+                <rect x="104" y="84" width="32" height="32" fill="#B45309"/>
+                <circle cx="178" cy="100" r="15" fill="#B45309"/>
+                <rect x="46" y="144" width="32" height="32" fill="#2563EB"/>
+                <circle cx="120" cy="160" r="15" fill="#B45309"/>
+                <rect x="162" y="144" width="32" height="32" fill="#2563EB"/>
+                <circle cx="62" cy="220" r="15" fill="#2563EB"/>
+                <rect x="104" y="204" width="32" height="32" fill="#B45309"/>
+                <rect x="162" y="204" width="32" height="32" fill="#2563EB"/>
+                <circle cx="120" cy="280" r="15" fill="#2563EB" stroke="#111827" stroke-width="4"/>
+              </g>
+              <text x="30" y="366" font-size="24" fill="#B45309" font-weight="700">feature pair differs</text>
+            </g>
+            <g transform="translate(642 56)">
+              <rect x="0" y="0" width="258" height="430" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="28" y="42" font-size="26" fill="#1E3A8A" font-weight="700">event cue</text>
+              <circle cx="130" cy="190" r="34" fill="none" stroke="#2563EB" stroke-width="5"/>
+              <circle cx="130" cy="190" r="72" fill="none" stroke="#0F766E" stroke-width="5"/>
+              <circle cx="130" cy="190" r="112" fill="none" stroke="#B45309" stroke-width="5"/>
+              <path d="M130 190 L228 72" stroke="#B45309" stroke-width="5"/>
+              <text x="42" y="366" font-size="24" fill="#6D28D9" font-weight="700">expansion over time</text>
+            </g>
+            <rect x="118" y="528" width="706" height="66" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+            <text x="146" y="570" font-size="25" fill="#475569">Graphics decision: urgent states need a feature the viewer can discover under task load.</text>
+          </svg>
+        </div>
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Fast Route</div>
+            <p>Single-feature differences in color, orientation, or shape are easy to notice.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Slow Route</div>
+            <p>Targets defined by combinations can require serial search even when each primitive is clear.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Event Route</div>
+            <p>Image expansion and optic flow can warn about contact before an object is semantically recognized.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Attention and event perception give the chapter an interaction design edge. A single strong feature can pop out quickly, while conjunction search costs more. Expanding image motion can signal impending contact, so visual emphasis should respect how users discover events under time pressure.</aside>
+    </section>
+
+    <section class="slide" data-label="Picture Perception">
+      <div class="slide-head">
+        <h2>Picture Perception: The Display Has Its Own Geometry</h2>
+        <p>projection station point versus actual viewer</p>
+      </div>
+      <div class="content two wide-left">
+        <div class="panel white">
+          <svg viewBox="0 0 950 620" aria-label="Render frustum compared with close matched and far viewing positions">
+            <defs>
+              <marker id="arrow-picture" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#B45309"/>
+              </marker>
+            </defs>
+            <rect x="470" y="86" width="30" height="420" fill="#1E3A8A"/>
+            <text x="424" y="552" font-size="24" fill="#1E3A8A" font-weight="700">display plane</text>
+            <circle cx="188" cy="296" r="14" fill="#0F766E"/>
+            <path d="M188 296 L470 86 M188 296 L470 506" stroke="#0F766E" stroke-width="5"/>
+            <text x="104" y="280" font-size="24" fill="#0F766E" font-weight="700">matched</text>
+            <text x="82" y="318" font-size="22" fill="#475569">60 deg border angle</text>
+            <circle cx="328" cy="296" r="14" fill="#B45309"/>
+            <path d="M328 296 L470 86 M328 296 L470 506" stroke="#B45309" stroke-width="5" stroke-dasharray="10 8"/>
+            <text x="286" y="262" font-size="24" fill="#B45309" font-weight="700">too close</text>
+            <text x="286" y="336" font-size="22" fill="#475569">85.9 deg</text>
+            <circle cx="72" cy="296" r="14" fill="#6D28D9"/>
+            <path d="M72 296 L470 86 M72 296 L470 506" stroke="#6D28D9" stroke-width="5" stroke-dasharray="10 8"/>
+            <text x="38" y="252" font-size="24" fill="#6D28D9" font-weight="700">too far</text>
+            <text x="38" y="342" font-size="22" fill="#475569">38.6 deg</text>
+            <path d="M500 124 C668 132 772 194 866 286" fill="none" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-picture)"/>
+            <path d="M500 468 C668 458 772 396 866 304" fill="none" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-picture)"/>
+            <rect x="660" y="192" width="182" height="168" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+            <path d="M684 336 L748 236 L820 336 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"/>
+            <circle cx="740" cy="226" r="22" fill="#FDE68A" stroke="#B45309" stroke-width="4"/>
+            <text x="630" y="414" font-size="24" fill="#475569">the picture suggests a world behind the surface</text>
+          </svg>
+        </div>
+        <div class="mini-list">
+          <div class="math-box">
+            <div class="math-label">Correct Station Point</div>
+            <p>A perspective image matches one frustum and one intended viewing geometry.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="math-label">Mismatch</div>
+            <p>Moving closer widens the actual border angle; moving farther narrows it.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="math-label">Application</div>
+            <p>Large screens, VR walls, simulators, and design review displays should make viewing distance explicit.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Picture perception returns to projection geometry. A perspective image is correct for a particular station point, but the actual viewer may sit closer or farther away. Human perception often tolerates the mismatch, yet large screens, simulators, and immersive displays must account for it explicitly.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Stress Matrix">
+      <div class="slide-head">
+        <h2>A Perception Stress Matrix For Graphics</h2>
+        <p>turn perceptual risks into repeatable tests</p>
+      </div>
+      <table class="matrix" aria-label="Perceptual stress matrix for graphics systems">
+        <thead>
+          <tr>
+            <th>Risk</th>
+            <th>Synthetic Test</th>
+            <th>Failure Signal</th>
+            <th>Graphics Decision</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>low-contrast detail disappears</td>
+            <td>frequency-by-contrast grating</td>
+            <td>threshold too high for target distance</td>
+            <td>increase contrast or reduce fine detail</td>
+          </tr>
+          <tr>
+            <td>same RGB appears inconsistent</td>
+            <td>equal center swatches in surrounds</td>
+            <td>local equality conflicts with judged appearance</td>
+            <td>preview colors in context</td>
+          </tr>
+          <tr>
+            <td>depth cues disagree</td>
+            <td>ground plane, shadow, familiar size</td>
+            <td>metric and ordinal cues imply different order</td>
+            <td>align horizon, shadows, stereo, and scale</td>
+          </tr>
+          <tr>
+            <td>animation aliases</td>
+            <td>sampled rotating periodic wheel</td>
+            <td>apparent angular velocity changes sign</td>
+            <td>raise sample rate or add motion blur</td>
+          </tr>
+          <tr>
+            <td>object state is hard to find</td>
+            <td>pop-out versus conjunction search</td>
+            <td>target requires serial search</td>
+            <td>encode urgent states with one strong feature</td>
+          </tr>
+          <tr>
+            <td>perspective looks wrong</td>
+            <td>viewing-distance and frustum mismatch</td>
+            <td>screen angle differs from render frustum</td>
+            <td>control viewer position or adjust projection</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="caption">These rows summarize the chapter's notebook artifacts as small, reproducible perception audits rather than subjective manual captures.</div>
+      <aside class="speaker-notes">The stress matrix turns the chapter into an engineering checklist. Each row asks for a synthetic stimulus, a measurable failure signal, and a graphics decision. This is how perception becomes testable: not by claiming perfect prediction, but by catching conditions where appearance is likely to fail.</aside>
+    </section>
+
+    <section class="slide" data-label="Summary">
+      <div class="slide-head">
+        <h2>Takeaways: Render For Human Inference</h2>
+        <p>what to remember from Chapter 19</p>
+      </div>
+      <div class="content two wide-right">
+        <div class="panel white">
+          <svg viewBox="0 0 780 620" aria-label="Perceptual graphics pipeline summary">
+            <defs>
+              <marker id="arrow-summary" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563EB"/>
+              </marker>
+            </defs>
+            <rect x="70" y="92" width="190" height="116" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+            <text x="108" y="142" font-size="28" fill="#1E3A8A" font-weight="700">pixels</text>
+            <text x="96" y="176" font-size="22" fill="#475569">samples and light</text>
+            <rect x="304" y="92" width="190" height="116" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+            <text x="330" y="142" font-size="28" fill="#0F766E" font-weight="700">signals</text>
+            <text x="330" y="176" font-size="22" fill="#475569">edges, cues, flow</text>
+            <rect x="538" y="92" width="190" height="116" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+            <text x="566" y="142" font-size="28" fill="#6D28D9" font-weight="700">inference</text>
+            <text x="566" y="176" font-size="22" fill="#475569">world and task</text>
+            <path d="M264 150 H294" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-summary)"/>
+            <path d="M498 150 H528" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-summary)"/>
+            <path d="M164 232 C168 330 230 394 334 420 S558 458 634 526" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10" marker-end="url(#arrow-summary)"/>
+            <text x="206" y="362" font-size="25" fill="#B45309" font-weight="700">test the loop</text>
+            <g transform="translate(98 300)">
+              <rect x="0" y="0" width="584" height="178" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="34" y="48" font-size="26" fill="#1E3A8A" font-weight="700">pixel tests plus perception tests</text>
+              <text x="34" y="88" font-size="24" fill="#475569">contrast, context, depth cues, motion sampling</text>
+              <text x="34" y="126" font-size="24" fill="#475569">object search, viewing geometry, task load</text>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="takeaways">
+            <div class="takeaway">
+              <strong>Appearance is contextual.</strong>
+              <span>Local RGB values do not determine perceived lightness or color by themselves.</span>
+            </div>
+            <div class="takeaway">
+              <strong>Depth is cue alignment.</strong>
+              <span>Good pictures coordinate perspective, occlusion, shadows, texture, stereo, and motion.</span>
+            </div>
+            <div class="takeaway">
+              <strong>Motion is sampled.</strong>
+              <span>Flow can reveal layout, while frame sampling can create convincing aliases.</span>
+            </div>
+            <div class="takeaway">
+              <strong>Pictures are geometry.</strong>
+              <span>The flat display, viewer position, and rendered frustum all participate in perception.</span>
+            </div>
+          </div>
+          <div class="math-box violet" style="margin-top: 24px;">
+            <div class="math-label">Closing Exercise</div>
+            <p>Choose one rendering feature and name its proximal signal, intended inference, possible cue conflict, and synthetic stress test.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by pulling the examples back to one habit: rendered output should be tested as an input to human inference. Pixel tests remain valuable, but they must be complemented by contrast, context, depth-cue, motion-sampling, object-search, and viewing-geometry checks when perception is the product.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

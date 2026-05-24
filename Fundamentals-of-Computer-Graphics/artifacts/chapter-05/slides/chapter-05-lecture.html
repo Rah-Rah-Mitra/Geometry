@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 05 Lecture - Surface Shading</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-05">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-05-surface-shading/05-surface-shading.ipynb">
+  <meta name="source_span" content="printed pages 97-106; PDF pages 114-123.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="Geometry Lecture Design System v1">
+  <meta name="math_support" content="STIX Two Text for inline mathematics and KaTeX 0.16.11 for rendered formulas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --slide-bg: #FFFFFF;
+      --slide-bg-alt: #F8FAFC;
+      --slide-ink: #111827;
+      --slide-muted: #475569;
+      --slide-dimmed: #64748B;
+      --slide-accent: #1E3A8A;
+      --slide-blue: #2563EB;
+      --slide-teal: #0F766E;
+      --slide-amber: #B45309;
+      --slide-violet: #6D28D9;
+      --slide-border: #CBD5E1;
+      --slide-soft-border: #E2E8F0;
+      --font-sans: 'Source Sans 3', Arial, sans-serif;
+      --font-math: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      --font-code: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    deck-stage:not(:defined) { visibility: hidden; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0F172A;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+    section {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      background-color: var(--slide-bg);
+      background-image:
+        radial-gradient(circle at 16px 16px, rgb(37 99 235 / 0.04) 2px, transparent 3px),
+        linear-gradient(rgb(30 58 138 / 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(30 58 138 / 0.035) 1px, transparent 1px);
+      background-size: 96px 96px, 96px 96px, 96px 96px;
+      padding: 76px 96px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    section.alt { background: var(--slide-bg-alt); }
+    .content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 28px;
+      border-bottom: 1px solid var(--slide-soft-border);
+      padding-bottom: 18px;
+    }
+    .eyebrow {
+      color: var(--slide-teal);
+      font-size: 24px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      color: var(--slide-ink);
+      font-size: 58px;
+      line-height: 1.02;
+      font-weight: 700;
+      max-width: 1180px;
+    }
+    h2 {
+      color: var(--slide-accent);
+      font-size: 50px;
+      line-height: 1.06;
+      font-weight: 700;
+      max-width: 1280px;
+    }
+    h3 {
+      color: var(--slide-ink);
+      font-size: 32px;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+    p, li {
+      color: var(--slide-ink);
+      font-size: 28px;
+      line-height: 1.28;
+    }
+    ul, ol {
+      margin: 0;
+      padding-left: 34px;
+      display: grid;
+      gap: 16px;
+    }
+    .muted { color: var(--slide-muted); }
+    .dim { color: var(--slide-dimmed); }
+    .small { font-size: 23px; line-height: 1.25; }
+    .math {
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.2;
+    }
+    .code {
+      font-family: var(--font-code);
+      font-size: 24px;
+      line-height: 1.32;
+    }
+    .two {
+      display: grid;
+      grid-template-columns: 0.94fr 1.06fr;
+      gap: 42px;
+      align-items: stretch;
+      min-height: 0;
+      flex: 1;
+    }
+    .two.equal { grid-template-columns: 1fr 1fr; }
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 26px;
+      align-items: stretch;
+    }
+    .stack {
+      display: grid;
+      gap: 22px;
+      align-content: start;
+    }
+    .box {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 24px 28px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+    }
+    .box.blue { border-left: 5px solid var(--slide-blue); background: #EFF6FF; }
+    .box.teal { border-left: 5px solid var(--slide-teal); background: #F0FDFA; }
+    .box.amber { border-left: 5px solid var(--slide-amber); background: #FFFBEB; }
+    .box.violet { border-left: 5px solid var(--slide-violet); background: #F5F3FF; }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+    .tag {
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #FFFFFF;
+    }
+    .formula {
+      display: grid;
+      gap: 12px;
+      padding: 22px 26px;
+      border-radius: 8px;
+      background: #F8FAFC;
+      border: 1px solid var(--slide-border);
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.22;
+      color: var(--slide-ink);
+    }
+    .viz {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+      min-height: 460px;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    svg {
+      max-width: 100%;
+      height: auto;
+      overflow: visible;
+      font-family: var(--font-sans);
+    }
+    .svg-label { font-size: 28px; fill: var(--slide-ink); font-weight: 700; }
+    .svg-note { font-size: 23px; fill: var(--slide-muted); font-weight: 600; }
+    .svg-math { font-family: var(--font-math); font-size: 28px; fill: var(--slide-ink); }
+    .rail {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+    .mini {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 218px;
+      background: #FFFFFF;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+    .mini .label {
+      color: var(--slide-accent);
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .mini p { font-size: 24px; line-height: 1.24; }
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+    .node {
+      border: 1px solid var(--slide-border);
+      border-left: 5px solid var(--slide-blue);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 22px;
+      min-height: 170px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+    .node.teal { border-left-color: var(--slide-teal); }
+    .node.amber { border-left-color: var(--slide-amber); }
+    .node.violet { border-left-color: var(--slide-violet); }
+    .node-title {
+      font-size: 25px;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+    .node p { font-size: 23px; line-height: 1.22; color: var(--slide-muted); }
+    .arrow {
+      color: var(--slide-dimmed);
+      font-size: 34px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+    .component {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+    .component .cap {
+      color: var(--slide-muted);
+      font-size: 23px;
+      font-weight: 700;
+    }
+    .swatch-sphere {
+      width: 270px;
+      height: 270px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 36% 26%, rgba(255,255,255,0.88), rgba(255,255,255,0.24) 14%, transparent 22%),
+        radial-gradient(circle at 33% 34%, #F5B278 0%, #C55A25 42%, #47291C 82%);
+      border: 1px solid #D6A37C;
+    }
+    .swatch-sphere.diffuse {
+      background: radial-gradient(circle at 34% 30%, #F0A66D 0%, #BD6231 48%, #2B1C18 88%);
+    }
+    .swatch-sphere.specular {
+      background:
+        radial-gradient(circle at 34% 27%, #FFFFFF 0%, #F8FAFC 8%, rgba(255,255,255,0.18) 18%, transparent 26%),
+        radial-gradient(circle at 40% 38%, #27364F 0%, #0F172A 78%);
+    }
+    .swatch-sphere.ambient {
+      background: radial-gradient(circle at 50% 45%, #8B7468 0%, #5B4B45 74%);
+    }
+    .speaker-notes { display: none; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title" class="alt">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Fundamentals of Computer Graphics</div>
+            <h1>Surface Shading</h1>
+          </div>
+          <div class="tag-row">
+            <span class="tag">chapter-05</span>
+            <span class="tag">printed pages 97-106</span>
+            <span class="tag">PDF pages 114-123</span>
+          </div>
+        </header>
+        <div class="two">
+          <div class="stack">
+            <h2>How Shape Becomes Brightness</h2>
+            <p class="muted">A local shading model turns surface orientation, light geometry, viewer direction, and material parameters into inspectable RGB values.</p>
+            <div class="box blue">
+              <h3>Lecture Goal</h3>
+              <p>Separate the light calculation from the material calculation so errors can be diagnosed before a renderer grows shadows, textures, and global illumination.</p>
+            </div>
+          </div>
+          <div class="viz">
+            <svg viewBox="0 0 760 500" role="img" aria-label="Shaded sphere with light vector and viewer direction">
+              <defs>
+                <radialGradient id="sphereGrad" cx="36%" cy="31%" r="68%">
+                  <stop offset="0%" stop-color="#FFE0BE"/>
+                  <stop offset="38%" stop-color="#D97736"/>
+                  <stop offset="78%" stop-color="#6A3321"/>
+                  <stop offset="100%" stop-color="#1F1714"/>
+                </radialGradient>
+                <marker id="arrowTitle" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2,2 L10,6 L2,10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <rect x="35" y="35" width="690" height="430" rx="18" fill="#F8FAFC" stroke="#CBD5E1"/>
+              <circle cx="380" cy="260" r="150" fill="url(#sphereGrad)" stroke="#92400E" stroke-width="3"/>
+              <circle cx="327" cy="198" r="25" fill="#FFFFFF" opacity="0.85"/>
+              <line x1="130" y1="120" x2="286" y2="202" stroke="#1E3A8A" stroke-width="7" marker-end="url(#arrowTitle)"/>
+              <line x1="613" y1="167" x2="508" y2="221" stroke="#0F766E" stroke-width="7" marker-end="url(#arrowTitle)"/>
+              <line x1="380" y1="260" x2="380" y2="95" stroke="#B45309" stroke-width="6" marker-end="url(#arrowTitle)"/>
+              <text x="118" y="105" class="svg-label">light</text>
+              <text x="590" y="150" class="svg-label">view</text>
+              <text x="394" y="101" class="svg-label">normal</text>
+              <text x="80" y="430" class="svg-note">The same normal field can produce diffuse, glossy, and ambient cues.</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open by framing surface shading as a diagnostic contract rather than a bag of visual tricks. The learner should leave knowing which variables belong to light transport, which belong to material response, and why separating those calculations makes both ray tracing and rasterization easier to debug.</aside>
+    </section>
+
+    <section data-label="Route">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Lecture Route</div>
+            <h2>From Incoming Light To Outgoing Color</h2>
+          </div>
+          <span class="tag">local illumination</span>
+        </header>
+        <div class="pipeline">
+          <div class="node">
+            <div class="node-title">Geometry Inputs</div>
+            <p>point x, normal n, light direction l, view direction v</p>
+          </div>
+          <div class="arrow">></div>
+          <div class="node teal">
+            <div class="node-title">Irradiance</div>
+            <p>distance falloff plus the clamped cosine factor</p>
+          </div>
+          <div class="arrow">></div>
+          <div class="node amber">
+            <div class="node-title">Material Response</div>
+            <p>diffuse reflectance, specular coefficient, exponent, ambient fill</p>
+          </div>
+        </div>
+        <div class="three">
+          <div class="box blue">
+            <h3>Point and Directional Sources</h3>
+            <p>One source has a position and distance; the other carries only direction and normal irradiance.</p>
+          </div>
+          <div class="box teal">
+            <h3>Diffuse and Specular Pieces</h3>
+            <p>Lambertian terms are view-independent; Blinn-Phong terms move with the viewer.</p>
+          </div>
+          <div class="box amber">
+            <h3>Implementation Discipline</h3>
+            <p>Normalize vectors, clamp dot products, keep RGB channels componentwise, and inspect terms separately.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the route slide to establish the chapter architecture before any formulas appear. The sequence is intentionally implementation shaped: compute what reaches the surface, decide what the material sends toward the camera, then add checks that catch the most common numerical and visual failures.</aside>
+    </section>
+
+    <section data-label="Local Model">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Model Boundary</div>
+            <h2>Local Shading Answers A Narrow Question</h2>
+          </div>
+          <span class="tag">not global illumination</span>
+        </header>
+        <div class="two equal">
+          <div class="stack">
+            <div class="box blue">
+              <h3>Question</h3>
+              <p>At one surface point, what RGB radiance should travel toward this camera sample?</p>
+            </div>
+            <div class="box teal">
+              <h3>Inputs</h3>
+              <ul>
+                <li>surface position and unit normal</li>
+                <li>light position or light direction</li>
+                <li>viewer direction</li>
+                <li>material color and highlight parameters</li>
+              </ul>
+            </div>
+          </div>
+          <div class="viz">
+            <svg viewBox="0 0 800 510" role="img" aria-label="One shading point receives light and sends radiance toward camera">
+              <defs>
+                <marker id="arrLocal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2,2 L10,6 L2,10 Z" fill="#2563EB"/>
+                </marker>
+                <linearGradient id="patchGrad" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#DBEAFE"/>
+                  <stop offset="100%" stop-color="#F0FDFA"/>
+                </linearGradient>
+              </defs>
+              <rect x="50" y="390" width="700" height="45" rx="22" fill="url(#patchGrad)" stroke="#CBD5E1" stroke-width="3"/>
+              <circle cx="390" cy="390" r="11" fill="#1E3A8A"/>
+              <line x1="390" y1="390" x2="390" y2="210" stroke="#B45309" stroke-width="6" marker-end="url(#arrLocal)"/>
+              <line x1="145" y1="115" x2="377" y2="379" stroke="#2563EB" stroke-width="6" marker-end="url(#arrLocal)"/>
+              <line x1="635" y1="145" x2="408" y2="379" stroke="#0F766E" stroke-width="6" marker-end="url(#arrLocal)"/>
+              <circle cx="145" cy="115" r="24" fill="#FBBF24" stroke="#B45309" stroke-width="4"/>
+              <rect x="600" y="105" width="72" height="54" rx="8" fill="#ECFDF5" stroke="#0F766E" stroke-width="4"/>
+              <text x="100" y="83" class="svg-label">point light</text>
+              <text x="570" y="92" class="svg-label">camera</text>
+              <text x="408" y="223" class="svg-label">n</text>
+              <text x="230" y="210" class="svg-label">l</text>
+              <text x="525" y="235" class="svg-label">v</text>
+              <text x="290" y="465" class="svg-note">One surface point, one local calculation</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Emphasize that the chapter is not promising a complete physical renderer. It isolates a single surface point and asks what happens locally. That boundary is useful because many later effects, including shadows, reflections, texture maps, and global transport, still need this local calculation as a reliable component.</aside>
+    </section>
+
+    <section data-label="Point Sources">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Point Source Irradiance</div>
+            <h2>Distance Spreads Power Over Area</h2>
+          </div>
+          <span class="tag">inverse square</span>
+        </header>
+        <div class="two">
+          <div class="stack">
+            <div class="formula">
+              <div>E<sub>point</sub> = I / r<sup>2</sup> before tilt</div>
+              <div class="small muted">Double distance gives one quarter irradiance.</div>
+            </div>
+            <div class="box amber">
+              <h3>Implementation Meaning</h3>
+              <p>The intensity belongs to the source. The distance term belongs to the relationship between the source and the shaded point.</p>
+            </div>
+          </div>
+          <div class="viz">
+            <svg viewBox="0 0 820 520" role="img" aria-label="Point light energy spreading across larger spheres">
+              <defs>
+                <marker id="arrPoint" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2,2 L10,6 L2,10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <circle cx="185" cy="250" r="24" fill="#FBBF24" stroke="#B45309" stroke-width="4"/>
+              <circle cx="185" cy="250" r="95" fill="none" stroke="#2563EB" stroke-width="5"/>
+              <circle cx="185" cy="250" r="190" fill="none" stroke="#0F766E" stroke-width="5"/>
+              <line x1="185" y1="250" x2="280" y2="250" stroke="#2563EB" stroke-width="4" marker-end="url(#arrPoint)"/>
+              <line x1="185" y1="250" x2="375" y2="250" stroke="#0F766E" stroke-width="4" marker-end="url(#arrPoint)"/>
+              <text x="225" y="232" class="svg-label">r</text>
+              <text x="294" y="232" class="svg-label">2r</text>
+              <polyline points="510,420 610,260 710,220 790,205" fill="none" stroke="#2563EB" stroke-width="7"/>
+              <polyline points="510,420 610,380 710,370 790,366" fill="none" stroke="#0F766E" stroke-width="7"/>
+              <line x1="500" y1="420" x2="800" y2="420" stroke="#94A3B8" stroke-width="3"/>
+              <line x1="500" y1="420" x2="500" y2="165" stroke="#94A3B8" stroke-width="3"/>
+              <text x="536" y="455" class="svg-note">distance</text>
+              <text x="425" y="205" class="svg-note" transform="rotate(-90 425 205)">irradiance</text>
+              <text x="632" y="248" class="svg-label">1 / r^2</text>
+              <text x="622" y="405" class="svg-label">flat source? no</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Present inverse-square falloff as conservation of emitted power rather than as a magic graphics constant. The same source power crosses a larger spherical area as distance grows, so a small receiver gets less power per unit area. This is why the distance calculation belongs before material color.</aside>
+    </section>
+
+    <section data-label="Cosine Law">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Lambert Cosine Law</div>
+            <h2>Tilt Reduces The Effective Receiving Area</h2>
+          </div>
+          <span class="tag">max(0, n dot l)</span>
+        </header>
+        <div class="two equal">
+          <div class="viz">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Projected area shrinks when a surface tilts">
+              <defs>
+                <marker id="arrCos" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2,2 L10,6 L2,10 Z" fill="#2563EB"/>
+                </marker>
+              </defs>
+              <g stroke="#2563EB" stroke-width="5" marker-end="url(#arrCos)">
+                <line x1="110" y1="95" x2="110" y2="250"/>
+                <line x1="160" y1="95" x2="160" y2="250"/>
+                <line x1="210" y1="95" x2="210" y2="250"/>
+                <line x1="260" y1="95" x2="260" y2="250"/>
+              </g>
+              <rect x="86" y="270" width="210" height="34" fill="#DBEAFE" stroke="#1E3A8A" stroke-width="4"/>
+              <text x="95" y="350" class="svg-label">faces light</text>
+              <g transform="translate(420 295) rotate(-55)">
+                <rect x="-110" y="-18" width="220" height="36" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              </g>
+              <g stroke="#2563EB" stroke-width="5" marker-end="url(#arrCos)">
+                <line x1="370" y1="95" x2="370" y2="230"/>
+                <line x1="420" y1="95" x2="420" y2="230"/>
+                <line x1="470" y1="95" x2="470" y2="230"/>
+                <line x1="520" y1="95" x2="520" y2="230"/>
+              </g>
+              <text x="362" y="350" class="svg-label">tilted patch</text>
+              <path d="M420 295 A105 105 0 0 1 493 218" fill="none" stroke="#B45309" stroke-width="5"/>
+              <text x="506" y="222" class="svg-label">theta</text>
+              <text x="74" y="454" class="svg-note">The dot product is a projected-area test, not a color parameter.</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">
+              <div>cos(theta) = n dot l</div>
+              <div>E = source strength x max(0, n dot l)</div>
+            </div>
+            <div class="box blue">
+              <h3>Clamp Before Shading</h3>
+              <p>A back-facing patch should not contribute negative light. The clamp is part of the model, not an afterthought.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Teach the cosine factor as projected area. A tilted patch intercepts less of the same beam, so its irradiance decreases even though the material has not changed. The clamp at zero is equally important because local shading should not create negative radiance from a back-facing configuration.</aside>
+    </section>
+
+    <section data-label="Source Types">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Two Light Models</div>
+            <h2>Point Lights Carry Position; Directional Lights Carry Direction</h2>
+          </div>
+          <span class="tag">same cosine gate</span>
+        </header>
+        <div class="two equal">
+          <div class="box blue">
+            <h3>Point Source</h3>
+            <div class="formula">
+              <div>r = ||p - x||</div>
+              <div>l = (p - x) / r</div>
+              <div>E = I max(0, n dot l) / r<sup>2</sup></div>
+            </div>
+            <p class="muted">Nearby surfaces can receive much stronger irradiance than distant ones.</p>
+          </div>
+          <div class="box teal">
+            <h3>Directional Source</h3>
+            <div class="formula">
+              <div>l is already the source direction</div>
+              <div>E = H max(0, n dot l)</div>
+            </div>
+            <p class="muted">The source is idealized as far enough away that distance variation is ignored.</p>
+          </div>
+        </div>
+        <div class="viz">
+          <svg viewBox="0 0 1500 260" role="img" aria-label="Point and directional light comparison">
+            <defs>
+              <marker id="arrCompare" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M2,2 L10,6 L2,10 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <circle cx="120" cy="120" r="28" fill="#FBBF24" stroke="#B45309" stroke-width="4"/>
+            <g stroke="#2563EB" stroke-width="5" marker-end="url(#arrCompare)">
+              <line x1="145" y1="120" x2="290" y2="70"/>
+              <line x1="145" y1="120" x2="300" y2="135"/>
+              <line x1="145" y1="120" x2="285" y2="205"/>
+            </g>
+            <text x="65" y="205" class="svg-label">position p</text>
+            <g stroke="#0F766E" stroke-width="5" marker-end="url(#arrCompare)">
+              <line x1="930" y1="70" x2="1190" y2="70"/>
+              <line x1="930" y1="135" x2="1190" y2="135"/>
+              <line x1="930" y1="200" x2="1190" y2="200"/>
+            </g>
+            <text x="945" y="42" class="svg-label">constant direction l</text>
+            <line x1="410" y1="230" x2="760" y2="230" stroke="#CBD5E1" stroke-width="5"/>
+            <line x1="1210" y1="230" x2="1450" y2="230" stroke="#CBD5E1" stroke-width="5"/>
+            <text x="442" y="72" class="svg-note">distance changes across the scene</text>
+            <text x="1225" y="72" class="svg-note">distance term is folded into H</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Compare the two source types by what an implementation must store and compute. A point light needs its position, then every shaded point derives distance and direction. A directional light supplies the direction and a normal irradiance, so the same cosine gate remains but the inverse-square term disappears.</aside>
+    </section>
+
+    <section data-label="Lambertian">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Diffuse Reflection</div>
+            <h2>Lambertian Materials Forget The Viewer Direction</h2>
+          </div>
+          <span class="tag">view-independent</span>
+        </header>
+        <div class="two">
+          <div class="stack">
+            <div class="formula">
+              <div>L<sub>r,diffuse</sub> = (R / pi) E</div>
+              <div class="small muted">R is an RGB reflectance, applied componentwise.</div>
+            </div>
+            <div class="box teal">
+              <h3>Shape Cue</h3>
+              <p>Diffuse shading depends on surface normal and light direction, so it reveals shape even when the camera moves.</p>
+            </div>
+            <div class="box blue">
+              <h3>Material Cue</h3>
+              <p>Changing R changes the base color without changing where the highlight would appear.</p>
+            </div>
+          </div>
+          <div class="viz">
+            <svg viewBox="0 0 780 520" role="img" aria-label="Lambertian sphere with same brightness from different view directions">
+              <defs>
+                <radialGradient id="diffGrad" cx="34%" cy="30%" r="72%">
+                  <stop offset="0%" stop-color="#FFC89B"/>
+                  <stop offset="48%" stop-color="#CF6A32"/>
+                  <stop offset="100%" stop-color="#2B1C18"/>
+                </radialGradient>
+                <marker id="arrLambert" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2,2 L10,6 L2,10 Z" fill="#0F766E"/>
+                </marker>
+              </defs>
+              <circle cx="360" cy="255" r="158" fill="url(#diffGrad)" stroke="#92400E" stroke-width="4"/>
+              <line x1="140" y1="110" x2="255" y2="180" stroke="#2563EB" stroke-width="7" marker-end="url(#arrLambert)"/>
+              <line x1="600" y1="145" x2="507" y2="202" stroke="#0F766E" stroke-width="6" marker-end="url(#arrLambert)"/>
+              <line x1="608" y1="330" x2="505" y2="302" stroke="#0F766E" stroke-width="6" marker-end="url(#arrLambert)"/>
+              <text x="116" y="90" class="svg-label">light</text>
+              <text x="575" y="124" class="svg-label">camera A</text>
+              <text x="575" y="360" class="svg-label">camera B</text>
+              <text x="90" y="465" class="svg-note">Moving the camera changes framing, not the diffuse value at the point.</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Stress the phrase view-independent because it is the easiest way to separate diffuse reflection from glossy reflection. Lambertian response can still create a strong form cue, but the cue comes from the light-normal relationship. The camera direction is not part of the diffuse material factor.</aside>
+    </section>
+
+    <section data-label="Half Vector">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Specular Reflection</div>
+            <h2>Blinn-Phong Uses The Half Vector As A Mirror Test</h2>
+          </div>
+          <span class="tag">view-dependent</span>
+        </header>
+        <div class="two equal">
+          <div class="viz">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Half vector between light and view">
+              <defs>
+                <marker id="arrHalf" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2,2 L10,6 L2,10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <rect x="80" y="385" width="600" height="46" rx="23" fill="#EEF2FF" stroke="#CBD5E1" stroke-width="3"/>
+              <circle cx="380" cy="385" r="10" fill="#1E3A8A"/>
+              <line x1="380" y1="385" x2="210" y2="145" stroke="#2563EB" stroke-width="7" marker-end="url(#arrHalf)"/>
+              <line x1="380" y1="385" x2="565" y2="165" stroke="#0F766E" stroke-width="7" marker-end="url(#arrHalf)"/>
+              <line x1="380" y1="385" x2="380" y2="120" stroke="#B45309" stroke-width="7" marker-end="url(#arrHalf)"/>
+              <line x1="380" y1="385" x2="405" y2="125" stroke="#6D28D9" stroke-width="5" stroke-dasharray="14 12" marker-end="url(#arrHalf)"/>
+              <path d="M304 278 Q382 238 462 277" fill="none" stroke="#94A3B8" stroke-width="5"/>
+              <text x="190" y="132" class="svg-label">l</text>
+              <text x="565" y="150" class="svg-label">v</text>
+              <text x="393" y="119" class="svg-label">n</text>
+              <text x="422" y="137" class="svg-label">h</text>
+              <text x="96" y="470" class="svg-note">The highlight is strong when h nearly aligns with n.</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">
+              <div>h = normalize(l + v)</div>
+              <div>specular factor = max(0, n dot h)<sup>p</sup></div>
+            </div>
+            <div class="box amber">
+              <h3>What Moves?</h3>
+              <p>The highlight can shift when the viewer moves because v changes the half vector.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Introduce the half vector as a practical mirror-alignment test. When light and view are symmetric around the normal, the half vector points along the normal and the specular term peaks. Unlike diffuse shading, moving the camera changes the calculation because the view vector is one of the inputs.</aside>
+    </section>
+
+    <section data-label="Exponent">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Highlight Width</div>
+            <h2>The Exponent Turns Alignment Into Gloss</h2>
+          </div>
+          <span class="tag">p controls falloff</span>
+        </header>
+        <div class="two">
+          <div class="stack">
+            <div class="box blue">
+              <h3>Small p</h3>
+              <p>Broad highlight, useful for dull or satin materials.</p>
+            </div>
+            <div class="box teal">
+              <h3>Medium p</h3>
+              <p>Clear glossy spot that still covers a visible neighborhood.</p>
+            </div>
+            <div class="box violet">
+              <h3>Large p</h3>
+              <p>Narrow, sensitive highlight that needs careful sampling and filtering.</p>
+            </div>
+          </div>
+          <div class="viz">
+            <svg viewBox="0 0 850 520" role="img" aria-label="Specular lobe curves for different exponents">
+              <line x1="85" y1="430" x2="790" y2="430" stroke="#94A3B8" stroke-width="4"/>
+              <line x1="85" y1="430" x2="85" y2="65" stroke="#94A3B8" stroke-width="4"/>
+              <path d="M90 75 C170 118 250 178 330 240 C430 315 555 380 780 424" fill="none" stroke="#2563EB" stroke-width="8"/>
+              <path d="M90 75 C125 115 155 185 190 292 C225 370 310 420 780 428" fill="none" stroke="#0F766E" stroke-width="8"/>
+              <path d="M90 75 C104 126 112 220 122 326 C132 395 210 427 780 429" fill="none" stroke="#6D28D9" stroke-width="8"/>
+              <text x="112" y="118" class="svg-label" fill="#2563EB">p = 10</text>
+              <text x="208" y="276" class="svg-label" fill="#0F766E">p = 100</text>
+              <text x="142" y="365" class="svg-label" fill="#6D28D9">p = 1000</text>
+              <text x="275" y="482" class="svg-note">angle between n and h</text>
+              <text x="22" y="230" class="svg-note" transform="rotate(-90 22 230)">response</text>
+              <text x="490" y="96" class="svg-note">All curves start at one, then decay at different speeds.</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Read the exponent plot as a parameter diagnostic. Raising a number between zero and one to a higher power makes it collapse faster, so a large exponent keeps only very close half-vector alignment. This explains both the visual sharpness and the numerical sensitivity of glossy highlights.</aside>
+    </section>
+
+    <section data-label="BRDF Factor">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Basic Reflection Model</div>
+            <h2>The Material Factor Mixes Diffuse Color With Specular Shine</h2>
+          </div>
+          <span class="tag">BRDF-like factor</span>
+        </header>
+        <div class="two equal">
+          <div class="formula">
+            <div>L<sub>r</sub> = [ R / pi + k<sub>s</sub> max(0, n dot h)<sup>p</sup> ] E</div>
+            <div class="small muted">The bracket describes material response; E describes available irradiance.</div>
+          </div>
+          <div class="stack">
+            <div class="box blue">
+              <h3>R</h3>
+              <p>Diffuse reflectance. Use separate RGB values for colored base materials.</p>
+            </div>
+            <div class="box teal">
+              <h3>k<sub>s</sub></h3>
+              <p>Specular scale. Neutral values often keep plastic highlights white.</p>
+            </div>
+            <div class="box violet">
+              <h3>p</h3>
+              <p>Phong exponent. Higher values concentrate the specular contribution.</p>
+            </div>
+          </div>
+        </div>
+        <div class="box amber">
+          <p>The calculation is componentwise in red, green, and blue. The geometry terms still use normalized directions, not color values.</p>
+        </div>
+      </div>
+      <aside class="speaker-notes">Separate the bracketed material factor from the irradiance factor. That separation is the heart of the chapter. It lets students see that changing light distance changes E, while changing reflectance or the exponent changes the material response after light has already arrived at the surface.</aside>
+    </section>
+
+    <section data-label="Ambient">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Ambient Illumination</div>
+            <h2>A Constant Fill Term Keeps The Simple Model Usable</h2>
+          </div>
+          <span class="tag">approximation</span>
+        </header>
+        <div class="two">
+          <div class="stack">
+            <div class="formula">
+              <div>L<sub>ambient</sub> = k<sub>a</sub> I<sub>a</sub></div>
+              <div>L<sub>total</sub> = local terms + ambient fill</div>
+            </div>
+            <div class="box amber">
+              <h3>What It Does</h3>
+              <p>It prevents unlit regions from collapsing to pure black and gives an easy scene-level contrast control.</p>
+            </div>
+            <div class="box blue">
+              <h3>What It Is Not</h3>
+              <p>It is not a full model of extended light, color bleeding, occlusion, or global illumination.</p>
+            </div>
+          </div>
+          <div class="viz">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Ambient illumination fills a shadowed sphere">
+              <defs>
+                <radialGradient id="ambDark" cx="35%" cy="30%" r="75%">
+                  <stop offset="0%" stop-color="#FBBF24"/>
+                  <stop offset="55%" stop-color="#854D0E"/>
+                  <stop offset="100%" stop-color="#111827"/>
+                </radialGradient>
+                <radialGradient id="ambFill" cx="35%" cy="30%" r="75%">
+                  <stop offset="0%" stop-color="#FBC88D"/>
+                  <stop offset="55%" stop-color="#9A6B47"/>
+                  <stop offset="100%" stop-color="#51413A"/>
+                </radialGradient>
+              </defs>
+              <circle cx="235" cy="250" r="145" fill="url(#ambDark)" stroke="#92400E" stroke-width="4"/>
+              <circle cx="525" cy="250" r="145" fill="url(#ambFill)" stroke="#92400E" stroke-width="4"/>
+              <text x="140" y="440" class="svg-label">no fill</text>
+              <text x="416" y="440" class="svg-label">ambient fill</text>
+              <path d="M360 250 L400 250" stroke="#CBD5E1" stroke-width="8"/>
+              <text x="260" y="78" class="svg-note">Same local light, different constant floor</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Describe ambient light honestly as a useful approximation. It has no direction, so it only contributes a diffuse-like constant term. That simplicity is precisely why it helps early renderers, but it also explains why ambient cannot model darker corners, indirect color transfer, or true environment lighting.</aside>
+    </section>
+
+    <section data-label="Component Debugging">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Debugging View</div>
+            <h2>Render The Terms Separately Before Trusting The Sum</h2>
+          </div>
+          <span class="tag">not just pretty pictures</span>
+        </header>
+        <div class="component-grid">
+          <div class="component">
+            <div class="swatch-sphere diffuse"></div>
+            <div class="cap">diffuse</div>
+          </div>
+          <div class="component">
+            <div class="swatch-sphere specular"></div>
+            <div class="cap">specular</div>
+          </div>
+          <div class="component">
+            <div class="swatch-sphere ambient"></div>
+            <div class="cap">ambient</div>
+          </div>
+          <div class="component">
+            <div class="swatch-sphere"></div>
+            <div class="cap">combined</div>
+          </div>
+        </div>
+        <div class="three">
+          <div class="box blue"><p>If diffuse is flipped, inspect normals and light direction.</p></div>
+          <div class="box teal"><p>If specular is detached, inspect v, h, and normalization.</p></div>
+          <div class="box amber"><p>If ambient dominates, lower the constant floor.</p></div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Link this slide to the notebook dashboard idea. Students should not debug a final shaded image as one undifferentiated output. Splitting diffuse, specular, ambient, and combined terms turns visual artifacts into clues about which input vector, material coefficient, or clamp is probably wrong.</aside>
+    </section>
+
+    <section data-label="Normalization">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Vector Hygiene</div>
+            <h2>Normalize Before Dot Products; Clamp Before Powers</h2>
+          </div>
+          <span class="tag">implementation invariant</span>
+        </header>
+        <div class="two">
+          <div class="stack">
+            <div class="box blue">
+              <h3>Unit Vectors</h3>
+              <p>The dot products mean cosines only when n, l, v, and h have unit length.</p>
+            </div>
+            <div class="box amber">
+              <h3>Clamped Factors</h3>
+              <p>Use max(0, n dot l) for irradiance and max(0, n dot h) for specular response.</p>
+            </div>
+            <div class="box violet">
+              <h3>Power After Clamp</h3>
+              <p>A specular exponent should sharpen a valid alignment value, not amplify a broken one.</p>
+            </div>
+          </div>
+          <div class="viz">
+            <svg viewBox="0 0 820 520" role="img" aria-label="Safe and unsafe dot product curves">
+              <line x1="90" y1="420" x2="770" y2="420" stroke="#94A3B8" stroke-width="4"/>
+              <line x1="90" y1="420" x2="90" y2="80" stroke="#94A3B8" stroke-width="4"/>
+              <path d="M90 250 C180 92 330 92 420 250 C510 408 660 408 770 250" fill="none" stroke="#64748B" stroke-width="5"/>
+              <path d="M90 250 C180 92 330 92 420 250 C452 305 494 356 545 393 L770 420" fill="none" stroke="#0F766E" stroke-width="8"/>
+              <path d="M90 80 C180 -35 330 -35 420 80 C510 195 660 195 770 80" fill="none" stroke="#B45309" stroke-width="6" stroke-dasharray="16 12"/>
+              <text x="530" y="350" class="svg-label" fill="#0F766E">safe clamp</text>
+              <text x="430" y="108" class="svg-label" fill="#B45309">unnormalized</text>
+              <text x="455" y="255" class="svg-label" fill="#64748B">raw dot</text>
+              <text x="250" y="480" class="svg-note">angle around the normal field</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Make the numerical invariant explicit: dot products are cosines only under unit-length assumptions. A scaled light vector can create values above one, while an unclamped dot product can create negative irradiance. These errors are not small style differences; they change the meaning of the shading model.</aside>
+    </section>
+
+    <section data-label="Code Skeleton">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Implementation Skeleton</div>
+            <h2>Keep Irradiance And Reflection As Separate Functions</h2>
+          </div>
+          <span class="tag">ray tracing or rasterization</span>
+        </header>
+        <div class="two equal">
+          <div class="box blue">
+            <h3>Irradiance Function</h3>
+            <pre class="code">d = light.position - x
+r = length(d)
+l = normalize(d)
+E = light.I * max(0, dot(n, l)) / (r * r)</pre>
+          </div>
+          <div class="box teal">
+            <h3>Reflection Function</h3>
+            <pre class="code">h = normalize(l + v)
+diff = material.R / pi
+spec = material.ks * pow(max(0, dot(n, h)), p)
+color = (diff + spec) * E + material.ka * ambient.I</pre>
+          </div>
+        </div>
+        <div class="box amber">
+          <p>The two functions can be reused in different renderers. What changes is how x, n, l, and v are obtained.</p>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use pseudocode to show the software design lesson hiding inside the math. Ray tracing and rasterization may produce the inputs differently, but the local shading calculation can be shared. Keeping irradiance separate from reflection also gives tests natural boundaries and makes visual debugging much faster.</aside>
+    </section>
+
+    <section data-label="Common Failures">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Failure Modes</div>
+            <h2>Most Shading Bugs Have A Geometric Signature</h2>
+          </div>
+          <span class="tag">diagnose by pattern</span>
+        </header>
+        <div class="rail">
+          <div class="mini">
+            <div class="label">Negative Light</div>
+            <p>Back faces go dark in the wrong direction or subtract from color.</p>
+          </div>
+          <div class="mini">
+            <div class="label">Scaled Dot Products</div>
+            <p>Highlights explode because a vector was not normalized.</p>
+          </div>
+          <div class="mini">
+            <div class="label">Wrong Direction</div>
+            <p>The lit side rotates opposite to the light source.</p>
+          </div>
+          <div class="mini">
+            <div class="label">Ambient Washout</div>
+            <p>The object becomes flat because the constant term is too large.</p>
+          </div>
+        </div>
+        <div class="viz">
+          <svg viewBox="0 0 1500 250" role="img" aria-label="Debugging decision line from symptom to input">
+            <defs>
+              <marker id="arrFail" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M2,2 L10,6 L2,10 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <line x1="90" y1="125" x2="1390" y2="125" stroke="#CBD5E1" stroke-width="5"/>
+            <g fill="#FFFFFF" stroke-width="5">
+              <circle cx="180" cy="125" r="45" stroke="#B45309"/>
+              <circle cx="500" cy="125" r="45" stroke="#2563EB"/>
+              <circle cx="820" cy="125" r="45" stroke="#0F766E"/>
+              <circle cx="1140" cy="125" r="45" stroke="#6D28D9"/>
+            </g>
+            <g stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrFail)">
+              <line x1="225" y1="125" x2="450" y2="125"/>
+              <line x1="545" y1="125" x2="770" y2="125"/>
+              <line x1="865" y1="125" x2="1090" y2="125"/>
+            </g>
+            <text x="128" y="132" class="svg-label">see</text>
+            <text x="450" y="132" class="svg-label">split</text>
+            <text x="764" y="132" class="svg-label">test</text>
+            <text x="1086" y="132" class="svg-label">fix</text>
+            <text x="220" y="214" class="svg-note">Symptom -> component panel -> invariant -> code path</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Turn the failure list into a practical review protocol. Ask students to name which component image would expose each bug. A bad normal usually appears in diffuse shading, a bad view vector appears in specular shading, and excessive ambient light hides geometry rather than distorting the light direction.</aside>
+    </section>
+
+    <section data-label="Applied Lab">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Applied Lab</div>
+            <h2>Sweep Incidence Angle And Exponent</h2>
+          </div>
+          <span class="tag">inspect the ridge</span>
+        </header>
+        <div class="two">
+          <div class="viz">
+            <svg viewBox="0 0 820 520" role="img" aria-label="Parameter surface for Blinn-Phong response">
+              <defs>
+                <linearGradient id="ridgeGrad" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#DBEAFE"/>
+                  <stop offset="48%" stop-color="#5EEAD4"/>
+                  <stop offset="100%" stop-color="#6D28D9"/>
+                </linearGradient>
+              </defs>
+              <polygon points="120,420 650,420 735,330 210,330" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+              <path d="M160 400 C245 320 290 260 335 130 C420 225 505 305 705 337" fill="none" stroke="url(#ridgeGrad)" stroke-width="14"/>
+              <path d="M190 420 C278 342 335 290 388 180" fill="none" stroke="#2563EB" stroke-width="6" opacity="0.85"/>
+              <path d="M300 420 C375 350 425 305 470 240" fill="none" stroke="#0F766E" stroke-width="6" opacity="0.85"/>
+              <path d="M430 420 C485 370 528 337 570 308" fill="none" stroke="#B45309" stroke-width="6" opacity="0.85"/>
+              <text x="155" y="465" class="svg-note">angle(n,h)</text>
+              <text x="602" y="468" class="svg-note">exponent p</text>
+              <text x="362" y="112" class="svg-label">narrow high-p ridge</text>
+              <text x="110" y="72" class="svg-note">Response = max(0, n dot h)^p</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box blue">
+              <h3>Inspection Target</h3>
+              <p>As p increases, the response collapses into a thin ridge near perfect half-vector alignment.</p>
+            </div>
+            <div class="box teal">
+              <h3>Design Question</h3>
+              <p>Which exponent still gives a readable highlight under your camera distance, mesh resolution, and antialiasing setup?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Connect the lab to renderer design rather than treating it as a separate plot. The response surface explains why glossy materials can alias or flicker: large exponents concentrate energy into very small angular neighborhoods. Students should inspect how sampling and filtering interact with the chosen exponent.</aside>
+    </section>
+
+    <section data-label="Design Exercise">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Classroom Design Task</div>
+            <h2>Build A Three-Material Shading Test</h2>
+          </div>
+          <span class="tag">original experiment</span>
+        </header>
+        <div class="three">
+          <div class="box blue">
+            <h3>Matte Clay</h3>
+            <p>High diffuse reflectance, no specular term, low ambient fill.</p>
+          </div>
+          <div class="box teal">
+            <h3>Gloss Paint</h3>
+            <p>Colored diffuse base, neutral specular coefficient, medium exponent.</p>
+          </div>
+          <div class="box violet">
+            <h3>Polished Plastic</h3>
+            <p>Lower diffuse base, stronger neutral specular term, large exponent.</p>
+          </div>
+        </div>
+        <div class="box amber">
+          <h3>Required Evidence</h3>
+          <p>For each material, save the diffuse, specular, ambient, and combined panels. Then write one sentence explaining which term changed the visual impression most.</p>
+        </div>
+        <div class="formula">
+          <div>Hold geometry fixed; vary R, k<sub>s</sub>, p, and k<sub>a</sub>.</div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Assign this as an experiment in controlled variation. The geometry, light, and camera should stay fixed while material parameters change. Requiring component panels prevents students from merely picking attractive numbers; they must say whether the visual difference came from diffuse color, specular width, or ambient floor.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="content">
+        <header>
+          <div>
+            <div class="eyebrow">Recap</div>
+            <h2>Surface Shading Is A Small Pipeline With Strong Invariants</h2>
+          </div>
+          <span class="tag">carry forward</span>
+        </header>
+        <div class="rail">
+          <div class="mini">
+            <div class="label">Irradiance</div>
+            <p>Light geometry determines how much energy reaches the surface.</p>
+          </div>
+          <div class="mini">
+            <div class="label">Diffuse</div>
+            <p>Lambertian response is view-independent and color-bearing.</p>
+          </div>
+          <div class="mini">
+            <div class="label">Specular</div>
+            <p>Blinn-Phong response uses h and p to make glossy highlights.</p>
+          </div>
+          <div class="mini">
+            <div class="label">Ambient</div>
+            <p>A constant fill term keeps simple scenes readable.</p>
+          </div>
+        </div>
+        <div class="box blue">
+          <h3>Final Test</h3>
+          <p>Every term should be explainable from a direction, a distance, a material parameter, or a deliberate approximation. If not, split the render and inspect the invariant that failed.</p>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by returning to the chapter question. A shaded image should be inspectable: each bright or dark region should trace back to light geometry, diffuse reflectance, specular alignment, or ambient fill. This habit prepares students for later physically based rendering, where the terms become richer but the discipline remains.</aside>
+    </section>
+  </deck-stage>
+
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    "Open by framing surface shading as a diagnostic contract rather than a bag of visual tricks. The learner should leave knowing which variables belong to light transport, which belong to material response, and why separating those calculations makes both ray tracing and rasterization easier to debug.",
+    "Use the route slide to establish the chapter architecture before any formulas appear. The sequence is intentionally implementation shaped: compute what reaches the surface, decide what the material sends toward the camera, then add checks that catch the most common numerical and visual failures.",
+    "Emphasize that the chapter is not promising a complete physical renderer. It isolates a single surface point and asks what happens locally. That boundary is useful because many later effects, including shadows, reflections, texture maps, and global transport, still need this local calculation as a reliable component.",
+    "Present inverse-square falloff as conservation of emitted power rather than as a magic graphics constant. The same source power crosses a larger spherical area as distance grows, so a small receiver gets less power per unit area. This is why the distance calculation belongs before material color.",
+    "Teach the cosine factor as projected area. A tilted patch intercepts less of the same beam, so its irradiance decreases even though the material has not changed. The clamp at zero is equally important because local shading should not create negative radiance from a back-facing configuration.",
+    "Compare the two source types by what an implementation must store and compute. A point light needs its position, then every shaded point derives distance and direction. A directional light supplies the direction and a normal irradiance, so the same cosine gate remains but the inverse-square term disappears.",
+    "Stress the phrase view-independent because it is the easiest way to separate diffuse reflection from glossy reflection. Lambertian response can still create a strong form cue, but the cue comes from the light-normal relationship. The camera direction is not part of the diffuse material factor.",
+    "Introduce the half vector as a practical mirror-alignment test. When light and view are symmetric around the normal, the half vector points along the normal and the specular term peaks. Unlike diffuse shading, moving the camera changes the calculation because the view vector is one of the inputs.",
+    "Read the exponent plot as a parameter diagnostic. Raising a number between zero and one to a higher power makes it collapse faster, so a large exponent keeps only very close half-vector alignment. This explains both the visual sharpness and the numerical sensitivity of glossy highlights.",
+    "Separate the bracketed material factor from the irradiance factor. That separation is the heart of the chapter. It lets students see that changing light distance changes E, while changing reflectance or the exponent changes the material response after light has already arrived at the surface.",
+    "Describe ambient light honestly as a useful approximation. It has no direction, so it only contributes a diffuse-like constant term. That simplicity is precisely why it helps early renderers, but it also explains why ambient cannot model darker corners, indirect color transfer, or true environment lighting.",
+    "Link this slide to the notebook dashboard idea. Students should not debug a final shaded image as one undifferentiated output. Splitting diffuse, specular, ambient, and combined terms turns visual artifacts into clues about which input vector, material coefficient, or clamp is probably wrong.",
+    "Make the numerical invariant explicit: dot products are cosines only under unit-length assumptions. A scaled light vector can create values above one, while an unclamped dot product can create negative irradiance. These errors are not small style differences; they change the meaning of the shading model.",
+    "Use pseudocode to show the software design lesson hiding inside the math. Ray tracing and rasterization may produce the inputs differently, but the local shading calculation can be shared. Keeping irradiance separate from reflection also gives tests natural boundaries and makes visual debugging much faster.",
+    "Turn the failure list into a practical review protocol. Ask students to name which component image would expose each bug. A bad normal usually appears in diffuse shading, a bad view vector appears in specular shading, and excessive ambient light hides geometry rather than distorting the light direction.",
+    "Connect the lab to renderer design rather than treating it as a separate plot. The response surface explains why glossy materials can alias or flicker: large exponents concentrate energy into very small angular neighborhoods. Students should inspect how sampling and filtering interact with the chosen exponent.",
+    "Assign this as an experiment in controlled variation. The geometry, light, and camera should stay fixed while material parameters change. Requiring component panels prevents students from merely picking attractive numbers; they must say whether the visual difference came from diffuse color, specular width, or ambient floor.",
+    "Close by returning to the chapter question. A shaded image should be inspectable: each bright or dark region should trace back to light geometry, diffuse reflectance, specular alignment, or ambient fill. This habit prepares students for later physically based rendering, where the terms become richer but the discipline remains."
+  ]
+}
+  </script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>

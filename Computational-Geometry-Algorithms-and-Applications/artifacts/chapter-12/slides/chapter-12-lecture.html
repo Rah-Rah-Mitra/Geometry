@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 12: Binary Space Partitions</title>
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-12">
+  <meta name="chapter_title" content="12 - Binary Space Partitions">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-12-binary-space-partitions/12-binary-space-partitions.ipynb">
+  <meta name="source_span" content="printed pages 259-282; PDF pages 270-293.">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px; height: 1080px; box-sizing: border-box; overflow: clip;
+      background: var(--slide-bg); color: var(--slide-ink); font-family: var(--font-sans);
+      padding: 64px 92px 54px; border-top: 10px solid var(--slide-accent);
+      display: flex; flex-direction: column;
+    }
+    .alt {
+      background:
+        linear-gradient(90deg, rgba(30,58,138,0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15,118,110,0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 80px 80px, 80px 80px, auto;
+    }
+    .speaker-notes { display: none; }
+    h1, h2, h3, p, ul, figure { margin-top: 0; }
+    h1 { font-size: 64px; line-height: 1.05; letter-spacing: 0; margin-bottom: 18px; }
+    h2 { font-size: 50px; line-height: 1.08; letter-spacing: 0; margin-bottom: 16px; }
+    h3 { font-size: 30px; line-height: 1.14; letter-spacing: 0; color: var(--slide-accent); margin-bottom: 10px; }
+    p, li { font-size: 26px; line-height: 1.28; }
+    ul { margin-bottom: 0; padding-left: 30px; }
+    li { margin-bottom: 8px; }
+    svg { max-width: 100%; height: auto; }
+    .eyebrow { font-size: 23px; font-weight: 700; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0; margin-bottom: 10px; }
+    .rule { width: 118px; height: 6px; border-radius: 4px; background: var(--slide-accent); margin: 6px 0 22px; }
+    .content { flex: 1; min-height: 0; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; flex: 1; min-height: 0; align-items: stretch; }
+    .left-wide { grid-template-columns: 1.12fr 0.88fr; }
+    .right-wide { grid-template-columns: 0.86fr 1.14fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .stack { display: flex; flex-direction: column; gap: 16px; }
+    .panel { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 19px 22px; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.04); }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.indigo { background: var(--math-theorem-bg); border-left: 6px solid var(--slide-accent); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel h3 { font-size: 28px; }
+    .panel p, .panel li { font-size: 24px; }
+    .compact p, .compact li { font-size: 23px; line-height: 1.22; }
+    .visual-card { border: 1px solid var(--slide-border-light); border-radius: 8px; background: #fff; padding: 14px; display: flex; align-items: center; justify-content: center; min-height: 0; }
+    .visual-card svg { width: 100%; max-height: 650px; }
+    .formula { font-family: var(--font-math); font-size: 38px; line-height: 1.2; text-align: center; padding: 15px 18px; border-radius: 8px; background: #fff; border: 1px solid var(--slide-border-light); margin: 10px 0; }
+    .formula.small { font-size: 32px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .tag { border: 1px solid var(--slide-border); border-radius: 6px; padding: 7px 11px; background: #fff; color: var(--slide-accent); font-size: 22px; font-weight: 700; }
+    .mini { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 16px 18px; background: #fff; min-height: 126px; }
+    .mini strong { display: block; color: var(--slide-accent); font-size: 25px; margin-bottom: 6px; }
+    .mini p { margin: 0; font-size: 22px; line-height: 1.22; }
+    .caption { font-size: 21px; line-height: 1.22; color: var(--slide-dimmed); margin: 9px 0 0; }
+    .small-note { font-size: 21px; color: var(--slide-dimmed); line-height: 1.2; }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .svg-label { font-family: "Source Sans 3", Arial, sans-serif; font-weight: 700; fill: #475569; }
+    .svg-math { font-family: "STIX Two Text", Georgia, serif; font-style: italic; fill: #111827; }
+    .ledger { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .ledger div { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 14px; background: #fff; }
+    .ledger strong { color: var(--slide-accent); display: block; font-size: 24px; }
+    .ledger span { font-size: 24px; }
+    .footer { font-size: 20px; color: var(--slide-dimmed); display: flex; justify-content: space-between; padding-top: 12px; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section class="slide alt" data-label="Painter Order Needs Structure">
+    <div class="eyebrow">Computational Geometry Algorithms and Applications · Chapter 12</div>
+    <h1>Binary Space Partitions</h1>
+    <div class="rule"></div>
+    <div class="cols left-wide">
+      <div>
+        <h2>Why Painter Order Needs Structure</h2>
+        <p>A z-buffer stores the closest depth per pixel. The painter algorithm tries the opposite bargain: draw fragments from far to near so later writes overwrite earlier ones.</p>
+        <div class="tag-row">
+          <span class="tag">hidden surface removal</span><span class="tag">preprocess once</span><span class="tag">viewpoint-dependent order</span><span class="tag">BSP tree</span>
+        </div>
+        <p class="small-note">Source span: printed pages 259-282; PDF pages 270-293. Content is grounded in printed pages 259-281 and avoids Chapter 13 material.</p>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 760 520" role="img" aria-label="Three overlapping projected triangles with painter overwrite order">
+          <rect x="60" y="55" width="640" height="390" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+          <polygon points="120,330 330,110 512,360" fill="#2563EB" opacity="0.25" stroke="#2563EB" stroke-width="5"/>
+          <polygon points="210,150 650,210 360,410" fill="#0F766E" opacity="0.25" stroke="#0F766E" stroke-width="5"/>
+          <polygon points="290,340 520,95 630,390" fill="#B45309" opacity="0.28" stroke="#B45309" stroke-width="5"/>
+          <g class="svg-label" font-size="26">
+            <text x="115" y="365" fill="#2563EB">draw 1: far</text>
+            <text x="455" y="205" fill="#0F766E">draw 2</text>
+            <text x="505" y="422" fill="#B45309">draw 3: near</text>
+            <text x="92" y="492" fill="#475569">If the order is correct, the last overwrite is the visible color.</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>BSP trees turn painter ordering into a traversal problem</span><span>1 / 16</span></div>
+    <aside class="speaker-notes">Open by contrasting two rendering contracts. A z-buffer answers visibility per pixel while drawing, but the painter algorithm wants a global order of fragments so later scan conversion overwrites earlier fragments. The difficulty is that the correct order depends on the viewpoint, so the chapter asks for a preprocessing structure that can deliver the order quickly as the eye moves.</aside>
+  </section>
+
+  <section class="slide" data-label="Cycles Force Splits">
+    <h2>Cycles Force Splits</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 760 520" role="img" aria-label="Cyclic depth relation among three panels and split resolution">
+          <rect x="56" y="64" width="650" height="360" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <path d="M120 300 C240 130 340 130 490 320" fill="none" stroke="#2563EB" stroke-width="16" stroke-linecap="round"/>
+          <path d="M205 175 C320 380 450 380 600 170" fill="none" stroke="#0F766E" stroke-width="16" stroke-linecap="round"/>
+          <path d="M150 390 C300 245 470 250 650 382" fill="none" stroke="#B45309" stroke-width="16" stroke-linecap="round"/>
+          <g stroke="#111827" stroke-width="3" fill="none" marker-end="url(#cycArrow)">
+            <defs><marker id="cycArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#111827"/></marker></defs>
+            <path d="M205 96 C285 42 373 44 446 96"/>
+            <path d="M593 230 C650 306 622 386 540 418"/>
+            <path d="M292 430 C190 423 116 368 107 272"/>
+          </g>
+          <text x="249" y="55" class="svg-label" font-size="24">A in front of B</text>
+          <text x="548" y="344" class="svg-label" font-size="24">B in front of C</text>
+          <text x="70" y="220" class="svg-label" font-size="24">C in front of A</text>
+          <line x1="380" y1="86" x2="380" y2="430" stroke="#6D28D9" stroke-width="5" stroke-dasharray="12 10"/>
+          <text x="405" y="470" class="svg-label" font-size="25" fill="#6D28D9">split at a plane/line to break the cycle</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel amber"><h3>Failure Mode</h3><p>Objects can have a cyclic in-front relation. No single unsplit object order can satisfy all overlaps.</p></div>
+        <div class="panel blue"><h3>Repair</h3><p>Split objects into fragments. A fragment participates in a smaller, local order where back-to-front traversal is meaningful.</p></div>
+        <div class="panel teal"><h3>Invariant</h3><p>Every split must preserve geometry: the fragment ledger counts intersections and the rendered union remains the same scene.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Cyclic depth is why BSP leaves store fragments, not just original objects</span><span>2 / 16</span></div>
+    <aside class="speaker-notes">Show the class why sorting original objects is too optimistic. Three projected surfaces can overlap so that each is in front of another somewhere. Splitting is the algorithmic escape hatch: after enough cuts, the ordering question is asked about fragments whose relative depth is consistent inside the relevant cell.</aside>
+  </section>
+
+  <section class="slide alt" data-label="BSP Definition">
+    <h2>BSP Definition</h2>
+    <div class="cols right-wide">
+      <div class="stack">
+        <div class="panel blue"><h3>Definition</h3><p>A BSP tree for objects in \( \mathbb{R}^d \) stores at each internal node \( \nu \) a hyperplane \( h_\nu \), the objects contained in it as \( S(\nu) \), and recurses on fragments in \( h_\nu^+ \) and \( h_\nu^- \).</p></div>
+        <div class="formula small">\( h^+ = \{x: a\cdot x + b > 0\},\quad h^- = \{x: a\cdot x + b < 0\} \)</div>
+        <div class="panel indigo"><h3>Base Case</h3><p>A leaf stores at most one object fragment, or is empty. This is the structural promise painter traversal relies on.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 860 520" role="img" aria-label="BSP root hyperplane with plus and minus children">
+          <rect x="50" y="45" width="760" height="410" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="105" y1="380" x2="745" y2="100" stroke="#1E3A8A" stroke-width="6"/>
+          <polygon points="105,380 745,100 810,45 50,45 50,455" fill="#2563EB" opacity="0.08"/>
+          <polygon points="105,380 745,100 810,455 50,455" fill="#F59E0B" opacity="0.12"/>
+          <g stroke-width="7" stroke-linecap="round">
+            <line x1="200" y1="145" x2="365" y2="205" stroke="#0F766E"/>
+            <line x1="460" y1="335" x2="655" y2="295" stroke="#B45309"/>
+            <line x1="355" y1="355" x2="510" y2="135" stroke="#6D28D9"/>
+          </g>
+          <text x="600" y="90" class="svg-math" font-size="34">hν</text>
+          <text x="170" y="110" class="svg-label" font-size="30" fill="#2563EB">h+</text>
+          <text x="610" y="405" class="svg-label" font-size="30" fill="#B45309">h-</text>
+          <g transform="translate(285,282)">
+            <rect x="0" y="0" width="290" height="165" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+            <text x="145" y="38" text-anchor="middle" class="svg-label" font-size="24">node record</text>
+            <text x="30" y="78" class="svg-math" font-size="27">hν</text>
+            <text x="30" y="116" class="svg-math" font-size="27">S(ν)</text>
+            <text x="120" y="78" class="svg-label" font-size="22">split plane</text>
+            <text x="120" y="116" class="svg-label" font-size="22">coplanar fragments</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>The node stores a separator and the fragments lying on it</span><span>3 / 16</span></div>
+    <aside class="speaker-notes">Give the formal definition but keep the operational picture in view. At an internal node, the hyperplane partitions space into a positive and negative side, while fragments lying exactly in the hyperplane are stored at that node. Everything else is clipped to the two side subproblems until leaves contain at most one fragment.</aside>
+  </section>
+
+  <section class="slide" data-label="Node Regions">
+    <h2>Node Regions</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Path signs determine a node region by intersecting half-spaces">
+          <rect x="70" y="60" width="620" height="390" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="100" y1="365" x2="655" y2="110" stroke="#1E3A8A" stroke-width="5"/>
+          <line x1="195" y1="85" x2="530" y2="445" stroke="#0F766E" stroke-width="5"/>
+          <line x1="325" y1="445" x2="665" y2="265" stroke="#B45309" stroke-width="5"/>
+          <polygon points="230,235 383,171 530,445 325,445" fill="#6D28D9" opacity="0.16" stroke="#6D28D9" stroke-width="4"/>
+          <text x="305" y="318" class="svg-label" font-size="26" fill="#6D28D9">region R(ν)</text>
+          <g class="svg-label" font-size="24">
+            <text x="535" y="120" fill="#1E3A8A">root: +</text>
+            <text x="210" y="100" fill="#0F766E">child: -</text>
+            <text x="575" y="260" fill="#B45309">grandchild: +</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel indigo"><h3>Region Correspondence</h3><p>The region of a node is the intersection of all half-spaces chosen on the path from the root.</p></div>
+        <div class="formula small">\( R(\nu)=\bigcap_{\mu \prec \nu} h_\mu^{\sigma(\mu,\nu)} \)</div>
+        <div class="panel teal"><h3>Why It Matters</h3><p>Fragments in a subtree live only inside that region. The same input segment can become several region-local pieces.</p></div>
+        <div class="panel amber"><h3>Implementation Check</h3><p>Classify endpoints with tolerance \(10^{-9}\); near-zero signed distance is treated as coplanar to avoid phantom fragments.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>A root-to-node path is a signed half-space certificate</span><span>4 / 16</span></div>
+    <aside class="speaker-notes">This slide turns the tree back into geometry. A node is not just an address in a binary tree; it names a convex region cut out by the ancestor choices. The path signs are a certificate, and a robust implementation should use an explicit tolerance when classifying fragment endpoints against split planes.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Auto-Partitions">
+    <h2>Auto-Partitions</h2>
+    <div class="cols left-wide">
+      <div class="stack">
+        <div class="panel blue"><h3>Candidate Splitters</h3><p>In the plane, use the full line \( \ell(s) \) containing an input segment \(s\). In 3D, use the plane through an input triangle.</p></div>
+        <div class="panel indigo"><h3>Auto-Partition</h3><p>A BSP that chooses only these input-supported split lines or planes is an auto-partition.</p></div>
+        <div class="panel amber"><h3>Tradeoff</h3><p>The restriction is natural and simple, but it can force many fragments in 3D. Later low-density BSPs loosen the strategy.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 820 520" role="img" aria-label="Input segments extended to full split lines">
+          <rect x="55" y="50" width="700" height="400" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g stroke="#CBD5E1" stroke-width="3" stroke-dasharray="12 10">
+            <line x1="35" y1="378" x2="780" y2="86"/>
+            <line x1="75" y1="125" x2="735" y2="410"/>
+            <line x1="340" y1="40" x2="430" y2="465"/>
+          </g>
+          <g stroke-width="12" stroke-linecap="round">
+            <line x1="195" y1="315" x2="360" y2="250" stroke="#2563EB"/>
+            <line x1="475" y1="298" x2="625" y2="362" stroke="#0F766E"/>
+            <line x1="372" y1="192" x2="402" y2="335" stroke="#B45309"/>
+          </g>
+          <g class="svg-label" font-size="25">
+            <text x="170" y="400" fill="#2563EB">segment s</text>
+            <text x="525" y="255" fill="#0F766E">segment t</text>
+            <text x="435" y="185" fill="#B45309">segment u</text>
+            <text x="80" y="86" fill="#64748B">extensions become possible split lines</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Auto-partitions use splitters supported by input fragments</span><span>5 / 16</span></div>
+    <aside class="speaker-notes">Introduce auto-partitions as the first construction rule because it is easy to implement and analyze. The splitter is not the bounded segment itself but the entire line containing it, or in 3D the entire plane through a triangle. This simplicity is also the source of later lower bounds.</aside>
+  </section>
+
+  <section class="slide" data-label="Painter Traversal">
+    <h2>Painter Traversal</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 760 520" role="img" aria-label="Viewpoint side reverses BSP traversal order">
+          <rect x="56" y="58" width="648" height="330" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="110" y1="322" x2="650" y2="112" stroke="#1E3A8A" stroke-width="6"/>
+          <polygon points="110,322 650,112 704,58 56,58 56,388" fill="#2563EB" opacity="0.09"/>
+          <polygon points="110,322 650,112 704,388 56,388" fill="#F59E0B" opacity="0.13"/>
+          <circle cx="180" cy="120" r="15" fill="#0F766E"/><text x="204" y="128" class="svg-label" font-size="24">view in h+</text>
+          <circle cx="610" cy="348" r="15" fill="#B45309"/><text x="392" y="352" class="svg-label" font-size="24">view in h-</text>
+          <g transform="translate(80,420)" class="svg-label" font-size="24">
+            <rect x="0" y="0" width="260" height="58" rx="8" fill="#EFF6FF" stroke="#2563EB"/>
+            <text x="22" y="37">h+ view: draw T-, S(ν), T+</text>
+            <rect x="330" y="0" width="300" height="58" rx="8" fill="#FFFBEB" stroke="#B45309"/>
+            <text x="352" y="37">h- view: draw T+, S(ν), T-</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel indigo"><h3>Traversal Rule</h3><p>Visit the far subtree first, then fragments stored on the split plane, then the near subtree.</p></div>
+        <div class="panel teal"><h3>Correctness Intuition</h3><p>A fragment in the far half-space cannot obscure a fragment in the near half-space for a viewpoint strictly on one side of the split.</p></div>
+        <div class="panel amber"><h3>Check</h3><p>Move the viewpoint across \(h_\nu\): the subtree order must reverse exactly when the signed side changes.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Painter order is a viewpoint-side recursion</span><span>6 / 16</span></div>
+    <aside class="speaker-notes">State the traversal as a rendering recipe. If the eye is on the positive side of the split plane, then the negative subtree is farther and must be drawn first; after the coplanar fragments, the positive subtree is drawn. Crossing the split plane reverses that order, which is a clean test for an implementation.</aside>
+  </section>
+
+  <section class="slide alt" data-label="2D BSP Construction">
+    <h2>2D BSP Construction</h2>
+    <div class="cols right-wide">
+      <div class="stack compact">
+        <div class="panel blue"><h3>Recursive Line Split</h3><p>Choose a segment, extend it to a line, cut all crossing segments, and recurse on the two sides.</p></div>
+        <div class="panel teal"><h3>Fragment Ledger</h3><p>Four input segments crossing one horizontal splitter produce four extra pieces: \(4 + 4 = 8\) fragments in the local record.</p></div>
+        <div class="panel amber"><h3>Numerical Predicate</h3><p>A segment is crossing only when endpoint signs are strictly opposite after the \(10^{-9}\) tolerance.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 850 520" role="img" aria-label="Planar BSP line splitting segments into fragments">
+          <rect x="55" y="54" width="740" height="405" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="80" y1="255" x2="770" y2="255" stroke="#1E3A8A" stroke-width="6"/>
+          <g stroke-width="8" stroke-linecap="round">
+            <line x1="160" y1="95" x2="280" y2="410" stroke="#2563EB"/>
+            <line x1="330" y1="90" x2="490" y2="405" stroke="#0F766E"/>
+            <line x1="555" y1="98" x2="625" y2="418" stroke="#B45309"/>
+            <line x1="165" y1="372" x2="690" y2="132" stroke="#6D28D9"/>
+          </g>
+          <g fill="#111827">
+            <circle cx="221" cy="255" r="8"/><circle cx="414" cy="255" r="8"/><circle cx="589" cy="255" r="8"/><circle cx="421" cy="255" r="8"/>
+          </g>
+          <g class="svg-label" font-size="24">
+            <text x="96" y="236" fill="#1E3A8A">split line</text>
+            <text x="575" y="490" fill="#475569">intersection count = 4</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Construction state: split line, side classification, fragment ledger</span><span>7 / 16</span></div>
+    <aside class="speaker-notes">Walk through the 2D construction as a local operation. Pick the next segment's supporting line, classify every current fragment, split the fragments that cross, and recurse independently. The ledger matters because expected BSP size is really expected fragment count.</aside>
+  </section>
+
+  <section class="slide" data-label="Free Splits">
+    <h2>Free Splits</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Free split through a cell that touches no other fragments">
+          <rect x="65" y="60" width="640" height="390" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g stroke="#CBD5E1" stroke-width="4">
+            <line x1="65" y1="240" x2="705" y2="240"/>
+            <line x1="310" y1="60" x2="310" y2="450"/>
+            <line x1="500" y1="60" x2="500" y2="450"/>
+          </g>
+          <rect x="310" y="240" width="190" height="210" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+          <line x1="323" y1="425" x2="485" y2="262" stroke="#1E3A8A" stroke-width="6" stroke-dasharray="13 9"/>
+          <g stroke-width="8" stroke-linecap="round">
+            <line x1="125" y1="145" x2="255" y2="218" stroke="#2563EB"/>
+            <line x1="565" y1="150" x2="650" y2="222" stroke="#B45309"/>
+            <line x1="350" y1="105" x2="455" y2="140" stroke="#6D28D9"/>
+          </g>
+          <text x="330" y="220" class="svg-label" font-size="26" fill="#0F766E">empty cell</text>
+          <text x="330" y="482" class="svg-label" font-size="25" fill="#1E3A8A">free split: no existing fragment is cut</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel teal"><h3>Free Split</h3><p>A split line may cross a current cell without fragmenting any object in that cell.</p></div>
+        <div class="panel indigo"><h3>Useful Split</h3><p>Useful splits separate or clip fragments; free splits refine space but do not increase the object-fragment count.</p></div>
+        <div class="panel blue"><h3>Analysis Role</h3><p>The 3D randomized construction tracks all useful cells, while free splits are allowed because they do not create new triangle pieces.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Fragment count, not only node count, drives the BSP size analysis</span><span>8 / 16</span></div>
+    <aside class="speaker-notes">Use this to separate geometric refinement from object fragmentation. A split can subdivide a region of space while not cutting any stored object. That is free for the fragment bound, and it explains why later algorithms distinguish useful cells from merely refined cells.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Random Order Matters">
+    <h2>Random Order Matters</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Same segments with two orders and different fragment counts">
+          <g transform="translate(35,45)">
+            <rect x="0" y="0" width="330" height="350" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+            <text x="20" y="38" class="svg-label" font-size="25" fill="#1E3A8A">order A</text>
+            <g stroke-width="7" stroke-linecap="round">
+              <line x1="70" y1="80" x2="285" y2="285" stroke="#2563EB"/>
+              <line x1="72" y1="275" x2="280" y2="88" stroke="#0F766E"/>
+              <line x1="160" y1="52" x2="180" y2="310" stroke="#B45309"/>
+            </g>
+            <text x="50" y="330" class="svg-label" font-size="23">many early cuts</text>
+          </g>
+          <g transform="translate(410,45)">
+            <rect x="0" y="0" width="330" height="350" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+            <text x="20" y="38" class="svg-label" font-size="25" fill="#1E3A8A">order B</text>
+            <g stroke-width="7" stroke-linecap="round">
+              <line x1="160" y1="52" x2="180" y2="310" stroke="#B45309"/>
+              <line x1="70" y1="80" x2="150" y2="156" stroke="#2563EB"/>
+              <line x1="190" y1="194" x2="285" y2="285" stroke="#2563EB"/>
+              <line x1="72" y1="275" x2="150" y2="205" stroke="#0F766E"/>
+              <line x1="190" y1="169" x2="280" y2="88" stroke="#0F766E"/>
+            </g>
+            <text x="48" y="330" class="svg-label" font-size="23">shielded later cuts</text>
+          </g>
+          <polyline points="115,465 220,425 330,405 445,375 560,360 680,342" fill="none" stroke="#1E3A8A" stroke-width="5"/>
+          <polyline points="115,468 220,444 330,423 445,402 560,381 680,360" fill="none" stroke="#0F766E" stroke-width="5" stroke-dasharray="10 8"/>
+          <text x="95" y="500" class="svg-label" font-size="24">random trials: fragment counts track an \(n\log n\) trend, not a quadratic cloud</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel indigo"><h3>Randomized 2D BSP</h3><p>Choose a random permutation of segments and insert supporting lines in that order.</p></div>
+        <div class="panel teal"><h3>Shielding</h3><p>A segment inserted earlier can shield another segment from being cut by a later line.</p></div>
+        <div class="panel amber"><h3>Check</h3><p>With a fixed seed, repeated trials show the average fragment count growing like \(n\log n\), while particular orders still vary.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Random order is the proof tool and a practical construction heuristic</span><span>9 / 16</span></div>
+    <aside class="speaker-notes">The same geometry can lead to different fragment counts depending on insertion order. Randomization makes the bad alignments hard to sustain across all segments. The computational teaching check is to run several seeded orders and compare their fragment counts with the n log n curve.</aside>
+  </section>
+
+  <section class="slide" data-label="Lemma 12.1 Visual Proof">
+    <h2>Lemma 12.1 Visual Proof</h2>
+    <div class="cols right-wide">
+      <div class="stack">
+        <div class="panel indigo"><h3>Lemma 12.1</h3><p>The randomized planar auto-partition creates \(O(n\log n)\) expected fragments.</p></div>
+        <div class="panel blue"><h3>Shielding Distance</h3><p>For fixed \(s_i\), a target segment at distance \(k\) can be cut only if \(s_i\) is earliest among \(s_i\), the target, and the \(k\) shields between them.</p></div>
+        <div class="formula small">\( \Pr[\ell(s_i)\text{ cuts }s_j] \le \frac{1}{\operatorname{dist}(s_i,s_j)+2} \)</div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 850 520" role="img" aria-label="Shielding segments between a fixed segment and target">
+          <rect x="55" y="54" width="740" height="405" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="80" y1="260" x2="780" y2="260" stroke="#1E3A8A" stroke-width="5" stroke-dasharray="14 10"/>
+          <g stroke-width="8" stroke-linecap="round">
+            <line x1="175" y1="190" x2="245" y2="330" stroke="#2563EB"/>
+            <line x1="330" y1="170" x2="360" y2="350" stroke="#94A3B8"/>
+            <line x1="445" y1="180" x2="480" y2="342" stroke="#94A3B8"/>
+            <line x1="585" y1="165" x2="655" y2="340" stroke="#B45309"/>
+          </g>
+          <g class="svg-label" font-size="25">
+            <text x="160" y="158" fill="#2563EB">fixed \(s_i\)</text>
+            <text x="300" y="142" fill="#64748B">shield 1</text>
+            <text x="430" y="152" fill="#64748B">shield 2</text>
+            <text x="588" y="145" fill="#B45309">target \(s_j\)</text>
+          </g>
+          <path d="M233 390 C315 438 512 438 620 390" fill="none" stroke="#0F766E" stroke-width="4" marker-end="url(#distArrow)"/>
+          <defs><marker id="distArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0F766E"/></marker></defs>
+          <text x="338" y="475" class="svg-label" font-size="25" fill="#0F766E">distance 2 gives probability at most 1/4</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>At most two targets per distance makes the harmonic sum appear</span><span>10 / 16</span></div>
+    <aside class="speaker-notes">Make the probability argument visual. Fix one segment and look along its supporting line. A target at shielding distance k is cut only if the fixed segment is earliest among the target and all intervening shields, giving probability at most one over k plus two. Since only constantly many targets occur at each distance, summing over distances gives a logarithm for each fixed segment.</aside>
+  </section>
+
+  <section class="slide alt" data-label="2D Runtime Bound">
+    <h2>2D Runtime Bound</h2>
+    <div class="cols">
+      <div class="stack">
+        <div class="panel indigo"><h3>Theorem 12.2</h3><p>A BSP of expected size \(O(n\log n)\) can be computed by the randomized auto-partition algorithm, with a direct implementation taking \(O(n^2\log n)\) expected time.</p></div>
+        <div class="panel teal"><h3>What The Size Means</h3><p>Tree size is controlled by the number of generated fragments, not by the number of original segments.</p></div>
+        <div class="panel amber"><h3>Ledger Check</h3><p>For a split event, verify: input fragments plus crossing count equals output fragment count.</p></div>
+      </div>
+      <div class="stack">
+        <div class="ledger">
+          <div><strong>segments</strong><span>4</span></div>
+          <div><strong>crossings</strong><span>4</span></div>
+          <div><strong>fragments</strong><span>8</span></div>
+          <div><strong>tolerance</strong><span>1e-9</span></div>
+        </div>
+        <figure class="visual-card">
+          <svg viewBox="0 0 740 370" role="img" aria-label="Proof dependency graph for 2D BSP runtime">
+            <g class="svg-label" font-size="24">
+              <rect x="40" y="50" width="190" height="78" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <text x="83" y="98">shielding</text>
+              <rect x="280" y="50" width="190" height="78" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="320" y="98">Lemma 12.1</text>
+              <rect x="520" y="50" width="190" height="78" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <text x="555" y="98">size bound</text>
+              <rect x="280" y="215" width="190" height="78" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <text x="306" y="263">Theorem 12.2</text>
+            </g>
+            <g stroke="#64748B" stroke-width="4" marker-end="url(#proofArrow)">
+              <defs><marker id="proofArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748B"/></marker></defs>
+              <line x1="230" y1="89" x2="280" y2="89"/><line x1="470" y1="89" x2="520" y2="89"/><line x1="615" y1="128" x2="455" y2="215"/><line x1="375" y1="128" x2="375" y2="215"/>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <div class="footer"><span>Expected size and naive construction time are different guarantees</span><span>11 / 16</span></div>
+    <aside class="speaker-notes">Separate the combinatorial guarantee from the implementation cost. Lemma 12.1 bounds how many fragments the random order creates in expectation. A straightforward construction still has to classify and split fragments repeatedly, leading to the stated expected running time. The small ledger on the slide is a sanity check for the split accounting.</aside>
+  </section>
+
+  <section class="slide" data-label="3D BSP Generalization">
+    <h2>3D BSP Generalization</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Triangle split by a plane in three dimensions">
+          <rect x="70" y="54" width="640" height="410" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <polygon points="155,330 620,250 545,420 80,500" fill="#2563EB" opacity="0.11" stroke="#2563EB" stroke-width="4"/>
+          <polygon points="215,110 595,176 365,405" fill="#0F766E" opacity="0.24" stroke="#0F766E" stroke-width="5"/>
+          <line x1="330" y1="130" x2="450" y2="390" stroke="#B45309" stroke-width="6"/>
+          <circle cx="362" cy="199" r="8" fill="#B45309"/><circle cx="426" cy="338" r="8" fill="#B45309"/>
+          <text x="112" y="304" class="svg-label" font-size="25" fill="#2563EB">splitting plane</text>
+          <text x="480" y="176" class="svg-label" font-size="25" fill="#0F766E">triangle</text>
+          <text x="450" y="356" class="svg-label" font-size="24" fill="#B45309">intersection chord</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel blue"><h3>Triangles And Planes</h3><p>In 3D, an auto-partition chooses planes containing input triangles and splits other triangles along intersection segments.</p></div>
+        <div class="panel indigo"><h3>Modified Random Algorithm</h3><p>The all-useful-cells view inserts a triangle plane and considers only cells where that plane can actually fragment objects.</p></div>
+        <div class="panel amber"><h3>Predicate Check</h3><p>Every new triangle-fragment vertex must satisfy the side predicate of each ancestor plane within \(10^{-9}\).</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Plane-side predicates replace 2D line-side predicates</span><span>12 / 16</span></div>
+    <aside class="speaker-notes">Move from segments to triangles without changing the mental model. A triangle's supporting plane is the splitter, and any triangle crossing that plane is clipped into polygonal fragments that are triangulated for storage. The numerical check is stronger in 3D: every generated vertex must still satisfy all ancestor side predicates.</aside>
+  </section>
+
+  <section class="slide alt" data-label="3D Zone Argument">
+    <h2>3D Zone Argument</h2>
+    <div class="cols right-wide">
+      <div class="stack">
+        <div class="panel indigo"><h3>Lemma 12.3</h3><p>The modified 3D randomized BSP has \(O(n^2)\) expected fragments.</p></div>
+        <div class="panel teal"><h3>Zone-Theorem Idea</h3><p>When the \(k\)-th triangle plane is inserted, its useful interactions are charged to exterior faces on the triangle \(t_k\)'s zone in the current partition.</p></div>
+        <div class="panel blue"><h3>Proof Move</h3><p>Random order spreads the chance that a triangle becomes responsible for a zone boundary over the insertion history.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 850 520" role="img" aria-label="Triangle zone crossing cells in a three-dimensional partition">
+          <rect x="65" y="60" width="720" height="390" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g stroke="#CBD5E1" stroke-width="3">
+            <line x1="190" y1="60" x2="250" y2="450"/><line x1="360" y1="60" x2="315" y2="450"/><line x1="555" y1="60" x2="610" y2="450"/>
+            <line x1="65" y1="185" x2="785" y2="145"/><line x1="65" y1="330" x2="785" y2="375"/>
+          </g>
+          <polygon points="160,330 435,120 685,340" fill="#0F766E" opacity="0.25" stroke="#0F766E" stroke-width="5"/>
+          <g fill="#B45309" opacity="0.2" stroke="#B45309" stroke-width="3">
+            <polygon points="245,265 338,194 368,271 286,314"/>
+            <polygon points="370,190 470,147 514,244 420,277"/>
+            <polygon points="510,245 602,270 650,323 560,305"/>
+          </g>
+          <text x="206" y="375" class="svg-label" font-size="25" fill="#0F766E">new \(t_k\)</text>
+          <text x="410" y="96" class="svg-label" font-size="24" fill="#B45309">zone cells charged on exterior faces</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>The 3D proof is a zone-counting argument</span><span>13 / 16</span></div>
+    <aside class="speaker-notes">This is the proof-sketch slide for the 3D upper bound. The current partition cuts space into cells, and the next triangle's plane only matters where it passes through useful cells. The zone theorem controls the number of such boundary interactions, giving an expected quadratic rather than uncontrolled growth.</aside>
+  </section>
+
+  <section class="slide" data-label="Quadratic Lower Bound">
+    <h2>Quadratic Lower Bound</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Two families of rectangles creating quadratic BSP lower bound">
+          <rect x="70" y="58" width="640" height="390" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g fill="#2563EB" opacity="0.28" stroke="#2563EB" stroke-width="3">
+            <rect x="130" y="120" width="470" height="34"/>
+            <rect x="160" y="225" width="470" height="34"/>
+            <rect x="100" y="330" width="470" height="34"/>
+          </g>
+          <g fill="#B45309" opacity="0.28" stroke="#B45309" stroke-width="3">
+            <rect x="190" y="80" width="34" height="310"/>
+            <rect x="355" y="95" width="34" height="315"/>
+            <rect x="520" y="70" width="34" height="310"/>
+          </g>
+          <g class="svg-label" font-size="25">
+            <text x="122" y="463" fill="#2563EB">R1 family</text>
+            <text x="532" y="463" fill="#B45309">R2 family</text>
+            <text x="250" y="45" fill="#475569">every chosen auto-plane splits the opposite family</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel amber"><h3>Auto-Partition Obstruction</h3><p>Two crossing families of thin rectangles force repeated splitting: each plane supported by one family cuts all rectangles in the other family.</p></div>
+        <div class="panel indigo"><h3>Theorem 12.5</h3><p>Every set of \(n\) non-intersecting triangles in \( \mathbb{R}^3 \) has a BSP of size \(O(n^2)\), and some configurations require \( \Omega(n^2) \) fragments for any BSP.</p></div>
+        <div class="formula small">grid obstruction: \(G(n_1,n_2)=(n_1+1)(n_2+1)-1\)</div>
+      </div>
+    </div>
+    <div class="footer"><span>Quadratic behavior is not an artifact of a sloppy analysis</span><span>14 / 16</span></div>
+    <aside class="speaker-notes">Emphasize that the bad 3D bound is real. The grid-like rectangle construction shows why auto-partitions can be forced to split one family every time they choose from the other. The chapter then strengthens the message: even unrestricted BSPs have quadratic worst-case examples in three dimensions.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Density And Guards">
+    <h2>Density And Guards</h2>
+    <div class="cols right-wide">
+      <div class="stack compact">
+        <div class="panel blue"><h3>Density Parameter</h3><p>The density \( \lambda \) is the smallest number such that every ball meets at most \( \lambda \) objects whose diameter is at least the ball diameter.</p></div>
+        <div class="panel teal"><h3>Bounding-Box Guards</h3><p>Use the four bounding-box corners of every object as guards. They summarize where large objects can affect square regions.</p></div>
+        <div class="panel indigo"><h3>Lemma 12.6</h3><p>If an axis-parallel square contains \(k\) guards in its interior, it intersects at most \(k+4\lambda\) objects.</p></div>
+        <div class="panel amber"><h3>Witness Check</h3><p>For every tested square: <span class="math">objects_intersecting_square <= guards_inside + 4*density_bound</span>.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 850 520" role="img" aria-label="Low-density objects, guard points, and a square witness">
+          <rect x="60" y="55" width="720" height="400" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <rect x="290" y="150" width="250" height="250" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+          <g stroke-width="7" stroke-linecap="round">
+            <line x1="115" y1="160" x2="255" y2="220" stroke="#2563EB"/>
+            <line x1="330" y1="110" x2="490" y2="180" stroke="#B45309"/>
+            <line x1="425" y1="355" x2="635" y2="315" stroke="#6D28D9"/>
+            <line x1="565" y1="130" x2="720" y2="225" stroke="#2563EB"/>
+            <line x1="185" y1="370" x2="345" y2="320" stroke="#0F766E"/>
+          </g>
+          <g fill="#111827">
+            <circle cx="330" cy="110" r="5"/><circle cx="490" cy="110" r="5"/><circle cx="330" cy="180" r="5"/><circle cx="490" cy="180" r="5"/>
+            <circle cx="425" cy="315" r="5"/><circle cx="635" cy="315" r="5"/><circle cx="425" cy="355" r="5"/><circle cx="635" cy="355" r="5"/>
+            <circle cx="185" cy="320" r="5"/><circle cx="345" cy="320" r="5"/><circle cx="185" cy="370" r="5"/><circle cx="345" cy="370" r="5"/>
+          </g>
+          <text x="304" y="432" class="svg-label" font-size="25" fill="#0F766E">witness square σ</text>
+          <text x="462" y="102" class="svg-label" font-size="23" fill="#111827">guards</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Low-density scenes are measured by local crowding at comparable scales</span><span>15 / 16</span></div>
+    <aside class="speaker-notes">Define density carefully because it is not just the number of objects in a region. A ball only counts objects at least as large as the ball, so the parameter is scale-sensitive. Bounding-box guards then give a finite sample that controls how many objects any square leaf can intersect, with the k plus four lambda lemma as the bridge from guards to objects.</aside>
+  </section>
+
+  <section class="slide" data-label="Low-Density BSP Algorithm">
+    <h2>Low-Density BSP Algorithm</h2>
+    <div class="cols left-wide">
+      <div class="stack">
+        <div class="panel indigo"><h3>Phase 1: Guard-Guided Cells</h3><p>Split a square until each leaf has at most \(k\) guards. Use an ordinary quadtree split unless one quadrant is heavy; then shrink that quadrant before splitting.</p></div>
+        <div class="panel blue"><h3>Lemma 12.7</h3><p>Phase 1 creates \(O(n/k)\) leaves, each intersecting at most \(k+4\lambda\) objects.</p></div>
+        <div class="panel teal"><h3>Phase 2: Local BSPs</h3><p>Run the fragment algorithm only on objects meeting each leaf. Double the guessed \(k\) until the leaf-object test certifies the scale.</p></div>
+        <div class="panel amber"><h3>Final Bounds</h3><p>Theorems 12.8 and 12.9 give \(O(n\log\lambda)\) for disjoint 2D segments and \(O(n\lambda)\) for disjoint 3D triangles.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 860 520" role="img" aria-label="Quadtree and shrinking phase with proof graph">
+          <rect x="58" y="56" width="360" height="360" fill="#fff" stroke="#1E3A8A" stroke-width="4"/>
+          <line x1="238" y1="56" x2="238" y2="416" stroke="#CBD5E1" stroke-width="4"/>
+          <line x1="58" y1="236" x2="418" y2="236" stroke="#CBD5E1" stroke-width="4"/>
+          <rect x="58" y="56" width="180" height="180" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+          <rect x="98" y="96" width="110" height="110" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+          <g fill="#111827">
+            <circle cx="110" cy="120" r="5"/><circle cx="150" cy="126" r="5"/><circle cx="190" cy="132" r="5"/><circle cx="126" cy="165" r="5"/><circle cx="170" cy="180" r="5"/>
+            <circle cx="298" cy="122" r="5"/><circle cx="330" cy="330" r="5"/><circle cx="116" cy="310" r="5"/>
+          </g>
+          <text x="70" y="455" class="svg-label" font-size="24">shrinking step isolates the heavy quadrant</text>
+          <g transform="translate(470,70)" class="svg-label" font-size="22">
+            <rect x="0" y="0" width="300" height="56" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+            <text x="24" y="36">Lemma 12.1</text>
+            <rect x="0" y="72" width="300" height="56" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+            <text x="24" y="108">Lemma 12.3</text>
+            <rect x="0" y="144" width="300" height="56" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+            <text x="24" y="180">Lemma 12.6</text>
+            <rect x="0" y="216" width="300" height="56" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+            <text x="24" y="252">Lemma 12.7</text>
+            <rect x="0" y="288" width="300" height="56" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+            <text x="24" y="324">Theorems 12.2, 12.5, 12.8, 12.9</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Low density turns global BSP construction into many small certified subproblems</span><span>16 / 16</span></div>
+    <aside class="speaker-notes">Close by assembling the low-density algorithm. The guard phase makes leaves whose object counts are controlled by density, and the shrinking step prevents one crowded quadrant from causing a full quadtree explosion. Then the usual BSP construction is run locally. The proof graph ties the lecture together: the planar random lemma, the 3D zone lemma, the guard lemma, and the phase-one lemma feed the final size theorems.</aside>
+  </section>
+</deck-stage>
+
+<script id="deck-metadata" type="application/json">
+{
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-12",
+  "chapter_title": "12 - Binary Space Partitions",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-12-binary-space-partitions/12-binary-space-partitions.ipynb",
+  "source_span": "printed pages 259-282; PDF pages 270-293.",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+</script>
+<script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {"slide": 1, "notes": "Open by contrasting two rendering contracts. A z-buffer answers visibility per pixel while drawing, but the painter algorithm wants a global order of fragments so later scan conversion overwrites earlier fragments. The difficulty is that the correct order depends on the viewpoint, so the chapter asks for a preprocessing structure that can deliver the order quickly as the eye moves."},
+    {"slide": 2, "notes": "Show the class why sorting original objects is too optimistic. Three projected surfaces can overlap so that each is in front of another somewhere. Splitting is the algorithmic escape hatch: after enough cuts, the ordering question is asked about fragments whose relative depth is consistent inside the relevant cell."},
+    {"slide": 3, "notes": "Give the formal definition but keep the operational picture in view. At an internal node, the hyperplane partitions space into a positive and negative side, while fragments lying exactly in the hyperplane are stored at that node. Everything else is clipped to the two side subproblems until leaves contain at most one fragment."},
+    {"slide": 4, "notes": "This slide turns the tree back into geometry. A node is not just an address in a binary tree; it names a convex region cut out by the ancestor choices. The path signs are a certificate, and a robust implementation should use an explicit tolerance when classifying fragment endpoints against split planes."},
+    {"slide": 5, "notes": "Introduce auto-partitions as the first construction rule because it is easy to implement and analyze. The splitter is not the bounded segment itself but the entire line containing it, or in 3D the entire plane through a triangle. This simplicity is also the source of later lower bounds."},
+    {"slide": 6, "notes": "State the traversal as a rendering recipe. If the eye is on the positive side of the split plane, then the negative subtree is farther and must be drawn first; after the coplanar fragments, the positive subtree is drawn. Crossing the split plane reverses that order, which is a clean test for an implementation."},
+    {"slide": 7, "notes": "Walk through the 2D construction as a local operation. Pick the next segment's supporting line, classify every current fragment, split the fragments that cross, and recurse independently. The ledger matters because expected BSP size is really expected fragment count."},
+    {"slide": 8, "notes": "Use this to separate geometric refinement from object fragmentation. A split can subdivide a region of space while not cutting any stored object. That is free for the fragment bound, and it explains why later algorithms distinguish useful cells from merely refined cells."},
+    {"slide": 9, "notes": "The same geometry can lead to different fragment counts depending on insertion order. Randomization makes the bad alignments hard to sustain across all segments. The computational teaching check is to run several seeded orders and compare their fragment counts with the n log n curve."},
+    {"slide": 10, "notes": "Make the probability argument visual. Fix one segment and look along its supporting line. A target at shielding distance k is cut only if the fixed segment is earliest among the target and all intervening shields, giving probability at most one over k plus two. Since only constantly many targets occur at each distance, summing over distances gives a logarithm for each fixed segment."},
+    {"slide": 11, "notes": "Separate the combinatorial guarantee from the implementation cost. Lemma 12.1 bounds how many fragments the random order creates in expectation. A straightforward construction still has to classify and split fragments repeatedly, leading to the stated expected running time. The small ledger on the slide is a sanity check for the split accounting."},
+    {"slide": 12, "notes": "Move from segments to triangles without changing the mental model. A triangle's supporting plane is the splitter, and any triangle crossing that plane is clipped into polygonal fragments that are triangulated for storage. The numerical check is stronger in 3D: every generated vertex must still satisfy all ancestor side predicates."},
+    {"slide": 13, "notes": "This is the proof-sketch slide for the 3D upper bound. The current partition cuts space into cells, and the next triangle's plane only matters where it passes through useful cells. The zone theorem controls the number of such boundary interactions, giving an expected quadratic rather than uncontrolled growth."},
+    {"slide": 14, "notes": "Emphasize that the bad 3D bound is real. The grid-like rectangle construction shows why auto-partitions can be forced to split one family every time they choose from the other. The chapter then strengthens the message: even unrestricted BSPs have quadratic worst-case examples in three dimensions."},
+    {"slide": 15, "notes": "Define density carefully because it is not just the number of objects in a region. A ball only counts objects at least as large as the ball, so the parameter is scale-sensitive. Bounding-box guards then give a finite sample that controls how many objects any square leaf can intersect, with the k plus four lambda lemma as the bridge from guards to objects."},
+    {"slide": 16, "notes": "Close by assembling the low-density algorithm. The guard phase makes leaves whose object counts are controlled by density, and the shrinking step prevents one crowded quadrant from causing a full quadtree explosion. Then the usual BSP construction is run locally. The proof graph ties the lecture together: the planar random lemma, the 3D zone lemma, the guard lemma, and the phase-one lemma feed the final size theorems."}
+  ]
+}
+</script>
+</body>
+</html>

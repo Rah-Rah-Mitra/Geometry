@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="A Mathematical Introduction to Robotic Manipulation">
+  <meta name="chapter_id" content="chapter-04">
+  <meta name="chapter_title" content="Chapter 04: Robot Dynamics and Control">
+  <meta name="notebook_path" content="A-Mathematical-Introduction-to-Robotic-Manipulation/part-01-foundations-and-single-robot-manipulation/chapter-04-robot-dynamics-and-control/04-robot-dynamics-and-control.ipynb">
+  <meta name="source_span" content="printed pages 155-210; PDF pages 173-228">
+  <meta name="source_pdf" content="A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf">
+  <meta name="design_system_version" content="Geometry Atlas lecture-design-system">
+  <title>Robot Dynamics And Control: Energy, Structure, Feedback</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <style>
+    deck-stage:not(:defined){visibility:hidden}
+    body{margin:0;background:#e5e7eb;color:var(--slide-ink);font-family:var(--font-sans)}
+    section.slide{box-sizing:border-box;width:1920px;height:1080px;padding:70px 96px 52px;background:var(--slide-bg);display:flex;flex-direction:column;gap:24px}
+    section.alt{background:linear-gradient(to right,rgba(37,99,235,0.045) 1px,transparent 1px),linear-gradient(to bottom,rgba(37,99,235,0.045) 1px,transparent 1px),var(--slide-bg-alt);background-size:80px 80px}
+    h1,h2,h3,p,figure{margin:0;letter-spacing:0}
+    h1{font-size:66px;line-height:1.04;font-weight:700;color:var(--slide-ink);max-width:1350px}
+    h2{font-size:51px;line-height:1.08;font-weight:700;color:var(--slide-ink)}
+    h3{font-size:30px;line-height:1.18;font-weight:700;color:var(--slide-accent);margin-bottom:10px}
+    p,li{font-size:27px;line-height:1.29}
+    ul,ol{margin:0;padding-left:31px}
+    li+li{margin-top:10px}
+    svg{max-width:100%}
+    .speaker-notes{display:none}
+    .title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:28px}
+    .kicker{font-size:23px;line-height:1.1;font-weight:700;color:var(--slide-teal);letter-spacing:0;text-transform:uppercase}
+    .subtitle{font-size:31px;line-height:1.24;color:var(--slide-muted);max-width:1240px}
+    .content{flex:1;min-height:0;display:flex;flex-direction:column;gap:24px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:stretch;flex:1;min-height:0}
+    .grid2.wide-left{grid-template-columns:1.16fr 0.84fr}
+    .grid2.wide-right{grid-template-columns:0.86fr 1.14fr}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-items:stretch}
+    .stack{display:flex;flex-direction:column;gap:18px;min-height:0}
+    .panel{border:1px solid var(--slide-border);border-radius:8px;background:#fff;padding:24px;box-shadow:0 1px 2px rgb(0 0 0 / 0.05)}
+    .panel.blue{border-left:5px solid var(--slide-blue);background:#eff6ff}
+    .panel.teal{border-left:5px solid var(--slide-teal);background:#f0fdfa}
+    .panel.amber{border-left:5px solid var(--slide-amber);background:#fffbeb}
+    .panel.violet{border-left:5px solid var(--slide-violet);background:#f5f3ff}
+    .panel.slate{border-left:5px solid #94a3b8;background:#f8fafc}
+    .diagram{border:1px solid var(--slide-border);border-radius:8px;background:linear-gradient(180deg,#ffffff,#f8fafc);display:flex;align-items:center;justify-content:center;min-height:0;padding:18px}
+    .diagram.tall{height:610px}
+    .diagram.medium{height:510px}
+    .diagram.short{height:360px}
+    .formula{font-family:var(--font-math);font-size:33px;line-height:1.18;color:var(--slide-ink)}
+    .formula.large{font-size:38px}
+    .formula.small-formula{font-size:29px}
+    .formula .katex-display{margin:0}
+    .math{font-family:var(--font-math)}
+    .tag{display:inline-flex;align-items:center;border:1px solid var(--slide-border);border-radius:6px;background:#fff;color:var(--slide-accent);font-size:22px;font-weight:700;line-height:1;padding:9px 12px;white-space:nowrap}
+    .mini{font-size:22px;line-height:1.25;color:var(--slide-muted)}
+    .mono{font-family:var(--font-mono);font-size:22px;line-height:1.28;color:var(--slide-ink)}
+    .source{margin-top:auto;border-top:1px solid var(--slide-border);padding-top:12px;font-size:20px;line-height:1.22;color:var(--slide-dimmed)}
+    img.figure{display:block;width:100%;max-height:560px;object-fit:contain;border:1px solid var(--slide-border);border-radius:8px;background:#fff}
+    img.figure.compact{max-height:300px}
+    .caption{font-size:20px;line-height:1.22;color:var(--slide-dimmed);margin-top:9px}
+    .callout{display:flex;gap:16px;align-items:flex-start}
+    .dot{width:18px;height:18px;border-radius:50%;background:var(--slide-blue);margin-top:8px;flex:0 0 auto}
+    .dot.teal{background:var(--slide-teal)}
+    .dot.amber{background:var(--slide-amber)}
+    .dot.violet{background:var(--slide-violet)}
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide alt" data-label="Robot Dynamics Adds Energy To Kinematics">
+  <div class="kicker">Chapter 04</div>
+  <h1>Robot Dynamics Adds Energy To Kinematics</h1>
+  <p class="subtitle">How do energy, inertia, and feedback turn a kinematic chain into a controlled mechanical system?</p>
+  <div class="content">
+    <div class="grid3">
+      <div class="panel blue"><h3>Kinematics Gives Coordinates</h3><p>Joint variables still describe where the mechanism is, but now their rates carry kinetic energy and momentum.</p></div>
+      <div class="panel teal"><h3>Dynamics Gives Forces</h3><p>Lagrange and Newton-Euler calculations convert energy bookkeeping into generalized torques.</p></div>
+      <div class="panel amber"><h3>Control Gives A Proof Obligation</h3><p>A controller is acceptable only when the closed-loop energy or error function has the right sign behavior.</p></div>
+    </div>
+    <div class="panel slate formula large">$$q,\dot q,\ddot q \quad \longmapsto \quad M(q)\ddot q + C(q,\dot q)\dot q + N(q,\dot q) = \tau$$</div>
+  </div>
+  <p class="source">Source grounding: Chapter 04, printed pages 155-210; PDF pages 173-228. Notebook: A-Mathematical-Introduction-to-Robotic-Manipulation/part-01-foundations-and-single-robot-manipulation/chapter-04-robot-dynamics-and-control/04-robot-dynamics-and-control.ipynb</p>
+  <aside class="speaker-notes">Open by connecting this chapter to the previous kinematics material. The robot has not acquired a new configuration space; the difference is that motion now has energy, momentum, and required actuation. Tell students that the lecture will keep one through-line: every dynamics formula is a map from coordinates and velocities to forces, and every controller must respect that map rather than merely draw a plausible trajectory.</aside>
+</section>
+
+<section class="slide" data-label="Generalized Coordinates Replace Particle Bookkeeping">
+  <div class="title-row"><h2>Generalized Coordinates Replace Particle Bookkeeping</h2><span class="tag">Reduction</span></div>
+  <div class="grid2 wide-left">
+    <div class="diagram tall">
+      <svg viewBox="0 0 930 620" width="900" height="590" role="img" aria-label="Many particle coordinates reduced to generalized coordinates">
+        <defs>
+          <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#2563eb"/></marker>
+          <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#0f766e"/></marker>
+        </defs>
+        <rect x="45" y="60" width="300" height="460" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+        <text x="82" y="110" font-size="30" fill="#1e3a8a" font-weight="700">particle view</text>
+        <g fill="#2563eb" stroke="#1e3a8a" stroke-width="3">
+          <circle cx="130" cy="185" r="12"/><circle cx="238" cy="165" r="12"/><circle cx="164" cy="270" r="12"/>
+          <circle cx="260" cy="300" r="12"/><circle cx="125" cy="390" r="12"/><circle cx="252" cy="430" r="12"/>
+        </g>
+        <g stroke="#94a3b8" stroke-width="3">
+          <line x1="130" y1="185" x2="238" y2="165"/><line x1="130" y1="185" x2="164" y2="270"/><line x1="164" y1="270" x2="260" y2="300"/>
+          <line x1="164" y1="270" x2="125" y2="390"/><line x1="260" y1="300" x2="252" y2="430"/>
+        </g>
+        <text x="88" y="490" font-size="25" fill="#475569">x1, x2, ..., xk with constraints</text>
+        <path d="M380 290 C455 245, 505 245, 580 290" fill="none" stroke="#2563eb" stroke-width="6" marker-end="url(#arrow-blue)"/>
+        <rect x="610" y="110" width="275" height="360" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="654" y="160" font-size="30" fill="#0f766e" font-weight="700">coordinate view</text>
+        <line x1="730" y1="385" x2="730" y2="235" stroke="#1e3a8a" stroke-width="7" marker-end="url(#arrow-teal)"/>
+        <line x1="730" y1="385" x2="840" y2="385" stroke="#1e3a8a" stroke-width="7" marker-end="url(#arrow-teal)"/>
+        <circle cx="730" cy="385" r="17" fill="#1e3a8a"/>
+        <path d="M730 385 L795 305 L845 315" fill="none" stroke="#0f766e" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="795" cy="305" r="15" fill="#0f766e"/><circle cx="845" cy="315" r="14" fill="#b45309"/>
+        <path d="M775 382 A54 54 0 0 0 763 340" fill="none" stroke="#2563eb" stroke-width="5"/>
+        <path d="M825 309 A38 38 0 0 0 804 303" fill="none" stroke="#b45309" stroke-width="5"/>
+        <text x="782" y="362" font-size="27" fill="#2563eb">q1</text>
+        <text x="812" y="280" font-size="27" fill="#b45309">q2</text>
+        <text x="665" y="440" font-size="28" fill="#475569">q in R^n</text>
+      </svg>
+    </div>
+    <div class="stack">
+      <div class="panel blue formula">$$x_i = x_i(q), \qquad \dot x_i = J_i(q)\dot q$$</div>
+      <div class="panel teal"><h3>Why Coordinates Matter</h3><p>Rigid constraints are already solved by choosing joint variables. The dynamics should not reintroduce every particle position as an independent unknown.</p></div>
+      <div class="panel amber"><h3>Teaching Check</h3><p>Ask whether each force has been converted into a generalized force before it is added to a joint equation.</p></div>
+    </div>
+  </div>
+  <p class="source">Source grounding: generalized-coordinate setup for dynamics in Chapter 04, printed pages 155-210.</p>
+  <aside class="speaker-notes">The first conceptual move is reduction. A robot link contains many mass elements, but the mechanism constraints mean that a short vector of joint variables determines their positions. Emphasize that this is not a numerical convenience; it is the geometric reason Lagrange's equations are compact. The Jacobian for each mass element is the bridge from joint rates to physical velocities, which is why Jacobians keep reappearing in dynamics.</aside>
+</section>
+
+<section class="slide" data-label="Lagrange's Equations Are The Energy-To-Force Map">
+  <div class="title-row"><h2>Lagrange's Equations Are The Energy-To-Force Map</h2><span class="tag">Variational form</span></div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="panel blue formula large">$$L(q,\dot q)=K(q,\dot q)-P(q)$$</div>
+      <div class="panel teal formula large">$$\frac{d}{dt}\frac{\partial L}{\partial \dot q_i}-\frac{\partial L}{\partial q_i}=\tau_i$$</div>
+      <div class="panel slate"><p>Lagrange's equations ask how the scalar energy description changes when one generalized coordinate is varied.</p></div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 800 560" width="760" height="535" role="img" aria-label="Energy to generalized forces pipeline">
+        <defs><marker id="lag-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1e3a8a"/></marker></defs>
+        <rect x="80" y="70" width="250" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+        <text x="128" y="120" font-size="30" fill="#1e3a8a" font-weight="700">Kinetic energy</text>
+        <text x="160" y="154" font-size="26" fill="#475569">K(q, qdot)</text>
+        <rect x="470" y="70" width="250" height="110" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="515" y="120" font-size="30" fill="#0f766e" font-weight="700">Potential</text>
+        <text x="548" y="154" font-size="26" fill="#475569">P(q)</text>
+        <path d="M330 126 H470" stroke="#1e3a8a" stroke-width="5" marker-end="url(#lag-arrow)"/>
+        <rect x="250" y="255" width="300" height="116" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+        <text x="315" y="305" font-size="31" fill="#1e3a8a" font-weight="700">L = K - P</text>
+        <text x="296" y="340" font-size="25" fill="#475569">one scalar function</text>
+        <path d="M205 180 C220 245, 270 260, 300 270" fill="none" stroke="#2563eb" stroke-width="5" marker-end="url(#lag-arrow)"/>
+        <path d="M595 180 C580 245, 530 260, 500 270" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#lag-arrow)"/>
+        <path d="M400 371 V445" stroke="#1e3a8a" stroke-width="5" marker-end="url(#lag-arrow)"/>
+        <rect x="205" y="445" width="390" height="80" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+        <text x="270" y="496" font-size="31" fill="#b45309" font-weight="700">generalized torque tau</text>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: Lagrangian robot dynamics, Chapter 04, printed pages 155-210; PDF pages 173-228.</p>
+  <aside class="speaker-notes">Present Lagrange's equations as an energy-to-force converter. Students often see the formula as a formal derivative recipe, but the useful interpretation is that the kinetic and potential energy functions already encode the constraints and coordinates. The output is not a Cartesian force on one particle; it is a generalized force paired with the chosen coordinate. This pairing will matter later when controllers inject torques.</aside>
+</section>
+
+<section class="slide" data-label="Rigid-Link Inertia Is A Metric On Velocity">
+  <div class="title-row"><h2>Rigid-Link Inertia Is A Metric On Velocity</h2><span class="tag">Mass matrix</span></div>
+  <div class="grid2">
+    <div class="diagram tall">
+      <svg viewBox="0 0 760 560" width="730" height="535" role="img" aria-label="Inertia ellipsoid as a metric on joint velocity">
+        <defs>
+          <marker id="vel-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#2563eb"/></marker>
+        </defs>
+        <line x1="105" y1="455" x2="665" y2="455" stroke="#cbd5e1" stroke-width="5"/>
+        <line x1="380" y1="500" x2="380" y2="70" stroke="#cbd5e1" stroke-width="5"/>
+        <text x="648" y="435" font-size="26" fill="#64748b">qdot1</text>
+        <text x="395" y="92" font-size="26" fill="#64748b">qdot2</text>
+        <ellipse cx="380" cy="278" rx="245" ry="95" transform="rotate(-28 380 278)" fill="#eff6ff" stroke="#2563eb" stroke-width="7"/>
+        <ellipse cx="380" cy="278" rx="135" ry="52" transform="rotate(-28 380 278)" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 10"/>
+        <line x1="166" y1="392" x2="594" y2="164" stroke="#2563eb" stroke-width="6" marker-end="url(#vel-arrow)"/>
+        <line x1="337" y1="201" x2="423" y2="355" stroke="#0f766e" stroke-width="6" marker-end="url(#vel-arrow)"/>
+        <circle cx="380" cy="278" r="10" fill="#111827"/>
+        <text x="524" y="150" font-size="28" fill="#2563eb" font-weight="700">high inertia direction</text>
+        <text x="430" y="372" font-size="28" fill="#0f766e" font-weight="700">low inertia direction</text>
+        <text x="190" y="70" font-size="30" fill="#1e3a8a" font-weight="700">level sets of kinetic energy</text>
+      </svg>
+    </div>
+    <div class="stack">
+      <div class="panel blue formula large">$$K=\frac{1}{2}\dot q^T M(q)\dot q$$</div>
+      <div class="panel teal"><h3>Metric Interpretation</h3><p>The inertia matrix measures the cost of a joint velocity. Its ellipses tilt and stretch as configuration changes.</p></div>
+      <div class="panel amber"><h3>Notebook Sanity</h3><p class="mono">inertia_symmetric_error = 0.0<br>inertia_min_eigenvalue = 0.07050903653322088</p></div>
+    </div>
+  </div>
+  <p class="source">Artifact grounding: checks/final-sanity.json and Chapter 04 inertia discussion.</p>
+  <aside class="speaker-notes">Use the word metric deliberately. The inertia matrix is not merely a coefficient table; it defines a positive-definite quadratic form on velocity at each configuration. That is why symmetry and positive eigenvalues are not optional implementation details. The notebook sanity values confirm both properties for the sampled two-link matrix, and the ellipsoid gives students a visual way to remember what those checks mean.</aside>
+</section>
+
+<section class="slide" data-label="Two-Link Coupling Is Configuration Dependent">
+  <div class="title-row"><h2>Two-Link Coupling Is Configuration Dependent</h2><span class="tag">2R diagnostic</span></div>
+  <div class="grid2 wide-left">
+    <figure>
+      <img class="figure" src="../figures/two-link-inertia-coupling.png" alt="Two-link inertia coupling heatmap">
+      <figcaption class="caption">Generated chapter artifact: two-link-inertia-coupling.png. Inspection target: configuration-dependent inertia.</figcaption>
+    </figure>
+    <div class="stack">
+      <div class="panel blue formula small-formula">$$M(q)=\begin{bmatrix}M_{11}(q)&M_{12}(q)\\M_{21}(q)&M_{22}(q)\end{bmatrix},\qquad M=M^T\succ0$$</div>
+      <div class="panel teal"><h3>Coupling Reading</h3><p>Off-diagonal entries say that accelerating one joint can require torque at the other. The amount changes with arm shape.</p></div>
+      <div class="panel amber"><h3>Shape Check</h3><p class="mono">coriolis_shape = [2, 2]</p><p class="mini">A two-joint velocity coupling term should have a two-by-two diagnostic shape.</p></div>
+    </div>
+  </div>
+  <p class="source">Artifact grounding: figures/two-link-inertia-coupling.png and checks/final-sanity.json.</p>
+  <aside class="speaker-notes">Make the two-link example carry the abstract idea. The heatmap is not about a special numerical model; it shows that inertia coupling is configuration dependent. When the elbow angle changes, mass distribution relative to the joints changes, so the same joint acceleration can demand a different torque pattern. The Coriolis shape check reinforces that the velocity coupling term must match the two generalized coordinates before any controller can use it.</aside>
+</section>
+
+<section class="slide" data-label="Newton-Euler Explains Frame Discipline">
+  <div class="title-row"><h2>Newton-Euler Explains Frame Discipline</h2><span class="tag">Recursive balance</span></div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="panel blue"><h3>Forward Pass</h3><p>Propagate angular velocity, linear velocity, and acceleration from base to tool.</p></div>
+      <div class="panel teal"><h3>Backward Pass</h3><p>Propagate forces and moments from the tool back to the actuated joints.</p></div>
+      <div class="panel amber"><h3>Frame Rule</h3><p>Every spatial velocity, acceleration, and wrench must be expressed in the frame expected by the recursion.</p></div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 810 560" width="780" height="535" role="img" aria-label="Newton-Euler forward and backward passes through frames">
+        <defs>
+          <marker id="ne-forward" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#2563eb"/></marker>
+          <marker id="ne-back" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#b45309"/></marker>
+        </defs>
+        <g>
+          <rect x="80" y="215" width="120" height="90" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+          <rect x="280" y="180" width="120" height="90" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+          <rect x="480" y="215" width="120" height="90" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+          <rect x="640" y="160" width="110" height="90" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+          <text x="120" y="270" font-size="27" fill="#1e3a8a" font-weight="700">link 1</text>
+          <text x="320" y="235" font-size="27" fill="#1e3a8a" font-weight="700">link 2</text>
+          <text x="520" y="270" font-size="27" fill="#1e3a8a" font-weight="700">link 3</text>
+          <text x="670" y="215" font-size="27" fill="#0f766e" font-weight="700">tool</text>
+          <line x1="200" y1="260" x2="280" y2="225" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+          <line x1="400" y1="225" x2="480" y2="260" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+          <line x1="600" y1="245" x2="640" y2="205" stroke="#94a3b8" stroke-width="8" stroke-linecap="round"/>
+        </g>
+        <path d="M105 120 C245 72, 460 72, 704 120" fill="none" stroke="#2563eb" stroke-width="6" marker-end="url(#ne-forward)"/>
+        <text x="264" y="78" font-size="28" fill="#2563eb" font-weight="700">velocities and accelerations</text>
+        <path d="M704 405 C512 500, 304 500, 105 405" fill="none" stroke="#b45309" stroke-width="6" marker-end="url(#ne-back)"/>
+        <text x="300" y="510" font-size="28" fill="#b45309" font-weight="700">forces and moments</text>
+        <g stroke="#1e3a8a" stroke-width="5">
+          <line x1="140" y1="350" x2="140" y2="315"/><line x1="140" y1="350" x2="180" y2="350"/>
+          <line x1="340" y1="340" x2="340" y2="305"/><line x1="340" y1="340" x2="380" y2="340"/>
+          <line x1="540" y1="350" x2="540" y2="315"/><line x1="540" y1="350" x2="580" y2="350"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: Newton-Euler dynamics and frame conventions in Chapter 04.</p>
+  <aside class="speaker-notes">This slide explains why the chapter keeps returning to frames. Newton-Euler dynamics is physically intuitive because it balances velocities, accelerations, forces, and moments link by link. But the recursion is unforgiving: a wrench written in the tool frame cannot simply be inserted into a base-frame balance. Emphasize that frame discipline is not cosmetic notation; it is what allows local link balances to assemble into correct joint torques.</aside>
+</section>
+
+<section class="slide" data-label="Open-Chain Inertia Assembles From Link Jacobians">
+  <div class="title-row"><h2>Open-Chain Inertia Assembles From Link Jacobians</h2><span class="tag">Energy pipeline</span></div>
+  <div class="grid2 wide-right">
+    <div class="stack">
+      <div class="panel blue formula">$$V_i = J_i(q)\dot q$$</div>
+      <div class="panel teal formula">$$K=\frac{1}{2}\sum_i V_i^T G_i V_i$$</div>
+      <div class="panel amber formula">$$M(q)=\sum_i J_i(q)^T G_i J_i(q)$$</div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 900 560" width="860" height="535" role="img" aria-label="Open-chain energy pipeline from joint rates to inertia matrix">
+        <defs><marker id="pipe-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1e3a8a"/></marker></defs>
+        <rect x="55" y="210" width="150" height="100" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+        <text x="90" y="252" font-size="30" fill="#2563eb" font-weight="700">qdot</text>
+        <text x="76" y="286" font-size="24" fill="#475569">joint rates</text>
+        <path d="M205 260 H300" stroke="#1e3a8a" stroke-width="5" marker-end="url(#pipe-arrow)"/>
+        <rect x="300" y="145" width="190" height="80" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <rect x="300" y="250" width="190" height="80" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <rect x="300" y="355" width="190" height="80" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="338" y="195" font-size="28" fill="#0f766e" font-weight="700">J1(q) qdot</text>
+        <text x="338" y="300" font-size="28" fill="#0f766e" font-weight="700">J2(q) qdot</text>
+        <text x="338" y="405" font-size="28" fill="#0f766e" font-weight="700">Jn(q) qdot</text>
+        <path d="M490 185 C570 205, 600 235, 650 260" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#pipe-arrow)"/>
+        <path d="M490 290 H650" stroke="#1e3a8a" stroke-width="5" marker-end="url(#pipe-arrow)"/>
+        <path d="M490 395 C570 375, 600 325, 650 305" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#pipe-arrow)"/>
+        <rect x="650" y="220" width="190" height="120" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+        <text x="690" y="268" font-size="29" fill="#b45309" font-weight="700">sum link</text>
+        <text x="685" y="303" font-size="29" fill="#b45309" font-weight="700">energies</text>
+        <text x="655" y="382" font-size="27" fill="#1e3a8a" font-weight="700">one M(q)</text>
+        <path d="M744 340 V365" stroke="#1e3a8a" stroke-width="5" marker-end="url(#pipe-arrow)"/>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: open-chain inertia assembly from link velocities and spatial inertias, Chapter 04.</p>
+  <aside class="speaker-notes">This is the cleanest way to see open-chain dynamics without drowning in indices. Each link has a Jacobian that maps the same joint-rate vector into that link's spatial velocity. Each link also has its own spatial inertia. Summing the quadratic energies produces a single joint-space mass matrix. The formula is worth reading aloud because it explains why kinematic Jacobians are not left behind when the lecture turns to dynamics.</aside>
+</section>
+
+<section class="slide" data-label="The Manipulator Equation Has Four Terms">
+  <div class="title-row"><h2>The Manipulator Equation Has Four Terms</h2><span class="tag">Model surface</span></div>
+  <div class="content">
+    <div class="panel slate formula large">$$\underbrace{M(q)\ddot q}_{\text{inertia}}+\underbrace{C(q,\dot q)\dot q}_{\text{velocity coupling}}+\underbrace{N(q,\dot q)}_{\text{potential and other loads}}=\underbrace{\tau}_{\text{generalized input}}$$</div>
+    <div class="grid4">
+      <div class="panel blue"><h3>1. Inertia</h3><p>Acceleration is filtered through a configuration-dependent positive-definite matrix.</p></div>
+      <div class="panel teal"><h3>2. Velocity Coupling</h3><p>Centrifugal and Coriolis terms appear when the inertia metric changes along motion.</p></div>
+      <div class="panel amber"><h3>3. Loads</h3><p>Gravity, springs, and modeled nonconservative effects enter as generalized forces.</p></div>
+      <div class="panel violet"><h3>4. Input</h3><p>The actuator torque is the quantity a joint-space controller directly chooses.</p></div>
+    </div>
+  </div>
+  <p class="source">Source grounding: manipulator equation, Chapter 04, printed pages 155-210.</p>
+  <aside class="speaker-notes">Name the four terms as a control interface. Inertia, velocity coupling, loads, and input are not independent decorations; together they define what the controller must cancel, shape, or respect. Students should notice that the equation is already in generalized coordinates. That means the input torque is paired with virtual joint displacement, while Cartesian forces require a Jacobian transpose before they belong in this equation.</aside>
+</section>
+
+<section class="slide" data-label="Structural Lemma Powers Control Proofs">
+  <div class="title-row"><h2>Structural Lemma Powers Control Proofs</h2><span class="tag">Skew symmetry</span></div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="panel blue formula">$$M(q)=M(q)^T\succ0$$</div>
+      <div class="panel teal formula">$$\dot M(q)-2C(q,\dot q)\quad\text{is skew-symmetric}$$</div>
+      <div class="panel amber formula">$$\dot q^T\big(\dot M-2C\big)\dot q=0$$</div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 790 560" width="760" height="535" role="img" aria-label="Structural lemma removes velocity coupling from energy derivative">
+        <defs><marker id="lemma-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1e3a8a"/></marker></defs>
+        <rect x="90" y="80" width="610" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+        <text x="178" y="145" font-size="34" fill="#1e3a8a" font-weight="700">differentiate kinetic energy</text>
+        <path d="M395 190 V265" stroke="#1e3a8a" stroke-width="6" marker-end="url(#lemma-arrow)"/>
+        <rect x="120" y="265" width="550" height="105" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+        <text x="182" y="330" font-size="34" fill="#b45309" font-weight="700">troublesome qdot terms appear</text>
+        <path d="M395 370 V440" stroke="#1e3a8a" stroke-width="6" marker-end="url(#lemma-arrow)"/>
+        <rect x="135" y="440" width="520" height="80" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="207" y="491" font-size="33" fill="#0f766e" font-weight="700">skew part contributes zero power</text>
+        <circle cx="115" cy="318" r="24" fill="#fff" stroke="#b45309" stroke-width="4"/>
+        <text x="104" y="329" font-size="28" fill="#b45309" font-weight="700">!</text>
+        <circle cx="650" cy="480" r="24" fill="#fff" stroke="#0f766e" stroke-width="4"/>
+        <text x="638" y="491" font-size="28" fill="#0f766e" font-weight="700">0</text>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: structural properties of robot dynamics used in Chapter 04 control proofs.</p>
+  <aside class="speaker-notes">This lemma is the hinge between modeling and proof. Without structure, the derivative of kinetic energy would contain many velocity-dependent terms that are hard to sign. The skew-symmetry property says those terms do no net power when paired with the same velocity vector. In class, stress that the lemma is not a numerical coincidence of the two-link example; it is a consequence of the way the Coriolis matrix is chosen for the manipulator dynamics.</aside>
+</section>
+
+<section class="slide" data-label="POE Dynamics Keeps Kinematics In The Loop">
+  <div class="title-row"><h2>POE Dynamics Keeps Kinematics In The Loop</h2><span class="tag">Same chain, richer map</span></div>
+  <div class="grid2 wide-right">
+    <div class="stack">
+      <div class="panel blue"><h3>Forward Kinematics</h3><p>Products of exponentials give link poses and adjoint maps along the chain.</p></div>
+      <div class="panel teal"><h3>Velocity Kinematics</h3><p>Those same transformations build the spatial or body Jacobian for each link.</p></div>
+      <div class="panel amber"><h3>Dynamics</h3><p>The link Jacobians and spatial inertias assemble kinetic energy, then the manipulator equation.</p></div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 890 560" width="850" height="535" role="img" aria-label="POE kinematics feeding robot dynamics">
+        <defs><marker id="poe-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1e3a8a"/></marker></defs>
+        <rect x="70" y="70" width="250" height="105" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+        <text x="114" y="117" font-size="29" fill="#2563eb" font-weight="700">POE transforms</text>
+        <text x="120" y="150" font-size="24" fill="#475569">g_i(q)</text>
+        <rect x="70" y="235" width="250" height="105" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="116" y="282" font-size="29" fill="#0f766e" font-weight="700">link Jacobians</text>
+        <text x="122" y="315" font-size="24" fill="#475569">J_i(q)</text>
+        <rect x="70" y="400" width="250" height="105" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+        <text x="118" y="447" font-size="29" fill="#b45309" font-weight="700">spatial inertia</text>
+        <text x="124" y="480" font-size="24" fill="#475569">G_i</text>
+        <path d="M320 123 H448" stroke="#1e3a8a" stroke-width="5" marker-end="url(#poe-arrow)"/>
+        <path d="M320 288 H448" stroke="#1e3a8a" stroke-width="5" marker-end="url(#poe-arrow)"/>
+        <path d="M320 453 H448" stroke="#1e3a8a" stroke-width="5" marker-end="url(#poe-arrow)"/>
+        <rect x="448" y="195" width="330" height="160" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+        <text x="500" y="252" font-size="32" fill="#1e3a8a" font-weight="700">M(q), C(q,qdot), N</text>
+        <text x="497" y="300" font-size="26" fill="#475569">dynamic model in joint coordinates</text>
+        <path d="M613 355 V440" stroke="#1e3a8a" stroke-width="5" marker-end="url(#poe-arrow)"/>
+        <rect x="500" y="440" width="230" height="70" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/>
+        <text x="544" y="486" font-size="30" fill="#6d28d9" font-weight="700">controller</text>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: POE kinematics as the foundation for Chapter 04 dynamics calculations.</p>
+  <aside class="speaker-notes">This slide keeps the course sequence coherent. The product-of-exponentials machinery from kinematics remains valuable because link poses determine link velocities and their Jacobians. Once each link velocity is known, kinetic energy is a mechanical calculation rather than a new geometric mystery. The point is that dynamics does not replace kinematics; it layers energy and force accounting on top of the same chain description.</aside>
+</section>
+
+<section class="slide" data-label="Lyapunov Stability Names What Stable Means">
+  <div class="title-row"><h2>Lyapunov Stability Names What Stable Means</h2><span class="tag">Definitions</span></div>
+  <div class="grid2">
+    <div class="diagram tall">
+      <svg viewBox="0 0 760 560" width="730" height="535" role="img" aria-label="Lyapunov stability neighborhoods">
+        <line x1="90" y1="450" x2="670" y2="450" stroke="#cbd5e1" stroke-width="5"/>
+        <line x1="380" y1="505" x2="380" y2="65" stroke="#cbd5e1" stroke-width="5"/>
+        <circle cx="380" cy="280" r="190" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+        <circle cx="380" cy="280" r="92" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+        <circle cx="380" cy="280" r="11" fill="#111827"/>
+        <path d="M465 330 C430 305, 413 292, 392 284 C370 275, 350 265, 318 230" fill="none" stroke="#b45309" stroke-width="6"/>
+        <path d="M318 230 C350 254, 370 267, 380 280" fill="none" stroke="#0f766e" stroke-width="6"/>
+        <text x="405" y="271" font-size="28" fill="#111827">equilibrium</text>
+        <text x="505" y="175" font-size="28" fill="#2563eb" font-weight="700">epsilon tube</text>
+        <text x="444" y="360" font-size="28" fill="#0f766e" font-weight="700">delta start</text>
+        <text x="140" y="520" font-size="27" fill="#475569">stability keeps trajectories nearby; asymptotic stability brings them back</text>
+      </svg>
+    </div>
+    <div class="stack">
+      <div class="panel blue"><h3>Stable</h3><p>Small initial error implies the trajectory remains inside a prescribed small neighborhood.</p></div>
+      <div class="panel teal"><h3>Attractive</h3><p>Nearby trajectories converge to the equilibrium as time grows.</p></div>
+      <div class="panel amber"><h3>Asymptotically Stable</h3><p>Both properties hold: stay close first, then converge.</p></div>
+      <div class="panel slate formula">$$x=0,\qquad \dot x=f(x),\qquad V(x)\ge 0$$</div>
+    </div>
+  </div>
+  <p class="source">Source grounding: Lyapunov stability definitions in Chapter 04.</p>
+  <aside class="speaker-notes">Before proving anything, define the target carefully. Stability and convergence are not synonyms. A trajectory can remain near an equilibrium without approaching it, and a careless controller claim may confuse those properties. Use the nested neighborhoods to separate the epsilon-delta part from attraction. This vocabulary is essential because later slides use Lyapunov functions to certify behavior without solving the differential equation explicitly.</aside>
+</section>
+
+<section class="slide" data-label="Direct Lyapunov Method Converts Motion Into Signs">
+  <div class="title-row"><h2>Direct Lyapunov Method Converts Motion Into Signs</h2><span class="tag">No closed form needed</span></div>
+  <div class="grid2 wide-left">
+    <div class="stack">
+      <div class="panel blue formula">$$V(x)>0\quad\text{for}\quad x\ne0,\qquad V(0)=0$$</div>
+      <div class="panel teal formula">$$\dot V(x)=\nabla V(x)^T f(x)\le0$$</div>
+      <div class="panel amber"><h3>Control Reading</h3><p>Choose feedback so the energy-like quantity cannot increase, then sharpen the sign condition for convergence when possible.</p></div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 760 560" width="730" height="535" role="img" aria-label="Lyapunov function decreases along trajectories">
+        <defs><marker id="down-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#0f766e"/></marker></defs>
+        <ellipse cx="380" cy="315" rx="260" ry="170" fill="#eff6ff" stroke="#cbd5e1" stroke-width="4"/>
+        <ellipse cx="380" cy="315" rx="175" ry="108" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <ellipse cx="380" cy="315" rx="88" ry="50" fill="#fff" stroke="#2563eb" stroke-width="4"/>
+        <circle cx="380" cy="315" r="10" fill="#111827"/>
+        <path d="M600 230 C540 245, 500 278, 462 292 C430 304, 410 311, 384 315" fill="none" stroke="#0f766e" stroke-width="7" marker-end="url(#down-arrow)"/>
+        <path d="M210 410 C285 390, 330 350, 374 318" fill="none" stroke="#0f766e" stroke-width="7" marker-end="url(#down-arrow)"/>
+        <text x="144" y="155" font-size="30" fill="#1e3a8a" font-weight="700">level sets of V</text>
+        <text x="504" y="214" font-size="27" fill="#0f766e" font-weight="700">flow crosses inward</text>
+        <text x="394" y="350" font-size="27" fill="#111827">minimum</text>
+        <line x1="126" y1="475" x2="630" y2="475" stroke="#cbd5e1" stroke-width="5"/>
+        <text x="190" y="520" font-size="27" fill="#475569">sign of Vdot replaces explicit trajectory solution</text>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: direct Lyapunov method in Chapter 04.</p>
+  <aside class="speaker-notes">The direct method is a change of viewpoint. Instead of solving the motion equation, look for a scalar quantity whose sign behavior is decisive. Positive definiteness says the quantity measures displacement from the goal; a nonpositive derivative says trajectories do not climb its contours. In robot control, kinetic plus potential energy is the natural candidate, but tracking problems often add error terms to build the right Lyapunov function.</aside>
+</section>
+
+<section class="slide" data-label="Phase Portraits Make Vdot <= 0 Inspectable">
+  <div class="title-row"><h2>Phase Portraits Make Vdot &lt;= 0 Inspectable</h2><span class="tag">Visual sign test</span></div>
+  <div class="grid2 wide-left">
+    <figure>
+      <img class="figure" src="../figures/lyapunov-phase-portraits.png" alt="Lyapunov phase portraits with energy contours">
+      <figcaption class="caption">Generated chapter artifact: lyapunov-phase-portraits.png. Inspection target: energy level sets and convergence.</figcaption>
+    </figure>
+    <div class="stack">
+      <div class="panel blue formula">$$V(e,\dot e)=\frac{1}{2}\dot e^T M\dot e+\frac{1}{2}e^T K_p e$$</div>
+      <div class="panel teal formula">$$\dot V\le0$$</div>
+      <div class="panel amber"><h3>Notebook Sanity</h3><p class="mono">lyapunov_max_vdot = -0.001775147928994053</p><p class="mini">The sampled grid is strictly below zero at its largest recorded derivative.</p></div>
+    </div>
+  </div>
+  <p class="source">Artifact grounding: figures/lyapunov-phase-portraits.png and checks/final-sanity.json.</p>
+  <aside class="speaker-notes">Use the phase portrait as a sign inspection tool. The arrows should move across or along energy contours in the direction allowed by the Lyapunov calculation, not outward through higher energy levels. The recorded maximum derivative is negative on the sampled grid, which supports the intended visual reading. Make clear that a grid check is not a theorem by itself; it is evidence that the implemented diagnostic agrees with the analytic inequality being taught.</aside>
+</section>
+
+<section class="slide" data-label="Computed Torque Linearizes Tracking Error">
+  <div class="title-row"><h2>Computed Torque Linearizes Tracking Error</h2><span class="tag">Model cancellation</span></div>
+  <div class="grid2">
+    <div class="stack">
+      <div class="panel blue formula small-formula">$$\tau=M(q)\left(\ddot q_d-K_d\dot e-K_p e\right)+C(q,\dot q)\dot q+N(q,\dot q)$$</div>
+      <div class="panel teal formula">$$\ddot e+K_d\dot e+K_p e=0$$</div>
+      <div class="panel amber"><h3>Numerical Target</h3><p class="mono">final_tracking_error = 3.856330338784407e-08</p></div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 790 560" width="760" height="535" role="img" aria-label="Computed torque cancels nonlinear robot dynamics to yield linear error dynamics">
+        <defs><marker id="ct-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1e3a8a"/></marker></defs>
+        <rect x="75" y="75" width="250" height="100" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/>
+        <text x="118" y="120" font-size="29" fill="#6d28d9" font-weight="700">desired motion</text>
+        <text x="128" y="153" font-size="24" fill="#475569">q_d, qdot_d, qddot_d</text>
+        <path d="M325 125 H435" stroke="#1e3a8a" stroke-width="5" marker-end="url(#ct-arrow)"/>
+        <rect x="435" y="75" width="270" height="100" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+        <text x="480" y="120" font-size="29" fill="#2563eb" font-weight="700">inverse dynamics</text>
+        <text x="512" y="153" font-size="24" fill="#475569">choose tau</text>
+        <path d="M570 175 V265" stroke="#1e3a8a" stroke-width="5" marker-end="url(#ct-arrow)"/>
+        <rect x="420" y="265" width="300" height="105" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+        <text x="490" y="312" font-size="29" fill="#b45309" font-weight="700">nonlinear robot</text>
+        <text x="465" y="346" font-size="24" fill="#475569">M, C, N are present</text>
+        <path d="M420 318 H310" stroke="#1e3a8a" stroke-width="5" marker-end="url(#ct-arrow)"/>
+        <rect x="92" y="265" width="218" height="105" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="128" y="312" font-size="29" fill="#0f766e" font-weight="700">linear error</text>
+        <text x="128" y="346" font-size="24" fill="#475569">second order</text>
+        <path d="M201 370 V455 C270 500, 510 500, 570 370" fill="none" stroke="#94a3b8" stroke-width="5" stroke-dasharray="13 10"/>
+        <text x="232" y="515" font-size="27" fill="#475569">cancellation is only as good as the model</text>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Artifact grounding: checks/final-sanity.json; source grounding: computed torque in Chapter 04.</p>
+  <aside class="speaker-notes">Computed torque is attractive because it turns a nonlinear robot model into a familiar linear tracking error equation. But the slide should not oversell it. The controller uses the model directly, so modeling errors, unmodeled loads, or bad parameter estimates show up as imperfect cancellation. The very small final tracking error in the notebook is a diagnostic for the controlled example, not a promise that every real manipulator will behave that cleanly.</aside>
+</section>
+
+<section class="slide" data-label="PD Control Needs An Energy Proof">
+  <div class="title-row"><h2>PD Control Needs An Energy Proof</h2><span class="tag">Damping argument</span></div>
+  <div class="grid2 wide-left">
+    <div class="stack">
+      <div class="panel blue formula">$$\tau=-K_p(q-q_d)-K_d\dot q+G(q)$$</div>
+      <div class="panel teal formula">$$V=\frac{1}{2}\dot q^TM(q)\dot q+\frac{1}{2}(q-q_d)^TK_p(q-q_d)$$</div>
+      <div class="panel amber formula">$$\dot V=-\dot q^T K_d\dot q\le0$$</div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 760 560" width="730" height="535" role="img" aria-label="PD control as spring and damper energy proof">
+        <line x1="120" y1="430" x2="640" y2="430" stroke="#cbd5e1" stroke-width="6"/>
+        <circle cx="240" cy="310" r="38" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+        <circle cx="520" cy="310" r="38" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+        <path d="M278 310 C295 270, 325 350, 345 310 C365 270, 395 350, 415 310 C435 270, 465 350, 482 310" fill="none" stroke="#2563eb" stroke-width="6"/>
+        <rect x="336" y="385" width="88" height="42" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+        <line x1="280" y1="406" x2="336" y2="406" stroke="#b45309" stroke-width="5"/>
+        <line x1="424" y1="406" x2="480" y2="406" stroke="#b45309" stroke-width="5"/>
+        <text x="222" y="250" font-size="28" fill="#2563eb" font-weight="700">q</text>
+        <text x="486" y="250" font-size="28" fill="#0f766e" font-weight="700">q_d</text>
+        <text x="332" y="255" font-size="28" fill="#2563eb" font-weight="700">stiffness Kp</text>
+        <text x="317" y="474" font-size="28" fill="#b45309" font-weight="700">damping Kd dissipates</text>
+        <path d="M240 310 C300 260, 430 260, 520 310" fill="none" stroke="#94a3b8" stroke-width="5" stroke-dasharray="12 10"/>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: PD plus gravity compensation and Lyapunov proof structure in Chapter 04.</p>
+  <aside class="speaker-notes">PD control can look too simple after computed torque, so give it its own proof. With gravity compensation and a fixed desired configuration, the proportional term stores artificial potential energy and the derivative term dissipates kinetic energy. The structural lemma lets the derivative collapse to the damping term. The important teaching point is that stability comes from an energy argument, not from hoping that proportional and derivative gains are intuitively reasonable.</aside>
+</section>
+
+<section class="slide" data-label="Workspace Control Moves The Error Coordinates">
+  <div class="title-row"><h2>Workspace Control Moves The Error Coordinates</h2><span class="tag">Task-space dynamics</span></div>
+  <div class="grid2">
+    <div class="diagram tall">
+      <svg viewBox="0 0 760 560" width="730" height="535" role="img" aria-label="Workspace effective dynamics from joint dynamics through a Jacobian">
+        <defs><marker id="ws-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1e3a8a"/></marker></defs>
+        <line x1="90" y1="450" x2="665" y2="450" stroke="#cbd5e1" stroke-width="5"/>
+        <line x1="150" y1="505" x2="150" y2="90" stroke="#cbd5e1" stroke-width="5"/>
+        <path d="M150 450 C255 320, 385 270, 570 185" fill="none" stroke="#0f766e" stroke-width="7"/>
+        <circle cx="382" cy="270" r="14" fill="#0f766e"/>
+        <circle cx="570" cy="185" r="14" fill="#b45309"/>
+        <path d="M382 270 L480 210" stroke="#2563eb" stroke-width="6" marker-end="url(#ws-arrow)"/>
+        <path d="M382 270 L338 350" stroke="#b45309" stroke-width="6" marker-end="url(#ws-arrow)"/>
+        <ellipse cx="382" cy="270" rx="160" ry="62" transform="rotate(-31 382 270)" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+        <text x="492" y="206" font-size="28" fill="#2563eb" font-weight="700">tangent task error</text>
+        <text x="270" y="374" font-size="28" fill="#b45309" font-weight="700">normal sensitivity</text>
+        <text x="485" y="166" font-size="28" fill="#b45309" font-weight="700">x_d</text>
+        <text x="404" y="300" font-size="28" fill="#0f766e" font-weight="700">x(q)</text>
+        <text x="150" y="72" font-size="30" fill="#1e3a8a" font-weight="700">workspace effective inertia</text>
+      </svg>
+    </div>
+    <div class="stack">
+      <div class="panel blue formula small-formula">$$\tau=J(q)^TF,\qquad \Lambda(q)=\left(JM^{-1}J^T\right)^{-1}$$</div>
+      <div class="panel teal"><h3>Error Coordinates Move</h3><p>Instead of regulating joint error directly, workspace control regulates task error and maps the resulting wrench back through the Jacobian transpose.</p></div>
+      <figure>
+        <img class="figure compact" src="../figures/tracking-controller-comparison.png" alt="Tracking controller comparison">
+        <figcaption class="caption">Tracking comparison artifact: computed torque versus PD response.</figcaption>
+      </figure>
+    </div>
+  </div>
+  <p class="source">Artifact grounding: figures/tracking-controller-comparison.png; source grounding: workspace control in Chapter 04.</p>
+  <aside class="speaker-notes">Workspace control changes the coordinates in which the error is expressed. The desired behavior is described in task space, but the actuators still live at the joints, so the Jacobian transpose and effective inertia matrix become central. Use the tracking comparison only as a reminder that error coordinates matter: a clean joint response and a clean task response are related through the kinematic map, not automatically identical.</aside>
+</section>
+
+<section class="slide" data-label="Constrained Control Splits Tangent Motion From Normal Force">
+  <div class="title-row"><h2>Constrained Control Splits Tangent Motion From Normal Force</h2><span class="tag">Contact</span></div>
+  <div class="grid2 wide-right">
+    <div class="stack">
+      <div class="panel blue formula">$$A(q)\dot q=0$$</div>
+      <div class="panel teal formula">$$\tau=\tau_{\parallel}+A(q)^T\lambda$$</div>
+      <div class="panel amber"><h3>Power Check</h3><p>Normal constraint forces enforce contact; tangent control moves along the allowable surface. Ideal normal forces do no work on feasible velocities.</p></div>
+    </div>
+    <div class="diagram tall">
+      <svg viewBox="0 0 890 560" width="850" height="535" role="img" aria-label="Constrained control tangent and normal decomposition">
+        <defs>
+          <marker id="tan-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#0f766e"/></marker>
+          <marker id="norm-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#b45309"/></marker>
+        </defs>
+        <path d="M110 390 C230 230, 435 205, 760 275" fill="none" stroke="#cbd5e1" stroke-width="9"/>
+        <path d="M110 390 C230 230, 435 205, 760 275" fill="none" stroke="#1e3a8a" stroke-width="3" stroke-dasharray="14 12"/>
+        <circle cx="430" cy="248" r="16" fill="#111827"/>
+        <line x1="430" y1="248" x2="588" y2="230" stroke="#0f766e" stroke-width="8" marker-end="url(#tan-arrow)"/>
+        <line x1="430" y1="248" x2="404" y2="92" stroke="#b45309" stroke-width="8" marker-end="url(#norm-arrow)"/>
+        <ellipse cx="430" cy="248" rx="210" ry="70" transform="rotate(-7 430 248)" fill="#eff6ff" stroke="#2563eb" stroke-width="5" opacity="0.85"/>
+        <text x="565" y="222" font-size="30" fill="#0f766e" font-weight="700">tangent motion</text>
+        <text x="300" y="92" font-size="30" fill="#b45309" font-weight="700">normal force</text>
+        <text x="330" y="458" font-size="30" fill="#1e3a8a" font-weight="700">constraint manifold</text>
+        <rect x="80" y="70" width="185" height="95" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+        <text x="110" y="112" font-size="27" fill="#b45309" font-weight="700">lambda</text>
+        <text x="105" y="144" font-size="23" fill="#475569">contact load</text>
+        <rect x="615" y="395" width="215" height="95" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+        <text x="646" y="437" font-size="27" fill="#0f766e" font-weight="700">projected</text>
+        <text x="646" y="469" font-size="23" fill="#475569">allowable acceleration</text>
+      </svg>
+    </div>
+  </div>
+  <p class="source">Source grounding: constrained control and contact force decomposition in Chapter 04; lab prompt: simulate a two-link tracking task and check energy structure plus error decay.</p>
+  <aside class="speaker-notes">Close with constrained control because it tests whether students really understand generalized forces. A contact constraint removes motion directions but introduces normal reaction forces. Tangent components should accomplish the commanded motion along the allowable surface, while normal components enforce the constraint and ideally do no work on feasible velocities. This is the same energy discipline as before, now with a decomposition of force directions.</aside>
+</section>
+
+</deck-stage>
+
+<script type="application/json" id="deck-metadata">
+{
+  "course": "A Mathematical Introduction to Robotic Manipulation",
+  "chapter_id": "chapter-04",
+  "chapter_title": "Chapter 04: Robot Dynamics and Control",
+  "notebook_path": "A-Mathematical-Introduction-to-Robotic-Manipulation/part-01-foundations-and-single-robot-manipulation/chapter-04-robot-dynamics-and-control/04-robot-dynamics-and-control.ipynb",
+  "source_span": "printed pages 155-210; PDF pages 173-228",
+  "source_pdf": "A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf",
+  "design_system_version": "Geometry Atlas lecture-design-system"
+}
+</script>
+<script type="application/json" id="speaker-notes">
+[
+  {"slide":1,"title":"Robot Dynamics Adds Energy To Kinematics","notes":"Open by connecting this chapter to the previous kinematics material. The robot has not acquired a new configuration space; the difference is that motion now has energy, momentum, and required actuation. Tell students that the lecture will keep one through-line: every dynamics formula is a map from coordinates and velocities to forces, and every controller must respect that map rather than merely draw a plausible trajectory."},
+  {"slide":2,"title":"Generalized Coordinates Replace Particle Bookkeeping","notes":"The first conceptual move is reduction. A robot link contains many mass elements, but the mechanism constraints mean that a short vector of joint variables determines their positions. Emphasize that this is not a numerical convenience; it is the geometric reason Lagrange's equations are compact. The Jacobian for each mass element is the bridge from joint rates to physical velocities, which is why Jacobians keep reappearing in dynamics."},
+  {"slide":3,"title":"Lagrange's Equations Are The Energy-To-Force Map","notes":"Present Lagrange's equations as an energy-to-force converter. Students often see the formula as a formal derivative recipe, but the useful interpretation is that the kinetic and potential energy functions already encode the constraints and coordinates. The output is not a Cartesian force on one particle; it is a generalized force paired with the chosen coordinate. This pairing will matter later when controllers inject torques."},
+  {"slide":4,"title":"Rigid-Link Inertia Is A Metric On Velocity","notes":"Use the word metric deliberately. The inertia matrix is not merely a coefficient table; it defines a positive-definite quadratic form on velocity at each configuration. That is why symmetry and positive eigenvalues are not optional implementation details. The notebook sanity values confirm both properties for the sampled two-link matrix, and the ellipsoid gives students a visual way to remember what those checks mean."},
+  {"slide":5,"title":"Two-Link Coupling Is Configuration Dependent","notes":"Make the two-link example carry the abstract idea. The heatmap is not about a special numerical model; it shows that inertia coupling is configuration dependent. When the elbow angle changes, mass distribution relative to the joints changes, so the same joint acceleration can demand a different torque pattern. The Coriolis shape check reinforces that the velocity coupling term must match the two generalized coordinates before any controller can use it."},
+  {"slide":6,"title":"Newton-Euler Explains Frame Discipline","notes":"This slide explains why the chapter keeps returning to frames. Newton-Euler dynamics is physically intuitive because it balances velocities, accelerations, forces, and moments link by link. But the recursion is unforgiving: a wrench written in the tool frame cannot simply be inserted into a base-frame balance. Emphasize that frame discipline is not cosmetic notation; it is what allows local link balances to assemble into correct joint torques."},
+  {"slide":7,"title":"Open-Chain Inertia Assembles From Link Jacobians","notes":"This is the cleanest way to see open-chain dynamics without drowning in indices. Each link has a Jacobian that maps the same joint-rate vector into that link's spatial velocity. Each link also has its own spatial inertia. Summing the quadratic energies produces a single joint-space mass matrix. The formula is worth reading aloud because it explains why kinematic Jacobians are not left behind when the lecture turns to dynamics."},
+  {"slide":8,"title":"The Manipulator Equation Has Four Terms","notes":"Name the four terms as a control interface. Inertia, velocity coupling, loads, and input are not independent decorations; together they define what the controller must cancel, shape, or respect. Students should notice that the equation is already in generalized coordinates. That means the input torque is paired with virtual joint displacement, while Cartesian forces require a Jacobian transpose before they belong in this equation."},
+  {"slide":9,"title":"Structural Lemma Powers Control Proofs","notes":"This lemma is the hinge between modeling and proof. Without structure, the derivative of kinetic energy would contain many velocity-dependent terms that are hard to sign. The skew-symmetry property says those terms do no net power when paired with the same velocity vector. In class, stress that the lemma is not a numerical coincidence of the two-link example; it is a consequence of the way the Coriolis matrix is chosen for the manipulator dynamics."},
+  {"slide":10,"title":"POE Dynamics Keeps Kinematics In The Loop","notes":"This slide keeps the course sequence coherent. The product-of-exponentials machinery from kinematics remains valuable because link poses determine link velocities and their Jacobians. Once each link velocity is known, kinetic energy is a mechanical calculation rather than a new geometric mystery. The point is that dynamics does not replace kinematics; it layers energy and force accounting on top of the same chain description."},
+  {"slide":11,"title":"Lyapunov Stability Names What Stable Means","notes":"Before proving anything, define the target carefully. Stability and convergence are not synonyms. A trajectory can remain near an equilibrium without approaching it, and a careless controller claim may confuse those properties. Use the nested neighborhoods to separate the epsilon-delta part from attraction. This vocabulary is essential because later slides use Lyapunov functions to certify behavior without solving the differential equation explicitly."},
+  {"slide":12,"title":"Direct Lyapunov Method Converts Motion Into Signs","notes":"The direct method is a change of viewpoint. Instead of solving the motion equation, look for a scalar quantity whose sign behavior is decisive. Positive definiteness says the quantity measures displacement from the goal; a nonpositive derivative says trajectories do not climb its contours. In robot control, kinetic plus potential energy is the natural candidate, but tracking problems often add error terms to build the right Lyapunov function."},
+  {"slide":13,"title":"Phase Portraits Make Vdot <= 0 Inspectable","notes":"Use the phase portrait as a sign inspection tool. The arrows should move across or along energy contours in the direction allowed by the Lyapunov calculation, not outward through higher energy levels. The recorded maximum derivative is negative on the sampled grid, which supports the intended visual reading. Make clear that a grid check is not a theorem by itself; it is evidence that the implemented diagnostic agrees with the analytic inequality being taught."},
+  {"slide":14,"title":"Computed Torque Linearizes Tracking Error","notes":"Computed torque is attractive because it turns a nonlinear robot model into a familiar linear tracking error equation. But the slide should not oversell it. The controller uses the model directly, so modeling errors, unmodeled loads, or bad parameter estimates show up as imperfect cancellation. The very small final tracking error in the notebook is a diagnostic for the controlled example, not a promise that every real manipulator will behave that cleanly."},
+  {"slide":15,"title":"PD Control Needs An Energy Proof","notes":"PD control can look too simple after computed torque, so give it its own proof. With gravity compensation and a fixed desired configuration, the proportional term stores artificial potential energy and the derivative term dissipates kinetic energy. The structural lemma lets the derivative collapse to the damping term. The important teaching point is that stability comes from an energy argument, not from hoping that proportional and derivative gains are intuitively reasonable."},
+  {"slide":16,"title":"Workspace Control Moves The Error Coordinates","notes":"Workspace control changes the coordinates in which the error is expressed. The desired behavior is described in task space, but the actuators still live at the joints, so the Jacobian transpose and effective inertia matrix become central. Use the tracking comparison only as a reminder that error coordinates matter: a clean joint response and a clean task response are related through the kinematic map, not automatically identical."},
+  {"slide":17,"title":"Constrained Control Splits Tangent Motion From Normal Force","notes":"Close with constrained control because it tests whether students really understand generalized forces. A contact constraint removes motion directions but introduces normal reaction forces. Tangent components should accomplish the commanded motion along the allowable surface, while normal components enforce the constraint and ideally do no work on feasible velocities. This is the same energy discipline as before, now with a decomposition of force directions."}
+]
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    if (window.renderMathInElement) {
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          {left: "$$", right: "$$", display: true},
+          {left: "\\(", right: "\\)", display: false}
+        ]
+      });
+    }
+  });
+</script>
+</body>
+</html>

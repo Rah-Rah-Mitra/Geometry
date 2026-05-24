@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="98">
+  <meta name="course_root" content="Computational-Geometry-in-C">
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-06-arrangements">
+  <meta name="chapter_title" content="Chapter 6 - Arrangements">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-06-arrangements/06-arrangements.ipynb">
+  <meta name="source_span" content="printed pages 193-219.">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="source_pdf_pages" content="PDF pages 202-228">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 6 - Arrangements</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 98,
+  "course_root": "Computational-Geometry-in-C",
+  "course": "Computational Geometry in C",
+  "chapter_id": "chapter-06-arrangements",
+  "chapter_title": "Chapter 6 - Arrangements",
+  "notebook_path": "Computational-Geometry-in-C/chapter-06-arrangements/06-arrangements.ipynb",
+  "source_span": "printed pages 193-219.",
+  "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+  "source_pdf_pages": "PDF pages 202-228",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "title": "Arrangements: Partitions, Zones, And Duality",
+    "notes": "Open by presenting arrangements as the chapter's common data structure. A set of lines cuts the plane into vertices, edges, and faces; the zone theorem explains why one insertion is local; and duality turns point questions into searches through levels. Keep the provenance explicit: printed pages 193-219 correspond to PDF pages 202-228."
+  },
+  {
+    "slide": 2,
+    "title": "Why Arrangements: Cell Partition Visual",
+    "notes": "Use the cell partition image as the first mental model. The arrangement is not just a drawing of lines; it is a searchable subdivision where every cell has the same combinatorial relationship to the input lines. This is why later visibility, graphics, Voronoi, and optimization problems can all be phrased as finding or walking cells."
+  },
+  {
+    "slide": 3,
+    "title": "Simple Arrangement Counts",
+    "notes": "Read the three formulas as a ledger that only works under simple-position assumptions. Every pair of lines contributes exactly one vertex, each line is cut into n edges, and Euler's planar bookkeeping gives the face count. The notebook check fixes n at six and verifies fifteen vertices, thirty-six edges, and twenty-two faces."
+  },
+  {
+    "slide": 4,
+    "title": "Degeneracy Is Cheaper",
+    "notes": "Make the phrase cheaper precise: parallel lines and triple intersections merge events that would be separate in a simple arrangement. The left picture has fewer vertices because several incidences collapse together. A small perturbation separates them, raising the count back to the simple maximum, which explains why worst-case proofs usually assume general position first."
+  },
+  {
+    "slide": 5,
+    "title": "The Zone Of A Line",
+    "notes": "Define the zone operationally. If a new line h is inserted into an existing arrangement, the zone is the sequence of cells crossed by h, together with the boundary edges of those cells. The figure's crossing order and edge proxy are small enough to inspect, while the theorem promises that this local walk remains linear in n."
+  },
+  {
+    "slide": 6,
+    "title": "Zone Theorem Proof Roadmap",
+    "notes": "This slide is a proof map, not a full proof. The important idea is to charge boundary edges of crossed cells to nearby crossings and to separate edges above and below the inserted line. Because a line can enter the zone only through controlled local events, the total charge grows linearly rather than quadratically."
+  },
+  {
+    "slide": 7,
+    "title": "Incremental Construction",
+    "notes": "Translate the theorem into an algorithm. Maintain the current planar subdivision, insert the next line, walk its zone, split the crossed cells, and update adjacency along the walk. The theorem is doing the performance work: it says each insertion touches only linear complexity in the number of lines already present."
+  },
+  {
+    "slide": 8,
+    "title": "Quadratic Cost Ledger",
+    "notes": "Use the ledger to make the asymptotic sum concrete. The kth insertion sees at most a constant times k existing lines, so the cumulative upper bound is a triangular sum. The notebook table records the sequence zero, six, eighteen, thirty-six, sixty, ninety for six insertions under the source's six-n zone bound."
+  },
+  {
+    "slide": 9,
+    "title": "Higher Dimensions",
+    "notes": "Generalize carefully. In d dimensions, arrangements of hyperplanes can have order n to the d cells, while the zone of one hyperplane has one lower dimension of complexity. The slide's cube-and-planes sketch is meant to preserve the same story: full arrangements are large, but one insertion sees a codimension-one boundary."
+  },
+  {
+    "slide": 10,
+    "title": "Duality Setup",
+    "notes": "Introduce duality as an incidence-preserving translation, not as algebra for its own sake. A point becomes a line, and the question of whether a primal point lies above a primal line turns into an above-below relation in the dual arrangement. This is the doorway from point problems to level searches."
+  },
+  {
+    "slide": 11,
+    "title": "Levels As Search Objects",
+    "notes": "A level is the curve through arrangement edges with a fixed number of lines below it. Median levels are especially useful because they encode balanced cuts. Use the notebook's duality check to connect the crossing of two median levels to a ham-sandwich line that bisects two odd point sets."
+  },
+  {
+    "slide": 12,
+    "title": "Higher-Order Voronoi",
+    "notes": "Connect the new chapter back to Voronoi diagrams. Ordinary nearest-neighbor cells are order-one regions; higher-order cells ask for the same k nearest sites. In the lifted or dual view, that question becomes a level or envelope search, so arrangements give a uniform way to organize order-k nearest-neighbor structure."
+  },
+  {
+    "slide": 13,
+    "title": "Ham-Sandwich Via Median Levels",
+    "notes": "Treat the ham-sandwich result as the most memorable duality payoff. In the primal plane, we seek one line that bisects two point sets. In the dual arrangement, each set contributes a median level, and an intersection of those levels maps back to the desired bisecting line."
+  },
+  {
+    "slide": 14,
+    "title": "Applications Map",
+    "notes": "Use the application map to keep the chapter from feeling like a single theorem. The same arrangement vocabulary supports endpoint visibility, hidden-surface removal, aspect graph changes, shadow directions, red-blue matching, centerpoints, and minimum-area triangle searches. The point is transfer: once the subdivision is built, many geometric questions become location or traversal tasks."
+  },
+  {
+    "slide": 15,
+    "title": "Failure Modes And Assumptions",
+    "notes": "Pause on assumptions before the recap. Simple arrangements remove parallelism and triple intersections, duality needs a convention for vertical lines and points at infinity, and numeric code must decide how to handle nearly coincident events. These are not afterthoughts; they determine whether the combinatorial ledger matches the computed subdivision."
+  },
+  {
+    "slide": 16,
+    "title": "Recap And Inspection Prompt",
+    "notes": "Close by asking students to inspect a small arrangement rather than merely repeat definitions. They should identify the counts, trace one inserted line's zone, explain why the total incremental cost is quadratic, and describe how a point-set problem becomes a level query under duality. That sequence is the chapter's conceptual spine."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 62px 92px 46px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 64px; line-height: 1.04; font-weight: 700; max-width: 1480px; }
+    h2 { font-size: 50px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 29px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 25px; line-height: 1.28; }
+    ul, ol { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    img { max-width: 100%; max-height: 100%; display: block; object-fit: contain; }
+    table { width: 100%; border-collapse: collapse; font-size: 24px; line-height: 1.2; }
+    th, td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--slide-border-light); }
+    th { color: var(--slide-accent); background: var(--slide-bg-alt); }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1390px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 28px; align-items: stretch; }
+    .cols { grid-template-columns: 1fr 1fr; }
+    .wide-left { grid-template-columns: 1.12fr .88fr; }
+    .wide-right { grid-template-columns: .86fr 1.14fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 20px 22px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .panel p, .panel li { font-size: 24px; }
+    .math-box { padding: 21px 23px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.32; }
+    .big-formula { font-family: var(--font-math); font-size: 42px; line-height: 1.28; text-align: center; }
+    .small { font-size: 22px; line-height: 1.25; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .figure-pad { padding: 14px; }
+    .artifact { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 14px; min-height: 0; overflow: clip; }
+    .artifact img { width: 100%; height: 100%; object-fit: contain; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .route { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 18px; }
+    .route div { border: 2px solid var(--slide-border); border-radius: 8px; min-height: 88px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-size: 23px; font-weight: 700; background: #fff; }
+    .route .hot { border-color: var(--slide-amber); color: var(--slide-amber); background: #fffbeb; }
+    .check-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .check-list div { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 12px 14px; background: #fff; font-size: 21px; font-weight: 700; color: var(--slide-accent); }
+    .svg-label { font: 700 26px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 28px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-big { font: 700 32px 'Source Sans 3', Arial, sans-serif; fill: #1e3a8a; }
+    .pill { display: inline-block; border: 1px solid var(--slide-border); border-radius: 6px; padding: 7px 11px; margin: 0 6px 6px 0; background: #fff; color: var(--slide-muted); font-size: 22px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Title">
+      <div class="topline"><div class="eyebrow">Computational Geometry in C</div><div class="badge">printed pages 193-219 / PDF 202-228</div></div>
+      <h1>Arrangements: Partitions, Zones, And Duality</h1>
+      <p class="lead">A line arrangement cuts space into searchable cells; the zone theorem makes incremental construction efficient, and duality turns point problems into level searches.</p>
+      <div class="content cols wide-left">
+        <div class="stack">
+          <div class="route">
+            <div>cells</div><div class="hot">zones</div><div>duality</div><div>levels</div>
+          </div>
+          <div class="panel blue"><h3>Lecture Goal</h3><p>Use arrangements as the unifying data structure behind exact quadratic counts, incremental construction, higher-order Voronoi diagrams, and geometric optimization searches.</p></div>
+          <div class="panel teal"><h3>Notebook Grounding</h3><p>Checked artifacts verify simple counts, degeneracy effects, zone traversal, cumulative insertion cost, median levels, and the application map.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Arrangement route diagram">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="62" y="62" width="776" height="496" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#2563eb" stroke-width="5" opacity=".9">
+              <line x1="95" y1="480" x2="810" y2="115"/>
+              <line x1="105" y1="180" x2="805" y2="455"/>
+              <line x1="190" y1="535" x2="720" y2="82"/>
+              <line x1="115" y1="335" x2="820" y2="285"/>
+              <line x1="260" y1="92" x2="610" y2="540"/>
+            </g>
+            <path d="M92 310 C245 255 360 392 520 334 C645 288 724 322 818 265" fill="none" stroke="#b45309" stroke-width="8" stroke-dasharray="18 14"/>
+            <circle cx="416" cy="345" r="14" fill="#0f766e"/>
+            <circle cx="604" cy="301" r="14" fill="#0f766e"/>
+            <text x="90" y="594" class="svg-small">Partition cells support search; the amber curve marks an insertion zone.</text>
+            <text x="118" y="118" class="svg-big">arrangement A(L)</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Manifest row 98, Chapter 6</span><span>HTML deck source with matched speaker notes</span></div>
+      <aside class="speaker-notes">Open by presenting arrangements as the chapter's common data structure. A set of lines cuts the plane into vertices, edges, and faces; the zone theorem explains why one insertion is local; and duality turns point questions into searches through levels. Keep the provenance explicit: printed pages 193-219 correspond to PDF pages 202-228.</aside>
+    </section>
+
+    <section class="slide" data-label="Cell Partition">
+      <div class="topline"><div class="eyebrow">Motivation</div><div class="badge">from drawing to searchable subdivision</div></div>
+      <h2>Why Arrangements: Cell Partition Visual</h2>
+      <div class="content cols wide-left">
+        <figure class="artifact"><img src="../figures/simple-line-arrangement-counts.png" alt="Simple line arrangement with counted vertices, edges, and faces"></figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Definition</div>
+            <p>An arrangement of lines is the planar subdivision induced by all input lines: vertices at intersections, edges along line pieces, and faces between them.</p>
+          </div>
+          <div class="panel teal"><h3>Why It Helps</h3><p>Inside one cell, the sign pattern against every input line is fixed. A geometric query can often be reduced to locating the right cell or walking adjacent cells.</p></div>
+          <div class="check-list"><div>visibility</div><div>graphics</div><div>Voronoi order</div><div>optimization</div></div>
+        </div>
+      </div>
+      <div class="footer"><span>Figure: simple-line-arrangement-counts.png</span><span>Notebook check: simple_counts_match_formula</span></div>
+      <aside class="speaker-notes">Use the cell partition image as the first mental model. The arrangement is not just a drawing of lines; it is a searchable subdivision where every cell has the same combinatorial relationship to the input lines. This is why later visibility, graphics, Voronoi, and optimization problems can all be phrased as finding or walking cells.</aside>
+    </section>
+
+    <section class="slide" data-label="Simple Counts">
+      <div class="topline"><div class="eyebrow">Combinatorics</div><div class="badge">simple arrangements</div></div>
+      <h2>Simple Arrangement Counts</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Counting Ledger</div>
+            <p>For n lines with no parallels and no triple intersections:</p>
+            <p class="big-formula">\(V=\binom n2,\quad E=n^2,\quad F=\binom n2+n+1.\)</p>
+          </div>
+          <table>
+            <thead><tr><th>n</th><th>V</th><th>E</th><th>F</th></tr></thead>
+            <tbody><tr><td>6</td><td>15</td><td>36</td><td>22</td></tr></tbody>
+          </table>
+          <div class="panel slate"><h3>Inspection Target</h3><p>Every pair contributes one vertex; each line is cut into n edges by its n-1 crossings.</p></div>
+        </div>
+        <figure class="artifact"><img src="../figures/simple-line-arrangement-counts.png" alt="Six-line simple arrangement count visual"></figure>
+      </div>
+      <div class="footer"><span>Counts are for the full arrangement, including unbounded cells.</span><span>Checked JSON: V=15, E=36, F=22.</span></div>
+      <aside class="speaker-notes">Read the three formulas as a ledger that only works under simple-position assumptions. Every pair of lines contributes exactly one vertex, each line is cut into n edges, and Euler's planar bookkeeping gives the face count. The notebook check fixes n at six and verifies fifteen vertices, thirty-six edges, and twenty-two faces.</aside>
+    </section>
+
+    <section class="slide" data-label="Degeneracy">
+      <div class="topline"><div class="eyebrow">General Position</div><div class="badge">degenerate inputs reduce complexity</div></div>
+      <h2>Degeneracy Is Cheaper</h2>
+      <div class="content cols wide-left">
+        <figure class="artifact"><img src="../figures/degeneracy-perturbation.png" alt="Degenerate arrangement before and after perturbation"></figure>
+        <div class="stack">
+          <div class="panel amber"><h3>Collapsed Events</h3><p>Parallel lines remove an intersection. Triple intersections merge several pairwise events into one vertex.</p></div>
+          <div class="panel blue"><h3>Perturbation Test</h3><p>The notebook example moves from 3 vertices to the simple maximum of 6 vertices for four lines.</p></div>
+          <div class="math-box math-box--remark">
+            <div class="math-box-label">Worst Case</div>
+            <p>Simple arrangements maximize the vertex, edge, and face ledger for line arrangements in the plane.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Figure: degeneracy-perturbation.png</span><span>Check: perturbation_increases_vertices</span></div>
+      <aside class="speaker-notes">Make the phrase cheaper precise: parallel lines and triple intersections merge events that would be separate in a simple arrangement. The left picture has fewer vertices because several incidences collapse together. A small perturbation separates them, raising the count back to the simple maximum, which explains why worst-case proofs usually assume general position first.</aside>
+    </section>
+
+    <section class="slide" data-label="Zone">
+      <div class="topline"><div class="eyebrow">Zone Theorem</div><div class="badge">one inserted line sees linear complexity</div></div>
+      <h2>The Zone Of A Line</h2>
+      <div class="content cols wide-left">
+        <figure class="artifact"><img src="../figures/zone-traversal-bound.png" alt="Zone traversal of an inserted horizontal line"></figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Zone</div>
+            <p>The zone of h is the set of arrangement cells crossed by h, together with the boundary edges of those cells.</p>
+          </div>
+          <table>
+            <tbody>
+              <tr><th>Inserted line</th><td>h: y = 0.85</td></tr>
+              <tr><th>Cells crossed</th><td>7</td></tr>
+              <tr><th>Zone edge proxy</th><td>19</td></tr>
+              <tr><th>Theorem bound</th><td>6n = 36</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="footer"><span>Crossing order: L3, L2, L1, L6, L5, L4.</span><span>Check: zone_ledger_below_six_n</span></div>
+      <aside class="speaker-notes">Define the zone operationally. If a new line h is inserted into an existing arrangement, the zone is the sequence of cells crossed by h, together with the boundary edges of those cells. The figure's crossing order and edge proxy are small enough to inspect, while the theorem promises that this local walk remains linear in n.</aside>
+    </section>
+
+    <section class="slide" data-label="Zone Proof Roadmap">
+      <div class="topline"><div class="eyebrow">Proof Structure</div><div class="badge">charging boundary edges</div></div>
+      <h2>Zone Theorem Proof Roadmap</h2>
+      <div class="content cols wide-right">
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Theorem Shape</div>
+            <p>For n lines, the zone complexity of one line h is linear; the chapter's explicit statement uses \(Z_n &lt; 6n\).</p>
+          </div>
+          <div class="panel slate"><h3>Roadmap</h3><ol><li>Split zone boundary into above-h and below-h chains.</li><li>Charge each boundary segment to a nearby crossing or line endpoint at infinity.</li><li>Show each input line receives only constant charge.</li></ol></div>
+        </div>
+        <figure class="diagram" aria-label="Zone theorem charge ledger">
+          <svg viewBox="0 0 980 610" role="img">
+            <rect x="55" y="60" width="870" height="470" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <line x1="100" y1="300" x2="880" y2="300" stroke="#b45309" stroke-width="8"/>
+            <g stroke="#2563eb" stroke-width="5">
+              <line x1="165" y1="505" x2="400" y2="92"/>
+              <line x1="230" y1="92" x2="770" y2="508"/>
+              <line x1="90" y1="420" x2="850" y2="150"/>
+              <line x1="120" y1="180" x2="905" y2="410"/>
+            </g>
+            <g fill="rgba(180,83,9,.18)" stroke="#b45309" stroke-width="4">
+              <rect x="120" y="236" width="150" height="128" rx="8"/>
+              <rect x="350" y="238" width="168" height="124" rx="8"/>
+              <rect x="600" y="236" width="178" height="128" rx="8"/>
+            </g>
+            <g fill="#0f766e">
+              <circle cx="260" cy="300" r="12"/><circle cx="430" cy="300" r="12"/><circle cx="650" cy="300" r="12"/>
+            </g>
+            <path d="M260 300 C250 205 198 160 160 112" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
+            <path d="M430 300 C465 392 535 450 620 505" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
+            <path d="M650 300 C695 210 755 155 840 105" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow)"/>
+            <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/></marker></defs>
+            <text x="116" y="578" class="svg-small">Charge zone edges to crossings; each existing line pays a bounded amount.</text>
+            <text x="126" y="286" class="svg-label">above</text>
+            <text x="750" y="335" class="svg-label">below</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Original inline SVG: proof ledger</span><span>The constant is less important than linearity.</span></div>
+      <aside class="speaker-notes">This slide is a proof map, not a full proof. The important idea is to charge boundary edges of crossed cells to nearby crossings and to separate edges above and below the inserted line. Because a line can enter the zone only through controlled local events, the total charge grows linearly rather than quadratically.</aside>
+    </section>
+
+    <section class="slide" data-label="Incremental Construction">
+      <div class="topline"><div class="eyebrow">Algorithmic Use</div><div class="badge">walk zone, split cells</div></div>
+      <h2>Incremental Construction</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--proof">
+            <div class="math-box-label">State Machine</div>
+            <ol><li>Start with an empty subdivision.</li><li>Insert one line h.</li><li>Locate and walk the zone of h.</li><li>Split crossed cells and repair adjacency.</li></ol>
+          </div>
+          <div class="panel teal"><h3>Invariant</h3><p>After k insertions, the subdivision is the arrangement of the first k lines, with cell adjacencies consistent along every edge.</p></div>
+        </div>
+        <figure class="artifact"><img src="../figures/incremental-zone-costs.png" alt="Incremental zone cost plot"></figure>
+      </div>
+      <div class="footer"><span>Figure: incremental-zone-costs.png</span><span>Each insertion pays for a zone walk.</span></div>
+      <aside class="speaker-notes">Translate the theorem into an algorithm. Maintain the current planar subdivision, insert the next line, walk its zone, split the crossed cells, and update adjacency along the walk. The theorem is doing the performance work: it says each insertion touches only linear complexity in the number of lines already present.</aside>
+    </section>
+
+    <section class="slide" data-label="Quadratic Cost">
+      <div class="topline"><div class="eyebrow">Complexity Ledger</div><div class="badge">linear zones sum to quadratic total</div></div>
+      <h2>Quadratic Cost Ledger</h2>
+      <div class="content cols wide-right">
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Summation</div>
+            <p class="big-formula">\(\sum_{k=0}^{n-1} O(k)=O(n^2)\)</p>
+          </div>
+          <table>
+            <thead><tr><th>Inserted line</th><th>Existing</th><th>Zone bound</th><th>Cumulative</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>2</td><td>1</td><td>6</td><td>6</td></tr>
+              <tr><td>3</td><td>2</td><td>12</td><td>18</td></tr>
+              <tr><td>4</td><td>3</td><td>18</td><td>36</td></tr>
+              <tr><td>5</td><td>4</td><td>24</td><td>60</td></tr>
+              <tr><td>6</td><td>5</td><td>30</td><td>90</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="artifact"><img src="../figures/incremental-zone-costs.png" alt="Cumulative quadratic zone cost chart"></figure>
+      </div>
+      <div class="footer"><span>Table: incremental-zone-costs.csv</span><span>Check: incremental_total_is_quadratic_scale</span></div>
+      <aside class="speaker-notes">Use the ledger to make the asymptotic sum concrete. The kth insertion sees at most a constant times k existing lines, so the cumulative upper bound is a triangular sum. The notebook table records the sequence zero, six, eighteen, thirty-six, sixty, ninety for six insertions under the source's six-n zone bound.</aside>
+    </section>
+
+    <section class="slide" data-label="Higher Dimensions">
+      <div class="topline"><div class="eyebrow">Hyperplane Arrangements</div><div class="badge">dimension shifts the exponent</div></div>
+      <h2>Higher Dimensions</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Three-dimensional arrangement and zone sketch">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="210,470 585,470 735,300 365,300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="210,470 365,300 365,135 210,300" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <polygon points="365,135 735,135 735,300 365,300" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <polygon points="365,300 735,300 585,470 210,470" fill="rgba(180,83,9,.12)" stroke="#b45309" stroke-width="6"/>
+            <line x1="265" y1="438" x2="666" y2="438" stroke="#6d28d9" stroke-width="5"/>
+            <line x1="328" y1="366" x2="720" y2="366" stroke="#6d28d9" stroke-width="5"/>
+            <line x1="442" y1="300" x2="442" y2="470" stroke="#6d28d9" stroke-width="5"/>
+            <line x1="558" y1="300" x2="558" y2="470" stroke="#6d28d9" stroke-width="5"/>
+            <text x="125" y="568" class="svg-small">A new plane has a two-dimensional zone inside a three-dimensional arrangement.</text>
+            <text x="435" y="520" class="svg-big">zone on inserted plane</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Dimensional Pattern</div>
+            <p class="big-formula">arrangement: \(O(n^d)\)<br>zone of one hyperplane: \(O(n^{d-1})\)</p>
+          </div>
+          <div class="panel amber"><h3>Interpretation</h3><p>The full decomposition gets one power of n per dimension. A single inserted hyperplane sees one lower-dimensional arrangement.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Original inline SVG: 3D arrangement sketch</span><span>Same insertion story, one dimension higher.</span></div>
+      <aside class="speaker-notes">Generalize carefully. In d dimensions, arrangements of hyperplanes can have order n to the d cells, while the zone of one hyperplane has one lower dimension of complexity. The slide's cube-and-planes sketch is meant to preserve the same story: full arrangements are large, but one insertion sees a codimension-one boundary.</aside>
+    </section>
+
+    <section class="slide" data-label="Duality">
+      <div class="topline"><div class="eyebrow">Point-Line Duality</div><div class="badge">incidence becomes level structure</div></div>
+      <h2>Duality Setup</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Dual Map</div>
+            <p class="big-formula">\((a,b)\quad \longleftrightarrow \quad y=ax-b\)</p>
+          </div>
+          <div class="panel blue"><h3>What Is Preserved</h3><p>Incidence is preserved, and above-below tests are converted into above-below tests with a sign convention.</p></div>
+          <div class="panel teal"><h3>Why It Matters</h3><p>Point-set questions become arrangement questions: search a level, find an intersection, or locate a cell.</p></div>
+        </div>
+        <figure class="artifact"><img src="../figures/duality-median-levels.png" alt="Dual lines and median levels"></figure>
+      </div>
+      <div class="footer"><span>Duality starts at printed p201 / PDF p210.</span><span>Figure: duality-median-levels.png</span></div>
+      <aside class="speaker-notes">Introduce duality as an incidence-preserving translation, not as algebra for its own sake. A point becomes a line, and the question of whether a primal point lies above a primal line turns into an above-below relation in the dual arrangement. This is the doorway from point problems to level searches.</aside>
+    </section>
+
+    <section class="slide" data-label="Levels">
+      <div class="topline"><div class="eyebrow">Levels</div><div class="badge">balanced cuts as arrangement paths</div></div>
+      <h2>Levels As Search Objects</h2>
+      <div class="content cols wide-left">
+        <figure class="artifact"><img src="../figures/duality-median-levels.png" alt="Median levels in a dual line arrangement"></figure>
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">k-Level</div>
+            <p>The k-level consists of arrangement edges whose points have exactly k lines below them.</p>
+          </div>
+          <div class="panel violet"><h3>Median Level</h3><p>For an odd set of lines, the median level has the same number of lines above and below.</p></div>
+          <table>
+            <tbody>
+              <tr><th>Dual intersection</th><td>(0.0294, -1.2353)</td></tr>
+              <tr><th>Primal line</th><td>slope 0.0294, intercept 1.2353</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="footer"><span>Check: median_levels_intersect_once_in_window</span><span>Odd counts split 2 / 1 / 2.</span></div>
+      <aside class="speaker-notes">A level is the curve through arrangement edges with a fixed number of lines below it. Median levels are especially useful because they encode balanced cuts. Use the notebook's duality check to connect the crossing of two median levels to a ham-sandwich line that bisects two odd point sets.</aside>
+    </section>
+
+    <section class="slide" data-label="Higher-Order Voronoi">
+      <div class="topline"><div class="eyebrow">Order-k Structure</div><div class="badge">nearest neighbors through levels</div></div>
+      <h2>Higher-Order Voronoi</h2>
+      <div class="content cols wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition">
+            <div class="math-box-label">Order-k Cell</div>
+            <p>A region whose points share the same set of k nearest sites.</p>
+          </div>
+          <div class="panel teal"><h3>Arrangement View</h3><p>Bisectors, envelopes, and levels encode where the ordering of distances changes.</p></div>
+          <div><span class="pill">k = 1: ordinary Voronoi</span><span class="pill">k = 2: nearest pair set</span><span class="pill">k higher: ranked neighborhoods</span></div>
+        </div>
+        <figure class="diagram" aria-label="Higher order Voronoi and tangent levels">
+          <svg viewBox="0 0 980 610" role="img">
+            <rect x="62" y="60" width="856" height="470" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#cbd5e1" stroke-width="3">
+              <line x1="135" y1="80" x2="135" y2="520"/><line x1="250" y1="80" x2="250" y2="520"/><line x1="365" y1="80" x2="365" y2="520"/><line x1="480" y1="80" x2="480" y2="520"/><line x1="595" y1="80" x2="595" y2="520"/><line x1="710" y1="80" x2="710" y2="520"/><line x1="825" y1="80" x2="825" y2="520"/>
+            </g>
+            <g fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="5">
+              <path d="M105 300 C205 210 295 208 395 300 C495 392 590 390 690 300 C775 226 845 232 895 300" fill="none"/>
+              <path d="M118 390 C240 320 340 320 470 390 C590 455 720 440 862 350" fill="none" stroke="#0f766e"/>
+            </g>
+            <g fill="#111827">
+              <circle cx="190" cy="175" r="13"/><circle cx="370" cy="420" r="13"/><circle cx="575" cy="185" r="13"/><circle cx="760" cy="410" r="13"/>
+            </g>
+            <g fill="#b45309">
+              <circle cx="314" cy="304" r="11"/><circle cx="637" cy="305" r="11"/>
+            </g>
+            <text x="125" y="574" class="svg-small">Crossing a boundary changes one member of the k-nearest set.</text>
+            <text x="126" y="128" class="svg-label">sites</text>
+            <text x="668" y="250" class="svg-label">level / envelope view</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Original inline SVG: higher-order Voronoi and level sketch</span><span>Chapter link: Section 6.6</span></div>
+      <aside class="speaker-notes">Connect the new chapter back to Voronoi diagrams. Ordinary nearest-neighbor cells are order-one regions; higher-order cells ask for the same k nearest sites. In the lifted or dual view, that question becomes a level or envelope search, so arrangements give a uniform way to organize order-k nearest-neighbor structure.</aside>
+    </section>
+
+    <section class="slide" data-label="Ham-Sandwich">
+      <div class="topline"><div class="eyebrow">Median Levels</div><div class="badge">dual proof pattern</div></div>
+      <h2>Ham-Sandwich Via Median Levels</h2>
+      <div class="content cols">
+        <figure class="artifact"><img src="../figures/duality-median-levels.png" alt="Dual median levels producing a ham-sandwich line"></figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem">
+            <div class="math-box-label">Dual Strategy</div>
+            <ol><li>Dualize red and blue point sets into two line arrangements.</li><li>Trace each median level.</li><li>Map a median-level intersection back to a primal bisector.</li></ol>
+          </div>
+          <div class="panel blue"><h3>Notebook Bisector</h3><p>Slope 0.0294 and intercept 1.2353 bisect both odd point sets in the checked example.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Application through printed p218 / PDF p227.</span><span>Checks: cut_bisects_A, cut_bisects_B</span></div>
+      <aside class="speaker-notes">Treat the ham-sandwich result as the most memorable duality payoff. In the primal plane, we seek one line that bisects two point sets. In the dual arrangement, each set contributes a median level, and an intersection of those levels maps back to the desired bisecting line.</aside>
+    </section>
+
+    <section class="slide" data-label="Applications">
+      <div class="topline"><div class="eyebrow">Application Map</div><div class="badge">one subdivision, many searches</div></div>
+      <h2>Applications Map</h2>
+      <div class="content cols wide-left">
+        <figure class="artifact"><img src="../figures/arrangement-application-map.png" alt="Arrangement application dependency map"></figure>
+        <div class="stack">
+          <table>
+            <thead><tr><th>Application</th><th>Arrangement Role</th></tr></thead>
+            <tbody>
+              <tr><td>Visibility</td><td>partition sight lines</td></tr>
+              <tr><td>Hidden surfaces</td><td>sweep projected cells</td></tr>
+              <tr><td>Aspect graphs</td><td>partition view space</td></tr>
+              <tr><td>Centerpoints</td><td>search depth levels</td></tr>
+              <tr><td>Minimum triangles</td><td>dual nearest-line relation</td></tr>
+            </tbody>
+          </table>
+          <div class="panel teal"><h3>Unifying Move</h3><p>Build or reason about the partition once, then convert a geometric question into cell location, zone traversal, or level search.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Figure: arrangement-application-map.png</span><span>Check: application_map_covers_source_examples</span></div>
+      <aside class="speaker-notes">Use the application map to keep the chapter from feeling like a single theorem. The same arrangement vocabulary supports endpoint visibility, hidden-surface removal, aspect graph changes, shadow directions, red-blue matching, centerpoints, and minimum-area triangle searches. The point is transfer: once the subdivision is built, many geometric questions become location or traversal tasks.</aside>
+    </section>
+
+    <section class="slide" data-label="Failure Modes">
+      <div class="topline"><div class="eyebrow">Assumptions</div><div class="badge">where the ledger can break</div></div>
+      <h2>Failure Modes And Assumptions</h2>
+      <div class="content three">
+        <div class="panel amber"><h3>Combinatorial Degeneracy</h3><p>Parallel lines, coincident lines, and triple intersections change vertex and edge counts. The algorithm needs a policy, not a hidden assumption.</p></div>
+        <div class="panel blue"><h3>Duality Conventions</h3><p>Vertical lines and points at infinity need a projective or symbolic convention if the implementation must handle them uniformly.</p></div>
+        <div class="panel violet"><h3>Numerical Fragility</h3><p>Nearly equal intersections can flip order along a zone walk, so exact or certified predicates matter for robust subdivisions.</p></div>
+      </div>
+      <div class="content cols" style="flex: 0 0 330px;">
+        <div class="math-box math-box--warning">
+          <div class="math-box-label">Common Mistake</div>
+          <p>Using the simple formulas as runtime checks on nonsimple input without first perturbing or representing degeneracy.</p>
+        </div>
+        <div class="math-box math-box--remark">
+          <div class="math-box-label">Engineering Rule</div>
+          <p>State the input model, then make the subdivision data structure enforce that model.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Relevant checks: degeneracy and zone traversal.</span><span>Assumptions are part of the algorithm.</span></div>
+      <aside class="speaker-notes">Pause on assumptions before the recap. Simple arrangements remove parallelism and triple intersections, duality needs a convention for vertical lines and points at infinity, and numeric code must decide how to handle nearly coincident events. These are not afterthoughts; they determine whether the combinatorial ledger matches the computed subdivision.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Recap">
+      <div class="topline"><div class="eyebrow">Recap</div><div class="badge">inspection prompt</div></div>
+      <h2>Recap And Inspection Prompt</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="panel blue"><h3>Counts</h3><p>For simple line arrangements, \(V=\binom n2\), \(E=n^2\), and \(F=\binom n2+n+1\).</p></div>
+          <div class="panel teal"><h3>Construction</h3><p>The zone theorem makes each insertion linear in the number of existing lines, so total construction is quadratic.</p></div>
+          <div class="panel violet"><h3>Duality</h3><p>Point problems become line arrangement level searches, including median-level ham-sandwich cuts and higher-order Voronoi structure.</p></div>
+        </div>
+        <div class="stack">
+          <div class="math-box math-box--exercise">
+            <div class="math-box-label">Inspection Prompt</div>
+            <p>Given five lines and one candidate insertion line h, mark the crossed cells, list the crossing order, estimate the zone boundary edges, and explain which dual level would encode a balanced point-set cut.</p>
+          </div>
+          <div class="check-list"><div>simple_counts_match_formula</div><div>zone_ledger_below_six_n</div><div>incremental_total_is_quadratic_scale</div><div>median_levels_intersect_once</div></div>
+        </div>
+      </div>
+      <div class="footer"><span>Notebook: Computational-Geometry-in-C/chapter-06-arrangements/06-arrangements.ipynb</span><span>End of Chapter 6 deck</span></div>
+      <aside class="speaker-notes">Close by asking students to inspect a small arrangement rather than merely repeat definitions. They should identify the counts, trace one inserted line's zone, explain why the total incremental cost is quadratic, and describe how a point-set problem becomes a level query under duality. That sequence is the chapter's conceptual spine.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

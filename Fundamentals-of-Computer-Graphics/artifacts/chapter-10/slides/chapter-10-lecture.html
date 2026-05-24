@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 10: Signal Processing | Fundamentals of Computer Graphics</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-10">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-10-signal-processing/10-signal-processing.ipynb">
+  <meta name="source_span" content="printed pages 205-254; PDF pages 222-271.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="geometry-lecture-design-system-1">
+  <meta name="math_support" content="STIX Two Text and KaTeX 0.16.11 declared">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #0f172a;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 26px;
+      padding: 72px 96px 52px;
+      border-top: 10px solid var(--slide-accent);
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 76px 76px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 68px;
+      line-height: 1.04;
+      font-weight: 700;
+      max-width: 1180px;
+    }
+
+    h2 {
+      font-size: 51px;
+      line-height: 1.12;
+      font-weight: 700;
+      max-width: 1360px;
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    p,
+    li {
+      font-size: 27px;
+      line-height: 1.35;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 32px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .kicker {
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-accent);
+    }
+
+    .subtitle {
+      margin-top: 24px;
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.36;
+      max-width: 1120px;
+    }
+
+    .rule {
+      width: 96px;
+      height: 6px;
+      margin-top: 24px;
+      border-radius: 6px;
+      background: var(--slide-accent);
+    }
+
+    .content {
+      min-height: 0;
+      display: grid;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .two {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .wide-right {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+
+    .stack {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 24px 28px;
+      box-sizing: border-box;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 6px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 6px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 6px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 6px solid var(--slide-violet);
+    }
+
+    .panel.slate {
+      background: var(--math-proof-bg);
+      border-left: 6px solid var(--math-proof-rule);
+    }
+
+    .label {
+      margin-bottom: 10px;
+      font-size: 21px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .small {
+      font-size: 23px;
+      line-height: 1.32;
+    }
+
+    .caption {
+      font-size: 21px;
+      line-height: 1.28;
+      color: var(--slide-dimmed);
+    }
+
+    .muted {
+      color: var(--slide-muted);
+    }
+
+    .formula {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px 24px;
+      text-align: center;
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.28;
+    }
+
+    .math {
+      font-family: var(--font-math);
+      font-size: 31px;
+      line-height: 1.28;
+    }
+
+    .code {
+      border-radius: 8px;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 20px 24px;
+      font-family: var(--font-mono);
+      font-size: 23px;
+      line-height: 1.38;
+      white-space: pre-line;
+    }
+
+    .visual {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+      box-sizing: border-box;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 6px;
+      padding: 6px 12px;
+      background: #fff;
+      color: var(--slide-accent);
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      color: var(--slide-dimmed);
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .stat {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .stat .value {
+      color: var(--slide-accent);
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .axis {
+      stroke: #64748b;
+      stroke-width: 3;
+    }
+
+    .gridline {
+      stroke: #cbd5e1;
+      stroke-width: 1.5;
+    }
+
+    .blue-line {
+      fill: none;
+      stroke: #2563eb;
+      stroke-width: 5;
+    }
+
+    .teal-line {
+      fill: none;
+      stroke: #0f766e;
+      stroke-width: 5;
+    }
+
+    .amber-line {
+      fill: none;
+      stroke: #b45309;
+      stroke-width: 5;
+    }
+
+    .violet-line {
+      fill: none;
+      stroke: #6d28d9;
+      stroke-width: 5;
+    }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="slide alt" data-label="Signal Processing">
+    <div class="content wide-left" style="align-items:center;">
+      <div>
+        <div class="kicker">Fundamentals of Computer Graphics</div>
+        <h1>Chapter 10: Signal Processing</h1>
+        <div class="rule"></div>
+        <p class="subtitle">A graphics system stores finite arrays, but the world of images, sound, texture, motion, and light is modeled by functions. This lecture is about what survives sampling, what is lost, and what filtering can honestly repair.</p>
+        <div class="tag-row" style="margin-top:30px;">
+          <span class="tag">printed pages 205-254</span>
+          <span class="tag">PDF pages 222-271</span>
+          <span class="tag">18 slides</span>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 800 560" role="img" aria-label="Continuous signal, samples, filter, and reconstructed signal pipeline">
+        <defs>
+          <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1e3a8a"/></marker>
+        </defs>
+        <rect x="48" y="54" width="704" height="452" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <path d="M88 170 C132 76 178 260 224 166 C270 72 316 258 362 164 C408 74 454 256 500 162 C546 80 592 242 638 168" class="blue-line"/>
+        <g fill="#b45309">
+          <circle cx="98" cy="156" r="8"/><circle cx="150" cy="102" r="8"/><circle cx="202" cy="207" r="8"/><circle cx="254" cy="103" r="8"/><circle cx="306" cy="201" r="8"/><circle cx="358" cy="169" r="8"/><circle cx="410" cy="95" r="8"/><circle cx="462" cy="220" r="8"/><circle cx="514" cy="122" r="8"/><circle cx="566" cy="185" r="8"/><circle cx="618" cy="172" r="8"/>
+        </g>
+        <text x="88" y="106" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#111827">continuous signal</text>
+        <text x="92" y="292" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#111827">finite samples</text>
+        <line x1="116" y1="320" x2="654" y2="320" class="axis"/>
+        <g stroke="#94a3b8" stroke-width="2">
+          <line x1="98" y1="304" x2="98" y2="336"/><line x1="150" y1="304" x2="150" y2="336"/><line x1="202" y1="304" x2="202" y2="336"/><line x1="254" y1="304" x2="254" y2="336"/><line x1="306" y1="304" x2="306" y2="336"/><line x1="358" y1="304" x2="358" y2="336"/><line x1="410" y1="304" x2="410" y2="336"/><line x1="462" y1="304" x2="462" y2="336"/><line x1="514" y1="304" x2="514" y2="336"/><line x1="566" y1="304" x2="566" y2="336"/><line x1="618" y1="304" x2="618" y2="336"/>
+        </g>
+        <path d="M120 412 C200 358 292 464 374 406 C466 342 536 374 638 430" class="teal-line"/>
+        <path d="M654 168 C718 204 718 358 656 406" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-title)"/>
+        <text x="156" y="478" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#0f766e">filtered reconstruction</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Geometry Lecture Design System 1.0 | STIX and KaTeX support declared</span><span>1 / 18</span></div>
+    <aside class="speaker-notes">Open by naming the central tension of the chapter: graphics code stores arrays, but the visual quantities we care about are functions of time, position, direction, or surface coordinates. The lecture should make sampling feel like an engineering contract rather than a file format. Every later image operation will ask which frequencies, averages, and invariants survived the conversion to samples.</aside>
+  </section>
+
+  <section class="slide" data-label="From Functions to Arrays">
+    <header>
+      <div class="kicker">Representations</div>
+      <h2>Sampling Turns Continuous Questions Into Indexed Data</h2>
+    </header>
+    <div class="content two">
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">Common graphics signals</div>
+          <ul>
+            <li>Audio-like time signal: \(f:\mathbb{R}\to\mathbb{R}\)</li>
+            <li>Image irradiance or color: \(I:\mathbb{R}^2\to C\)</li>
+            <li>Volume density or signed distance: \(v:\mathbb{R}^3\to\mathbb{R}\)</li>
+            <li>Texture, motion, shadow, and display pipelines all reuse the same logic.</li>
+          </ul>
+        </div>
+        <div class="panel amber">
+          <div class="label">The trap</div>
+          <p>The plotted curve is not the stored signal. Samples are measurements at selected lattice points; anything between those points is a reconstruction choice.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 820 560" role="img" aria-label="Continuous image field sampled on a lattice">
+        <defs>
+          <linearGradient id="field-grad" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#dbeafe"/>
+            <stop offset="0.52" stop-color="#fef3c7"/>
+            <stop offset="1" stop-color="#ccfbf1"/>
+          </linearGradient>
+        </defs>
+        <rect x="60" y="60" width="320" height="360" rx="10" fill="url(#field-grad)" stroke="#cbd5e1" stroke-width="3"/>
+        <path d="M82 344 C150 226 210 238 260 134 C300 70 330 146 362 104" fill="none" stroke="#2563eb" stroke-width="6"/>
+        <path d="M96 260 C168 318 226 178 354 276" fill="none" stroke="#0f766e" stroke-width="6"/>
+        <text x="82" y="464" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#111827">continuous field</text>
+        <rect x="500" y="60" width="260" height="360" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M540 60 V420 M580 60 V420 M620 60 V420 M660 60 V420 M700 60 V420 M740 60 V420"/>
+          <path d="M500 100 H760 M500 140 H760 M500 180 H760 M500 220 H760 M500 260 H760 M500 300 H760 M500 340 H760 M500 380 H760"/>
+        </g>
+        <g fill="#1e3a8a">
+          <circle cx="540" cy="100" r="7"/><circle cx="580" cy="140" r="7"/><circle cx="620" cy="180" r="7"/><circle cx="660" cy="220" r="7"/><circle cx="700" cy="260" r="7"/><circle cx="740" cy="300" r="7"/>
+        </g>
+        <g fill="#0f766e">
+          <circle cx="540" cy="300" r="7"/><circle cx="580" cy="260" r="7"/><circle cx="620" cy="220" r="7"/><circle cx="660" cy="180" r="7"/><circle cx="700" cy="140" r="7"/><circle cx="740" cy="100" r="7"/>
+        </g>
+        <text x="524" y="464" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#111827">stored lattice samples</text>
+        <text x="110" y="520" font-size="25" font-family="STIX Two Text" fill="#475569">continuous type: R^2 to color</text>
+        <text x="510" y="520" font-size="25" font-family="STIX Two Text" fill="#475569">stored type: Z^2 to color</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Samples are data; reconstruction is an interpretation.</span><span>2 / 18</span></div>
+    <aside class="speaker-notes">Use this slide to separate mathematical type from storage type. An image array is familiar, but it is only one example of a sampled function. Emphasize that the same ideas apply to digitizer motion, volume data, texture maps, shadow maps, and displays. The warning matters because students often judge an algorithm by a plotted line even though the algorithm only received discrete measurements.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Aliasing">
+    <header>
+      <div class="kicker">Sampling</div>
+      <h2>Aliasing: One Sample Set Can Fit Two Stories</h2>
+    </header>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="panel amber">
+          <div class="label">Notebook invariant</div>
+          <p>Sampling a 7 cycle signal at 10 samples per unit gives the same samples as a 3 cycle signal.</p>
+          <div class="formula">\(f_{\text{alias}}=\left| f-\operatorname{round}(f/f_s)f_s \right|\)</div>
+        </div>
+        <div class="panel blue">
+          <div class="label">Engineering consequence</div>
+          <p>After sampling, no later filter can know whether the high-frequency or low-frequency explanation was the original.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 920 560" role="img" aria-label="High and low frequency cosines sharing sample points">
+        <rect x="60" y="60" width="800" height="390" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M60 255 H860"/>
+          <path d="M140 60 V450 M220 60 V450 M300 60 V450 M380 60 V450 M460 60 V450 M540 60 V450 M620 60 V450 M700 60 V450 M780 60 V450"/>
+        </g>
+        <path d="M60 86 C93 422 126 422 160 86 C193 -250 226 -250 260 86 C293 422 326 422 360 86 C393 -250 426 -250 460 86 C493 422 526 422 560 86 C593 -250 626 -250 660 86 C693 422 726 422 760 86 C793 -250 826 -250 860 86" fill="none" stroke="#2563eb" stroke-width="4" opacity="0.78"/>
+        <path d="M60 86 C122 384 198 384 260 86 C322 -212 398 -212 460 86 C522 384 598 384 660 86 C722 -212 798 -212 860 86" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="14 10"/>
+        <g fill="#111827" stroke="#ffffff" stroke-width="3">
+          <circle cx="60" cy="86" r="9"/><circle cx="140" cy="374" r="9"/><circle cx="220" cy="196" r="9"/><circle cx="300" cy="196" r="9"/><circle cx="380" cy="374" r="9"/><circle cx="460" cy="86" r="9"/><circle cx="540" cy="374" r="9"/><circle cx="620" cy="196" r="9"/><circle cx="700" cy="196" r="9"/><circle cx="780" cy="374" r="9"/><circle cx="860" cy="86" r="9"/>
+        </g>
+        <text x="86" y="502" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#2563eb">true 7-cycle signal</text>
+        <text x="412" y="502" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#b45309">alias 3-cycle explanation</text>
+        <text x="700" y="502" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#111827">same samples</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Aliasing is ambiguity created by undersampling.</span><span>3 / 18</span></div>
+    <aside class="speaker-notes">Spend time on the word story. The samples are identical, so the distinction between the two continuous curves is no longer present in the data. This is stronger than saying the reconstruction looks bad. It says the renderer has destroyed information before reconstruction begins. The practical fix is to avoid admitting frequencies that the sampling lattice cannot represent.</aside>
+  </section>
+
+  <section class="slide" data-label="Reconstruction Choices">
+    <header>
+      <div class="kicker">Reconstruction</div>
+      <h2>Reconstruction Filters Decide What Happens Between Samples</h2>
+    </header>
+    <div class="content two">
+      <svg class="visual" viewBox="0 0 820 560" role="img" aria-label="Zero order hold and tent reconstruction from the same samples">
+        <rect x="58" y="58" width="704" height="420" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M58 258 H762"/>
+          <path d="M122 58 V478 M186 58 V478 M250 58 V478 M314 58 V478 M378 58 V478 M442 58 V478 M506 58 V478 M570 58 V478 M634 58 V478 M698 58 V478"/>
+        </g>
+        <path d="M90 338 H154 V142 H218 V362 H282 V198 H346 V154 H410 V330 H474 V396 H538 V208 H602 V160 H666 V302 H730" fill="none" stroke="#b45309" stroke-width="5"/>
+        <path d="M90 338 L154 142 L218 362 L282 198 L346 154 L410 330 L474 396 L538 208 L602 160 L666 302 L730 252" class="teal-line"/>
+        <g fill="#111827" stroke="#ffffff" stroke-width="3">
+          <circle cx="90" cy="338" r="8"/><circle cx="154" cy="142" r="8"/><circle cx="218" cy="362" r="8"/><circle cx="282" cy="198" r="8"/><circle cx="346" cy="154" r="8"/><circle cx="410" cy="330" r="8"/><circle cx="474" cy="396" r="8"/><circle cx="538" cy="208" r="8"/><circle cx="602" cy="160" r="8"/><circle cx="666" cy="302" r="8"/><circle cx="730" cy="252" r="8"/>
+        </g>
+        <text x="94" y="520" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#b45309">zero-order hold: steps</text>
+        <text x="438" y="520" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#0f766e">tent filter: linear pieces</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">Discrete-continuous idea</div>
+          <p>Each sample contributes a shifted copy of a continuous filter. The reconstructed value is their weighted sum.</p>
+          <div class="formula">\(r(x)=\sum_i a_i\,h(x-i)\)</div>
+        </div>
+        <div class="panel slate">
+          <div class="label">What changes</div>
+          <ul>
+            <li>Box filters preserve constant plateaus but create steps.</li>
+            <li>Tent filters are continuous but still cannot recover lost high frequencies.</li>
+            <li>Wider filters may reduce alias leakage at the cost of blur or ringing.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>The same samples can produce many reconstructed functions.</span><span>4 / 18</span></div>
+    <aside class="speaker-notes">After aliasing, this slide makes a second distinction: even when the samples are accepted as the data, a renderer still has to define values between them. Zero-order hold, linear reconstruction, cubic filters, and windowed sinc filters all answer the same question differently. Remind students that smoother is not automatically more correct if the missing frequency content was never sampled.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Convolution Local Average">
+    <header>
+      <div class="kicker">Convolution</div>
+      <h2>One Output Sample Is A Weighted Local Average</h2>
+    </header>
+    <div class="content wide-left">
+      <svg class="visual" viewBox="0 0 940 560" role="img" aria-label="Discrete convolution weighted average at one sample">
+        <rect x="56" y="52" width="828" height="430" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="110" y1="400" x2="826" y2="400" class="axis"/>
+        <g fill="#dbeafe" stroke="#2563eb" stroke-width="3">
+          <rect x="126" y="324" width="38" height="76"/><rect x="184" y="278" width="38" height="122"/><rect x="242" y="206" width="38" height="194"/><rect x="300" y="150" width="38" height="250"/><rect x="358" y="112" width="38" height="288"/><rect x="416" y="122" width="38" height="278"/><rect x="474" y="178" width="38" height="222"/><rect x="532" y="244" width="38" height="156"/><rect x="590" y="316" width="38" height="84"/><rect x="648" y="350" width="38" height="50"/>
+        </g>
+        <g fill="#fef3c7" stroke="#b45309" stroke-width="4">
+          <rect x="300" y="70" width="38" height="80"/><rect x="358" y="52" width="38" height="60"/><rect x="416" y="70" width="38" height="52"/><rect x="474" y="112" width="38" height="66"/><rect x="532" y="184" width="38" height="60"/>
+        </g>
+        <path d="M290 424 C342 480 510 480 586 424" fill="none" stroke="#b45309" stroke-width="5" marker-end="url(#arrow-title)"/>
+        <circle cx="454" cy="122" r="14" fill="#0f766e" stroke="#ffffff" stroke-width="4"/>
+        <text x="116" y="470" font-size="25" font-family="Source Sans 3" fill="#475569">input samples around index i</text>
+        <text x="270" y="40" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#b45309">kernel weights</text>
+        <text x="560" y="96" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">output</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">Discrete formula</div>
+          <div class="formula">\((a*b)_i=\sum_j a_{i-j}b_j\)</div>
+          <p class="small muted">The reversed index is what makes the operation line up with the algebra of shifted filters.</p>
+        </div>
+        <div class="panel teal">
+          <div class="label">Normalization check</div>
+          <p>If the kernel weights sum to one, constant signals stay constant. This is the brightness-preservation test for many image filters.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Convolution turns local neighborhoods into one filtered value.</span><span>5 / 18</span></div>
+    <aside class="speaker-notes">Introduce convolution first as something concrete: place the filter over nearby samples, multiply, and add. The flipped index can be acknowledged without making it the whole lecture. The essential instructor point is the invariant. A blur kernel whose weights sum to one should not darken a constant image, and that simple check catches many implementation mistakes.</aside>
+  </section>
+
+  <section class="slide" data-label="Convolution Algebra">
+    <header>
+      <div class="kicker">Algebra</div>
+      <h2>Convolution Also Means A Sum Of Shifted Copies</h2>
+    </header>
+    <div class="content two">
+      <div class="stack">
+        <div class="panel slate">
+          <div class="label">Useful identities</div>
+          <ul>
+            <li>Commutative: \(a*b=b*a\)</li>
+            <li>Associative: \((a*b)*c=a*(b*c)\)</li>
+            <li>Distributive over addition</li>
+            <li>Impulse identity: \(a*\delta=a\)</li>
+          </ul>
+        </div>
+        <div class="panel amber">
+          <div class="label">Why graphics cares</div>
+          <p>Repeated filters can sometimes be combined, sharpening can be written as an identity minus a blur, and separable 2D filters save work because of associativity.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 820 560" role="img" aria-label="Convolution as weighted sum of shifted kernels">
+        <rect x="54" y="56" width="714" height="408" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="88" y1="380" x2="732" y2="380" class="axis"/>
+        <g opacity="0.86">
+          <path d="M106 380 C134 276 158 276 186 380" class="blue-line"/>
+          <path d="M226 380 C262 222 298 222 334 380" class="teal-line"/>
+          <path d="M370 380 C406 144 442 144 478 380" class="violet-line"/>
+          <path d="M526 380 C562 252 598 252 634 380" class="amber-line"/>
+        </g>
+        <path d="M106 380 C150 332 182 352 226 330 C286 300 328 206 390 178 C454 150 500 324 552 324 C600 324 640 352 704 382" fill="none" stroke="#111827" stroke-width="6"/>
+        <g fill="#111827">
+          <circle cx="146" cy="278" r="8"/><circle cx="280" cy="222" r="10"/><circle cx="424" cy="144" r="14"/><circle cx="580" cy="252" r="9"/>
+        </g>
+        <text x="96" y="508" font-size="27" font-family="Source Sans 3" fill="#475569">each input sample scales and shifts one copy of the filter</text>
+        <text x="114" y="114" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#111827">weighted shifted filters</text>
+      </svg>
+    </div>
+    <div class="footer"><span>The shifted-copy view explains reconstruction and splines.</span><span>6 / 18</span></div>
+    <aside class="speaker-notes">Switch viewpoints deliberately. The local average view explains how to compute one output; the shifted-copy view explains the whole output and prepares students for reconstruction filters. This is a good moment to connect algebra to debugging. If a convolution implementation is not commutative, associative in the tested cases, or identity-preserving with an impulse, there is likely an indexing or boundary mistake.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Discrete Continuous Convolution">
+    <header>
+      <div class="kicker">Bridge</div>
+      <h2>Discrete-Continuous Convolution Reconstructs A Function</h2>
+    </header>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">Reconstruction recipe</div>
+          <p>Start with a sequence \(a_i\). Center a continuous basis or filter \(h\) at every integer location. Add the shifted copies with sample values as coefficients.</p>
+        </div>
+        <div class="panel teal">
+          <div class="label">Spline connection</div>
+          <p>Uniform splines use exactly this structure: coefficients multiply shifted basis functions, and the basis smoothness becomes the reconstructed curve smoothness.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 920 560" role="img" aria-label="Discrete samples becoming a continuous reconstruction from shifted kernels">
+        <rect x="58" y="58" width="804" height="420" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="94" y1="382" x2="824" y2="382" class="axis"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M154 82 V420 M234 82 V420 M314 82 V420 M394 82 V420 M474 82 V420 M554 82 V420 M634 82 V420 M714 82 V420 M794 82 V420"/>
+        </g>
+        <g fill="#111827">
+          <circle cx="154" cy="300" r="9"/><circle cx="234" cy="190" r="9"/><circle cx="314" cy="146" r="9"/><circle cx="394" cy="226" r="9"/><circle cx="474" cy="330" r="9"/><circle cx="554" cy="286" r="9"/><circle cx="634" cy="164" r="9"/><circle cx="714" cy="214" r="9"/><circle cx="794" cy="320" r="9"/>
+        </g>
+        <g opacity="0.38">
+          <path d="M94 382 C124 338 184 338 214 382" class="blue-line"/>
+          <path d="M154 382 C190 250 278 250 314 382" class="teal-line"/>
+          <path d="M234 382 C278 184 350 184 394 382" class="violet-line"/>
+          <path d="M394 382 C432 300 516 300 554 382" class="amber-line"/>
+          <path d="M554 382 C596 198 672 198 714 382" class="blue-line"/>
+          <path d="M674 382 C712 302 816 302 854 382" class="teal-line"/>
+        </g>
+        <path d="M102 334 C162 246 218 178 292 150 C358 126 410 292 474 330 C524 360 574 232 632 164 C684 104 734 260 820 330" fill="none" stroke="#111827" stroke-width="6"/>
+        <text x="118" y="518" font-size="27" font-family="Source Sans 3" fill="#475569">the basis copies are continuous; the coefficients are discrete</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Reconstruction is convolution between a sequence and a continuous filter.</span><span>7 / 18</span></div>
+    <aside class="speaker-notes">Use this as the conceptual bridge from arrays to curves and images. Students should see that reconstruction is not magic interpolation between neighboring points. It is a sum of continuous basis functions. The filter support controls how many samples participate at each position, while the filter smoothness controls the regularity of the reconstructed function.</aside>
+  </section>
+
+  <section class="slide" data-label="Filter Gallery">
+    <header>
+      <div class="kicker">Filter family</div>
+      <h2>Useful Filters Trade Cost, Smoothness, Interpolation, And Ringing</h2>
+    </header>
+    <div class="content">
+      <div class="three">
+        <div class="panel blue">
+          <div class="label">Cheap and local</div>
+          <p><strong>Box</strong> is discontinuous and produces blocky reconstruction. <strong>Tent</strong> is continuous, interpolating, and ripple-free for unit-spaced samples.</p>
+        </div>
+        <div class="panel teal">
+          <div class="label">Smooth averages</div>
+          <p><strong>Gaussian</strong> has smooth frequency decay, good for prefiltering. <strong>B-spline</strong> is smooth and local, but it does not pass exactly through samples.</p>
+        </div>
+        <div class="panel amber">
+          <div class="label">Sharper but riskier</div>
+          <p><strong>Catmull-Rom</strong>, <strong>Mitchell-Netravali</strong>, and <strong>Lanczos</strong> can preserve more apparent sharpness, but negative lobes can produce ringing near edges.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 1540 430" role="img" aria-label="Gallery of common reconstruction filters">
+        <rect x="36" y="38" width="1468" height="340" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M64 250 H1470"/>
+          <path d="M180 70 V300 M386 70 V300 M592 70 V300 M798 70 V300 M1004 70 V300 M1210 70 V300 M1416 70 V300"/>
+        </g>
+        <path d="M72 250 H112 V122 H184 V250 H224" fill="none" stroke="#64748b" stroke-width="5"/>
+        <path d="M278 250 L334 122 L390 250" class="blue-line"/>
+        <path d="M470 250 C500 126 562 126 592 250" class="teal-line"/>
+        <path d="M650 250 C680 240 692 126 724 124 C762 122 784 240 826 250" class="violet-line"/>
+        <path d="M880 250 C916 260 938 126 976 126 C1014 126 1036 260 1072 250" class="amber-line"/>
+        <path d="M1098 250 C1138 270 1158 126 1198 126 C1238 126 1258 270 1298 250" fill="none" stroke="#1e3a8a" stroke-width="5"/>
+        <path d="M1320 250 C1352 286 1370 122 1402 122 C1434 122 1452 286 1484 250" fill="none" stroke="#0f766e" stroke-width="5"/>
+        <text x="78" y="336" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#64748b">box</text>
+        <text x="292" y="336" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#2563eb">tent</text>
+        <text x="454" y="336" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#0f766e">Gaussian</text>
+        <text x="638" y="336" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#6d28d9">B-spline</text>
+        <text x="870" y="336" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#b45309">Catmull-Rom</text>
+        <text x="1104" y="336" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Mitchell</text>
+        <text x="1320" y="336" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#0f766e">Lanczos</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Filter shape predicts visual artifacts.</span><span>8 / 18</span></div>
+    <aside class="speaker-notes">Do not present the gallery as a ranking. Each filter answers a different design pressure. Box and tent are simple and cheap. Gaussian filtering is an excellent way to reduce high frequencies before sampling. Cubic and windowed-sinc families can look sharper, but their negative lobes make ringing a predictable risk. The goal is to read the artifact from the filter shape.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Filter Properties">
+    <header>
+      <div class="kicker">Filter diagnostics</div>
+      <h2>Five Properties Make A Filter Auditable</h2>
+    </header>
+    <div class="content two">
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">Core checks</div>
+          <ol>
+            <li>Area or sum equals one for constant preservation.</li>
+            <li>Integer samples decide whether the filter interpolates.</li>
+            <li>Support controls runtime and boundary behavior.</li>
+            <li>Smoothness controls continuity of the reconstruction.</li>
+            <li>Negative lobes predict overshoot and ringing.</li>
+          </ol>
+        </div>
+        <div class="panel violet">
+          <div class="label">Ripple-free test</div>
+          <p>A reconstruction filter is ripple-free when shifted copies sum to one at every fractional offset.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="stat-grid">
+          <div class="stat"><div class="value">1.0</div><p class="small">binomial blur kernel sum</p></div>
+          <div class="stat"><div class="value">0.0</div><p class="small">tent ripple span</p></div>
+          <div class="stat"><div class="value">-0.074</div><p class="small">Catmull-Rom minimum</p></div>
+          <div class="stat"><div class="value">C2</div><p class="small">B-spline continuity</p></div>
+        </div>
+        <svg class="visual" viewBox="0 0 820 380" role="img" aria-label="Shifted filters summing to a constant">
+          <rect x="62" y="58" width="704" height="236" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+          <line x1="94" y1="236" x2="734" y2="236" class="axis"/>
+          <g opacity="0.45">
+            <path d="M94 236 L154 116 L214 236" class="blue-line"/>
+            <path d="M214 236 L274 116 L334 236" class="blue-line"/>
+            <path d="M334 236 L394 116 L454 236" class="blue-line"/>
+            <path d="M454 236 L514 116 L574 236" class="blue-line"/>
+            <path d="M574 236 L634 116 L694 236" class="blue-line"/>
+          </g>
+          <path d="M94 116 H694" fill="none" stroke="#0f766e" stroke-width="6"/>
+          <text x="120" y="340" font-size="26" font-family="Source Sans 3" fill="#475569">partition of unity: shifted tent filters preserve constants</text>
+        </svg>
+      </div>
+    </div>
+    <div class="footer"><span>A filter is a curve plus a ledger of invariants.</span><span>9 / 18</span></div>
+    <aside class="speaker-notes">Tie this slide directly to the notebook ledger. A filter diagram alone is not enough; students should ask how it behaves on constants, at integer locations, at boundaries, and near discontinuities. The ripple-free condition is especially useful because it turns an abstract reconstruction property into a concrete sum over shifted filters.</aside>
+  </section>
+
+  <section class="slide" data-label="2D Convolution">
+    <header>
+      <div class="kicker">Images</div>
+      <h2>Images Use The Same Convolution Algebra In Two Dimensions</h2>
+    </header>
+    <div class="content wide-left">
+      <svg class="visual" viewBox="0 0 940 560" role="img" aria-label="Two dimensional convolution and separable filtering">
+        <rect x="54" y="54" width="360" height="360" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M114 54 V414 M174 54 V414 M234 54 V414 M294 54 V414 M354 54 V414"/>
+          <path d="M54 114 H414 M54 174 H414 M54 234 H414 M54 294 H414 M54 354 H414"/>
+        </g>
+        <g fill="#dbeafe" stroke="#2563eb" stroke-width="3">
+          <rect x="174" y="174" width="60" height="60"/><rect x="234" y="174" width="60" height="60"/><rect x="294" y="174" width="60" height="60"/>
+          <rect x="174" y="234" width="60" height="60"/><rect x="234" y="234" width="60" height="60"/><rect x="294" y="234" width="60" height="60"/>
+          <rect x="174" y="294" width="60" height="60"/><rect x="234" y="294" width="60" height="60"/><rect x="294" y="294" width="60" height="60"/>
+        </g>
+        <circle cx="264" cy="264" r="16" fill="#b45309" stroke="#ffffff" stroke-width="5"/>
+        <text x="86" y="476" font-size="27" font-family="Source Sans 3" fill="#475569">one 3 by 3 neighborhood contributes to one output sample</text>
+        <rect x="540" y="90" width="300" height="70" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+        <rect x="540" y="240" width="300" height="70" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+        <rect x="625" y="170" width="70" height="220" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"/>
+        <path d="M670 160 V234" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-title)"/>
+        <path d="M695 274 H790" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-title)"/>
+        <text x="570" y="136" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#2563eb">row pass</text>
+        <text x="570" y="286" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#0f766e">column pass</text>
+        <text x="600" y="438" font-size="27" font-family="Source Sans 3" fill="#475569">separable filter: two 1D passes</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">2D formula</div>
+          <div class="formula">\((I*K)_{i,j}=\sum_m\sum_n I_{i-m,j-n}K_{m,n}\)</div>
+        </div>
+        <div class="panel teal">
+          <div class="label">Performance pattern</div>
+          <p>If \(K(x,y)=p(x)q(y)\), apply one 1D filter across rows and one across columns. A large radius changes from area-like work to two line-like passes.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Separable filtering is algebra turned into performance.</span><span>10 / 18</span></div>
+    <aside class="speaker-notes">Now move from signals to images without changing the mental model. A 2D convolution still multiplies a neighborhood by weights and sums. The separability point is worth emphasizing because it shows why mathematical structure matters in production code. A Gaussian-like blur can be dramatically cheaper when implemented as horizontal and vertical passes.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Image Processing">
+    <header>
+      <div class="kicker">Image operations</div>
+      <h2>Blur, Sharpen, And Shadows Are Filtered Signals</h2>
+    </header>
+    <div class="content two">
+      <div class="stack">
+        <div class="panel teal">
+          <div class="label">Blur</div>
+          <p>Low-pass filtering reduces local variation. The notebook checks this by measuring that blur lowers image variance.</p>
+        </div>
+        <div class="panel amber">
+          <div class="label">Sharpen</div>
+          <p>Unsharp masking adds high-pass detail back to the original: smooth first, subtract, then add a scaled detail image.</p>
+        </div>
+        <div class="panel violet">
+          <div class="label">Drop shadow</div>
+          <p>Shift a mask, blur it, and composite. The same convolution language handles the soft edge.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 840 560" role="img" aria-label="Synthetic image filtering operations">
+        <defs>
+          <pattern id="stripe" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+            <rect width="22" height="22" fill="#eff6ff"/>
+            <rect width="8" height="22" fill="#bfdbfe"/>
+          </pattern>
+          <filter id="soft-blur"><feGaussianBlur stdDeviation="5"/></filter>
+        </defs>
+        <rect x="72" y="76" width="220" height="220" rx="8" fill="url(#stripe)" stroke="#cbd5e1" stroke-width="3"/>
+        <circle cx="150" cy="156" r="48" fill="#0f766e" opacity="0.72"/>
+        <path d="M110 256 L260 106" stroke="#b45309" stroke-width="12"/>
+        <text x="94" y="340" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#111827">input</text>
+        <rect x="330" y="76" width="220" height="220" rx="8" fill="url(#stripe)" filter="url(#soft-blur)" opacity="0.72" stroke="#cbd5e1" stroke-width="3"/>
+        <circle cx="408" cy="156" r="48" fill="#0f766e" opacity="0.42" filter="url(#soft-blur)"/>
+        <path d="M368 256 L518 106" stroke="#b45309" stroke-width="12" opacity="0.5" filter="url(#soft-blur)"/>
+        <text x="356" y="340" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#111827">blur</text>
+        <rect x="588" y="76" width="220" height="220" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <path d="M618 264 L764 118" stroke="#111827" stroke-width="8"/>
+        <path d="M622 112 H778 M622 176 H778 M622 240 H778" stroke="#2563eb" stroke-width="5"/>
+        <text x="610" y="340" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#111827">edge detail</text>
+        <rect x="150" y="410" width="420" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+        <text x="176" y="456" font-size="29" font-family="STIX Two Text" fill="#111827">sharpen = input + alpha(input - blur)</text>
+        <ellipse cx="660" cy="448" rx="92" ry="28" fill="#64748b" opacity="0.25" filter="url(#soft-blur)"/>
+        <rect x="606" y="382" width="108" height="74" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="3"/>
+        <text x="610" y="506" font-size="25" font-family="Source Sans 3" fill="#475569">blurred shifted mask</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Image effects are often small convolution programs.</span><span>11 / 18</span></div>
+    <aside class="speaker-notes">This slide should make image processing feel less like a list of software features and more like reusable signal algebra. Blurring, sharpening, and shadows differ in purpose, but each can be described by filtering, adding, shifting, or compositing filtered signals. Point out that the notebook uses a synthetic image so visual observations can be paired with measurable variance and high-pass energy checks.</aside>
+  </section>
+
+  <section class="slide" data-label="Image Aliasing">
+    <header>
+      <div class="kicker">Antialiasing</div>
+      <h2>Before Image Sampling, High Frequencies Must Be Reduced</h2>
+    </header>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="panel amber">
+          <div class="label">Aliasing in images</div>
+          <p>Regular textures can beat against the sample grid, producing moire patterns. Sharp edges become stair steps when a binary decision is made at one point per pixel.</p>
+        </div>
+        <div class="panel blue">
+          <div class="label">Sampling filter</div>
+          <p>Antialiasing is prefiltering: average the continuous image over the pixel footprint before writing a sample.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 920 560" role="img" aria-label="Aliased stripes compared with filtered samples">
+        <defs>
+          <pattern id="tight-stripe" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(33)">
+            <rect width="18" height="18" fill="#eff6ff"/>
+            <rect width="6" height="18" fill="#2563eb"/>
+          </pattern>
+          <filter id="aa-blur"><feGaussianBlur stdDeviation="2.6"/></filter>
+        </defs>
+        <rect x="72" y="88" width="300" height="300" rx="8" fill="url(#tight-stripe)" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#111827" stroke-width="2" opacity="0.35">
+          <path d="M72 128 H372 M72 168 H372 M72 208 H372 M72 248 H372 M72 288 H372 M72 328 H372 M72 368 H372"/>
+          <path d="M112 88 V388 M152 88 V388 M192 88 V388 M232 88 V388 M272 88 V388 M312 88 V388 M352 88 V388"/>
+        </g>
+        <text x="96" y="444" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#b45309">point samples: unstable pattern</text>
+        <rect x="538" y="88" width="300" height="300" rx="8" fill="url(#tight-stripe)" filter="url(#aa-blur)" opacity="0.82" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#111827" stroke-width="2" opacity="0.25">
+          <path d="M538 128 H838 M538 168 H838 M538 208 H838 M538 248 H838 M538 288 H838 M538 328 H838 M538 368 H838"/>
+          <path d="M578 88 V388 M618 88 V388 M658 88 V388 M698 88 V388 M738 88 V388 M778 88 V388 M818 88 V388"/>
+        </g>
+        <text x="566" y="444" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#0f766e">filtered footprint: averaged signal</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Antialiasing trades sharpness for representability.</span><span>12 / 18</span></div>
+    <aside class="speaker-notes">Make the prefiltering order explicit. Antialiasing is not a cosmetic blur added after the wrong samples have already been chosen. The filter must be part of the sampling process so the stored value represents an average over a footprint. This slide also prepares students for texture filtering, where the footprint may be much larger or more elongated than one pixel.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Resampling">
+    <header>
+      <div class="kicker">Resampling</div>
+      <h2>Resizing Combines Reconstruction And Sampling Into One Filter</h2>
+    </header>
+    <div class="content two">
+      <svg class="visual" viewBox="0 0 820 560" role="img" aria-label="Input image grid reconstructed and sampled on an output grid">
+        <defs>
+          <marker id="arrow-resample" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1e3a8a"/></marker>
+        </defs>
+        <rect x="70" y="96" width="260" height="260" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M102 96 V356 M134 96 V356 M166 96 V356 M198 96 V356 M230 96 V356 M262 96 V356 M294 96 V356"/>
+          <path d="M70 128 H330 M70 160 H330 M70 192 H330 M70 224 H330 M70 256 H330 M70 288 H330 M70 320 H330"/>
+        </g>
+        <path d="M96 310 C146 176 208 286 258 128 C286 62 310 142 326 104" class="blue-line"/>
+        <rect x="520" y="136" width="190" height="190" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M568 136 V326 M616 136 V326 M664 136 V326"/>
+          <path d="M520 184 H710 M520 232 H710 M520 280 H710"/>
+        </g>
+        <path d="M532 292 C570 190 616 274 654 156 C676 98 698 160 710 138" class="teal-line"/>
+        <path d="M350 226 C420 174 466 184 512 218" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-resample)"/>
+        <text x="90" y="424" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#111827">input samples</text>
+        <text x="520" y="424" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#111827">output samples</text>
+        <text x="330" y="298" font-size="26" font-family="STIX Two Text" fill="#1e3a8a">combined filter</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">Conceptual operation</div>
+          <p>First reconstruct a continuous image from the input grid. Then sample that function on the output grid. In code, the two filters are collapsed into one resampling filter.</p>
+        </div>
+        <div class="panel amber">
+          <div class="label">When shrinking</div>
+          <p>The output grid is coarser, so the filter footprint must widen. Pixel dropping and unscaled reconstruction filters keep high frequencies that the new grid cannot represent.</p>
+        </div>
+        <div class="formula">\(g*(f*a)=(g*f)*a\)</div>
+      </div>
+    </div>
+    <div class="footer"><span>Downsampling requires a filter scaled to the new spacing.</span><span>13 / 18</span></div>
+    <aside class="speaker-notes">Frame resizing as a sampling problem, not as a pixel-selection problem. The input samples define a reconstructed function, and the output pixels sample that function. When the target has fewer samples, the filter must become wider to remove frequencies that would alias. This explains why nearest neighbor can look crisp while being spectrally wrong.</aside>
+  </section>
+
+  <section class="slide" data-label="Fourier View">
+    <header>
+      <div class="kicker">Frequency domain</div>
+      <h2>The Fourier Transform Makes Filtering Easier To Reason About</h2>
+    </header>
+    <div class="content wide-left">
+      <svg class="visual" viewBox="0 0 940 560" role="img" aria-label="Signal domain and frequency domain linked by Fourier transform">
+        <defs>
+          <marker id="arrow-fourier" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1e3a8a"/></marker>
+        </defs>
+        <rect x="58" y="76" width="340" height="320" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="96" y1="286" x2="360" y2="286" class="axis"/>
+        <path d="M92 284 C124 116 156 116 188 284 C220 450 252 450 284 284 C316 116 348 116 380 284" class="blue-line"/>
+        <text x="112" y="448" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#111827">space signal</text>
+        <rect x="542" y="76" width="340" height="320" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="574" y1="326" x2="850" y2="326" class="axis"/>
+        <path d="M592 326 C620 250 648 176 676 326" class="teal-line"/>
+        <path d="M706 326 C730 214 754 214 778 326" class="amber-line"/>
+        <path d="M794 326 C810 290 826 290 842 326" class="violet-line"/>
+        <text x="584" y="448" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#111827">frequency spectrum</text>
+        <path d="M410 220 H526" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-fourier)"/>
+        <path d="M526 266 H410" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-fourier)"/>
+        <text x="420" y="194" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">FT</text>
+        <text x="416" y="308" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">IFT</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">Convolution theorem</div>
+          <div class="formula">\(\mathcal{F}\{f*g\}=\widehat f\,\widehat g\)</div>
+          <p class="small muted">Filtering by convolution in space is multiplication by a response curve in frequency.</p>
+        </div>
+        <div class="panel slate">
+          <div class="label">What the spectrum shows</div>
+          <ul>
+            <li>DC is the average component.</li>
+            <li>High frequencies encode rapid variation and sharp edges.</li>
+            <li>Low-pass filters reduce spectral width before sampling.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Frequency response predicts which details survive a filter.</span><span>14 / 18</span></div>
+    <aside class="speaker-notes">Introduce the Fourier view as a diagnostic tool, not as a new topic disconnected from filtering. In space, convolution is a weighted average and can be visually local. In frequency, the same operation is multiplication by the filter response. That makes it much easier to explain why a Gaussian damps high frequencies smoothly and why poor reconstruction filters leak alias spectra.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Spectrum Aliasing">
+    <header>
+      <div class="kicker">Sampling theory</div>
+      <h2>Sampling Repeats The Spectrum; Aliasing Is Overlap</h2>
+    </header>
+    <div class="content two">
+      <div class="stack">
+        <div class="panel amber">
+          <div class="label">Frequency-domain picture</div>
+          <p>Multiplying by an impulse train in space creates shifted copies of the spectrum. If the copies overlap the base band, different frequencies become mixed in the samples.</p>
+        </div>
+        <div class="panel blue">
+          <div class="label">Nyquist criterion</div>
+          <p>To reconstruct a bandlimited signal exactly in principle, the highest frequency must be below half the sample frequency.</p>
+          <div class="formula">\(f_{\max} < f_s/2\)</div>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 840 560" role="img" aria-label="Repeated spectra with and without overlap">
+        <rect x="70" y="76" width="700" height="172" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="100" y1="210" x2="740" y2="210" class="axis"/>
+        <path d="M172 210 C202 112 236 112 266 210" class="blue-line"/>
+        <path d="M332 210 C362 112 396 112 426 210" class="blue-line"/>
+        <path d="M492 210 C522 112 556 112 586 210" class="blue-line"/>
+        <text x="98" y="262" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#0f766e">higher sample rate: separated copies</text>
+        <rect x="70" y="322" width="700" height="172" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="100" y1="456" x2="740" y2="456" class="axis"/>
+        <path d="M198 456 C244 332 292 332 338 456" fill="none" stroke="#2563eb" stroke-width="5" opacity="0.72"/>
+        <path d="M312 456 C358 332 406 332 452 456" fill="none" stroke="#b45309" stroke-width="5" opacity="0.72"/>
+        <path d="M426 456 C472 332 520 332 566 456" fill="none" stroke="#6d28d9" stroke-width="5" opacity="0.72"/>
+        <rect x="320" y="356" width="130" height="92" fill="#fef3c7" stroke="#b45309" stroke-width="3" opacity="0.65"/>
+        <text x="98" y="532" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#b45309">lower sample rate: overlap becomes aliasing</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Nyquist is a spacing rule for spectrum copies.</span><span>15 / 18</span></div>
+    <aside class="speaker-notes">This is the key sampling-theory slide. Ask students to look for overlap, not for individual waves. Sampling creates periodic copies of the spectrum, and the sample rate controls the spacing between those copies. Once overlap occurs, the mixture is built into the stored samples. Low-pass filtering before sampling narrows the spectrum so the copies interfere less.</aside>
+  </section>
+
+  <section class="slide" data-label="Frequency Response">
+    <header>
+      <div class="kicker">Filter response</div>
+      <h2>Good Sampling And Reconstruction Filters Shape Frequency Content</h2>
+    </header>
+    <div class="content wide-left">
+      <svg class="visual" viewBox="0 0 960 560" role="img" aria-label="Frequency responses of common filters">
+        <rect x="58" y="64" width="840" height="380" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+        <line x1="104" y1="382" x2="850" y2="382" class="axis"/>
+        <line x1="136" y1="382" x2="136" y2="96" class="axis"/>
+        <g stroke="#e2e8f0" stroke-width="2">
+          <path d="M104 306 H850 M104 230 H850 M104 154 H850"/>
+          <path d="M252 96 V382 M368 96 V382 M484 96 V382 M600 96 V382 M716 96 V382"/>
+        </g>
+        <path d="M136 106 C186 126 222 178 252 382 C286 182 340 180 368 382 C402 246 454 244 484 382 C520 284 568 284 600 382 C632 310 684 310 716 382" fill="none" stroke="#64748b" stroke-width="4"/>
+        <path d="M136 106 C200 136 248 218 288 382 C338 246 414 244 484 382 C548 296 640 296 716 382" class="blue-line"/>
+        <path d="M136 106 C256 132 388 252 504 382 C610 342 704 362 804 382" class="teal-line"/>
+        <path d="M136 106 C240 112 360 158 500 270 C618 340 728 374 842 382" class="amber-line"/>
+        <text x="154" y="500" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#64748b">box: leaky lobes</text>
+        <text x="394" y="500" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#2563eb">tent: stronger rolloff</text>
+        <text x="650" y="500" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#0f766e">Gaussian: smooth decay</text>
+      </svg>
+      <div class="stack">
+        <div class="panel teal">
+          <div class="label">Sampling filter job</div>
+          <p>Narrow the spectrum before samples are written, so shifted copies overlap less.</p>
+        </div>
+        <div class="panel blue">
+          <div class="label">Reconstruction filter job</div>
+          <p>Preserve the base spectrum while attenuating alias copies introduced by the sampled representation.</p>
+        </div>
+        <div class="panel amber">
+          <div class="label">Ideal versus practical</div>
+          <p>The sinc idea is ideal in frequency, but infinite support and ringing make practical windowed or smoother filters preferable in many graphics settings.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Filter response is the spectrum-side contract.</span><span>16 / 18</span></div>
+    <aside class="speaker-notes">Compare the response curves qualitatively. The box filter has broad side lobes, so it leaves visible reconstruction artifacts. The tent response rolls off more strongly because it is a box convolved with itself. Gaussian response falls smoothly, which is why it is attractive for prefiltering. Then make the practical point: ideal frequency behavior is not the same as ideal image appearance or runtime.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Notebook Checks">
+    <header>
+      <div class="kicker">Implementation lab</div>
+      <h2>Pair Every Signal-Processing Picture With An Invariant</h2>
+    </header>
+    <div class="content">
+      <div class="stat-grid">
+        <div class="stat"><div class="value">&lt; 1e-12</div><p class="small">aliased cosine sample equality target</p></div>
+        <div class="stat"><div class="value">0.0</div><p class="small">convolution commutativity error</p></div>
+        <div class="stat"><div class="value">3.3e-16</div><p class="small">separable versus full 2D convolution error</p></div>
+        <div class="stat"><div class="value">3x</div><p class="small">notebook downsampling factor</p></div>
+      </div>
+      <div class="content two" style="min-height:0;">
+        <div class="panel blue">
+          <div class="label">Visual observation</div>
+          <ul>
+            <li>Are samples ambiguous?</li>
+            <li>Does a filtered edge blur, ring, or stair-step?</li>
+            <li>Does a downsampled texture keep too much high-frequency pattern?</li>
+          </ul>
+        </div>
+        <div class="panel teal">
+          <div class="label">Numeric check</div>
+          <ul>
+            <li>Do constants remain constant?</li>
+            <li>Do kernel weights sum to one?</li>
+            <li>Does a scaled filter reduce high-frequency energy?</li>
+          </ul>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 1540 260" role="img" aria-label="Notebook artifacts connected to signal-processing checks">
+        <rect x="44" y="48" width="240" height="132" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+        <rect x="320" y="48" width="240" height="132" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+        <rect x="596" y="48" width="240" height="132" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+        <rect x="872" y="48" width="240" height="132" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"/>
+        <rect x="1148" y="48" width="300" height="132" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+        <text x="76" y="104" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">sampling</text>
+        <text x="76" y="142" font-size="23" font-family="Source Sans 3" fill="#475569">alias equality</text>
+        <text x="352" y="104" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#0f766e">convolution</text>
+        <text x="352" y="142" font-size="23" font-family="Source Sans 3" fill="#475569">identity checks</text>
+        <text x="628" y="104" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#b45309">filters</text>
+        <text x="628" y="142" font-size="23" font-family="Source Sans 3" fill="#475569">area and ripple</text>
+        <text x="904" y="104" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#6d28d9">images</text>
+        <text x="904" y="142" font-size="23" font-family="Source Sans 3" fill="#475569">variance and spectra</text>
+        <text x="1184" y="104" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#475569">resampling</text>
+        <text x="1184" y="142" font-size="23" font-family="Source Sans 3" fill="#475569">constant preservation</text>
+      </svg>
+    </div>
+    <div class="footer"><span>The notebook turns lecture concepts into executable tests.</span><span>17 / 18</span></div>
+    <aside class="speaker-notes">Use the lab slide to model how students should write signal-processing explanations. A picture can be persuasive but misleading; an invariant can be correct but hard to interpret. The best report names both. For example, a downsampled image may look sharp because it kept high frequencies, while the spectrum and constant-preservation checks show whether the method respected the new sampling grid.</aside>
+  </section>
+
+  <section class="slide" data-label="Signal Processing Recap">
+    <header>
+      <div class="kicker">Recap</div>
+      <h2>Signal Processing Gives Graphics A Sampling Discipline</h2>
+    </header>
+    <div class="content two">
+      <div class="stack">
+        <div class="panel blue">
+          <div class="label">What to remember</div>
+          <ul>
+            <li>Samples are measurements, not the original function.</li>
+            <li>Aliasing is information from different frequencies mixed into one sample set.</li>
+            <li>Convolution is the shared language for filtering, reconstruction, and image effects.</li>
+            <li>Filter shape predicts blur, ripple, continuity, and ringing.</li>
+          </ul>
+        </div>
+        <div class="panel teal">
+          <div class="label">Practical rule</div>
+          <p>When a signal changes sample rate, ask what frequency content the new lattice can represent, then choose a normalized filter whose support and response match that task.</p>
+        </div>
+      </div>
+      <svg class="visual" viewBox="0 0 820 560" role="img" aria-label="Signal processing checklist with sampling, filtering, and reconstruction">
+        <defs>
+          <marker id="arrow-recap" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1e3a8a"/></marker>
+        </defs>
+        <rect x="82" y="84" width="190" height="120" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+        <rect x="314" y="84" width="190" height="120" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+        <rect x="546" y="84" width="190" height="120" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+        <path d="M272 144 H304" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-recap)"/>
+        <path d="M504 144 H536" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-recap)"/>
+        <text x="122" y="136" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">sample</text>
+        <text x="122" y="174" font-size="23" font-family="Source Sans 3" fill="#475569">lattice and rate</text>
+        <text x="354" y="136" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">filter</text>
+        <text x="354" y="174" font-size="23" font-family="Source Sans 3" fill="#475569">average and shape</text>
+        <text x="574" y="136" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#b45309">reconstruct</text>
+        <text x="574" y="174" font-size="23" font-family="Source Sans 3" fill="#475569">continuous model</text>
+        <rect x="110" y="290" width="600" height="156" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+        <text x="148" y="350" font-size="31" font-family="Source Sans 3" font-weight="700" fill="#111827">Debugging question</text>
+        <text x="148" y="396" font-size="27" font-family="Source Sans 3" fill="#475569">Which average, frequency band, or invariant is this code supposed to preserve?</text>
+      </svg>
+    </div>
+    <div class="footer"><span>End of Chapter 10</span><span>18 / 18</span></div>
+    <aside class="speaker-notes">Close by turning the chapter into a debugging habit. Whenever a renderer resizes, filters, stores, or reconstructs a signal, ask what the sample lattice can represent and what the filter preserves. The chapter is not just about Fourier plots; it is about making image and texture operations predictable by tracking averages, frequencies, and invariants.</aside>
+  </section>
+</deck-stage>
+
+<script id="deck-metadata" type="application/json">
+{
+  "course": "Fundamentals of Computer Graphics",
+  "chapter_id": "chapter-10",
+  "notebook_path": "Fundamentals-of-Computer-Graphics/chapter-10-signal-processing/10-signal-processing.ipynb",
+  "source_span": "printed pages 205-254; PDF pages 222-271.",
+  "source_pdf": "Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf",
+  "design_system_version": "geometry-lecture-design-system-1"
+}
+</script>
+<script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Signal Processing",
+      "notes": "Open by naming the central tension of the chapter: graphics code stores arrays, but the visual quantities we care about are functions of time, position, direction, or surface coordinates. The lecture should make sampling feel like an engineering contract rather than a file format. Every later image operation will ask which frequencies, averages, and invariants survived the conversion to samples."
+    },
+    {
+      "slide": 2,
+      "title": "From Functions to Arrays",
+      "notes": "Use this slide to separate mathematical type from storage type. An image array is familiar, but it is only one example of a sampled function. Emphasize that the same ideas apply to digitizer motion, volume data, texture maps, shadow maps, and displays. The warning matters because students often judge an algorithm by a plotted line even though the algorithm only received discrete measurements."
+    },
+    {
+      "slide": 3,
+      "title": "Aliasing",
+      "notes": "Spend time on the word story. The samples are identical, so the distinction between the two continuous curves is no longer present in the data. This is stronger than saying the reconstruction looks bad. It says the renderer has destroyed information before reconstruction begins. The practical fix is to avoid admitting frequencies that the sampling lattice cannot represent."
+    },
+    {
+      "slide": 4,
+      "title": "Reconstruction Choices",
+      "notes": "After aliasing, this slide makes a second distinction: even when the samples are accepted as the data, a renderer still has to define values between them. Zero-order hold, linear reconstruction, cubic filters, and windowed sinc filters all answer the same question differently. Remind students that smoother is not automatically more correct if the missing frequency content was never sampled."
+    },
+    {
+      "slide": 5,
+      "title": "Convolution Local Average",
+      "notes": "Introduce convolution first as something concrete: place the filter over nearby samples, multiply, and add. The flipped index can be acknowledged without making it the whole lecture. The essential instructor point is the invariant. A blur kernel whose weights sum to one should not darken a constant image, and that simple check catches many implementation mistakes."
+    },
+    {
+      "slide": 6,
+      "title": "Convolution Algebra",
+      "notes": "Switch viewpoints deliberately. The local average view explains how to compute one output; the shifted-copy view explains the whole output and prepares students for reconstruction filters. This is a good moment to connect algebra to debugging. If a convolution implementation is not commutative, associative in the tested cases, or identity-preserving with an impulse, there is likely an indexing or boundary mistake."
+    },
+    {
+      "slide": 7,
+      "title": "Discrete Continuous Convolution",
+      "notes": "Use this as the conceptual bridge from arrays to curves and images. Students should see that reconstruction is not magic interpolation between neighboring points. It is a sum of continuous basis functions. The filter support controls how many samples participate at each position, while the filter smoothness controls the regularity of the reconstructed function."
+    },
+    {
+      "slide": 8,
+      "title": "Filter Gallery",
+      "notes": "Do not present the gallery as a ranking. Each filter answers a different design pressure. Box and tent are simple and cheap. Gaussian filtering is an excellent way to reduce high frequencies before sampling. Cubic and windowed-sinc families can look sharper, but their negative lobes make ringing a predictable risk. The goal is to read the artifact from the filter shape."
+    },
+    {
+      "slide": 9,
+      "title": "Filter Properties",
+      "notes": "Tie this slide directly to the notebook ledger. A filter diagram alone is not enough; students should ask how it behaves on constants, at integer locations, at boundaries, and near discontinuities. The ripple-free condition is especially useful because it turns an abstract reconstruction property into a concrete sum over shifted filters."
+    },
+    {
+      "slide": 10,
+      "title": "2D Convolution",
+      "notes": "Now move from signals to images without changing the mental model. A 2D convolution still multiplies a neighborhood by weights and sums. The separability point is worth emphasizing because it shows why mathematical structure matters in production code. A Gaussian-like blur can be dramatically cheaper when implemented as horizontal and vertical passes."
+    },
+    {
+      "slide": 11,
+      "title": "Image Processing",
+      "notes": "This slide should make image processing feel less like a list of software features and more like reusable signal algebra. Blurring, sharpening, and shadows differ in purpose, but each can be described by filtering, adding, shifting, or compositing filtered signals. Point out that the notebook uses a synthetic image so visual observations can be paired with measurable variance and high-pass energy checks."
+    },
+    {
+      "slide": 12,
+      "title": "Image Aliasing",
+      "notes": "Make the prefiltering order explicit. Antialiasing is not a cosmetic blur added after the wrong samples have already been chosen. The filter must be part of the sampling process so the stored value represents an average over a footprint. This slide also prepares students for texture filtering, where the footprint may be much larger or more elongated than one pixel."
+    },
+    {
+      "slide": 13,
+      "title": "Resampling",
+      "notes": "Frame resizing as a sampling problem, not as a pixel-selection problem. The input samples define a reconstructed function, and the output pixels sample that function. When the target has fewer samples, the filter must become wider to remove frequencies that would alias. This explains why nearest neighbor can look crisp while being spectrally wrong."
+    },
+    {
+      "slide": 14,
+      "title": "Fourier View",
+      "notes": "Introduce the Fourier view as a diagnostic tool, not as a new topic disconnected from filtering. In space, convolution is a weighted average and can be visually local. In frequency, the same operation is multiplication by the filter response. That makes it much easier to explain why a Gaussian damps high frequencies smoothly and why poor reconstruction filters leak alias spectra."
+    },
+    {
+      "slide": 15,
+      "title": "Spectrum Aliasing",
+      "notes": "This is the key sampling-theory slide. Ask students to look for overlap, not for individual waves. Sampling creates periodic copies of the spectrum, and the sample rate controls the spacing between those copies. Once overlap occurs, the mixture is built into the stored samples. Low-pass filtering before sampling narrows the spectrum so the copies interfere less."
+    },
+    {
+      "slide": 16,
+      "title": "Frequency Response",
+      "notes": "Compare the response curves qualitatively. The box filter has broad side lobes, so it leaves visible reconstruction artifacts. The tent response rolls off more strongly because it is a box convolved with itself. Gaussian response falls smoothly, which is why it is attractive for prefiltering. Then make the practical point: ideal frequency behavior is not the same as ideal image appearance or runtime."
+    },
+    {
+      "slide": 17,
+      "title": "Notebook Checks",
+      "notes": "Use the lab slide to model how students should write signal-processing explanations. A picture can be persuasive but misleading; an invariant can be correct but hard to interpret. The best report names both. For example, a downsampled image may look sharp because it kept high frequencies, while the spectrum and constant-preservation checks show whether the method respected the new sampling grid."
+    },
+    {
+      "slide": 18,
+      "title": "Signal Processing Recap",
+      "notes": "Close by turning the chapter into a debugging habit. Whenever a renderer resizes, filters, stores, or reconstructs a signal, ask what the sample lattice can represent and what the filter preserves. The chapter is not just about Fourier plots; it is about making image and texture operations predictable by tracking averages, frequencies, and invariants."
+    }
+  ]
+}
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) {
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ],
+        throwOnError: false
+      });
+    }
+  });
+</script>
+</body>
+</html>

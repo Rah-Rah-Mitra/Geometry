@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="95">
+  <meta name="course_root" content="Computational-Geometry-in-C">
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-03-convex-hulls-in-two-dimensions">
+  <meta name="chapter_title" content="Chapter 3 - Convex Hulls in Two Dimensions">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-03-convex-hulls-in-two-dimensions/03-convex-hulls-in-two-dimensions.ipynb">
+  <meta name="source_span" content="printed pages 63-100; PDF pages 72-109">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 3 - Convex Hulls in Two Dimensions</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 95,
+  "course_root": "Computational-Geometry-in-C",
+  "course": "Computational Geometry in C",
+  "chapter_id": "chapter-03-convex-hulls-in-two-dimensions",
+  "chapter_title": "Chapter 3 - Convex Hulls in Two Dimensions",
+  "notebook_path": "Computational-Geometry-in-C/chapter-03-convex-hulls-in-two-dimensions/03-convex-hulls-in-two-dimensions.ipynb",
+  "source_span": "printed pages 63-100; PDF pages 72-109",
+  "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 19px;
+      padding: 64px 92px 48px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 64px; line-height: 1.04; font-weight: 700; max-width: 1500px; }
+    h2 { font-size: 50px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 29px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 25px; line-height: 1.28; }
+    ul { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    img { max-width: 100%; max-height: 100%; display: block; object-fit: contain; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1340px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 28px; align-items: stretch; }
+    .cols { grid-template-columns: 0.96fr 1.04fr; }
+    .wide-left { grid-template-columns: 1.12fr .88fr; }
+    .wide-right { grid-template-columns: .86fr 1.14fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 21px 23px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .panel p, .panel li { font-size: 24px; }
+    .math-box { padding: 22px 24px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.35; }
+    .big-formula { font-family: var(--font-math); font-size: 42px; line-height: 1.28; text-align: center; }
+    .small { font-size: 22px; line-height: 1.25; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .figure-pad { padding: 14px; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .route { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 18px; }
+    .route div { border: 2px solid var(--slide-border); border-radius: 8px; min-height: 94px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-size: 23px; font-weight: 700; background: #fff; }
+    .route .hot { border-color: var(--slide-amber); color: var(--slide-amber); background: #fffbeb; }
+    .check-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .check-list div { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 12px 14px; background: #fff; font-size: 21px; font-weight: 700; color: var(--slide-accent); }
+    .svg-label { font: 700 26px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 26px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-big { font: 700 32px 'Source Sans 3', Arial, sans-serif; fill: #1e3a8a; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Title">
+      <div class="topline"><div class="eyebrow">Computational Geometry in C</div><div class="badge">printed pages 63-100 / PDF 72-109</div></div>
+      <h1>Convex Hulls In Two Dimensions</h1>
+      <p class="lead">The convex hull turns a cloud of points into its smallest enclosing convex polygon, and the chapter uses that object to connect predicates, algorithms, invariants, and lower bounds.</p>
+      <div class="content cols">
+        <div class="stack">
+          <div class="route">
+            <div>convexity</div><div>extreme points</div><div class="hot">orientation</div><div>output order</div>
+          </div>
+          <div class="panel blue"><h3>Lecture Goal</h3><p>Explain how the same determinant supports slow certificates, output-sensitive wrapping, divide-and-conquer filtering, and stack-based scanning.</p></div>
+          <div class="panel teal"><h3>Notebook Grounding</h3><p>The checked notebook artifacts compare gift wrapping, QuickHull, and Graham scan on the same point set and verify that their hull vertices agree.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Point set with convex hull boundary and interior points">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="58" y="58" width="780" height="500" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="118,332 208,132 360,88 522,124 678,238 742,412 546,510 286,488" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="7"/>
+            <g fill="#b45309"><circle cx="118" cy="332" r="13"/><circle cx="208" cy="132" r="13"/><circle cx="360" cy="88" r="13"/><circle cx="522" cy="124" r="13"/><circle cx="678" cy="238" r="13"/><circle cx="742" cy="412" r="13"/><circle cx="546" cy="510" r="13"/><circle cx="286" cy="488" r="13"/></g>
+            <g fill="#64748b"><circle cx="268" cy="292" r="10"/><circle cx="372" cy="346" r="10"/><circle cx="484" cy="278" r="10"/><circle cx="592" cy="356" r="10"/><circle cx="332" cy="210" r="10"/><circle cx="492" cy="432" r="10"/></g>
+            <text x="102" y="595" class="svg-small">The answer is the ordered boundary; the filled polygon is the convex region it bounds.</text>
+            <text x="120" y="100" class="svg-big">hull(P)</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Manifest row 95, Chapter 3</span><span>Definitions -> predicates -> algorithms -> lower bound</span></div>
+      <aside class="speaker-notes">Open by separating the geometric object from the algorithmic choices. The convex hull is a smallest enclosing convex region, but for computation we usually need the boundary vertices in a consistent order. Tell students that every algorithm in this lecture is a different way to discover the same ordered certificate.</aside>
+    </section>
+
+    <section class="slide" data-label="Motivation">
+      <div class="topline"><div class="eyebrow">Why Hulls Matter</div><div class="badge">shape summaries from boundary witnesses</div></div>
+      <h2>Why Hulls Matter: Envelopes, Strips, Boxes, Outlines</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Four applications of convex hulls">
+          <svg viewBox="0 0 900 620" role="img">
+            <g transform="translate(60,70)">
+              <rect width="340" height="210" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+              <polygon points="55,130 115,62 225,44 285,118 235,165 102,174" fill="rgba(37,99,235,.12)" stroke="#2563eb" stroke-width="5"/>
+              <path d="M84,146 L142,92 L232,94 L260,132" fill="none" stroke="#111827" stroke-width="5"/>
+              <circle cx="85" cy="146" r="8" fill="#111827"/><circle cx="142" cy="92" r="8" fill="#111827"/><circle cx="232" cy="94" r="8" fill="#111827"/><circle cx="260" cy="132" r="8" fill="#111827"/>
+              <text x="42" y="196" class="svg-small">robot reach envelope</text>
+            </g>
+            <g transform="translate(500,70)">
+              <rect width="340" height="210" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+              <polygon points="76,164 122,66 250,55 292,144 224,180" fill="none" stroke="#0f766e" stroke-width="5"/>
+              <line x1="72" y1="186" x2="292" y2="96" stroke="#b45309" stroke-width="5"/><line x1="54" y1="142" x2="274" y2="52" stroke="#b45309" stroke-width="5"/>
+              <text x="54" y="196" class="svg-small">minimum-width strip</text>
+            </g>
+            <g transform="translate(60,340)">
+              <rect width="340" height="210" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+              <g transform="translate(58,42) rotate(-18 120 70)">
+                <rect x="24" y="20" width="224" height="116" fill="none" stroke="#b45309" stroke-width="5"/>
+                <polygon points="48,110 84,46 185,34 232,90 170,130" fill="rgba(180,83,9,.10)" stroke="#2563eb" stroke-width="4"/>
+              </g>
+              <text x="54" y="196" class="svg-small">minimum bounding box</text>
+            </g>
+            <g transform="translate(500,340)">
+              <rect width="340" height="210" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/>
+              <path d="M68,138 C96,58 198,50 274,122" fill="none" stroke="#cbd5e1" stroke-width="10"/>
+              <polygon points="60,142 98,70 198,52 280,120 232,166 120,174" fill="none" stroke="#6d28d9" stroke-width="5"/>
+              <g fill="#6d28d9"><circle cx="60" cy="142" r="8"/><circle cx="98" cy="70" r="8"/><circle cx="198" cy="52" r="8"/><circle cx="280" cy="120" r="8"/><circle cx="232" cy="166" r="8"/><circle cx="120" cy="174" r="8"/></g>
+              <text x="74" y="196" class="svg-small">shape outline</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Boundary As Summary</h3><p>Many downstream measurements depend only on extreme points: diameter, width, enclosing rectangles, and collision envelopes.</p></div>
+          <div class="panel teal"><h3>Algorithmic Payoff</h3><p>If the hull has \(h\) vertices and \(h \ll n\), output-sensitive algorithms can exploit the small final boundary.</p></div>
+          <div class="panel amber"><h3>Careful Distinction</h3><p>The hull is not every point in the data set. Interior points may be important data, but they are irrelevant to the convex boundary.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Applications read geometry from supporting directions</span><span>Most computations start by filtering nonextreme points</span></div>
+      <aside class="speaker-notes">Motivate the hull as a reusable geometric compression. A robot arm envelope, a thin containing strip, a minimum box, and a visible shape outline are different questions, but they all ask which input points support the outside. This gives a practical reason to care about extreme points before any algorithm appears.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Convexity">
+      <div class="topline"><div class="eyebrow">Convex Sets</div><div class="badge">segment test and half-planes</div></div>
+      <h2>What Convex Means: Segments And Half-Plane Intersections</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Definition</div><p>A set \(S\) is convex when every segment \(\overline{ab}\) with \(a,b \in S\) stays inside \(S\).</p></div>
+          <div class="math-box math-box--example"><div class="math-box-label">Combination View</div><p class="formula">\((1-\lambda)a+\lambda b \in S,\quad 0 \le \lambda \le 1.\)</p></div>
+          <div class="panel blue"><h3>Half-Plane View</h3><p>An intersection of half-planes is convex, so a polygon bounded by supporting lines gives a clean model for hull geometry.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Convex segment test and half-plane intersection">
+          <svg viewBox="0 0 980 620" role="img">
+            <rect x="64" y="78" width="386" height="420" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <ellipse cx="256" cy="288" rx="142" ry="116" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <line x1="170" y1="240" x2="340" y2="338" stroke="#0f766e" stroke-width="7"/>
+            <circle cx="170" cy="240" r="11" fill="#0f766e"/><circle cx="340" cy="338" r="11" fill="#0f766e"/>
+            <text x="126" y="540" class="svg-label">segment stays inside</text>
+            <rect x="532" y="78" width="386" height="420" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 8">
+              <line x1="560" y1="154" x2="908" y2="286"/><line x1="600" y1="466" x2="890" y2="132"/><line x1="548" y1="372" x2="904" y2="376"/><line x1="642" y1="92" x2="610" y2="490"/>
+            </g>
+            <polygon points="650,156 818,218 784,376 646,376 610,282" fill="rgba(15,118,110,.12)" stroke="#0f766e" stroke-width="6"/>
+            <text x="600" y="540" class="svg-label">intersection of half-planes</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Convexity is local along every chord</span><span>Hull algorithms repeatedly discover supporting half-planes</span></div>
+      <aside class="speaker-notes">Give both equivalent mental models. The segment test is the direct definition students can inspect visually, while the half-plane intersection model explains why boundary edges have supporting lines. Convex hull algorithms keep asking which line, edge, or direction exposes the next piece of that boundary.</aside>
+    </section>
+
+    <section class="slide" data-label="Boundary Extremes">
+      <div class="topline"><div class="eyebrow">Hull Output</div><div class="badge">filled region versus ordered boundary</div></div>
+      <h2>Hull Boundary And Extreme Points</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Filled hull region and ordered extreme boundary">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="70" y="68" width="760" height="492" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="140,338 226,140 398,90 588,132 722,282 690,448 462,518 244,486" fill="rgba(37,99,235,.10)" stroke="#2563eb" stroke-width="7"/>
+            <g stroke="#1e3a8a" stroke-width="5" fill="none" marker-end="url(#arrowBoundary4)">
+              <path d="M146,328 C168,258 190,190 220,150"/><path d="M238,134 C288,110 340,96 386,92"/><path d="M412,94 C480,98 542,116 580,130"/><path d="M604,146 C654,188 698,238 716,272"/>
+            </g>
+            <defs><marker id="arrowBoundary4" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <g fill="#b45309"><circle cx="140" cy="338" r="12"/><circle cx="226" cy="140" r="12"/><circle cx="398" cy="90" r="12"/><circle cx="588" cy="132" r="12"/><circle cx="722" cy="282" r="12"/><circle cx="690" cy="448" r="12"/><circle cx="462" cy="518" r="12"/><circle cx="244" cy="486" r="12"/></g>
+            <g fill="#64748b"><circle cx="316" cy="300" r="9"/><circle cx="456" cy="292" r="9"/><circle cx="536" cy="388" r="9"/><circle cx="316" cy="422" r="9"/><circle cx="516" cy="212" r="9"/></g>
+            <text x="108" y="598" class="svg-small">Interior points are covered by the region but do not appear in the boundary sequence.</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Extreme Point</div><p>A point of \(P\) is extreme when it is a vertex of \(\mathrm{conv}(P)\), equivalently not expressible as a strict convex combination of other points of the hull region.</p></div>
+          <div class="panel teal"><h3>Boundary Output</h3><p>Most implementations return extreme vertices cyclically, not a filled set of all points in the polygon.</p></div>
+          <div class="panel amber"><h3>Ordering Matters</h3><p>The same set of extreme points is not yet a usable polygon until adjacent vertices are in clockwise or counterclockwise order.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Extreme point set + cyclic order = polygon boundary</span><span>Nonextreme points can be certified and discarded</span></div>
+      <aside class="speaker-notes">Pause on output format, because it prevents later confusion. The filled hull is a continuum of points, but the algorithm returns a cyclic vertex list. The hard part is not merely naming which points are extreme; students also need to understand why the order of those points is part of the certificate.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Orientation">
+      <div class="topline"><div class="eyebrow">Primitive Predicate</div><div class="badge">one determinant drives the chapter</div></div>
+      <h2>The Predicate Under Everything: Orientation Determinant</h2>
+      <div class="content wide-left">
+        <figure class="diagram" aria-label="Orientation determinant for left and right turns">
+          <svg viewBox="0 0 980 620" role="img">
+            <defs><marker id="arr5" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <line x1="80" y1="520" x2="900" y2="520" stroke="#cbd5e1" stroke-width="4"/><line x1="120" y1="560" x2="120" y2="82" stroke="#cbd5e1" stroke-width="4"/>
+            <g fill="none" stroke-width="7">
+              <path d="M205,410 L438,220 L646,156" stroke="#0f766e" marker-end="url(#arr5)"/>
+              <path d="M205,410 L438,220 L676,378" stroke="#b45309" marker-end="url(#arr5)"/>
+            </g>
+            <g fill="#111827"><circle cx="205" cy="410" r="12"/><circle cx="438" cy="220" r="12"/></g>
+            <circle cx="646" cy="156" r="12" fill="#0f766e"/><circle cx="676" cy="378" r="12" fill="#b45309"/>
+            <text x="184" y="448" class="svg-math">a</text><text x="450" y="214" class="svg-math">b</text><text x="662" y="150" class="svg-label">left turn</text><text x="692" y="384" class="svg-label">right turn</text>
+            <text x="96" y="96" class="svg-small">sign of signed area of triangle abc</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Orientation</div><p class="formula">\(\operatorname{orient}(a,b,c)= (b_x-a_x)(c_y-a_y)-(b_y-a_y)(c_x-a_x)\)</p></div>
+          <div class="panel teal"><h3>Sign Meaning</h3><ul><li>\(>0\): \(a \to b \to c\) makes a left turn.</li><li>\(<0\): it makes a right turn.</li><li>\(=0\): the three points are collinear.</li></ul></div>
+          <div class="panel blue"><h3>Algorithmic Role</h3><p>Every edge test, tangent walk, and Graham stack pop is a question about this sign.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Predicate first, data structure second</span><span>Robustness later means preserving this sign reliably</span></div>
+      <aside class="speaker-notes">Make the determinant feel like the chapter's vocabulary. It is twice a signed triangle area, so its sign tells us whether the third point lies left, right, or on the directed line. From here onward, every algorithmic decision can be translated into a repeated orientation question.</aside>
+    </section>
+
+    <section class="slide" data-label="Triangle Witness">
+      <div class="topline"><div class="eyebrow">Slow Certificate</div><div class="badge">checked artifact: every marked point has a witness triangle</div></div>
+      <h2>Naive Nonextreme Test With Witness Triangle</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Notebook figure for nonextreme triangle test">
+          <img src="../figures/nonextreme-triangle-test.png" alt="Nonextreme points certified by witness triangles">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Witness Principle</div><p>If \(p\) lies inside a triangle whose vertices are other input points, then \(p\) cannot be an extreme point of the full set.</p></div>
+          <div class="panel blue"><h3>Why It Works</h3><p>A triangle is convex. Once \(p\) is inside that triangle, it is also inside the convex hull of all input points.</p></div>
+          <div class="panel amber"><h3>Why It Is Slow</h3><p>Trying many triples makes the test useful for definitions and debugging, not as the final production algorithm.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: every_marked_point_has_witness_triangle = true</span><span>Slow tests clarify what later algorithms avoid doing</span></div>
+      <aside class="speaker-notes">Use the notebook visual as a certificate, not as decoration. A nonextreme point is proved nonextreme by a specific triangle of other points that contains it. This deliberately slow idea helps students see what is being discarded before the lecture moves to edge-based and output-sensitive methods.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Gift Wrapping Setup">
+      <div class="topline"><div class="eyebrow">From Edges To Algorithm</div><div class="badge">all points on one side</div></div>
+      <h2>Extreme Edges To Gift Wrapping</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Extreme Edge Test</div><p>A directed edge \(ab\) is a hull edge when every other input point lies on the same side of the line through \(a\) and \(b\), allowing collinear boundary cases by convention.</p></div>
+          <div class="panel teal"><h3>Gift Wrapping Move</h3><p>Start at a known extreme point, then choose the next point so every other point is to the same side of the candidate directed edge.</p></div>
+          <div class="panel blue"><h3>Local To Global</h3><p>Each accepted edge is locally certified against all points; chaining accepted edges wraps the whole boundary.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Extreme edge side test and next hull vertex">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr7" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <rect x="64" y="60" width="770" height="500" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <line x1="134" y1="410" x2="760" y2="186" stroke="#94a3b8" stroke-width="4" stroke-dasharray="12 10"/>
+            <path d="M134,410 L312,164" stroke="#2563eb" stroke-width="8" marker-end="url(#arr7)"/>
+            <path d="M134,410 L656,140" stroke="#b45309" stroke-width="5" stroke-dasharray="14 10"/>
+            <g fill="#64748b"><circle cx="400" cy="315" r="10"/><circle cx="516" cy="364" r="10"/><circle cx="606" cy="278" r="10"/><circle cx="270" cy="322" r="10"/><circle cx="440" cy="202" r="10"/></g>
+            <circle cx="134" cy="410" r="13" fill="#111827"/><circle cx="312" cy="164" r="13" fill="#2563eb"/><circle cx="656" cy="140" r="13" fill="#b45309"/>
+            <text x="112" y="452" class="svg-math">a</text><text x="326" y="158" class="svg-math">b</text><text x="672" y="134" class="svg-small">rejected candidate</text>
+            <text x="84" y="96" class="svg-label">accept the turn that leaves all points to one side</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Extreme edge test scans all points</span><span>Gift wrapping repeats the scan once per hull vertex</span></div>
+      <aside class="speaker-notes">Connect the static edge test to Jarvis style wrapping. If a directed candidate edge leaves every point on the permitted side, it belongs to the hull. Gift wrapping does this test repeatedly: from the current vertex, rotate the candidate until no point lies outside the exposed side.</aside>
+    </section>
+
+    <section class="slide" data-label="Gift Cost">
+      <div class="topline"><div class="eyebrow">Output Sensitivity</div><div class="badge">cost depends on h</div></div>
+      <h2>Gift Wrapping Cost \(O(nh)\)</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Runtime</div><p class="big-formula">\(h\) accepted edges \( \times \) \(n\) scanned points \(= O(nh)\)</p></div>
+          <div class="panel teal"><h3>When It Shines</h3><p>If only a few points lie on the hull, the algorithm can be much cheaper than sorting all \(n\) points.</p></div>
+          <div class="panel amber"><h3>When It Hurts</h3><p>If almost every point is extreme, then \(h \approx n\) and the scan becomes quadratic.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Gift wrapping scans all points for each output edge">
+          <svg viewBox="0 0 980 620" role="img">
+            <defs><marker id="arr8" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="70" y="68" width="820" height="492" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="165,356 238,174 408,110 620,156 754,310 684,464 462,512 260,476" fill="none" stroke="#2563eb" stroke-width="7"/>
+            <g fill="#64748b"><circle cx="312" cy="326" r="9"/><circle cx="450" cy="292" r="9"/><circle cx="532" cy="372" r="9"/><circle cx="382" cy="220" r="9"/><circle cx="576" cy="250" r="9"/><circle cx="300" cy="416" r="9"/></g>
+            <g fill="#b45309"><circle cx="165" cy="356" r="12"/><circle cx="238" cy="174" r="12"/><circle cx="408" cy="110" r="12"/><circle cx="620" cy="156" r="12"/><circle cx="754" cy="310" r="12"/><circle cx="684" cy="464" r="12"/><circle cx="462" cy="512" r="12"/><circle cx="260" cy="476" r="12"/></g>
+            <g stroke="#1e3a8a" stroke-width="4" opacity=".75" marker-end="url(#arr8)">
+              <line x1="165" y1="356" x2="238" y2="174"/><line x1="238" y1="174" x2="408" y2="110"/><line x1="408" y1="110" x2="620" y2="156"/><line x1="620" y1="156" x2="754" y2="310"/><line x1="754" y1="310" x2="684" y2="464"/><line x1="684" y1="464" x2="462" y2="512"/>
+            </g>
+            <text x="112" y="104" class="svg-label">repeat a full scan for each reported vertex</text>
+            <text x="642" y="546" class="svg-small">output size: h = 8 in this picture</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Output-sensitive but not uniformly optimal</span><span>Notebook check: output_sensitive_cost_drops_when_h_is_small</span></div>
+      <aside class="speaker-notes">Name the variable h explicitly as the number of output vertices. Gift wrapping pays for one full scan per edge it reports, which is ideal when the boundary is tiny and painful when most points are on the boundary. This slide sets up the search for algorithms with different cost profiles.</aside>
+    </section>
+
+    <section class="slide alt" data-label="QuickHull">
+      <div class="topline"><div class="eyebrow">Divide And Filter</div><div class="badge">discard triangles, recurse outside</div></div>
+      <h2>QuickHull Recursion</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="QuickHull recursion discarding triangle interiors">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="66" y="62" width="768" height="500" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <line x1="126" y1="410" x2="744" y2="214" stroke="#1e3a8a" stroke-width="7"/>
+            <polygon points="126,410 418,104 744,214" fill="rgba(180,83,9,.12)" stroke="#b45309" stroke-width="6"/>
+            <path d="M126,410 L418,104 M418,104 L744,214" fill="none" stroke="#2563eb" stroke-width="6"/>
+            <g fill="#64748b"><circle cx="294" cy="302" r="9"/><circle cx="422" cy="238" r="9"/><circle cx="548" cy="208" r="9"/><circle cx="524" cy="330" r="9"/><circle cx="278" cy="190" r="9"/><circle cx="618" cy="404" r="9"/></g>
+            <circle cx="126" cy="410" r="13" fill="#111827"/><circle cx="744" cy="214" r="13" fill="#111827"/><circle cx="418" cy="104" r="13" fill="#b45309"/>
+            <text x="386" y="86" class="svg-small">farthest point</text><text x="320" y="374" class="svg-label">discard covered triangle</text>
+            <text x="106" y="594" class="svg-small">Recurse only on points outside the two new candidate edges.</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Recursive Step</h3><p>For an exposed segment, find the point farthest from its line. The triangle formed by the segment and that farthest point cannot contain future hull vertices in its interior.</p></div>
+          <div class="panel teal"><h3>Good Case</h3><p>Large discard triangles shrink the candidate sets rapidly.</p></div>
+          <div class="panel amber"><h3>Worst Case</h3><p>Badly balanced splits can still leave many points for later calls, so QuickHull is heuristic-friendly but not worst-case magic.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: quickhull_records_discards = true</span><span>Same determinant, different recursion tree</span></div>
+      <aside class="speaker-notes">Present QuickHull as a filtering algorithm. It uses a farthest point to create two new candidate edges and a triangle that can be thrown away. The important invariant is that only points outside the exposed triangle can still affect the boundary, while the caution is that the recursion can be badly balanced.</aside>
+    </section>
+
+    <section class="slide" data-label="Comparison">
+      <div class="topline"><div class="eyebrow">Algorithm Contrast</div><div class="badge">checked artifact: all three agree</div></div>
+      <h2>Three Algorithms, One Hull</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Notebook comparison of gift wrapping QuickHull and Graham scan">
+          <img src="../figures/hull-algorithm-comparison.png" alt="Gift wrapping QuickHull and Graham scan produce matching hulls">
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Gift Wrapping</h3><p>Walks from one exposed vertex to the next; easy to explain and output-sensitive.</p></div>
+          <div class="panel teal"><h3>QuickHull</h3><p>Splits the problem with farthest witnesses and discards triangle interiors.</p></div>
+          <div class="panel violet"><h3>Graham Scan</h3><p>Sorts by angle once, then keeps a stack whose turns stay consistent.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: gift_quick_graham_agree = true</span><span>Different costs, same boundary certificate</span></div>
+      <aside class="speaker-notes">Use the side-by-side artifact to reset the narrative. The three methods look different, yet the check confirms that they identify the same hull on the notebook data. Ask students to focus on each method's invariant: wrapping uses exposed edges, QuickHull uses discard regions, and Graham uses a stack of legal turns.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Graham Setup">
+      <div class="topline"><div class="eyebrow">Graham Scan I</div><div class="badge">sort before scanning</div></div>
+      <h2>Graham Scan Setup</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Setup</div><p>Choose a pivot, usually the lowest then leftmost point. Sort all other points by polar angle around the pivot, breaking ties by distance in a consistent way.</p></div>
+          <div class="panel blue"><h3>Why Sort</h3><p>The angular order gives a simple walk around the outside, so the stack only has to repair local right turns.</p></div>
+          <div class="panel amber"><h3>Tie Caution</h3><p>Multiple points on the same ray from the pivot must be handled deliberately or the scan may keep a nearer collinear point on the boundary.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Graham scan pivot and angular sorting">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr11" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <rect x="70" y="62" width="760" height="500" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <circle cx="216" cy="462" r="14" fill="#b45309"/><text x="188" y="510" class="svg-label">pivot</text>
+            <g stroke="#94a3b8" stroke-width="3" stroke-dasharray="8 8">
+              <line x1="216" y1="462" x2="710" y2="426"/><line x1="216" y1="462" x2="650" y2="304"/><line x1="216" y1="462" x2="540" y2="190"/><line x1="216" y1="462" x2="382" y2="116"/><line x1="216" y1="462" x2="286" y2="210"/>
+            </g>
+            <path d="M318,414 C390,330 480,260 592,220 C650,202 698,198 744,206" fill="none" stroke="#2563eb" stroke-width="6" marker-end="url(#arr11)"/>
+            <g fill="#111827"><circle cx="710" cy="426" r="11"/><circle cx="650" cy="304" r="11"/><circle cx="540" cy="190" r="11"/><circle cx="382" cy="116" r="11"/><circle cx="286" cy="210" r="11"/><circle cx="442" cy="386" r="9"/><circle cx="518" cy="330" r="9"/></g>
+            <text x="510" y="112" class="svg-small">increasing polar angle</text>
+            <text x="574" y="504" class="svg-small">then scan in that order</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Sorting front-loads the \(n \log n\) work</span><span>The scan phase is linear after sorting</span></div>
+      <aside class="speaker-notes">Separate Graham scan into a setup phase and a stack phase. The sort by polar angle is the expensive global operation, and it creates a traversal order where local orientation tests are enough. Tie handling belongs in the setup, because collinear rays can otherwise put the wrong point on the stack.</aside>
+    </section>
+
+    <section class="slide" data-label="Graham Stack">
+      <div class="topline"><div class="eyebrow">Graham Scan II</div><div class="badge">checked artifact: stack never keeps a right turn</div></div>
+      <h2>Graham Stack Invariant</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Notebook trace of Graham stack pops and pushes">
+          <img src="../figures/graham-stack-trace.png" alt="Graham scan stack trace showing right-turn removals">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Stack Invariant</div><p>After each processed point, the stack is the convex hull of the processed prefix in angular order.</p></div>
+          <div class="panel blue"><h3>Pop Rule</h3><p>While the last two stack points and the new point make a forbidden right turn, remove the middle endpoint from the stack.</p></div>
+          <div class="panel teal"><h3>Why Linear After Sorting</h3><p>Each point is pushed once and popped at most once, so stack maintenance is \(O(n)\).</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: stack_never_keeps_right_turn = true</span><span>Local orientation repairs maintain a global hull prefix</span></div>
+      <aside class="speaker-notes">Emphasize the invariant rather than the mechanics alone. At any moment the stack is supposed to be the hull of points already encountered in angular order. A right turn exposes a concavity, so the middle stack point cannot remain on the processed-prefix hull and is popped before the new point is accepted.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Robustness">
+      <div class="topline"><div class="eyebrow">Implementation Robustness</div><div class="badge">degeneracy is part of the specification</div></div>
+      <h2>Implementation Robustness</h2>
+      <div class="content four">
+        <div class="panel amber"><h3>Collinearity</h3><p>Decide whether boundary collinear points are reported, skipped, or coalesced into endpoints. The choice must be consistent across edge tests and stack pops.</p></div>
+        <div class="panel blue"><h3>Duplicate Points</h3><p>Remove exact duplicates or define a stable comparison so the output boundary is not polluted by zero-length edges.</p></div>
+        <div class="panel teal"><h3>Numeric Signs</h3><p>Floating data needs a tolerance policy; integer data can use exact arithmetic until products overflow the chosen type.</p></div>
+        <div class="panel violet"><h3>Ordering</h3><p>Every hull consumer should know whether the output is clockwise or counterclockwise and whether the first vertex is canonical.</p></div>
+      </div>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Collinearity and near turn robustness cases">
+          <svg viewBox="0 0 900 360" role="img">
+            <rect x="70" y="60" width="760" height="240" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <line x1="132" y1="220" x2="390" y2="132" stroke="#2563eb" stroke-width="6"/>
+            <g fill="#b45309"><circle cx="132" cy="220" r="11"/><circle cx="220" cy="190" r="9"/><circle cx="300" cy="162" r="9"/><circle cx="390" cy="132" r="11"/></g>
+            <text x="116" y="270" class="svg-small">collinear boundary choices</text>
+            <path d="M526,232 L650,130 L774,229" fill="none" stroke="#0f766e" stroke-width="6"/>
+            <circle cx="650" cy="130" r="10" fill="#0f766e"/><circle cx="652" cy="133" r="18" fill="rgba(180,83,9,.16)" stroke="#b45309" stroke-width="4"/>
+            <text x="520" y="270" class="svg-small">near-zero determinant requires policy</text>
+          </svg>
+        </figure>
+        <div class="math-box math-box--warning"><div class="math-box-label">Warning</div><p>A hull algorithm is only as reliable as its orientation sign and degeneracy conventions. The mathematics says what the predicate means; the implementation must preserve that meaning under real input data.</p></div>
+      </div>
+      <div class="footer"><span>Degenerate cases change boundary representation, not the core definitions</span><span>Document conventions before comparing outputs</span></div>
+      <aside class="speaker-notes">This is the engineering checkpoint. The abstract algorithms assume clean inputs, but real inputs contain duplicate points, collinear runs, and nearly zero determinants. The goal is not to pretend these cases vanish; it is to choose conventions and arithmetic that make the output certificate match the intended hull.</aside>
+    </section>
+
+    <section class="slide" data-label="Lower Bound">
+      <div class="topline"><div class="eyebrow">Lower Bound</div><div class="badge">parabola reduction to ordered output</div></div>
+      <h2>Lower Bound By Parabola</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Notebook parabola sorting reduction">
+          <img src="../figures/parabola-sorting-reduction.png" alt="Points on a parabola whose hull order sorts the input x-values">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Reduction</div><p>Map numbers \(x_i\) to points \((x_i,x_i^2)\). The lower hull lists those points by increasing \(x_i\).</p></div>
+          <div class="panel blue"><h3>Consequence</h3><p>If an algorithm outputs hull vertices in sorted boundary order, then it can be used to sort arbitrary numbers.</p></div>
+          <div class="panel amber"><h3>Barrier</h3><p>Comparison-based ordered hull output therefore inherits the \(\Omega(n \log n)\) lower bound from sorting.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: parabola_hull_order_sorts_inputs = true</span><span>The lower bound is about ordered output, not just membership</span></div>
+      <aside class="speaker-notes">Make the reduction concrete. Put each input number on the parabola y equals x squared. Because the curve is strictly convex, the hull chain exposes the points in increasing x order. Therefore an ordered hull routine would sort the numbers, so ordered hull output cannot beat the sorting lower bound in the comparison model.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Beyond Graham">
+      <div class="topline"><div class="eyebrow">Beyond Graham</div><div class="badge">tangents and merge walks</div></div>
+      <h2>Beyond Graham: Incremental And Divide-And-Conquer</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Incremental hull tangents and divide and conquer lower tangent walk">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr15" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="54" y="58" width="792" height="226" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="128,218 176,112 292,86 392,166 326,246 188,254" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="5"/>
+            <circle cx="524" cy="144" r="12" fill="#b45309"/>
+            <line x1="524" y1="144" x2="176" y2="112" stroke="#0f766e" stroke-width="5"/><line x1="524" y1="144" x2="326" y2="246" stroke="#0f766e" stroke-width="5"/>
+            <text x="94" y="266" class="svg-small">incremental insertion: find upper and lower tangents to splice a new point</text>
+            <rect x="54" y="336" width="792" height="226" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="128,506 172,396 288,382 344,476 248,548" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="548,522 610,392 738,404 790,494 684,556" fill="rgba(15,118,110,.10)" stroke="#0f766e" stroke-width="5"/>
+            <line x1="248" y1="548" x2="684" y2="556" stroke="#b45309" stroke-width="7" marker-end="url(#arr15)"/>
+            <path d="M344,476 C426,498 506,506 548,522" fill="none" stroke="#94a3b8" stroke-width="5" stroke-dasharray="12 9"/>
+            <text x="98" y="582" class="svg-small">divide and conquer: rotate tangent endpoints until both hulls support the same merge line</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Incremental Hull</h3><p>Maintain a hull for processed points. When a new outside point arrives, find its tangents and replace the covered chain.</p></div>
+          <div class="panel teal"><h3>Divide And Conquer</h3><p>Compute left and right hulls, then merge them by walking upper and lower common tangents.</p></div>
+          <div class="panel violet"><h3>Extensions</h3><p>Output-sensitive \(O(n \log h)\) methods, rotating calipers, and onion layers all build on ordered hull boundaries.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Local invariant: maintain supporting tangents</span><span>Hull boundary order becomes a reusable data structure</span></div>
+      <aside class="speaker-notes">Use this slide as a map beyond the three central algorithms. Incremental insertion and divide-and-conquer both depend on tangent certificates, just in different workflows. Once students trust tangent walks on ordered hulls, rotating calipers, onion layers, and output-sensitive improvements become natural continuations rather than unrelated tricks.</aside>
+    </section>
+
+    <section class="slide" data-label="Recap Lab">
+      <div class="topline"><div class="eyebrow">Complexity And Recap Lab</div><div class="badge">from definitions to verified checks</div></div>
+      <h2>Complexity And Recap Lab</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Notebook complexity comparison lab">
+          <img src="../figures/hull-complexity-lab.png" alt="Complexity lab comparing hull algorithm cost profiles">
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Cost Map</h3><ul><li>Naive witnesses: clarifying but high-degree polynomial.</li><li>Gift wrapping: \(O(nh)\).</li><li>Graham scan and merge families: \(O(n \log n)\).</li><li>Advanced output-sensitive methods can target \(O(n \log h)\).</li></ul></div>
+          <div class="check-list">
+            <div>gift / quick / graham agree</div>
+            <div>QuickHull records discards</div>
+            <div>stack keeps no right turn</div>
+            <div>parabola order sorts inputs</div>
+            <div>witness triangles exist</div>
+            <div>small h lowers cost</div>
+          </div>
+          <div class="math-box math-box--exercise"><div class="math-box-label">Lab Prompt</div><p>Move many points onto a circle. Predict which algorithms slow down, then explain the change using \(h\), not just \(n\).</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Convex hulls are definitions plus certificates plus invariants</span><span>Next chapter lifts hull thinking into three dimensions</span></div>
+      <aside class="speaker-notes">Close by tying the checks back to the lecture goals. Students should be able to define the hull, identify extreme points, explain the orientation predicate, and compare the algorithmic invariants. The lab question asks them to vary the hull size h, because that is the parameter that makes output sensitivity visible.</aside>
+    </section>
+  </deck-stage>
+
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "label": "Title",
+    "notes": "Open by separating the geometric object from the algorithmic choices. The convex hull is a smallest enclosing convex region, but for computation we usually need the boundary vertices in a consistent order. Tell students that every algorithm in this lecture is a different way to discover the same ordered certificate."
+  },
+  {
+    "slide": 2,
+    "label": "Motivation",
+    "notes": "Motivate the hull as a reusable geometric compression. A robot arm envelope, a thin containing strip, a minimum box, and a visible shape outline are different questions, but they all ask which input points support the outside. This gives a practical reason to care about extreme points before any algorithm appears."
+  },
+  {
+    "slide": 3,
+    "label": "Convexity",
+    "notes": "Give both equivalent mental models. The segment test is the direct definition students can inspect visually, while the half-plane intersection model explains why boundary edges have supporting lines. Convex hull algorithms keep asking which line, edge, or direction exposes the next piece of that boundary."
+  },
+  {
+    "slide": 4,
+    "label": "Boundary Extremes",
+    "notes": "Pause on output format, because it prevents later confusion. The filled hull is a continuum of points, but the algorithm returns a cyclic vertex list. The hard part is not merely naming which points are extreme; students also need to understand why the order of those points is part of the certificate."
+  },
+  {
+    "slide": 5,
+    "label": "Orientation",
+    "notes": "Make the determinant feel like the chapter's vocabulary. It is twice a signed triangle area, so its sign tells us whether the third point lies left, right, or on the directed line. From here onward, every algorithmic decision can be translated into a repeated orientation question."
+  },
+  {
+    "slide": 6,
+    "label": "Triangle Witness",
+    "notes": "Use the notebook visual as a certificate, not as decoration. A nonextreme point is proved nonextreme by a specific triangle of other points that contains it. This deliberately slow idea helps students see what is being discarded before the lecture moves to edge-based and output-sensitive methods."
+  },
+  {
+    "slide": 7,
+    "label": "Gift Wrapping Setup",
+    "notes": "Connect the static edge test to Jarvis style wrapping. If a directed candidate edge leaves every point on the permitted side, it belongs to the hull. Gift wrapping does this test repeatedly: from the current vertex, rotate the candidate until no point lies outside the exposed side."
+  },
+  {
+    "slide": 8,
+    "label": "Gift Cost",
+    "notes": "Name the variable h explicitly as the number of output vertices. Gift wrapping pays for one full scan per edge it reports, which is ideal when the boundary is tiny and painful when most points are on the boundary. This slide sets up the search for algorithms with different cost profiles."
+  },
+  {
+    "slide": 9,
+    "label": "QuickHull",
+    "notes": "Present QuickHull as a filtering algorithm. It uses a farthest point to create two new candidate edges and a triangle that can be thrown away. The important invariant is that only points outside the exposed triangle can still affect the boundary, while the caution is that the recursion can be badly balanced."
+  },
+  {
+    "slide": 10,
+    "label": "Comparison",
+    "notes": "Use the side-by-side artifact to reset the narrative. The three methods look different, yet the check confirms that they identify the same hull on the notebook data. Ask students to focus on each method's invariant: wrapping uses exposed edges, QuickHull uses discard regions, and Graham uses a stack of legal turns."
+  },
+  {
+    "slide": 11,
+    "label": "Graham Setup",
+    "notes": "Separate Graham scan into a setup phase and a stack phase. The sort by polar angle is the expensive global operation, and it creates a traversal order where local orientation tests are enough. Tie handling belongs in the setup, because collinear rays can otherwise put the wrong point on the stack."
+  },
+  {
+    "slide": 12,
+    "label": "Graham Stack",
+    "notes": "Emphasize the invariant rather than the mechanics alone. At any moment the stack is supposed to be the hull of points already encountered in angular order. A right turn exposes a concavity, so the middle stack point cannot remain on the processed-prefix hull and is popped before the new point is accepted."
+  },
+  {
+    "slide": 13,
+    "label": "Robustness",
+    "notes": "This is the engineering checkpoint. The abstract algorithms assume clean inputs, but real inputs contain duplicate points, collinear runs, and nearly zero determinants. The goal is not to pretend these cases vanish; it is to choose conventions and arithmetic that make the output certificate match the intended hull."
+  },
+  {
+    "slide": 14,
+    "label": "Lower Bound",
+    "notes": "Make the reduction concrete. Put each input number on the parabola y equals x squared. Because the curve is strictly convex, the hull chain exposes the points in increasing x order. Therefore an ordered hull routine would sort the numbers, so ordered hull output cannot beat the sorting lower bound in the comparison model."
+  },
+  {
+    "slide": 15,
+    "label": "Beyond Graham",
+    "notes": "Use this slide as a map beyond the three central algorithms. Incremental insertion and divide-and-conquer both depend on tangent certificates, just in different workflows. Once students trust tangent walks on ordered hulls, rotating calipers, onion layers, and output-sensitive improvements become natural continuations rather than unrelated tricks."
+  },
+  {
+    "slide": 16,
+    "label": "Recap Lab",
+    "notes": "Close by tying the checks back to the lecture goals. Students should be able to define the hull, identify extreme points, explain the orientation predicate, and compare the algorithmic invariants. The lab question asks them to vary the hull size h, because that is the parameter that makes output sensitivity visible."
+  }
+]
+  </script>
+</body>
+</html>

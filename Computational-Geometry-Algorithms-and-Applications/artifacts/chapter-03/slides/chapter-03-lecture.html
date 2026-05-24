@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polygon Triangulation: Guarding an Art Gallery</title>
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-03">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-03-polygon-triangulation/03-polygon-triangulation.ipynb">
+  <meta name="source_span" content="printed pages 45-62; PDF pages 56-73">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px; height: 1080px; position: relative; overflow: hidden;
+      background: var(--slide-bg); color: var(--slide-ink); font-family: var(--font-sans);
+      box-sizing: border-box;
+    }
+    .slide::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.05;
+      background-image:
+        linear-gradient(135deg, transparent 0 32px, #1E3A8A 33px, transparent 34px),
+        linear-gradient(45deg, transparent 0 42px, #0F766E 43px, transparent 44px);
+      background-size: 140px 140px;
+    }
+    .pad { position: relative; z-index: 1; height: 100%; box-sizing: border-box; padding: 70px 96px 62px; display: flex; flex-direction: column; }
+    h1 { margin: 0; font-size: 66px; line-height: 1.06; letter-spacing: 0; color: var(--slide-ink); }
+    h2 { margin: 0; font-size: 50px; line-height: 1.12; letter-spacing: 0; color: var(--slide-ink); }
+    h3 { margin: 0; font-size: 30px; line-height: 1.2; color: var(--slide-accent); }
+    p { margin: 0; font-size: 27px; line-height: 1.38; }
+    .kicker { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slide-dimmed); }
+    .rule { width: 86px; height: 5px; border-radius: 4px; background: var(--slide-accent); margin: 18px 0 28px; }
+    .subtitle { font-size: 31px; line-height: 1.36; color: var(--slide-muted); max-width: 1050px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 38px; align-items: stretch; }
+    .cols { grid-template-columns: 0.96fr 1.04fr; }
+    .cols-wide { grid-template-columns: 1.12fr 0.88fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 18px; }
+    .box { border-left: 5px solid var(--slide-blue); background: #EFF6FF; border-radius: 8px; padding: 22px 26px; }
+    .box.theorem { border-left-color: var(--slide-accent); background: #EEF2FF; }
+    .box.proof { border-left-color: #94A3B8; background: #F8FAFC; }
+    .box.example { border-left-color: var(--slide-teal); background: #F0FDFA; }
+    .box.warn { border-left-color: var(--slide-amber); background: #FFFBEB; }
+    .label { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--slide-accent); margin-bottom: 8px; }
+    .box p, li { font-size: 25px; line-height: 1.36; }
+    ul { margin: 0; padding-left: 28px; display: flex; flex-direction: column; gap: 11px; }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .formula { font-family: var(--font-math); font-size: 38px; text-align: center; padding: 16px 20px; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 8px; }
+    .diagram { background: #fff; border: 1px solid #CBD5E1; border-radius: 8px; display: grid; place-items: center; padding: 18px; min-height: 0; }
+    .diagram svg { width: 100%; height: 100%; max-height: 700px; }
+    .caption { font-size: 21px; color: var(--slide-dimmed); line-height: 1.28; margin-top: 10px; }
+    .footer { position: absolute; left: 96px; right: 96px; bottom: 26px; display: flex; justify-content: space-between; color: var(--slide-dimmed); font-size: 20px; }
+    .speaker-notes { display: none; }
+    .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .pill { display: inline-block; border: 1px solid #CBD5E1; border-radius: 6px; padding: 7px 12px; font-size: 22px; font-weight: 700; background: #fff; }
+    .small p, .small li { font-size: 24px; }
+    .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
+    .step { background: #fff; border: 1px solid #CBD5E1; border-top: 6px solid var(--slide-blue); border-radius: 8px; padding: 20px; }
+    .step:nth-child(2) { border-top-color: var(--slide-teal); }
+    .step:nth-child(3) { border-top-color: var(--slide-amber); }
+    .step:nth-child(4) { border-top-color: var(--slide-violet); }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section data-label="Title And Contract">
+    <div class="slide"><div class="pad" style="justify-content:center;">
+      <div class="kicker">Computational Geometry Algorithms and Applications · Chapter 03</div>
+      <h1>Polygon Triangulation:<br>Guarding an Art Gallery</h1>
+      <div class="rule"></div>
+      <p class="subtitle">A simple polygon becomes an algorithmic object: insert diagonals, count triangles, color a triangulation graph, and place at most <span class="math">floor(n/3)</span> guards.</p>
+      <div style="margin-top:34px; display:flex; gap:14px; flex-wrap:wrap;">
+        <span class="pill">printed pages 45-62</span><span class="pill">PDF pages 56-73</span><span class="pill">HTML source</span><span class="pill">original SVG</span>
+      </div>
+      <div class="footer"><span>Computational Geometry Algorithms and Applications</span><span>chapter-03</span></div>
+      <aside class="speaker-notes">Open the lecture by naming the modeling bargain. We will not try to solve every visibility question directly. Instead, we turn the gallery boundary into a simple polygon, prove that diagonals can decompose it into triangles, and then use a coloring argument to choose a small guard set. The number to protect carefully is floor n over three.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Gallery To Polygon Model">
+    <div class="slide"><div class="pad">
+      <h2>Gallery To Polygon Model</h2><div class="rule"></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="box"><div class="label">Definition</div><p>A gallery floor plan is modeled by a simple polygon <span class="math">P</span>: a closed, non-self-intersecting chain of edges.</p></div>
+          <div class="box example"><div class="label">Visibility</div><p>A camera point <span class="math">g</span> sees a point <span class="math">x</span> exactly when the whole segment <span class="math">gx</span> stays inside <span class="math">P</span>, including the boundary.</p></div>
+          <ul><li>Guards may sit at vertices for the theorem proved here.</li><li>Occlusion is represented by segment intersection with the exterior.</li><li>Geometry enters through straight-line visibility, not through room labels.</li></ul>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 800 560" role="img" aria-label="Simple polygon gallery with a guard point and visibility segments">
+            <defs><marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#B45309"/></marker></defs>
+            <polygon points="80,90 280,70 330,165 520,105 710,205 620,335 675,485 420,455 310,520 210,375 85,410 145,255" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="5"/>
+            <circle cx="320" cy="290" r="13" fill="#0F766E"/><text x="340" y="300" font-size="28" fill="#0F766E">guard g</text>
+            <line x1="320" y1="290" x2="570" y2="202" stroke="#0F766E" stroke-width="4"/>
+            <line x1="320" y1="290" x2="250" y2="390" stroke="#0F766E" stroke-width="4"/>
+            <line x1="320" y1="290" x2="640" y2="420" stroke="#B45309" stroke-width="4" stroke-dasharray="12 12" marker-end="url(#arrow2)"/>
+            <path d="M420 455 L520 330" stroke="#B45309" stroke-width="8" opacity="0.35"/>
+            <text x="468" y="525" font-size="24" fill="#B45309">blocked by boundary</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Model: simple polygon and segment visibility</span><span>2 / 16</span></div>
+      <aside class="speaker-notes">Make the definitions operational. A simple polygon has no crossing boundary edges, so it gives a clean inside and outside. Visibility is a segment test: if every point of the segment from the guard to the target remains in the polygon, the target is visible. This framing is deliberately geometric and will let triangulation replace a difficult global search.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Diagonals And Triangulations">
+    <div class="slide"><div class="pad">
+      <h2>Diagonals And Triangulations</h2><div class="rule"></div>
+      <div class="content cols-wide">
+        <figure class="diagram">
+          <svg viewBox="0 0 900 590" role="img" aria-label="Polygon with maximal non-crossing diagonals">
+            <polygon points="80,90 220,55 335,115 505,70 760,180 695,330 760,505 530,470 430,545 310,420 150,470 120,300" fill="#F8FAFC" stroke="#111827" stroke-width="5"/>
+            <g stroke="#2563EB" stroke-width="4">
+              <line x1="80" y1="90" x2="335" y2="115"/><line x1="80" y1="90" x2="120" y2="300"/><line x1="120" y1="300" x2="335" y2="115"/>
+              <line x1="335" y1="115" x2="695" y2="330"/><line x1="335" y1="115" x2="530" y2="470"/><line x1="120" y1="300" x2="310" y2="420"/>
+              <line x1="310" y1="420" x2="530" y2="470"/><line x1="530" y1="470" x2="695" y2="330"/><line x1="695" y1="330" x2="760" y2="180"/>
+            </g>
+            <g fill="#1E3A8A"><circle cx="80" cy="90" r="7"/><circle cx="220" cy="55" r="7"/><circle cx="335" cy="115" r="7"/><circle cx="505" cy="70" r="7"/><circle cx="760" cy="180" r="7"/><circle cx="695" cy="330" r="7"/><circle cx="760" cy="505" r="7"/><circle cx="530" cy="470" r="7"/><circle cx="430" cy="545" r="7"/><circle cx="310" cy="420" r="7"/><circle cx="150" cy="470" r="7"/><circle cx="120" cy="300" r="7"/></g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="box"><div class="label">Diagonal</div><p>A segment between two non-adjacent polygon vertices that lies entirely in the polygon.</p></div>
+          <div class="box theorem"><div class="label">Triangulation</div><p>A maximal set of pairwise non-crossing diagonals partitions <span class="math">P</span> into triangles.</p></div>
+          <div class="box proof"><div class="label">Maximal Means</div><p>If some face is not triangular, it still contains a legal diagonal. Therefore a maximal non-crossing family has only triangular faces.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Diagonals are internal chords between non-adjacent vertices</span><span>3 / 16</span></div>
+      <aside class="speaker-notes">Separate the vocabulary carefully. A diagonal is not any chord of the polygon; its endpoints are vertices, they are not neighbors on the boundary, and the segment must remain in the polygon. A triangulation is then a saturated non-crossing set of such diagonals. Saturation matters because it turns a combinatorial object into a geometric certificate that every remaining cell is a triangle.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Theorem 3.1 Proof Move">
+    <div class="slide"><div class="pad">
+      <h2>Theorem 3.1 Proof Move</h2><div class="rule"></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="box theorem"><div class="label">Existence Move</div><p>Every simple polygon with at least four vertices has a diagonal.</p></div>
+          <div class="box proof"><div class="label">Leftmost Vertex</div><p>Choose a leftmost vertex <span class="math">v</span> and inspect its two neighbors. If their chord lies inside, it is a diagonal.</p></div>
+          <div class="box proof"><div class="label">Farthest Witness</div><p>If the neighbor chord leaves the polygon, a vertex inside the ear triangle witnesses the obstruction; the farthest such witness from the chord creates a legal diagonal to <span class="math">v</span>.</p></div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 800 560" role="img" aria-label="Leftmost vertex proof with neighbor chord and farthest witness">
+            <polygon points="105,290 210,95 355,135 470,70 705,205 615,325 690,485 420,440 260,510 315,330" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <circle cx="105" cy="290" r="11" fill="#B45309"/><text x="63" y="285" font-size="30" fill="#B45309">v</text>
+            <circle cx="210" cy="95" r="8" fill="#1E3A8A"/><circle cx="315" cy="330" r="8" fill="#1E3A8A"/>
+            <polygon points="105,290 210,95 315,330" fill="#2563EB" opacity="0.10" stroke="#2563EB" stroke-width="3"/>
+            <line x1="210" y1="95" x2="315" y2="330" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <circle cx="248" cy="225" r="10" fill="#0F766E"/><text x="265" y="233" font-size="26" fill="#0F766E">farthest witness</text>
+            <line x1="105" y1="290" x2="248" y2="225" stroke="#0F766E" stroke-width="5"/>
+            <text x="348" y="205" font-size="24" fill="#B45309">neighbor chord fails</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>The local ear argument starts recursive triangulation</span><span>4 / 16</span></div>
+      <aside class="speaker-notes">Present this as the engine behind induction. At a leftmost vertex, the triangle formed with its neighbors points into the polygon. If the opposite side is clean, we are done. If it is not clean, the triangle contains polygon vertices that explain the obstruction. Choosing the farthest witness from the neighbor chord avoids crossings and gives a diagonal from the leftmost vertex.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Triangle Count Invariant">
+    <div class="slide"><div class="pad">
+      <h2>Triangle Count Invariant</h2><div class="rule"></div>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 780 560" role="img" aria-label="A diagonal splitting a polygon into two subpolygons">
+            <polygon points="70,120 230,60 410,105 650,85 720,260 590,410 615,520 350,465 185,510 100,330" fill="#F8FAFC" stroke="#111827" stroke-width="5"/>
+            <line x1="230" y1="60" x2="590" y2="410" stroke="#B45309" stroke-width="6"/>
+            <path d="M230 60 L410 105 L650 85 L720 260 L590 410 Z" fill="#2563EB" opacity="0.12"/>
+            <path d="M230 60 L590 410 L615 520 L350 465 L185 510 L100 330 L70 120 Z" fill="#0F766E" opacity="0.12"/>
+            <text x="470" y="230" font-size="34" fill="#2563EB">n1</text><text x="250" y="345" font-size="34" fill="#0F766E">n2</text>
+            <text x="334" y="238" font-size="26" fill="#B45309">shared diagonal</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="box theorem"><div class="label">Invariant</div><p>Every triangulation of an <span class="math">n</span>-vertex simple polygon has exactly <span class="math">n - 2</span> triangles.</p></div>
+          <div class="formula">T(n) = T(n_1) + T(n_2), &nbsp; n_1+n_2 = n+2</div>
+          <div class="box proof"><div class="label">Induction</div><p>A diagonal creates two smaller polygons. Each side counts the shared diagonal endpoint pair, so the vertex counts add to <span class="math">n+2</span>; the triangle totals become <span class="math">(n_1-2)+(n_2-2)=n-2</span>.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Counting survives every legal split</span><span>5 / 16</span></div>
+      <aside class="speaker-notes">Use the diagram to explain why the formula is independent of the triangulation chosen. A diagonal divides the polygon into two smaller polygons, and the diagonal endpoints belong to both subproblems. That double counting is exactly the plus two in n one plus n two equals n plus two. The induction then forces every triangulation to have n minus two triangles.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="From Triangles To Guards">
+    <div class="slide"><div class="pad">
+      <h2>From Triangles To Guards</h2><div class="rule"></div>
+      <div class="content cols-wide">
+        <figure class="diagram">
+          <svg viewBox="0 0 900 590" role="img" aria-label="Triangulated polygon colored with three vertex colors">
+            <polygon points="80,95 230,60 360,125 520,80 765,195 690,345 745,505 535,465 420,540 300,420 140,465 115,285" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <g stroke="#CBD5E1" stroke-width="4"><line x1="80" y1="95" x2="360" y2="125"/><line x1="115" y1="285" x2="360" y2="125"/><line x1="360" y1="125" x2="690" y2="345"/><line x1="360" y1="125" x2="535" y2="465"/><line x1="115" y1="285" x2="300" y2="420"/><line x1="300" y1="420" x2="535" y2="465"/><line x1="535" y1="465" x2="690" y2="345"/><line x1="690" y1="345" x2="765" y2="195"/></g>
+            <g>
+              <circle cx="80" cy="95" r="15" fill="#2563EB"/><circle cx="230" cy="60" r="15" fill="#0F766E"/><circle cx="360" cy="125" r="15" fill="#B45309"/><circle cx="520" cy="80" r="15" fill="#2563EB"/><circle cx="765" cy="195" r="15" fill="#0F766E"/><circle cx="690" cy="345" r="15" fill="#B45309"/><circle cx="745" cy="505" r="15" fill="#2563EB"/><circle cx="535" cy="465" r="15" fill="#0F766E"/><circle cx="420" cy="540" r="15" fill="#B45309"/><circle cx="300" cy="420" r="15" fill="#2563EB"/><circle cx="140" cy="465" r="15" fill="#0F766E"/><circle cx="115" cy="285" r="15" fill="#B45309"/>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="box theorem"><div class="label">Triangulation Graph</div><p>Create a planar graph whose edges are polygon edges and inserted diagonals.</p></div>
+          <div class="box example"><div class="label">3-Coloring</div><p>The graph can be colored with three vertex colors so every triangle has all three colors.</p></div>
+          <div class="box proof"><div class="label">Guard Choice</div><p>Pick the smallest color class. Since each triangle contains every color, guards on that class see all triangles and therefore the whole polygon.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Color classes translate geometry into a guard set</span><span>6 / 16</span></div>
+      <aside class="speaker-notes">Now connect triangulation to guarding. Once the polygon is triangulated, every point lies in at least one triangle. If the vertices can be colored so that each triangle has all three colors, then choosing any one color class places a guard at a vertex of every triangle. Choosing the smallest class gives the numerical bound by the pigeonhole principle.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Dual Graph Tree">
+    <div class="slide"><div class="pad">
+      <h2>Dual Graph Tree</h2><div class="rule"></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="box"><div class="label">Dual Nodes</div><p>Put one node in each triangle of the triangulation.</p></div>
+          <div class="box example"><div class="label">Dual Edges</div><p>Connect two nodes when their triangles share an inserted diagonal.</p></div>
+          <div class="box theorem"><div class="label">Tree Structure</div><p>The dual graph is connected and acyclic. Removing a leaf triangle supports induction for the 3-coloring.</p></div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 820 600" role="img" aria-label="Triangle dual graph as a tree">
+            <g transform="translate(20,20)">
+              <polygon points="50,70 250,40 180,210" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/><polygon points="250,40 380,150 180,210" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/><polygon points="380,150 560,80 520,250" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/><polygon points="380,150 520,250 310,320" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/><polygon points="180,210 380,150 310,320" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/><polygon points="180,210 310,320 120,400" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/>
+              <g stroke="#0F766E" stroke-width="5"><line x1="160" y1="105" x2="270" y2="135"/><line x1="270" y1="135" x2="300" y2="225"/><line x1="300" y1="225" x2="420" y2="235"/><line x1="420" y1="235" x2="485" y2="160"/><line x1="300" y1="225" x2="205" y2="310"/></g>
+              <g fill="#0F766E" stroke="#fff" stroke-width="3"><circle cx="160" cy="105" r="15"/><circle cx="270" cy="135" r="15"/><circle cx="300" cy="225" r="15"/><circle cx="420" cy="235" r="15"/><circle cx="485" cy="160" r="15"/><circle cx="205" cy="310" r="15"/></g>
+            </g>
+            <text x="540" y="510" font-size="28" fill="#0F766E">triangle adjacency has no cycle</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Dual tree = induction scaffold</span><span>7 / 16</span></div>
+      <aside class="speaker-notes">The dual graph gives a clean proof view. It has a node for every triangle and an edge for every shared diagonal. It is connected because the polygon is one region, and a cycle would enclose a hole or force incompatible separation in a simple polygon triangulation. Leaves are ears, so induction can remove a leaf triangle, color the rest, and extend the third color to the removed vertex.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Art Gallery Theorem And Comb Lower Bound">
+    <div class="slide"><div class="pad">
+      <h2>Art Gallery Theorem And Comb Lower Bound</h2><div class="rule"></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="box theorem"><div class="label">Theorem</div><p>Every simple polygon with <span class="math">n</span> vertices can be guarded by at most <span class="math">floor(n/3)</span> vertex guards.</p></div>
+          <div class="box warn"><div class="label">Sharpness</div><p>Comb polygons with many thin teeth force one guard for each tooth pocket. This realizes the same order and, for the standard family, the same <span class="math">floor(n/3)</span> count.</p></div>
+          <div class="formula">min color class &le; floor(n/3)</div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 850 560" role="img" aria-label="Comb polygon lower bound with tooth pockets">
+            <path d="M70 470 L70 160 L160 160 L160 320 L230 320 L230 160 L320 160 L320 320 L390 320 L390 160 L480 160 L480 320 L550 320 L550 160 L640 160 L640 320 L710 320 L710 470 Z" fill="#FFFBEB" stroke="#111827" stroke-width="5"/>
+            <g fill="#B45309"><circle cx="115" cy="230" r="12"/><circle cx="275" cy="230" r="12"/><circle cx="435" cy="230" r="12"/><circle cx="595" cy="230" r="12"/></g>
+            <g stroke="#B45309" stroke-width="3" opacity="0.55"><path d="M115 230 L160 320 L70 320 Z" fill="#B45309" opacity="0.08"/><path d="M275 230 L320 320 L230 320 Z" fill="#B45309" opacity="0.08"/><path d="M435 230 L480 320 L390 320 Z" fill="#B45309" opacity="0.08"/><path d="M595 230 L640 320 L550 320 Z" fill="#B45309" opacity="0.08"/></g>
+            <text x="92" y="520" font-size="27" fill="#475569">each tooth hides a pocket from guards in other teeth</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>The upper bound is also a worst-case lower bound</span><span>8 / 16</span></div>
+      <aside class="speaker-notes">State the theorem with the floor, not a ceiling. The upper bound comes from triangulate, three-color, and choose the smallest color class. The lower bound is a family argument: make a comb with separated pockets so one guard cannot see into two distant teeth. The construction shows that the theorem is not merely convenient; its dependence on n is tight.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Why Faster Triangulation Is Needed">
+    <div class="slide"><div class="pad">
+      <h2>Why Faster Triangulation Is Needed</h2><div class="rule"></div>
+      <div class="content cols-wide">
+        <figure class="diagram">
+          <svg viewBox="0 0 900 590" role="img" aria-label="Recursive diagonal search with shrinking subproblems">
+            <path d="M80 305 C140 100 245 515 330 145 C415 520 520 115 620 475 C700 245 770 335 805 120" fill="none" stroke="#CBD5E1" stroke-width="20" stroke-linecap="round"/>
+            <polyline points="80,305 150,115 235,470 330,145 425,505 520,115 620,475 705,255 805,120" fill="none" stroke="#111827" stroke-width="5"/>
+            <g stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"><line x1="150" y1="115" x2="330" y2="145"/><line x1="330" y1="145" x2="520" y2="115"/><line x1="520" y1="115" x2="705" y2="255"/></g>
+            <text x="130" y="555" font-size="28" fill="#B45309">many failed visibility tests repeat on nearly the same boundary</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="box warn"><div class="label">Naive Cost</div><p>Repeatedly finding any legal diagonal can scan many vertices per split. Bad split choices produce a quadratic pattern of work.</p></div>
+          <div class="box theorem"><div class="label">Better Plan</div><p>First partition the polygon into <span class="math">y</span>-monotone pieces by a sweep. Then triangulate each monotone piece in linear total time.</p></div>
+          <div class="formula">O(n log n) + O(n) = O(n log n)</div>
+        </div>
+      </div>
+      <div class="footer"><span>Existence proof is not yet an efficient algorithm</span><span>9 / 16</span></div>
+      <aside class="speaker-notes">Emphasize the distinction between a proof and an efficient procedure. The leftmost-vertex argument proves that a diagonal exists, but a direct recursive implementation may repeatedly search through long boundary portions and split off tiny pieces. The chapter therefore changes strategy: impose monotonicity with a sweep, then exploit monotone structure with a stack triangulation.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Monotone Polygon And Vertex Taxonomy">
+    <div class="slide"><div class="pad">
+      <h2>Monotone Polygon And Vertex Taxonomy</h2><div class="rule"></div>
+      <div class="content cols">
+        <div class="stack small">
+          <div class="box"><div class="label">Y-Monotone</div><p>Every horizontal line intersects the polygon in a connected segment, a point, or not at all.</p></div>
+          <div class="mini-grid">
+            <div class="box example"><div class="label">Start</div><p>both neighbors below; interior angle below <span class="math">pi</span></p></div>
+            <div class="box warn"><div class="label">Split</div><p>both neighbors below; interior angle above <span class="math">pi</span></p></div>
+            <div class="box example"><div class="label">End</div><p>both neighbors above; interior angle below <span class="math">pi</span></p></div>
+            <div class="box warn"><div class="label">Merge</div><p>both neighbors above; interior angle above <span class="math">pi</span></p></div>
+          </div>
+          <div class="box proof"><div class="label">Tie Rule</div><p>When two vertices have equal height, the left-to-right order breaks the tie consistently in the sweep queue.</p></div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 850 590" role="img" aria-label="Vertex taxonomy on a polygon">
+            <polygon points="120,115 260,210 395,95 560,220 705,130 660,375 745,500 500,455 420,545 330,370 135,470 210,300" fill="#F8FAFC" stroke="#111827" stroke-width="5"/>
+            <g font-size="25" font-weight="700">
+              <circle cx="395" cy="95" r="14" fill="#0F766E"/><text x="410" y="88" fill="#0F766E">start</text>
+              <circle cx="210" cy="300" r="14" fill="#B45309"/><text x="78" y="305" fill="#B45309">split</text>
+              <circle cx="420" cy="545" r="14" fill="#0F766E"/><text x="438" y="552" fill="#0F766E">end</text>
+              <circle cx="660" cy="375" r="14" fill="#B45309"/><text x="678" y="382" fill="#B45309">merge</text>
+              <circle cx="560" cy="220" r="11" fill="#6D28D9"/><text x="580" y="228" fill="#6D28D9">regular</text>
+            </g>
+            <g stroke="#CBD5E1" stroke-width="2"><line x1="60" y1="220" x2="790" y2="220" stroke-dasharray="8 10"/><line x1="60" y1="375" x2="790" y2="375" stroke-dasharray="8 10"/></g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Classification drives the sweep handlers</span><span>10 / 16</span></div>
+      <aside class="speaker-notes">Define monotonicity using horizontal lines because the sweep runs from top to bottom. A vertex type is determined by the vertical relation to its two neighbors and whether the interior angle is convex or reflex. Split and merge vertices are the dangerous ones because they create disconnected horizontal intersections. Mention the tie rule so students see that equal-height vertices do not leave the event order ambiguous.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Lemma 3.4 Proof View">
+    <div class="slide"><div class="pad">
+      <h2>Lemma 3.4 Proof View</h2><div class="rule"></div>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 850 590" role="img" aria-label="Horizontal line cases forcing split or merge vertices">
+            <path d="M115 110 L285 170 L360 85 L530 175 L715 115 L660 285 L735 455 L540 410 L430 520 L325 360 L130 455 L205 260 Z" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <g stroke="#2563EB" stroke-width="5"><line x1="70" y1="250" x2="780" y2="250"/><line x1="70" y1="390" x2="780" y2="390"/></g>
+            <g fill="#EFF6FF" stroke="#2563EB" stroke-width="3"><rect x="188" y="234" width="108" height="32" rx="4"/><rect x="516" y="234" width="120" height="32" rx="4"/><rect x="128" y="374" width="180" height="32" rx="4"/><rect x="552" y="374" width="126" height="32" rx="4"/></g>
+            <circle cx="205" cy="260" r="13" fill="#B45309"/><text x="220" y="246" font-size="27" fill="#B45309">split</text>
+            <circle cx="660" cy="285" r="13" fill="#B45309"/><text x="680" y="290" font-size="27" fill="#B45309">merge nearby</text>
+            <text x="92" y="552" font-size="26" fill="#475569">disconnected horizontal slices cannot appear without a split or merge event</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="box theorem"><div class="label">Lemma 3.4</div><p>A polygon is <span class="math">y</span>-monotone exactly when it has no split vertices and no merge vertices.</p></div>
+          <div class="box proof"><div class="label">Proof View</div><p>If a horizontal line cuts the polygon in two separated intervals, sweeping that line upward or downward until a topology change occurs reveals a split or merge vertex.</p></div>
+          <div class="box proof"><div class="label">Converse</div><p>A split or merge vertex locally creates two branches on the same side of the event height, so nearby horizontal lines see disconnected intersections.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Horizontal slices turn geometry into a vertex condition</span><span>11 / 16</span></div>
+      <aside class="speaker-notes">Use this slide as a proof sketch rather than a formal case table. If monotonicity fails, some horizontal line sees two separated pieces of the polygon. Move the line until the number of intersection components changes; the responsible event must be a reflex vertex with both adjacent vertices on the same side, hence split or merge. Conversely, either such vertex visibly creates a disconnected slice just above or just below it.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="MAKE_MONOTONE Sweep">
+    <div class="slide"><div class="pad">
+      <h2>MAKE_MONOTONE Sweep</h2><div class="rule"></div>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="box"><div class="label">Event Queue</div><p>Process vertices from high to low, with the tie rule fixing equal heights.</p></div>
+          <div class="box example"><div class="label">Status Tree</div><p>Maintain polygon edges crossed by the sweep line, ordered left to right.</p></div>
+          <div class="box theorem"><div class="label">Helper</div><p>For each status edge, store the lowest processed vertex above the sweep line that may need a diagonal to a later merge or split event.</p></div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 900 590" role="img" aria-label="Sweep line status tree and helpers">
+            <polygon points="105,70 285,165 390,80 545,190 735,100 665,310 750,500 530,455 425,540 325,365 135,470 210,270" fill="#F8FAFC" stroke="#111827" stroke-width="5"/>
+            <line x1="60" y1="285" x2="800" y2="285" stroke="#2563EB" stroke-width="6"/>
+            <text x="620" y="270" font-size="28" fill="#2563EB">sweep line</text>
+            <g stroke="#B45309" stroke-width="6"><line x1="210" y1="270" x2="135" y2="470"/><line x1="665" y1="310" x2="750" y2="500"/></g>
+            <g fill="#B45309"><circle cx="210" cy="270" r="12"/><circle cx="665" cy="310" r="12"/></g>
+            <g transform="translate(70,515)">
+              <rect x="0" y="0" width="590" height="48" rx="6" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <text x="20" y="32" font-size="24" fill="#475569">status order:</text><text x="180" y="32" font-size="24" fill="#B45309">e1 helper=s</text><text x="370" y="32" font-size="24" fill="#B45309">e2 helper=m</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>The sweep inserts diagonals that remove non-monotone events</span><span>12 / 16</span></div>
+      <aside class="speaker-notes">The MAKE_MONOTONE algorithm is a plane sweep with memory. The queue tells us which vertex is next. The status tree tells us which boundary edge lies immediately to the left of an event. The helper field is the compact state: it remembers a processed vertex that might need a diagonal when the sweep later discovers the matching event below it.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Handler Cases And DCEL Diagonal Insertion">
+    <div class="slide"><div class="pad">
+      <h2>Handler Cases And DCEL Diagonal Insertion</h2><div class="rule"></div>
+      <div class="content three">
+        <div class="stack">
+          <div class="box example"><div class="label">Start / End</div><p>Start vertices insert incident edges into status. End vertices remove edges and may close a pending merge helper.</p></div>
+          <div class="box warn"><div class="label">Split</div><p>Connect the split vertex to the helper of the edge immediately left of it, then update that helper.</p></div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 560 560" role="img" aria-label="DCEL diagonal insertion rewires half edges">
+            <polygon points="80,85 235,115 420,80 470,240 380,390 220,455 95,330" fill="#F8FAFC" stroke="#111827" stroke-width="5"/>
+            <line x1="95" y1="330" x2="420" y2="80" stroke="#B45309" stroke-width="6"/>
+            <g fill="#2563EB"><circle cx="95" cy="330" r="11"/><circle cx="420" cy="80" r="11"/></g>
+            <g stroke="#0F766E" stroke-width="4" fill="none" marker-end="url(#arr13)"><path d="M150 210 C210 135 285 95 370 92"/><path d="M350 350 C275 410 190 405 125 345"/></g>
+            <defs><marker id="arr13" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#0F766E"/></marker></defs>
+            <text x="100" y="515" font-size="25" fill="#475569">two half-edges, two face cycles</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="box warn"><div class="label">Merge</div><p>First connect to a pending merge helper if needed; then use the left edge helper and update it.</p></div>
+          <div class="box proof"><div class="label">DCEL Update</div><p>Insertion creates twin half-edges and splits one face cycle into two face records while preserving adjacency queries.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Handler logic is local; DCEL makes the edit explicit</span><span>13 / 16</span></div>
+      <aside class="speaker-notes">Do not dwell on memorizing every branch. The main idea is that split and merge events are repaired by diagonals to stored helpers. Start and end events mostly maintain the active boundary edges, while regular vertices behave according to which chain they occupy. The DCEL matters because adding a diagonal is not just drawing a segment; it rewires half-edges and creates two face cycles for later triangulation.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Monotone Stack Invariant">
+    <div class="slide"><div class="pad">
+      <h2>Monotone Stack Invariant</h2><div class="rule"></div>
+      <div class="content cols">
+        <figure class="diagram">
+          <svg viewBox="0 0 820 590" role="img" aria-label="Upside-down funnel stack inside a monotone polygon">
+            <path d="M385 55 C255 110 150 250 120 455 L385 520 C650 455 690 255 385 55 Z" fill="#F8FAFC" stroke="#111827" stroke-width="5"/>
+            <polyline points="385,55 300,150 235,265 180,375 120,455" fill="none" stroke="#2563EB" stroke-width="6"/>
+            <polyline points="385,55 505,160 585,280 650,455 385,520" fill="none" stroke="#0F766E" stroke-width="6"/>
+            <g stroke="#B45309" stroke-width="5"><line x1="385" y1="55" x2="235" y2="265"/><line x1="235" y1="265" x2="505" y2="160"/><line x1="505" y1="160" x2="180" y2="375"/></g>
+            <g fill="#B45309"><circle cx="385" cy="55" r="12"/><circle cx="300" cy="150" r="12"/><circle cx="235" cy="265" r="12"/><circle cx="180" cy="375" r="12"/></g>
+            <text x="455" y="88" font-size="27" fill="#475569">vertices sorted top to bottom</text>
+            <text x="270" y="555" font-size="27" fill="#B45309">stack = unresolved funnel chain</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="box theorem"><div class="label">Invariant</div><p>The stack stores a chain of already processed vertices that form the visible side of an upside-down funnel.</p></div>
+          <div class="box proof"><div class="label">Sorted Order</div><p>Process vertices by decreasing height. Monotonicity guarantees the remaining boundary separates into a left chain and a right chain.</p></div>
+          <div class="box example"><div class="label">Pop Logic</div><p>When a new vertex sees stack vertices across the interior, those diagonals are safe and the popped vertices are resolved.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Monotone triangulation is a linear stack sweep</span><span>14 / 16</span></div>
+      <aside class="speaker-notes">After partitioning, each piece has a much simpler geometry. Sort the vertices from top to bottom. The stack records an unresolved chain in the current funnel. The reason this can be linear is that each vertex is pushed once and popped at most once. The visibility test is local because a monotone polygon prevents hidden pockets from appearing behind the sweep order.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Two Cases In Monotone Triangulation">
+    <div class="slide"><div class="pad">
+      <h2>Two Cases In Monotone Triangulation</h2><div class="rule"></div>
+      <div class="content cols">
+        <div class="stack">
+          <div class="box theorem"><div class="label">Opposite Chain</div><p>If the current vertex is on the opposite chain from the stack top, connect it to every stack vertex except the last boundary neighbor, then reset the stack.</p></div>
+          <div class="box proof"><div class="label">Same Chain</div><p>If it is on the same chain, pop while the new diagonal remains internal. Each successful pop creates a triangle.</p></div>
+          <div class="box example"><div class="label">Linear Accounting</div><p>Every diagonal is charged to a pop or a chain switch, so all monotone pieces triangulate in total linear time.</p></div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 840 590" role="img" aria-label="Opposite chain and same chain triangulation cases">
+            <g transform="translate(20,40)">
+              <path d="M170 40 L90 180 L75 390 L170 490 L315 395 L345 210 Z" fill="#EFF6FF" stroke="#111827" stroke-width="4"/>
+              <g stroke="#2563EB" stroke-width="5"><line x1="315" y1="395" x2="90" y2="180"/><line x1="315" y1="395" x2="170" y2="40"/><line x1="315" y1="395" x2="75" y2="390"/></g>
+              <text x="70" y="540" font-size="24" fill="#2563EB">opposite chain: fan across</text>
+            </g>
+            <g transform="translate(440,40)">
+              <path d="M170 40 L95 180 L80 390 L180 490 L325 380 L350 205 Z" fill="#F0FDFA" stroke="#111827" stroke-width="4"/>
+              <g stroke="#0F766E" stroke-width="5"><line x1="350" y1="205" x2="95" y2="180"/><line x1="350" y1="205" x2="80" y2="390"/><line x1="350" y1="205" x2="180" y2="490"/></g>
+              <text x="45" y="540" font-size="24" fill="#0F766E">same chain: pop visible turns</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>The two cases are the whole monotone triangulation algorithm</span><span>15 / 16</span></div>
+      <aside class="speaker-notes">Give students the mental branching rule. Opposite-chain vertices can see across the monotone polygon, so the algorithm fans diagonals to the stack and then starts a new stack. Same-chain vertices require a turn test: pop and add diagonals only while the popped vertex remains visible from the current vertex. Since each stack operation is charged once, the whole pass is linear.</aside>
+    </div></div>
+  </section>
+
+  <section data-label="Full Pipeline And Extensions">
+    <div class="slide"><div class="pad">
+      <h2>Full Pipeline And Extensions</h2><div class="rule"></div>
+      <div class="content" style="grid-template-rows:auto 1fr;">
+        <div class="pipeline">
+          <div class="step"><h3>1. Partition</h3><p>Run MAKE_MONOTONE with event queue, status tree, helpers, and DCEL diagonal insertions.</p></div>
+          <div class="step"><h3>2. Triangulate</h3><p>Sort each monotone piece and apply the stack invariant to add all remaining diagonals.</p></div>
+          <div class="step"><h3>3. 3-Color</h3><p>Use the triangulation dual tree to extend a proper three-coloring triangle by triangle.</p></div>
+          <div class="step"><h3>4. Choose Guards</h3><p>Select the smallest color class, giving at most <span class="math">floor(n/3)</span> guards.</p></div>
+        </div>
+        <figure class="diagram">
+          <svg viewBox="0 0 1500 430" role="img" aria-label="Pipeline from polygon to subdivision theorem">
+            <defs><marker id="arr16" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#475569"/></marker></defs>
+            <g transform="translate(35,35)">
+              <polygon points="40,70 145,35 230,85 315,50 390,130 340,230 385,315 220,285 145,340 95,235 35,250 70,155" fill="#F8FAFC" stroke="#111827" stroke-width="4"/>
+              <text x="80" y="385" font-size="26" fill="#475569">input polygon</text>
+            </g>
+            <line x1="455" y1="205" x2="570" y2="205" stroke="#475569" stroke-width="5" marker-end="url(#arr16)"/>
+            <g transform="translate(600,35)">
+              <polygon points="40,70 145,35 230,85 315,50 390,130 340,230 385,315 220,285 145,340 95,235 35,250 70,155" fill="#EFF6FF" stroke="#111827" stroke-width="4"/>
+              <g stroke="#2563EB" stroke-width="4"><line x1="70" y1="155" x2="230" y2="85"/><line x1="230" y1="85" x2="340" y2="230"/><line x1="95" y1="235" x2="220" y2="285"/></g>
+              <text x="52" y="385" font-size="26" fill="#475569">monotone pieces</text>
+            </g>
+            <line x1="1020" y1="205" x2="1135" y2="205" stroke="#475569" stroke-width="5" marker-end="url(#arr16)"/>
+            <g transform="translate(1160,35)">
+              <polygon points="40,70 145,35 230,85 315,50 390,130 340,230 385,315 220,285 145,340 95,235 35,250 70,155" fill="#fff" stroke="#111827" stroke-width="4"/>
+              <g stroke="#CBD5E1" stroke-width="4"><line x1="40" y1="70" x2="230" y2="85"/><line x1="70" y1="155" x2="230" y2="85"/><line x1="230" y1="85" x2="340" y2="230"/><line x1="230" y1="85" x2="220" y2="285"/><line x1="95" y1="235" x2="220" y2="285"/><line x1="220" y1="285" x2="340" y2="230"/></g>
+              <g fill="#2563EB"><circle cx="40" cy="70" r="10"/><circle cx="315" cy="50" r="10"/><circle cx="385" cy="315" r="10"/></g>
+              <text x="80" y="385" font-size="26" fill="#475569">guards by color</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Subdivision theorem: the same machinery supports planar subdivisions</span><span>16 / 16</span></div>
+      <aside class="speaker-notes">Close by assembling the pipeline. The sweep adds diagonals that remove split and merge vertices, producing monotone pieces. The stack algorithm triangulates those pieces without returning to a global search. The dual tree supports a three-coloring, and the smallest color class gives the guard set. The same decomposition viewpoint is the bridge to triangulating more general planar subdivisions.</aside>
+    </div></div>
+  </section>
+
+</deck-stage>
+<script type="application/json" id="deck-metadata">
+{
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-03",
+  "chapter_title": "03 - Polygon Triangulation",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-03-polygon-triangulation/03-polygon-triangulation.ipynb",
+  "source_span": "printed pages 45-62; PDF pages 56-73",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+</script>
+<script type="application/json" id="speaker-notes">
+{
+  "slides": [
+    {"slide": 1, "notes": "Open the lecture by naming the modeling bargain. We will not try to solve every visibility question directly. Instead, we turn the gallery boundary into a simple polygon, prove that diagonals can decompose it into triangles, and then use a coloring argument to choose a small guard set. The number to protect carefully is floor n over three."},
+    {"slide": 2, "notes": "Make the definitions operational. A simple polygon has no crossing boundary edges, so it gives a clean inside and outside. Visibility is a segment test: if every point of the segment from the guard to the target remains in the polygon, the target is visible. This framing is deliberately geometric and will let triangulation replace a difficult global search."},
+    {"slide": 3, "notes": "Separate the vocabulary carefully. A diagonal is not any chord of the polygon; its endpoints are vertices, they are not neighbors on the boundary, and the segment must remain in the polygon. A triangulation is then a saturated non-crossing set of such diagonals. Saturation matters because it turns a combinatorial object into a geometric certificate that every remaining cell is a triangle."},
+    {"slide": 4, "notes": "Present this as the engine behind induction. At a leftmost vertex, the triangle formed with its neighbors points into the polygon. If the opposite side is clean, we are done. If it is not clean, the triangle contains polygon vertices that explain the obstruction. Choosing the farthest witness from the neighbor chord avoids crossings and gives a diagonal from the leftmost vertex."},
+    {"slide": 5, "notes": "Use the diagram to explain why the formula is independent of the triangulation chosen. A diagonal divides the polygon into two smaller polygons, and the diagonal endpoints belong to both subproblems. That double counting is exactly the plus two in n one plus n two equals n plus two. The induction then forces every triangulation to have n minus two triangles."},
+    {"slide": 6, "notes": "Now connect triangulation to guarding. Once the polygon is triangulated, every point lies in at least one triangle. If the vertices can be colored so that each triangle has all three colors, then choosing any one color class places a guard at a vertex of every triangle. Choosing the smallest class gives the numerical bound by the pigeonhole principle."},
+    {"slide": 7, "notes": "The dual graph gives a clean proof view. It has a node for every triangle and an edge for every shared diagonal. It is connected because the polygon is one region, and a cycle would enclose a hole or force incompatible separation in a simple polygon triangulation. Leaves are ears, so induction can remove a leaf triangle, color the rest, and extend the third color to the removed vertex."},
+    {"slide": 8, "notes": "State the theorem with the floor, not a ceiling. The upper bound comes from triangulate, three-color, and choose the smallest color class. The lower bound is a family argument: make a comb with separated pockets so one guard cannot see into two distant teeth. The construction shows that the theorem is not merely convenient; its dependence on n is tight."},
+    {"slide": 9, "notes": "Emphasize the distinction between a proof and an efficient procedure. The leftmost-vertex argument proves that a diagonal exists, but a direct recursive implementation may repeatedly search through long boundary portions and split off tiny pieces. The chapter therefore changes strategy: impose monotonicity with a sweep, then exploit monotone structure with a stack triangulation."},
+    {"slide": 10, "notes": "Define monotonicity using horizontal lines because the sweep runs from top to bottom. A vertex type is determined by the vertical relation to its two neighbors and whether the interior angle is convex or reflex. Split and merge vertices are the dangerous ones because they create disconnected horizontal intersections. Mention the tie rule so students see that equal-height vertices do not leave the event order ambiguous."},
+    {"slide": 11, "notes": "Use this slide as a proof sketch rather than a formal case table. If monotonicity fails, some horizontal line sees two separated pieces of the polygon. Move the line until the number of intersection components changes; the responsible event must be a reflex vertex with both adjacent vertices on the same side, hence split or merge. Conversely, either such vertex visibly creates a disconnected slice just above or just below it."},
+    {"slide": 12, "notes": "The MAKE_MONOTONE algorithm is a plane sweep with memory. The queue tells us which vertex is next. The status tree tells us which boundary edge lies immediately to the left of an event. The helper field is the compact state: it remembers a processed vertex that might need a diagonal when the sweep later discovers the matching event below it."},
+    {"slide": 13, "notes": "Do not dwell on memorizing every branch. The main idea is that split and merge events are repaired by diagonals to stored helpers. Start and end events mostly maintain the active boundary edges, while regular vertices behave according to which chain they occupy. The DCEL matters because adding a diagonal is not just drawing a segment; it rewires half-edges and creates two face cycles for later triangulation."},
+    {"slide": 14, "notes": "After partitioning, each piece has a much simpler geometry. Sort the vertices from top to bottom. The stack records an unresolved chain in the current funnel. The reason this can be linear is that each vertex is pushed once and popped at most once. The visibility test is local because a monotone polygon prevents hidden pockets from appearing behind the sweep order."},
+    {"slide": 15, "notes": "Give students the mental branching rule. Opposite-chain vertices can see across the monotone polygon, so the algorithm fans diagonals to the stack and then starts a new stack. Same-chain vertices require a turn test: pop and add diagonals only while the popped vertex remains visible from the current vertex. Since each stack operation is charged once, the whole pass is linear."},
+    {"slide": 16, "notes": "Close by assembling the pipeline. The sweep adds diagonals that remove split and merge vertices, producing monotone pieces. The stack algorithm triangulates those pieces without returning to a global search. The dual tree supports a three-coloring, and the smallest color class gives the guard set. The same decomposition viewpoint is the bridge to triangulating more general planar subdivisions."}
+  ]
+}
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ]
+      });
+    }
+  });
+</script>
+</body>
+</html>

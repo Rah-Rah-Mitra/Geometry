@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sampling</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-13">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-13-sampling/13-sampling.ipynb">
+  <meta name="source_span" content="printed pages 335-356; PDF pages 352-373.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text fonts and KaTeX auto-render support are enabled.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open by making sampling a geometry question rather than a random-number trick. A graphics sampler must say which set is being measured, which density is intended, and which estimator will consume the points. The lecture will keep asking what measure survives the mapping from the unit square."
+    },
+    {
+      "slide": 2,
+      "notes": "Use the map to name the three layers that recur all hour. First we choose a measure on a geometric domain. Then we build a sampler from canonical uniform numbers. Finally we test the resulting points by variance, coverage, or a distribution diagnostic from the notebook."
+    },
+    {
+      "slide": 3,
+      "notes": "Slow down on the word measure, because it is the bookkeeping that tells an integral what counts as size. The same square can be counted uniformly by area or with a weight that favors the far corner. Sampling errors often begin when this measure is left implicit."
+    },
+    {
+      "slide": 4,
+      "notes": "Lines are the first place where ordinary image coordinates become misleading. Slope-intercept coordinates do not treat rotations fairly. Normal coordinates give a cleaner picture: a line becomes a point in angle-distance space, and the fair differential behaves like a flat area element there."
+    },
+    {
+      "slide": 5,
+      "notes": "Connect density to measure before writing any estimator. A probability density is not just a curve; it is a nonnegative weighting whose total measure is one. The shaded interval is the probability of landing there, and expectation is the same integral with a function attached."
+    },
+    {
+      "slide": 6,
+      "notes": "This is the estimator slide. When samples come from density p, each sample must be reweighted by one over p. Good importance sampling makes g divided by p almost flat, so the average stops swinging. Linearity of expectation explains why the average remains unbiased."
+    },
+    {
+      "slide": 7,
+      "notes": "Inverse CDF sampling is the cleanest construction because it turns a uniform number into a target random variable through a monotone warp. Regions with high density get stretched in sample space. If applying the target CDF to warped samples looks uniform, the warp is doing its job."
+    },
+    {
+      "slide": 8,
+      "notes": "The disk example is a useful trap. Uniform radius sounds plausible, but polar area includes an extra factor of r. The square-root radius is what equalizes annular area. Ask students to compare the left and right scatters by looking for excess center mass."
+    },
+    {
+      "slide": 9,
+      "notes": "Rejection sampling is attractive because the implementation is almost embarrassingly simple. Propose in a box or cube, keep the points that land in the target, and discard the rest. The cost is wasted proposals and the loss of any carefully arranged stratified pattern."
+    },
+    {
+      "slide": 10,
+      "notes": "Metropolis should be framed as a fallback for target shapes that can be evaluated but not sampled directly. The chain mutates a current point and balances flow between states through acceptance probabilities. Its strength is flexibility; its price is correlation and burn-in judgment."
+    },
+    {
+      "slide": 11,
+      "notes": "Stratification attacks coverage before the geometric warp is applied. Random points can leave cells empty even when the count is high. Jittered and low-discrepancy patterns deliberately cover the square, which is why they are valuable for pixels, lenses, disks, and direction samples."
+    },
+    {
+      "slide": 12,
+      "notes": "For directions, the surface measure is the important part. Uniform sphere sampling makes z uniform on negative one to one, while a uniform hemisphere makes z uniform on zero to one. The formulas are short because the solid-angle measure has already been accounted for."
+    },
+    {
+      "slide": 13,
+      "notes": "Cosine-weighted hemisphere sampling is the rendering payoff. A diffuse irradiance integrand contains the cosine z, so using density z over pi makes every contribution equal to pi. The slide shows why the notebook reports zero variance for the exact cosine estimator."
+    },
+    {
+      "slide": 14,
+      "notes": "Return to lines as a full sampler design problem. In normal coordinates, lines hitting the unit square occupy a bounded region under r max of theta. Sampling theta with density proportional to that boundary and then choosing r uniformly below it preserves the line measure."
+    },
+    {
+      "slide": 15,
+      "notes": "Close by turning every technique into a debugging checklist. Name the measure, verify the density integrates to one, check that the warp preserves the intended cumulative distribution, and inspect the estimator g over p. The geometry and the variance should tell the same story."
+    }
+  ]
+}
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 80px 80px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 64px;
+      line-height: 1.04;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.18;
+      color: var(--slide-accent);
+      margin-bottom: 12px;
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.32;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 34px;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.26;
+      max-width: 1180px;
+      margin-top: 20px;
+    }
+
+    .meta-line {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      margin-top: 18px;
+    }
+
+    .rule {
+      width: 96px;
+      height: 6px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+      margin: 24px 0 30px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 34px;
+      align-items: stretch;
+    }
+
+    .two {
+      grid-template-columns: 0.96fr 1.04fr;
+    }
+
+    .two.right {
+      grid-template-columns: 1.08fr 0.92fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      background: #fff;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 6px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 6px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 6px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 6px solid var(--slide-violet);
+    }
+
+    .panel.slate {
+      background: var(--slide-bg-alt);
+      border-left: 6px solid var(--slide-border);
+    }
+
+    .panel h3 {
+      font-size: 30px;
+    }
+
+    .panel p, .panel li {
+      font-size: 25px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 6px;
+      padding: 5px 10px;
+      margin-bottom: 10px;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.3;
+      padding: 18px 20px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: var(--slide-bg-alt);
+      text-align: center;
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.28;
+      color: var(--slide-dimmed);
+      margin-top: 12px;
+    }
+
+    .diagram {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .svg-label {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      fill: var(--slide-ink);
+    }
+
+    .svg-small {
+      font-family: var(--font-sans);
+      font-size: 21px;
+      fill: var(--slide-muted);
+    }
+
+    .svg-math {
+      font-family: var(--font-math);
+      font-size: 27px;
+      fill: var(--slide-ink);
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .mini-table th, .mini-table td {
+      border-bottom: 1px solid var(--slide-border-light);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .mini-table th {
+      color: var(--slide-accent);
+      font-weight: 700;
+      background: #F8FAFC;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="eyebrow">Geometry Atlas lecture deck</div>
+        <h1>Sampling</h1>
+        <p class="subtitle">From canonical uniform numbers to fair samples on measures, line spaces, disks, spheres, hemispheres, and Monte Carlo estimators.</p>
+        <div class="rule"></div>
+        <div class="content two">
+          <div class="stack">
+            <div class="panel blue">
+              <span class="tag">Chapter 13</span>
+              <p>Source span: printed pages 335-356; PDF pages 352-373.</p>
+            </div>
+            <div class="panel teal">
+              <span class="tag">Instructor promise</span>
+              <p>Every sample is audited by its measure, density, warp, and estimator consequence.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 520" role="img" aria-label="Sampling pipeline from square to geometry">
+              <defs>
+                <marker id="titleArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="45" y="105" width="185" height="185" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <g fill="#2563EB">
+                <circle cx="78" cy="140" r="6"></circle><circle cx="121" cy="178" r="6"></circle><circle cx="184" cy="145" r="6"></circle>
+                <circle cx="97" cy="244" r="6"></circle><circle cx="153" cy="218" r="6"></circle><circle cx="204" cy="262" r="6"></circle>
+              </g>
+              <text x="137" y="333" text-anchor="middle" class="svg-label">canonical square</text>
+              <path d="M250,198 C310,178 335,178 395,198" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#titleArrow)"></path>
+              <rect x="405" y="78" width="145" height="92" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="477" y="132" text-anchor="middle" class="svg-small">measure</text>
+              <rect x="405" y="214" width="145" height="92" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <text x="477" y="268" text-anchor="middle" class="svg-small">warp</text>
+              <rect x="405" y="350" width="145" height="92" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+              <text x="477" y="405" text-anchor="middle" class="svg-small">estimator</text>
+              <path d="M560,198 C610,172 650,168 706,185" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#titleArrow)"></path>
+              <circle cx="712" cy="198" r="82" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+              <ellipse cx="712" cy="198" rx="82" ry="27" fill="none" stroke="#2563EB" stroke-width="3"></ellipse>
+              <path d="M630,198 A82,82 0 0 1 794,198" fill="#CCFBF1" stroke="#0F766E" stroke-width="4" opacity="0.82"></path>
+              <line x1="712" y1="198" x2="712" y2="83" stroke="#B45309" stroke-width="5"></line>
+              <text x="712" y="333" text-anchor="middle" class="svg-label">disk, sphere, hemisphere</text>
+            </svg>
+          </div>
+        </div>
+        <p class="meta-line">Notebook: Fundamentals-of-Computer-Graphics/chapter-13-sampling/13-sampling.ipynb</p>
+      </div>
+      <aside class="speaker-notes">Open by making sampling a geometry question rather than a random-number trick. A graphics sampler must say which set is being measured, which density is intended, and which estimator will consume the points. The lecture will keep asking what measure survives the mapping from the unit square.</aside>
+    </section>
+
+    <section data-label="Lecture Map">
+      <div class="slide">
+        <div class="eyebrow">Learning arc</div>
+        <h2>A Sample Is A Measured Geometric Claim</h2>
+        <div class="content three" style="margin-top: 34px;">
+          <div class="panel blue">
+            <h3>1. Name The Measure</h3>
+            <ul>
+              <li>Area, weighted area, solid angle, or line measure.</li>
+              <li>Zero-measure sets should not distort the calculation.</li>
+              <li>Fairness means invariance under the right motions.</li>
+            </ul>
+          </div>
+          <div class="panel teal">
+            <h3>2. Build The Warp</h3>
+            <ul>
+              <li>Inverse CDF for one-dimensional and separable densities.</li>
+              <li>Rejection and Metropolis for difficult targets.</li>
+              <li>Geometric maps for disks, spheres, and hemispheres.</li>
+            </ul>
+          </div>
+          <div class="panel amber">
+            <h3>3. Audit The Samples</h3>
+            <ul>
+              <li>Probability density integrates to one.</li>
+              <li>Empirical CDF and marginal checks match theory.</li>
+              <li>Estimator variance reveals poor density choices.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="formula" style="margin-top: 34px;">measure + density + warp + estimator = debuggable sampling</div>
+      </div>
+      <aside class="speaker-notes">Use the map to name the three layers that recur all hour. First we choose a measure on a geometric domain. Then we build a sampler from canonical uniform numbers. Finally we test the resulting points by variance, coverage, or a distribution diagnostic from the notebook.</aside>
+    </section>
+
+    <section data-label="Measures">
+      <div class="slide">
+        <div class="eyebrow">Section 13.1</div>
+        <h2>Measures Tell The Integral What Counts As Size</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Uniform and weighted area measures">
+              <g transform="translate(70,78)">
+                <text x="165" y="-24" text-anchor="middle" class="svg-label">area measure</text>
+                <rect x="0" y="0" width="330" height="330" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <g stroke="#CBD5E1" stroke-width="2">
+                  <line x1="82.5" y1="0" x2="82.5" y2="330"></line><line x1="165" y1="0" x2="165" y2="330"></line><line x1="247.5" y1="0" x2="247.5" y2="330"></line>
+                  <line x1="0" y1="82.5" x2="330" y2="82.5"></line><line x1="0" y1="165" x2="330" y2="165"></line><line x1="0" y1="247.5" x2="330" y2="247.5"></line>
+                </g>
+                <g fill="#2563EB" opacity="0.55">
+                  <rect x="0" y="0" width="82.5" height="82.5"></rect><rect x="82.5" y="0" width="82.5" height="82.5"></rect><rect x="165" y="0" width="82.5" height="82.5"></rect><rect x="247.5" y="0" width="82.5" height="82.5"></rect>
+                  <rect x="0" y="82.5" width="82.5" height="82.5"></rect><rect x="82.5" y="82.5" width="82.5" height="82.5"></rect><rect x="165" y="82.5" width="82.5" height="82.5"></rect><rect x="247.5" y="82.5" width="82.5" height="82.5"></rect>
+                  <rect x="0" y="165" width="82.5" height="82.5"></rect><rect x="82.5" y="165" width="82.5" height="82.5"></rect><rect x="165" y="165" width="82.5" height="82.5"></rect><rect x="247.5" y="165" width="82.5" height="82.5"></rect>
+                  <rect x="0" y="247.5" width="82.5" height="82.5"></rect><rect x="82.5" y="247.5" width="82.5" height="82.5"></rect><rect x="165" y="247.5" width="82.5" height="82.5"></rect><rect x="247.5" y="247.5" width="82.5" height="82.5"></rect>
+                </g>
+                <text x="165" y="378" text-anchor="middle" class="svg-small">equal cells count equally</text>
+              </g>
+              <g transform="translate(470,78)">
+                <text x="165" y="-24" text-anchor="middle" class="svg-label">weighted measure</text>
+                <rect x="0" y="0" width="330" height="330" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <g stroke="#CBD5E1" stroke-width="2">
+                  <line x1="82.5" y1="0" x2="82.5" y2="330"></line><line x1="165" y1="0" x2="165" y2="330"></line><line x1="247.5" y1="0" x2="247.5" y2="330"></line>
+                  <line x1="0" y1="82.5" x2="330" y2="82.5"></line><line x1="0" y1="165" x2="330" y2="165"></line><line x1="0" y1="247.5" x2="330" y2="247.5"></line>
+                </g>
+                <g fill="#B45309">
+                  <rect x="0" y="0" width="82.5" height="82.5" opacity="0.08"></rect><rect x="82.5" y="0" width="82.5" height="82.5" opacity="0.14"></rect><rect x="165" y="0" width="82.5" height="82.5" opacity="0.24"></rect><rect x="247.5" y="0" width="82.5" height="82.5" opacity="0.36"></rect>
+                  <rect x="0" y="82.5" width="82.5" height="82.5" opacity="0.14"></rect><rect x="82.5" y="82.5" width="82.5" height="82.5" opacity="0.24"></rect><rect x="165" y="82.5" width="82.5" height="82.5" opacity="0.38"></rect><rect x="247.5" y="82.5" width="82.5" height="82.5" opacity="0.52"></rect>
+                  <rect x="0" y="165" width="82.5" height="82.5" opacity="0.24"></rect><rect x="82.5" y="165" width="82.5" height="82.5" opacity="0.38"></rect><rect x="165" y="165" width="82.5" height="82.5" opacity="0.55"></rect><rect x="247.5" y="165" width="82.5" height="82.5" opacity="0.72"></rect>
+                  <rect x="0" y="247.5" width="82.5" height="82.5" opacity="0.36"></rect><rect x="82.5" y="247.5" width="82.5" height="82.5" opacity="0.52"></rect><rect x="165" y="247.5" width="82.5" height="82.5" opacity="0.72"></rect><rect x="247.5" y="247.5" width="82.5" height="82.5" opacity="0.9"></rect>
+                </g>
+                <text x="165" y="378" text-anchor="middle" class="svg-small">far corner counts more</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Measure Rules</h3>
+              <p>Empty sets have zero measure, and disjoint pieces add. These two rules make size compatible with integration.</p>
+            </div>
+            <div class="formula">$$d\nu(x)=w(x)\,d\mu(x),\qquad w(x)\ge 0$$</div>
+            <div class="panel teal">
+              <h3>Average With Respect To A Measure</h3>
+              <p>The denominator matters: changing the measure changes which parts of the domain dominate the average.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Slow down on the word measure, because it is the bookkeeping that tells an integral what counts as size. The same square can be counted uniformly by area or with a weight that favors the far corner. Sampling errors often begin when this measure is left implicit.</aside>
+    </section>
+
+    <section data-label="Line Measure">
+      <div class="slide alt">
+        <div class="eyebrow">Integral geometry</div>
+        <h2>Fair Lines Need A Measure On Line Space</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="panel amber">
+              <h3>Bad Coordinates Can Bias Lines</h3>
+              <p>Slope-intercept coordinates overweight some bundles after rotation or translation.</p>
+            </div>
+            <div class="panel blue">
+              <h3>Normal Coordinates</h3>
+              <p>A line becomes \((\theta,r)\) through \(x\cos\theta+y\sin\theta=r\), and the natural differential is \(dr\,d\theta\).</p>
+            </div>
+            <div class="formula">$$d\mu_{\mathrm{line}}=dr\,d\theta$$</div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Square lines and normal coordinate line space">
+              <defs>
+                <marker id="lineArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="90" y="95" width="270" height="270" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+              <line x1="55" y1="300" x2="390" y2="170" stroke="#2563EB" stroke-width="4"></line>
+              <line x1="80" y1="160" x2="370" y2="345" stroke="#0F766E" stroke-width="4"></line>
+              <line x1="125" y1="385" x2="330" y2="70" stroke="#B45309" stroke-width="4"></line>
+              <circle cx="225" cy="230" r="6" fill="#111827"></circle>
+              <path d="M225,230 L315,188" stroke="#1E3A8A" stroke-width="4" marker-end="url(#lineArrow)"></path>
+              <text x="318" y="179" class="svg-small">normal</text>
+              <text x="225" y="422" text-anchor="middle" class="svg-label">lines clipped by square</text>
+              <g transform="translate(475,86)">
+                <line x1="0" y1="360" x2="310" y2="360" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="360" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M0,310 C75,210 145,112 220,90 C260,78 292,92 310,132 L310,360 L0,360 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="5" opacity="0.9"></path>
+                <g stroke="#0F766E" stroke-width="3" opacity="0.8">
+                  <line x1="42" y1="360" x2="42" y2="275"></line>
+                  <line x1="116" y1="360" x2="116" y2="182"></line>
+                  <line x1="190" y1="360" x2="190" y2="101"></line>
+                  <line x1="264" y1="360" x2="264" y2="96"></line>
+                </g>
+                <text x="155" y="405" text-anchor="middle" class="svg-small">angle theta</text>
+                <text x="-12" y="58" text-anchor="end" class="svg-small">r</text>
+                <text x="178" y="72" class="svg-label">hitting region</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Lines are the first place where ordinary image coordinates become misleading. Slope-intercept coordinates do not treat rotations fairly. Normal coordinates give a cleaner picture: a line becomes a point in angle-distance space, and the fair differential behaves like a flat area element there.</aside>
+    </section>
+
+    <section data-label="Density">
+      <div class="slide">
+        <div class="eyebrow">Continuous probability</div>
+        <h2>A Density Is A Normalized Weight Against A Measure</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Probability density curve and shaded interval">
+              <g transform="translate(80,70)">
+                <line x1="0" y1="390" x2="670" y2="390" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="390" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M80,390 C145,278 210,144 300,138 C386,132 430,245 486,300 C545,358 600,350 635,322 L635,390 Z" fill="#DBEAFE" opacity="0.9"></path>
+                <path d="M80,390 C145,278 210,144 300,138 C386,132 430,245 486,300 C545,358 600,350 635,322" fill="none" stroke="#2563EB" stroke-width="6"></path>
+                <path d="M215,390 C248,190 292,136 350,166 C393,190 420,252 456,292 L456,390 Z" fill="#FEF3C7" stroke="#B45309" stroke-width="3" opacity="0.85"></path>
+                <line x1="215" y1="390" x2="215" y2="182" stroke="#B45309" stroke-width="3" stroke-dasharray="8 8"></line>
+                <line x1="456" y1="390" x2="456" y2="292" stroke="#B45309" stroke-width="3" stroke-dasharray="8 8"></line>
+                <text x="336" y="455" text-anchor="middle" class="svg-small">domain coordinate x</text>
+                <text x="-20" y="58" text-anchor="end" class="svg-small">p(x)</text>
+                <text x="336" y="334" text-anchor="middle" class="svg-label">probability of interval</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Density Conditions</h3>
+              <p>\(p(x)\ge 0\) everywhere and \(\int_S p(x)\,d\mu(x)=1\).</p>
+            </div>
+            <div class="formula">$$\Pr(X\in A)=\int_A p(x)\,d\mu(x)$$</div>
+            <div class="panel teal">
+              <h3>Expected Value</h3>
+              <p>The average of \(f(X)\) is the integral of \(f\) weighted by the density.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Connect density to measure before writing any estimator. A probability density is not just a curve; it is a nonnegative weighting whose total measure is one. The shaded interval is the probability of landing there, and expectation is the same integral with a function attached.</aside>
+    </section>
+
+    <section data-label="Monte Carlo">
+      <div class="slide alt">
+        <div class="eyebrow">Estimator mechanics</div>
+        <h2>Importance Sampling Reweights By The Chosen Density</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula">$$\int_S g(x)\,d\mu(x)\approx {1\over N}\sum_{i=1}^N {g(X_i)\over p(X_i)}$$</div>
+            <div class="panel teal">
+              <h3>Variance Target</h3>
+              <p>Choose \(p\) with the same shape as \(g\), so the ratio \(g/p\) becomes flatter.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Notebook Diagnostic</h3>
+              <p>For \(\int_0^4 x\,dx=8\), the N=512 uniform RMSE is 0.196, while matched importance is constant.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Importance sampling flattens estimator contributions">
+              <g transform="translate(75,78)">
+                <text x="160" y="-22" text-anchor="middle" class="svg-label">poor density</text>
+                <line x1="0" y1="330" x2="320" y2="330" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="330" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M0,330 L320,80" stroke="#2563EB" stroke-width="6" fill="none"></path>
+                <path d="M0,170 C95,185 214,185 320,170" stroke="#B45309" stroke-width="5" fill="none" stroke-dasharray="10 8"></path>
+                <g fill="#FCA5A5" stroke="#B45309" stroke-width="2">
+                  <rect x="28" y="250" width="24" height="80"></rect><rect x="82" y="220" width="24" height="110"></rect><rect x="142" y="172" width="24" height="158"></rect><rect x="208" y="118" width="24" height="212"></rect><rect x="276" y="62" width="24" height="268"></rect>
+                </g>
+                <text x="160" y="382" text-anchor="middle" class="svg-small">large variation in g / p</text>
+              </g>
+              <g transform="translate(465,78)">
+                <text x="160" y="-22" text-anchor="middle" class="svg-label">matched density</text>
+                <line x1="0" y1="330" x2="320" y2="330" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="330" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M0,330 L320,80" stroke="#2563EB" stroke-width="6" fill="none"></path>
+                <path d="M0,330 L320,80" stroke="#0F766E" stroke-width="5" fill="none" stroke-dasharray="10 8"></path>
+                <g fill="#99F6E4" stroke="#0F766E" stroke-width="2">
+                  <rect x="28" y="170" width="24" height="160"></rect><rect x="82" y="170" width="24" height="160"></rect><rect x="142" y="170" width="24" height="160"></rect><rect x="208" y="170" width="24" height="160"></rect><rect x="276" y="170" width="24" height="160"></rect>
+                </g>
+                <text x="160" y="382" text-anchor="middle" class="svg-small">constant contribution</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This is the estimator slide. When samples come from density p, each sample must be reweighted by one over p. Good importance sampling makes g divided by p almost flat, so the average stops swinging. Linearity of expectation explains why the average remains unbiased.</aside>
+    </section>
+
+    <section data-label="Inverse CDF">
+      <div class="slide">
+        <div class="eyebrow">Section 13.4.1</div>
+        <h2>Inverse CDF Sampling Bends Uniform Numbers Into A Density</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Inverse CDF warp diagram">
+              <defs>
+                <marker id="cdfArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(65,85)">
+                <line x1="0" y1="340" x2="700" y2="340" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="340" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M40,330 C145,320 240,275 342,185 C440,99 548,68 660,55" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <g stroke="#B45309" stroke-width="4" stroke-dasharray="8 7">
+                  <line x1="0" y1="245" x2="250" y2="245"></line><line x1="250" y1="245" x2="250" y2="340"></line>
+                  <line x1="0" y1="145" x2="390" y2="145"></line><line x1="390" y1="145" x2="390" y2="340"></line>
+                  <line x1="0" y1="78" x2="570" y2="78"></line><line x1="570" y1="78" x2="570" y2="340"></line>
+                </g>
+                <text x="-16" y="248" text-anchor="end" class="svg-small">u</text>
+                <text x="250" y="380" text-anchor="middle" class="svg-small">P^{-1}(u)</text>
+                <text x="350" y="30" text-anchor="middle" class="svg-label">monotone cumulative map</text>
+                <path d="M95,438 L615,438" stroke="#1E3A8A" stroke-width="5" marker-end="url(#cdfArrow)"></path>
+                <text x="355" y="486" text-anchor="middle" class="svg-small">uniform samples become denser where P is steep</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">$$U\sim \mathrm{Uniform}[0,1),\qquad X=P^{-1}(U)$$</div>
+            <div class="panel blue">
+              <h3>One-Dimensional Recipe</h3>
+              <p>Integrate the density into a cumulative distribution, then invert it analytically or numerically.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Check</h3>
+              <p>If \(X\) is correct, then \(P(X)\) behaves like the original uniform samples.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Inverse CDF sampling is the cleanest construction because it turns a uniform number into a target random variable through a monotone warp. Regions with high density get stretched in sample space. If applying the target CDF to warped samples looks uniform, the warp is doing its job.</aside>
+    </section>
+
+    <section data-label="Disk Warp">
+      <div class="slide alt">
+        <div class="eyebrow">Disk sampling</div>
+        <h2>Uniform Radius Is Not Uniform Area</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula">$$\phi=2\pi u_1,\qquad r=R\sqrt{u_2}$$</div>
+            <div class="panel amber">
+              <h3>Common Mistake</h3>
+              <p>Using \(r=Ru\) places too much probability near the center because annuli grow with radius.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Notebook Check</h3>
+              <p>The inner half-radius probability is about 0.25 for the square-root warp, but about 0.50 for uniform radius.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Disk sampling square-root radius versus uniform radius">
+              <g transform="translate(78,70)">
+                <text x="160" y="-18" text-anchor="middle" class="svg-label">uniform radius</text>
+                <circle cx="160" cy="190" r="150" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+                <circle cx="160" cy="190" r="75" fill="#FEF3C7" stroke="#B45309" stroke-width="4"></circle>
+                <g fill="#B45309" opacity="0.78">
+                  <circle cx="164" cy="202" r="6"></circle><circle cx="143" cy="156" r="6"></circle><circle cx="192" cy="179" r="6"></circle><circle cx="119" cy="209" r="6"></circle><circle cx="204" cy="224" r="6"></circle><circle cx="153" cy="241" r="6"></circle><circle cx="97" cy="175" r="6"></circle><circle cx="225" cy="145" r="6"></circle>
+                  <circle cx="52" cy="86" r="6"></circle><circle cx="290" cy="266" r="6"></circle><circle cx="252" cy="84" r="6"></circle><circle cx="92" cy="316" r="6"></circle>
+                </g>
+                <text x="160" y="390" text-anchor="middle" class="svg-small">center is overfilled</text>
+              </g>
+              <g transform="translate(470,70)">
+                <text x="160" y="-18" text-anchor="middle" class="svg-label">area-preserving radius</text>
+                <circle cx="160" cy="190" r="150" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+                <circle cx="160" cy="190" r="75" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+                <g fill="#2563EB" opacity="0.78">
+                  <circle cx="72" cy="92" r="6"></circle><circle cx="266" cy="98" r="6"></circle><circle cx="286" cy="248" r="6"></circle><circle cx="91" cy="300" r="6"></circle><circle cx="160" cy="52" r="6"></circle><circle cx="219" cy="318" r="6"></circle><circle cx="43" cy="199" r="6"></circle><circle cx="301" cy="181" r="6"></circle>
+                  <circle cx="165" cy="206" r="6"></circle><circle cx="126" cy="157" r="6"></circle><circle cx="195" cy="154" r="6"></circle><circle cx="149" cy="235" r="6"></circle>
+                </g>
+                <text x="160" y="390" text-anchor="middle" class="svg-small">equal area receives equal mass</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The disk example is a useful trap. Uniform radius sounds plausible, but polar area includes an extra factor of r. The square-root radius is what equalizes annular area. Ask students to compare the left and right scatters by looking for excess center mass.</aside>
+    </section>
+
+    <section data-label="Rejection">
+      <div class="slide">
+        <div class="eyebrow">Section 13.4.2</div>
+        <h2>Rejection Sampling Trades Simplicity For Wasted Proposals</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Rejection sampling in a box and under a curve">
+              <rect x="80" y="70" width="330" height="330" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+              <circle cx="245" cy="235" r="150" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></circle>
+              <g fill="#0F766E">
+                <circle cx="155" cy="158" r="7"></circle><circle cx="227" cy="126" r="7"></circle><circle cx="318" cy="189" r="7"></circle><circle cx="282" cy="294" r="7"></circle><circle cx="178" cy="318" r="7"></circle><circle cx="247" cy="234" r="7"></circle>
+              </g>
+              <g fill="#B45309">
+                <circle cx="101" cy="95" r="7"></circle><circle cx="390" cy="96" r="7"></circle><circle cx="383" cy="360" r="7"></circle><circle cx="102" cy="381" r="7"></circle>
+              </g>
+              <text x="245" y="442" text-anchor="middle" class="svg-label">accept inside the target</text>
+              <g transform="translate(490,82)">
+                <line x1="0" y1="330" x2="300" y2="330" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="330" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <rect x="0" y="70" width="300" height="260" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+                <path d="M0,308 C65,210 120,112 190,115 C250,118 282,210 300,278 L300,330 L0,330 Z" fill="#CCFBF1" stroke="#0F766E" stroke-width="5"></path>
+                <g fill="#0F766E">
+                  <circle cx="46" cy="286" r="6"></circle><circle cx="91" cy="230" r="6"></circle><circle cx="149" cy="149" r="6"></circle><circle cx="216" cy="170" r="6"></circle>
+                </g>
+                <g fill="#B45309">
+                  <circle cx="67" cy="116" r="6"></circle><circle cx="128" cy="90" r="6"></circle><circle cx="246" cy="98" r="6"></circle><circle cx="282" cy="168" r="6"></circle>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Algorithm</h3>
+              <p>Sample from an easy enclosing distribution, test membership or height, and repeat until a point is accepted.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Cost</h3>
+              <p>Disk proposals accept with probability near \(\pi/4\). Sphere-in-cube proposals accept near \(\pi/6\).</p>
+            </div>
+            <div class="panel violet">
+              <h3>Stratification Warning</h3>
+              <p>The keep-or-discard step breaks the regularity of a carefully stratified input pattern.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Rejection sampling is attractive because the implementation is almost embarrassingly simple. Propose in a box or cube, keep the points that land in the target, and discard the rest. The cost is wasted proposals and the loss of any carefully arranged stratified pattern.</aside>
+    </section>
+
+    <section data-label="Metropolis">
+      <div class="slide alt">
+        <div class="eyebrow">Section 13.4.3</div>
+        <h2>Metropolis Sampling Follows A Density By Local Mutations</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula">$$a(x\to y)=\min\left(1,{f(y)t(y\to x)\over f(x)t(x\to y)}\right)$$</div>
+            <div class="panel teal">
+              <h3>Strength</h3>
+              <p>The target density only needs to be evaluated up to a proportional scale.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Price</h3>
+              <p>Samples are correlated, and early steps may need to be discarded as burn-in.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Metropolis chain on a target density">
+              <defs>
+                <marker id="metroArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(80,70)">
+                <line x1="0" y1="390" x2="680" y2="390" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="390" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M30,365 C120,340 155,205 238,190 C300,178 340,310 402,288 C486,258 494,88 586,96 C630,100 660,158 680,210 L680,390 L30,390 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="5" opacity="0.88"></path>
+                <polyline points="70,348 132,306 180,238 246,202 310,230 364,278 426,260 486,184 548,110 610,132" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#metroArrow)"></polyline>
+                <g fill="#0F766E" stroke="#FFFFFF" stroke-width="3">
+                  <circle cx="70" cy="348" r="10"></circle><circle cx="132" cy="306" r="10"></circle><circle cx="180" cy="238" r="10"></circle><circle cx="246" cy="202" r="10"></circle><circle cx="310" cy="230" r="10"></circle><circle cx="364" cy="278" r="10"></circle><circle cx="426" cy="260" r="10"></circle><circle cx="486" cy="184" r="10"></circle><circle cx="548" cy="110" r="10"></circle><circle cx="610" cy="132" r="10"></circle>
+                </g>
+                <line x1="426" y1="260" x2="505" y2="328" stroke="#B45309" stroke-width="5" stroke-dasharray="10 8"></line>
+                <circle cx="505" cy="328" r="10" fill="#B45309" stroke="#FFFFFF" stroke-width="3"></circle>
+                <text x="520" y="357" class="svg-small">rejected mutation</text>
+                <text x="340" y="455" text-anchor="middle" class="svg-small">accepted states form a correlated chain</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Metropolis should be framed as a fallback for target shapes that can be evaluated but not sampled directly. The chain mutates a current point and balances flow between states through acceptance probabilities. Its strength is flexibility; its price is correlation and burn-in judgment.</aside>
+    </section>
+
+    <section data-label="Stratification">
+      <div class="slide">
+        <div class="eyebrow">Coverage diagnostics</div>
+        <h2>Stratification Makes Coverage A Design Choice</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Random, jittered, and low discrepancy coverage patterns">
+              <g transform="translate(30,70)">
+                <text x="120" y="-18" text-anchor="middle" class="svg-label">iid random</text>
+                <rect x="0" y="0" width="240" height="240" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <g stroke="#E2E8F0" stroke-width="2">
+                  <line x1="60" y1="0" x2="60" y2="240"></line><line x1="120" y1="0" x2="120" y2="240"></line><line x1="180" y1="0" x2="180" y2="240"></line>
+                  <line x1="0" y1="60" x2="240" y2="60"></line><line x1="0" y1="120" x2="240" y2="120"></line><line x1="0" y1="180" x2="240" y2="180"></line>
+                </g>
+                <g fill="#B45309">
+                  <circle cx="34" cy="26" r="6"></circle><circle cx="52" cy="92" r="6"></circle><circle cx="98" cy="88" r="6"></circle><circle cx="103" cy="148" r="6"></circle><circle cx="128" cy="32" r="6"></circle><circle cx="150" cy="42" r="6"></circle><circle cx="186" cy="111" r="6"></circle><circle cx="206" cy="214" r="6"></circle><circle cx="222" cy="44" r="6"></circle>
+                </g>
+                <text x="120" y="285" text-anchor="middle" class="svg-small">empty cells remain</text>
+              </g>
+              <g transform="translate(305,70)">
+                <text x="120" y="-18" text-anchor="middle" class="svg-label">jittered grid</text>
+                <rect x="0" y="0" width="240" height="240" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <g stroke="#E2E8F0" stroke-width="2">
+                  <line x1="60" y1="0" x2="60" y2="240"></line><line x1="120" y1="0" x2="120" y2="240"></line><line x1="180" y1="0" x2="180" y2="240"></line>
+                  <line x1="0" y1="60" x2="240" y2="60"></line><line x1="0" y1="120" x2="240" y2="120"></line><line x1="0" y1="180" x2="240" y2="180"></line>
+                </g>
+                <g fill="#0F766E">
+                  <circle cx="31" cy="24" r="6"></circle><circle cx="88" cy="39" r="6"></circle><circle cx="146" cy="20" r="6"></circle><circle cx="214" cy="45" r="6"></circle>
+                  <circle cx="44" cy="95" r="6"></circle><circle cx="91" cy="74" r="6"></circle><circle cx="153" cy="103" r="6"></circle><circle cx="208" cy="83" r="6"></circle>
+                  <circle cx="27" cy="145" r="6"></circle><circle cx="101" cy="160" r="6"></circle><circle cx="137" cy="142" r="6"></circle><circle cx="198" cy="169" r="6"></circle>
+                  <circle cx="39" cy="214" r="6"></circle><circle cx="78" cy="197" r="6"></circle><circle cx="161" cy="221" r="6"></circle><circle cx="225" cy="202" r="6"></circle>
+                </g>
+                <text x="120" y="285" text-anchor="middle" class="svg-small">one per cell</text>
+              </g>
+              <g transform="translate(580,70)">
+                <text x="120" y="-18" text-anchor="middle" class="svg-label">low discrepancy</text>
+                <rect x="0" y="0" width="240" height="240" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <g stroke="#E2E8F0" stroke-width="2">
+                  <line x1="60" y1="0" x2="60" y2="240"></line><line x1="120" y1="0" x2="120" y2="240"></line><line x1="180" y1="0" x2="180" y2="240"></line>
+                  <line x1="0" y1="60" x2="240" y2="60"></line><line x1="0" y1="120" x2="240" y2="120"></line><line x1="0" y1="180" x2="240" y2="180"></line>
+                </g>
+                <g fill="#6D28D9">
+                  <circle cx="28" cy="30" r="6"></circle><circle cx="148" cy="90" r="6"></circle><circle cx="88" cy="210" r="6"></circle><circle cx="208" cy="150" r="6"></circle>
+                  <circle cx="58" cy="120" r="6"></circle><circle cx="178" cy="60" r="6"></circle><circle cx="118" cy="180" r="6"></circle><circle cx="238" cy="20" r="6"></circle>
+                  <circle cx="13" cy="195" r="6"></circle><circle cx="133" cy="15" r="6"></circle><circle cx="73" cy="75" r="6"></circle><circle cx="193" cy="225" r="6"></circle>
+                  <circle cx="43" cy="45" r="6"></circle><circle cx="163" cy="165" r="6"></circle><circle cx="103" cy="105" r="6"></circle><circle cx="223" cy="135" r="6"></circle>
+                </g>
+                <text x="120" y="285" text-anchor="middle" class="svg-small">balanced prefixes</text>
+              </g>
+              <text x="425" y="455" text-anchor="middle" class="svg-small">Chapter check: occupied fraction random 0.660, jittered 1.000, Sobol-like 1.000 for 256 points.</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Coverage Before Warp</h3>
+              <p>Start with a better pattern in the unit square, then map it through the sampling warp.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Variance Evidence</h3>
+              <p>At N=512, the notebook reports stratified RMSE 0.00039 for the test integral, far below iid uniform.</p>
+            </div>
+            <div class="panel violet">
+              <h3>Where It Matters</h3>
+              <p>Pixel, lens, time, disk, and direction samples all benefit when the preimage is well covered.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Stratification attacks coverage before the geometric warp is applied. Random points can leave cells empty even when the count is high. Jittered and low-discrepancy patterns deliberately cover the square, which is why they are valuable for pixels, lenses, disks, and direction samples.</aside>
+    </section>
+
+    <section data-label="Sphere Hemisphere">
+      <div class="slide alt">
+        <div class="eyebrow">Direction sampling</div>
+        <h2>Spheres And Hemispheres Are Solid-Angle Domains</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula">$$\phi=2\pi u_1,\qquad z=1-2u_2,\qquad r=\sqrt{1-z^2}$$</div>
+            <div class="panel blue">
+              <h3>Uniform Sphere</h3>
+              <p>Choose \(z\) uniformly on \([-1,1]\), not \(\theta\) uniformly in polar angle.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Uniform Hemisphere</h3>
+              <p>Use \(z=u\) on \([0,1]\), then set the radial component in the tangent plane.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Uniform sphere and hemisphere sampling diagrams">
+              <g transform="translate(80,70)">
+                <text x="180" y="-18" text-anchor="middle" class="svg-label">sphere</text>
+                <circle cx="180" cy="205" r="150" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+                <ellipse cx="180" cy="205" rx="150" ry="44" fill="none" stroke="#2563EB" stroke-width="3"></ellipse>
+                <line x1="180" y1="55" x2="180" y2="355" stroke="#CBD5E1" stroke-width="4"></line>
+                <g fill="#0F766E">
+                  <circle cx="110" cy="100" r="7"></circle><circle cx="240" cy="92" r="7"></circle><circle cx="80" cy="205" r="7"></circle><circle cx="280" cy="207" r="7"></circle><circle cx="136" cy="314" r="7"></circle><circle cx="229" cy="318" r="7"></circle><circle cx="180" cy="154" r="7"></circle><circle cx="180" cy="268" r="7"></circle>
+                </g>
+                <text x="180" y="412" text-anchor="middle" class="svg-small">z is uniform from -1 to 1</text>
+              </g>
+              <g transform="translate(470,70)">
+                <text x="180" y="-18" text-anchor="middle" class="svg-label">hemisphere</text>
+                <path d="M30,205 A150,150 0 0 1 330,205 L30,205 Z" fill="#CCFBF1" stroke="#0F766E" stroke-width="5"></path>
+                <ellipse cx="180" cy="205" rx="150" ry="44" fill="#FFFFFF" stroke="#0F766E" stroke-width="4"></ellipse>
+                <line x1="180" y1="205" x2="180" y2="52" stroke="#B45309" stroke-width="5"></line>
+                <g fill="#2563EB">
+                  <circle cx="88" cy="186" r="7"></circle><circle cx="128" cy="121" r="7"></circle><circle cx="181" cy="82" r="7"></circle><circle cx="239" cy="130" r="7"></circle><circle cx="282" cy="190" r="7"></circle><circle cx="168" cy="177" r="7"></circle>
+                </g>
+                <text x="180" y="412" text-anchor="middle" class="svg-small">z is uniform from 0 to 1</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">For directions, the surface measure is the important part. Uniform sphere sampling makes z uniform on negative one to one, while a uniform hemisphere makes z uniform on zero to one. The formulas are short because the solid-angle measure has already been accounted for.</aside>
+    </section>
+
+    <section data-label="Cosine Hemisphere">
+      <div class="slide">
+        <div class="eyebrow">Rendering integral</div>
+        <h2>Cosine-Weighted Hemispheres Flatten Diffuse Irradiance</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Cosine weighted hemisphere samples concentrated near normal">
+              <defs>
+                <marker id="hemiArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#2563EB"></path>
+                </marker>
+              </defs>
+              <line x1="105" y1="420" x2="745" y2="420" stroke="#CBD5E1" stroke-width="5"></line>
+              <path d="M180,420 A245,245 0 0 1 670,420" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></path>
+              <line x1="425" y1="420" x2="425" y2="125" stroke="#B45309" stroke-width="6" marker-end="url(#hemiArrow)"></line>
+              <text x="443" y="142" class="svg-label">normal</text>
+              <g stroke="#2563EB" stroke-width="5" marker-end="url(#hemiArrow)" opacity="0.9">
+                <line x1="425" y1="420" x2="382" y2="170"></line>
+                <line x1="425" y1="420" x2="468" y2="168"></line>
+                <line x1="425" y1="420" x2="326" y2="205"></line>
+                <line x1="425" y1="420" x2="524" y2="206"></line>
+                <line x1="425" y1="420" x2="285" y2="262"></line>
+                <line x1="425" y1="420" x2="565" y2="262"></line>
+                <line x1="425" y1="420" x2="410" y2="145"></line>
+                <line x1="425" y1="420" x2="440" y2="145"></line>
+              </g>
+              <rect x="215" y="452" width="420" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+              <text x="425" y="489" text-anchor="middle" class="svg-math">p(omega) = z / pi gives contribution pi</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">$$p(\omega)={n+1\over 2\pi}z^n,\qquad z=(1-u)^{1/(n+1)}$$</div>
+            <div class="panel teal">
+              <h3>Diffuse Case</h3>
+              <p>For \(n=1\), \(p(\omega)=z/\pi\). The integrand \(z\) divided by \(z/\pi\) is constant.</p>
+            </div>
+            <div class="panel blue">
+              <h3>Lab Result</h3>
+              <p>The chapter lab estimates \(I=\int_H z\,d\omega=\pi\); cosine weighting has zero RMSE in exact arithmetic.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Cosine-weighted hemisphere sampling is the rendering payoff. A diffuse irradiance integrand contains the cosine z, so using density z over pi makes every contribution equal to pi. The slide shows why the notebook reports zero variance for the exact cosine estimator.</aside>
+    </section>
+
+    <section data-label="Random Lines">
+      <div class="slide alt">
+        <div class="eyebrow">Section 13.4.4</div>
+        <h2>Random Lines In A Square Are Sampled In Normal Space</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula">$$p(\theta)={r_{\max}(\theta)\over \int r_{\max}(\theta)\,d\theta},\qquad r=u\,r_{\max}(\theta)$$</div>
+            <div class="panel blue">
+              <h3>Design Principle</h3>
+              <p>Sample the region of \((\theta,r)\) values whose lines hit the unit square, not an arbitrary slope box.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Notebook Check</h3>
+              <p>The normal-coordinate hitting region has area 4, and every sampled line clips the square.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Random lines in a square from normal coordinate sampler">
+              <g transform="translate(75,90)">
+                <rect x="0" y="0" width="310" height="310" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <g stroke-width="4">
+                  <line x1="-24" y1="55" x2="335" y2="246" stroke="#2563EB"></line>
+                  <line x1="-16" y1="220" x2="340" y2="100" stroke="#0F766E"></line>
+                  <line x1="54" y1="334" x2="260" y2="-24" stroke="#B45309"></line>
+                  <line x1="115" y1="-22" x2="334" y2="289" stroke="#6D28D9"></line>
+                  <line x1="-18" y1="144" x2="332" y2="164" stroke="#64748B"></line>
+                </g>
+                <text x="155" y="370" text-anchor="middle" class="svg-label">clipped line samples</text>
+              </g>
+              <g transform="translate(475,82)">
+                <line x1="0" y1="360" x2="310" y2="360" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="0" y1="360" x2="0" y2="40" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M0,360 L55,360 C72,305 91,255 112,220 C145,165 185,116 225,84 C252,64 284,56 310,65 L310,360 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></path>
+                <g fill="#0F766E" stroke="#FFFFFF" stroke-width="3">
+                  <circle cx="42" cy="334" r="9"></circle><circle cx="95" cy="284" r="9"></circle><circle cx="138" cy="196" r="9"></circle><circle cx="185" cy="146" r="9"></circle><circle cx="243" cy="91" r="9"></circle><circle cx="286" cy="189" r="9"></circle>
+                </g>
+                <g stroke="#B45309" stroke-width="3" stroke-dasharray="7 7">
+                  <line x1="42" y1="360" x2="42" y2="334"></line><line x1="95" y1="360" x2="95" y2="284"></line><line x1="138" y1="360" x2="138" y2="196"></line><line x1="185" y1="360" x2="185" y2="146"></line><line x1="243" y1="360" x2="243" y2="91"></line><line x1="286" y1="360" x2="286" y2="189"></line>
+                </g>
+                <text x="155" y="405" text-anchor="middle" class="svg-small">sample theta by height, then r below boundary</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Return to lines as a full sampler design problem. In normal coordinates, lines hitting the unit square occupy a bounded region under r max of theta. Sampling theta with density proportional to that boundary and then choosing r uniformly below it preserves the line measure.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide">
+        <div class="eyebrow">Takeaways</div>
+        <h2>The Debugging Loop Is Measure, Warp, Estimator</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <table class="mini-table">
+              <tr><th>Domain</th><th>Measure Clue</th><th>Sampler Audit</th></tr>
+              <tr><td>Weighted region</td><td>\(w\,d\mu\)</td><td>Integral and normalization.</td></tr>
+              <tr><td>Disk</td><td>\(r\,dr\,d\phi\)</td><td>Radial CDF follows \(r^2\).</td></tr>
+              <tr><td>Sphere</td><td>solid angle</td><td>Unit norm and uniform z marginal.</td></tr>
+              <tr><td>Hemisphere</td><td>cosine or Phong density</td><td>Estimator \(g/p\) is flat when matched.</td></tr>
+              <tr><td>Lines</td><td>\(dr\,d\theta\)</td><td>Hitting region area and clipped lines.</td></tr>
+            </table>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" role="img" aria-label="Sampling debugging loop">
+              <defs>
+                <marker id="recapArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <circle cx="410" cy="280" r="190" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></circle>
+              <g fill="#FFFFFF" stroke-width="4">
+                <rect x="285" y="45" width="250" height="72" rx="8" stroke="#2563EB"></rect>
+                <rect x="560" y="244" width="225" height="72" rx="8" stroke="#0F766E"></rect>
+                <rect x="285" y="444" width="250" height="72" rx="8" stroke="#B45309"></rect>
+                <rect x="35" y="244" width="225" height="72" rx="8" stroke="#6D28D9"></rect>
+              </g>
+              <text x="410" y="91" text-anchor="middle" class="svg-small">name measure</text>
+              <text x="672" y="290" text-anchor="middle" class="svg-small">choose density</text>
+              <text x="410" y="490" text-anchor="middle" class="svg-small">build warp</text>
+              <text x="148" y="290" text-anchor="middle" class="svg-small">audit estimator</text>
+              <path d="M506,95 C612,128 675,185 680,244" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"></path>
+              <path d="M675,316 C628,394 552,452 500,466" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"></path>
+              <path d="M320,466 C235,435 166,377 151,316" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"></path>
+              <path d="M151,244 C174,161 258,104 320,88" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#recapArrow)"></path>
+              <text x="410" y="271" text-anchor="middle" class="svg-label">fair sample</text>
+              <text x="410" y="307" text-anchor="middle" class="svg-label">checkable result</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by turning every technique into a debugging checklist. Name the measure, verify the density integrates to one, check that the warp preserves the intended cumulative distribution, and inspect the estimator g over p. The geometry and the variance should tell the same story.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

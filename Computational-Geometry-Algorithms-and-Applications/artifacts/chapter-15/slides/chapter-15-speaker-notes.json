@@ -1,0 +1,84 @@
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Visibility Graphs",
+      "notes": "Open with the promise of the chapter: the continuous shortest-path problem becomes a finite graph problem, but only after choosing the right vertices. The synthetic workspace is intentionally small. Ask the class to inspect each blue path segment and notice that it either runs through free space or touches an obstacle at a vertex; the displayed notebook check records three obstacles, four path vertices, and length 6.9885563349991155."
+    },
+    {
+      "slide": 2,
+      "title": "Why The Old Road Map Fails",
+      "notes": "Contrast feasibility with optimality. The Chapter 13 road map is excellent for proving that some route exists, but its graph vertices are trapezoid centers and extension midpoints, so weighted graph search is still restricted to artificial detours. The point of this slide is not that the old road map is wrong; it solves a different problem. For Euclidean shortest paths, the graph must contain the places where an optimal path can actually bend."
+    },
+    {
+      "slide": 3,
+      "title": "Model Assumptions",
+      "notes": "State the modeling choices before proving anything. Obstacles are disjoint open polygons, so touching a boundary is allowed and a shortest path can exist. The start and goal lie in free space, and the phrase shortest path means minimum Euclidean length among collision-free curves. Non-uniqueness is not a pathology here; symmetric obstacle layouts can offer two equal routes, and the algorithm only needs to return one shortest route."
+    },
+    {
+      "slide": 4,
+      "title": "Rubber-Band Lemma",
+      "notes": "Use the rubber-band picture as the proof engine, but keep it local. If a candidate shortest path wiggles through an empty disk, the chord across the disk is shorter and still feasible. If the path turns at a point in free space or along the relative interior of one obstacle edge, a small disk or half-disk gives the same shortcut. The only places a genuine bend can survive are obstacle vertices."
+    },
+    {
+      "slide": 5,
+      "title": "Obstacle Vertices Are Enough",
+      "notes": "This slide converts the lemma into a finite state space. Between two consecutive bends the shortest path must be a straight segment, and every inner bend belongs to the obstacle vertex set. That means the continuous curve search can be replaced by a search over visible pairs of special points. The start and goal are added as special points even though they are not obstacle vertices."
+    },
+    {
+      "slide": 6,
+      "title": "Visibility Graph Definition",
+      "notes": "Define visibility with the boundary convention in view. Two vertices are adjacent when their connecting segment avoids obstacle interiors; crossing an interior blocks the edge, while following an obstacle boundary is allowed. This is why every obstacle boundary edge belongs to the visibility graph. The graph is undirected, has no self-loops, and after start-goal augmentation it contains the first and last segments of any shortest path."
+    },
+    {
+      "slide": 7,
+      "title": "Shortest-Path Pipeline",
+      "notes": "Walk the class through the algorithmic pipeline. First construct the visibility graph on obstacle vertices plus the start and goal. Then assign every edge its Euclidean segment length. Finally run Dijkstra from start to goal. The sanity check on the slide is important because it ties the drawn route back to computation: summing the shown segment lengths agrees with the graph shortest-path distance to numerical tolerance."
+    },
+    {
+      "slide": 8,
+      "title": "Runtime Overview",
+      "notes": "Separate the two cost centers. The visibility graph can have quadratically many edges, so even storing all candidate visibility edges already suggests a quadratic barrier for full-graph methods. Once the graph is built, weighting edges is quadratic and Dijkstra is linear in the number of edges up to a priority-queue term. The chapter's main construction effort is therefore the faster visibility graph computation."
+    },
+    {
+      "slide": 9,
+      "title": "One Pivot Point p",
+      "notes": "Now zoom into one call of VISIBLE_VERTICES. Fix a pivot p and sort all obstacle vertices by clockwise angle around p, breaking ties by distance from p. This ordering is the useful memory of the sweep: when several vertices lie on the same ray, nearer vertices are handled first, so their visibility result can help classify farther collinear vertices without rechecking the entire segment from scratch."
+    },
+    {
+      "slide": 10,
+      "title": "Rotating Sweep Status",
+      "notes": "Introduce the rotating half-line as the analogue of a sweep line. At any instant, the status tree stores exactly the obstacle edges cut by the ray, ordered by distance from p along that ray. The leftmost status edge is the first possible blocker. The check shown on the slide is the invariant to maintain: tree order must match direct geometric intersection distance order at every event."
+    },
+    {
+      "slide": 11,
+      "title": "Event Updates",
+      "notes": "At an event vertex, visibility is tested before the status is updated for the next angular interval. Edges incident to the event that lie on the clockwise side enter the tree; incident edges on the counterclockwise side leave. The three frames show why the update is local: only the two incident obstacle edges can change their relation to the rotating ray as it passes through the vertex."
+    },
+    {
+      "slide": 12,
+      "title": "Normal Visibility Test",
+      "notes": "Give the common case first. If no earlier vertex lies on the same segment from p, then the candidate w is visible precisely when the first status edge does not intersect segment pw before w, and the local wedge at w does not put pw inside the incident obstacle. This avoids scanning all obstacles; one tree lookup and a constant number of geometric predicates are enough."
+    },
+    {
+      "slide": 13,
+      "title": "Collinear Vertices",
+      "notes": "Collinearity is where careless implementations lose correctness. Because tied vertices are processed by increasing distance, the previous vertex on the ray is already classified. If the previous one is invisible, the farther one is invisible. If the previous one is visible, only the small segment between the two needs inspection: it may be an allowed boundary continuation, may pass through an obstacle interior, or may be crossed by the current first blocker."
+    },
+    {
+      "slide": 14,
+      "title": "Correctness And Complexity",
+      "notes": "Use this as the theorem ladder. The rubber-band lemma limits shortest-path bends to obstacle vertices; the visibility graph captures every segment between consecutive bends; Dijkstra chooses the minimum among all captured polygonal routes; and the rotational sweep computes visible vertices from one pivot in O(n log n). Repeating the sweep for all n pivots gives the O(n squared log n) visibility graph bound and the same order for the full shortest-path pipeline."
+    },
+    {
+      "slide": 15,
+      "title": "Translating Polygonal Robot",
+      "notes": "Shift from a point robot back to a translating convex robot. Reflect the robot through the origin and add it to each workspace obstacle by Minkowski sum; a placement point is forbidden exactly when the robot would overlap an obstacle. Once these configuration obstacles are built, the same visibility graph method applies in configuration space. For constant-complexity convex robots, this preserves the O(n squared log n) shortest-path bound."
+    },
+    {
+      "slide": 16,
+      "title": "Beyond The Full Graph",
+      "notes": "Close with the limitations and extensions. Constructing the entire visibility graph can be quadratically large in the worst case, so later algorithms and special cases try to avoid irrelevant edges. Convex obstacles allow reduced tangent graphs, visibility complexes package richer ray information, three-dimensional Euclidean shortest paths are much harder because bends are not confined to a finite vertex set, and alternate metrics such as link, rectilinear, and weighted-region costs change what shortest means."
+    }
+  ]
+}

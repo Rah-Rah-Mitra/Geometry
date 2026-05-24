@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 17: Using Graphics Hardware</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-17">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-17-using-graphics-hardware/17-using-graphics-hardware.ipynb">
+  <meta name="source_span" content="printed pages 461-502; PDF pages 478-519.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text fonts and KaTeX 0.16.11 auto-render support are enabled.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open by naming the chapter's shift in viewpoint. Earlier rendering chapters could talk as if a drawing command directly produced pixels; this lecture treats hardware as a negotiated contract among host code, resident device memory, pipeline state, and shader programs. The goal is to make blank frames diagnosable."
+    },
+    {
+      "slide": 2,
+      "notes": "Use the roadmap as a dependency order rather than a table of contents. A draw call only makes sense after the application has created resources, described vertex interpretation, installed shaders, supplied transforms, and selected texture and framebuffer state. Each later topic answers one failure mode in that chain."
+    },
+    {
+      "slide": 3,
+      "notes": "Emphasize that the pipeline diagram is a contract diagram. The horizontal arrows show data moving toward the display, while the vertical feeders show state that must already be current. When a frame is wrong, the debugging question is which contract was broken before the draw reached rasterization."
+    },
+    {
+      "slide": 4,
+      "notes": "This slide prevents a common misconception: OpenGL-style APIs are not just function libraries, they are state machines. The draw command reads the current program, vertex array, buffers, uniforms, textures, and framebuffer tests. Changing one binding can affect a later draw even if the later line of code looks harmless."
+    },
+    {
+      "slide": 5,
+      "notes": "Separate storage from interpretation slowly. The buffer owns bytes on the device, but the vertex array records how those bytes become named shader attributes. The same byte stream can be useful or meaningless depending on stride, offset, scalar type, component count, and attribute location."
+    },
+    {
+      "slide": 6,
+      "notes": "Use the wrong-stride panel as a visual explanation of corrupted geometry. The shader may be perfectly correct while receiving positions read from colors or normals read from texture coordinates. The address formula is the invariant: base plus vertex index times stride plus attribute offset."
+    },
+    {
+      "slide": 7,
+      "notes": "Frame shaders as programmable islands inside a larger fixed pipeline. The vertex shader is responsible for per-vertex outputs such as clip position and varyings; rasterization then interpolates varyings; the fragment shader chooses output color or other framebuffer values for each candidate fragment."
+    },
+    {
+      "slide": 8,
+      "notes": "Connect transformation uniforms to the end of the old hidden matrix-stack era. The application now assembles model, view, and projection matrices explicitly, sends them as uniforms, and the vertex shader applies them. Ask students to track where coordinates change spaces and where clipping becomes meaningful."
+    },
+    {
+      "slide": 9,
+      "notes": "The important idea is that attributes are not just attached to vertices; after rasterization they become interpolated fragment inputs. Barycentric weights give a compact mental model: colors, UVs, normals, and other varyings should stay inside the convex combination dictated by the triangle."
+    },
+    {
+      "slide": 10,
+      "notes": "Make the hidden framebuffer attachments visible. Fragment shading proposes values, but depth, stencil, and blending state decide what is kept, rejected, labeled, or combined. This is why a color shader can look correct in isolation while the final frame is empty or unexpectedly overwritten."
+    },
+    {
+      "slide": 11,
+      "notes": "Textures are best taught as data plus sampling state. The image alone does not determine the result; coordinates, wrap modes, filter modes, mip level, texture unit, and sampler binding all participate. The same checker data can clamp, repeat, or blur depending on the active sampler."
+    },
+    {
+      "slide": 12,
+      "notes": "Relate meshes to the memory structures from earlier chapters. Hardware usually wants linear vertex and index buffers, while modeling tools often remember richer adjacency. The lecture distinction is practical: keep enough topology offline for editing, then stream compact indexed triangles for drawing."
+    },
+    {
+      "slide": 13,
+      "notes": "Instancing is the reuse slide. One resident mesh can be drawn many times by changing per-instance transforms, materials, or attributes. The saving is not only fewer bytes transferred; it also makes the scene conceptually cleaner because shared geometry and instance-specific state are separated."
+    },
+    {
+      "slide": 14,
+      "notes": "Treat performance as a set of pressure points rather than a single speed number. Host uploads, state changes, vertex work, fragment overdraw, texture traffic, and synchronization stalls each have different symptoms. A good optimization begins by identifying which pressure point is active."
+    },
+    {
+      "slide": 15,
+      "notes": "The diagnostic tree is meant to be used before rewriting code. Start with the earliest contract that can make the frame fail: context, program, vertex array, transform, texture, then depth or stencil state. Visual debug shaders are useful because they turn invisible state into inspected color."
+    },
+    {
+      "slide": 16,
+      "notes": "Close by turning the lecture into a checklist students can actually use at a workstation. The five invariants cover resource residency, interpretation state, coordinate spaces, hidden buffers, and reuse. They are deliberately small because a small checklist survives the stress of debugging a broken frame."
+    }
+  ]
+}
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #000000;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      padding: 70px 96px 54px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 96px 96px;
+      border-top: 10px solid var(--slide-accent);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    .slide.alt {
+      background:
+        radial-gradient(circle at 12% 16%, rgba(37, 99, 235, 0.07), transparent 22%),
+        linear-gradient(to right, rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(100, 116, 139, 0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: auto, 88px 88px, 88px 88px, auto;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1, h2, h3, p, ul, ol, pre {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.03;
+      font-weight: 700;
+      color: var(--slide-ink);
+      max-width: 1330px;
+    }
+
+    h2 {
+      font-size: 52px;
+      line-height: 1.08;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 32px;
+      line-height: 1.16;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.32;
+    }
+
+    ul, ol {
+      padding-left: 34px;
+    }
+
+    li + li {
+      margin-top: 10px;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      margin-top: 18px;
+      max-width: 1180px;
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.24;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .kicker {
+      min-width: 330px;
+      text-align: right;
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      line-height: 1.28;
+      font-weight: 600;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 30px;
+      align-items: stretch;
+    }
+
+    .two {
+      grid-template-columns: 1.04fr 0.96fr;
+    }
+
+    .two.narrow-left {
+      grid-template-columns: 0.88fr 1.12fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel.blue {
+      background: #EFF6FF;
+      border-left: 5px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: #F0FDFA;
+      border-left: 5px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: #FFFBEB;
+      border-left: 5px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: #F5F3FF;
+      border-left: 5px solid var(--slide-violet);
+    }
+
+    .panel.slate {
+      background: #F8FAFC;
+      border-left: 5px solid var(--slide-border);
+    }
+
+    .panel-title {
+      font-size: 25px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .small-copy {
+      color: var(--slide-muted);
+      font-size: 24px;
+      line-height: 1.3;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.25;
+      color: var(--slide-ink);
+    }
+
+    .code {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      line-height: 1.34;
+      color: #172033;
+      background: #F8FAFC;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px 20px;
+      white-space: pre-wrap;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 700;
+      background: #EEF2FF;
+      color: var(--slide-accent);
+      border: 1px solid rgba(30, 58, 138, 0.18);
+    }
+
+    .footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      padding-top: 8px;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      line-height: 1.2;
+      border-top: 1px solid rgba(203, 213, 225, 0.9);
+    }
+
+    .source {
+      font-weight: 600;
+    }
+
+    .diagram {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .diagram text {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      fill: var(--slide-ink);
+    }
+
+    .diagram .label {
+      font-size: 22px;
+      font-weight: 700;
+      fill: var(--slide-accent);
+    }
+
+    .diagram .small {
+      font-size: 20px;
+      fill: var(--slide-muted);
+    }
+
+    .diagram .mono {
+      font-family: var(--font-mono);
+      font-size: 20px;
+    }
+
+    .diagram .math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 1.05fr repeat(4, 1fr);
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+    }
+
+    .matrix div {
+      min-height: 74px;
+      padding: 12px 14px;
+      border-right: 1px solid var(--slide-border-light);
+      border-bottom: 1px solid var(--slide-border-light);
+      font-size: 23px;
+      line-height: 1.22;
+      display: flex;
+      align-items: center;
+    }
+
+    .matrix .head {
+      background: #EEF2FF;
+      color: var(--slide-accent);
+      font-weight: 700;
+    }
+
+    .matrix .yes {
+      background: #F0FDFA;
+      color: var(--slide-teal);
+      font-weight: 700;
+      justify-content: center;
+    }
+
+    .matrix .warn {
+      background: #FFFBEB;
+      color: var(--slide-amber);
+      font-weight: 700;
+      justify-content: center;
+    }
+
+    .matrix .dim {
+      background: #F8FAFC;
+      color: var(--slide-dimmed);
+      justify-content: center;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .metric {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 18px;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--slide-accent);
+      font-size: 26px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--slide-muted);
+      font-size: 23px;
+      line-height: 1.25;
+    }
+
+    .wide-diagram {
+      height: 640px;
+    }
+
+    .compact-diagram {
+      height: 520px;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Title">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Fundamentals of Computer Graphics</div>
+          <h1>Chapter 17: Using Graphics Hardware</h1>
+          <p class="subtitle">A lecture on GPU resources, state, shader programs, and the draw-call contracts that turn mesh data into framebuffer values.</p>
+          <div class="tag-row">
+            <span class="tag">printed pp. 461-502</span>
+            <span class="tag">PDF pp. 478-519</span>
+            <span class="tag">STIX + KaTeX enabled</span>
+          </div>
+        </div>
+        <div class="kicker">chapter-17<br>HTML source deck</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram" viewBox="0 0 880 520" role="img" aria-label="GPU pipeline overview from application to display">
+          <defs>
+            <marker id="title-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="46" y="72" width="138" height="78" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+          <rect x="236" y="72" width="138" height="78" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+          <rect x="426" y="72" width="138" height="78" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+          <rect x="616" y="72" width="138" height="78" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+          <path d="M184 111 H232" stroke="#1E3A8A" stroke-width="4" marker-end="url(#title-arrow)"></path>
+          <path d="M374 111 H422" stroke="#1E3A8A" stroke-width="4" marker-end="url(#title-arrow)"></path>
+          <path d="M564 111 H612" stroke="#1E3A8A" stroke-width="4" marker-end="url(#title-arrow)"></path>
+          <text x="115" y="116" text-anchor="middle" class="label">Host code</text>
+          <text x="305" y="116" text-anchor="middle" class="label">GPU memory</text>
+          <text x="495" y="116" text-anchor="middle" class="label">Shaders</text>
+          <text x="685" y="116" text-anchor="middle" class="label">Framebuffer</text>
+          <rect x="92" y="242" width="170" height="90" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <rect x="348" y="242" width="170" height="90" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <rect x="604" y="242" width="170" height="90" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <path d="M262 287 H344" stroke="#2563EB" stroke-width="4" marker-end="url(#title-arrow)"></path>
+          <path d="M518 287 H600" stroke="#2563EB" stroke-width="4" marker-end="url(#title-arrow)"></path>
+          <text x="177" y="277" text-anchor="middle">Draw</text>
+          <text x="177" y="308" text-anchor="middle" class="small">current state</text>
+          <text x="433" y="277" text-anchor="middle">Rasterize</text>
+          <text x="433" y="308" text-anchor="middle" class="small">make fragments</text>
+          <text x="689" y="277" text-anchor="middle">Present</text>
+          <text x="689" y="308" text-anchor="middle" class="small">visible image</text>
+          <path d="M305 150 C305 190, 177 198, 177 238" fill="none" stroke="#0F766E" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#title-arrow)"></path>
+          <path d="M495 150 C495 196, 433 202, 433 238" fill="none" stroke="#6D28D9" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#title-arrow)"></path>
+          <path d="M685 150 C720 190, 700 207, 690 238" fill="none" stroke="#B45309" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#title-arrow)"></path>
+          <text x="440" y="414" text-anchor="middle" class="math">state + resident data + program -> pixels</text>
+          <text x="440" y="456" text-anchor="middle" class="small">The frame is a result of bindings, not a single isolated command.</text>
+        </svg>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Central Question</div>
+            <p>When a draw call runs, which resources and state are the GPU actually reading?</p>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">Lecture Promise</div>
+            <ul>
+              <li>Track bytes, attributes, and transforms into shaders.</li>
+              <li>Expose depth, stencil, texture, and framebuffer state.</li>
+              <li>Use meshes and instancing without duplicating data.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span class="source">Source span: printed pages 461-502; PDF pages 478-519.</span><span>Notebook: 17-using-graphics-hardware.ipynb</span></div>
+      <aside class="speaker-notes">Open by naming the chapter's shift in viewpoint. Earlier rendering chapters could talk as if a drawing command directly produced pixels; this lecture treats hardware as a negotiated contract among host code, resident device memory, pipeline state, and shader programs. The goal is to make blank frames diagnosable.</aside>
+    </section>
+
+    <section class="slide" data-label="Roadmap">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Hardware Programming Map</div>
+          <h2>Every Topic Names One Draw-Call Dependency</h2>
+        </div>
+        <div class="kicker">from setup<br>to diagnosis</div>
+      </div>
+      <div class="content">
+        <svg class="diagram wide-diagram" viewBox="0 0 1500 590" role="img" aria-label="Roadmap of graphics hardware topics">
+          <defs>
+            <marker id="map-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <path d="M90 295 H1410" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"></path>
+          <path d="M90 295 H1410" stroke="#1E3A8A" stroke-width="4" marker-end="url(#map-arrow)"></path>
+          <g>
+            <circle cx="120" cy="295" r="44" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></circle>
+            <text x="120" y="303" text-anchor="middle" class="label">1</text>
+            <text x="120" y="385" text-anchor="middle">Context</text>
+            <text x="120" y="420" text-anchor="middle" class="small">state machine</text>
+          </g>
+          <g>
+            <circle cx="300" cy="295" r="44" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></circle>
+            <text x="300" y="303" text-anchor="middle" class="label">2</text>
+            <text x="300" y="196" text-anchor="middle">Buffers</text>
+            <text x="300" y="231" text-anchor="middle" class="small">resident bytes</text>
+          </g>
+          <g>
+            <circle cx="480" cy="295" r="44" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></circle>
+            <text x="480" y="303" text-anchor="middle" class="label">3</text>
+            <text x="480" y="385" text-anchor="middle">VAOs</text>
+            <text x="480" y="420" text-anchor="middle" class="small">byte meaning</text>
+          </g>
+          <g>
+            <circle cx="660" cy="295" r="44" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></circle>
+            <text x="660" y="303" text-anchor="middle" class="label">4</text>
+            <text x="660" y="196" text-anchor="middle">Shaders</text>
+            <text x="660" y="231" text-anchor="middle" class="small">program stages</text>
+          </g>
+          <g>
+            <circle cx="840" cy="295" r="44" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+            <text x="840" y="303" text-anchor="middle" class="label">5</text>
+            <text x="840" y="385" text-anchor="middle">Transforms</text>
+            <text x="840" y="420" text-anchor="middle" class="small">spaces and clip</text>
+          </g>
+          <g>
+            <circle cx="1020" cy="295" r="44" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></circle>
+            <text x="1020" y="303" text-anchor="middle" class="label">6</text>
+            <text x="1020" y="196" text-anchor="middle">Textures</text>
+            <text x="1020" y="231" text-anchor="middle" class="small">sampler state</text>
+          </g>
+          <g>
+            <circle cx="1200" cy="295" r="44" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></circle>
+            <text x="1200" y="303" text-anchor="middle" class="label">7</text>
+            <text x="1200" y="385" text-anchor="middle">Meshes</text>
+            <text x="1200" y="420" text-anchor="middle" class="small">indexed draw data</text>
+          </g>
+          <g>
+            <circle cx="1380" cy="295" r="44" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></circle>
+            <text x="1380" y="303" text-anchor="middle" class="label">8</text>
+            <text x="1380" y="196" text-anchor="middle">Instancing</text>
+            <text x="1380" y="231" text-anchor="middle" class="small">reuse at scale</text>
+          </g>
+          <rect x="210" y="492" width="1080" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="750" y="531" text-anchor="middle" class="math">resource lifetime -> interpretation -> execution -> framebuffer tests</text>
+        </svg>
+      </div>
+      <div class="footer"><span>Each dependency becomes a debugging checkpoint.</span><span>Chapter 17 lecture map</span></div>
+      <aside class="speaker-notes">Use the roadmap as a dependency order rather than a table of contents. A draw call only makes sense after the application has created resources, described vertex interpretation, installed shaders, supplied transforms, and selected texture and framebuffer state. Each later topic answers one failure mode in that chain.</aside>
+    </section>
+
+    <section class="slide" data-label="Pipeline Contract">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Pipeline As Contract</div>
+          <h2>A Draw Reads Both Dataflow And Stateflow</h2>
+        </div>
+        <div class="kicker">application<br>to display</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 920 520" role="img" aria-label="GPU pipeline graph with state dependencies">
+          <defs>
+            <marker id="pipe-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="54" y="230" width="132" height="76" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+          <rect x="232" y="230" width="132" height="76" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+          <rect x="410" y="230" width="132" height="76" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+          <rect x="588" y="230" width="132" height="76" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+          <rect x="766" y="230" width="100" height="76" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+          <path d="M186 268 H228" stroke="#1E3A8A" stroke-width="4" marker-end="url(#pipe-arrow)"></path>
+          <path d="M364 268 H406" stroke="#1E3A8A" stroke-width="4" marker-end="url(#pipe-arrow)"></path>
+          <path d="M542 268 H584" stroke="#1E3A8A" stroke-width="4" marker-end="url(#pipe-arrow)"></path>
+          <path d="M720 268 H762" stroke="#1E3A8A" stroke-width="4" marker-end="url(#pipe-arrow)"></path>
+          <text x="120" y="260" text-anchor="middle" class="label">Draw</text>
+          <text x="120" y="291" text-anchor="middle" class="small">command</text>
+          <text x="298" y="260" text-anchor="middle" class="label">Vertex</text>
+          <text x="298" y="291" text-anchor="middle" class="small">shader</text>
+          <text x="476" y="260" text-anchor="middle" class="label">Raster</text>
+          <text x="476" y="291" text-anchor="middle" class="small">fragments</text>
+          <text x="654" y="260" text-anchor="middle" class="label">Fragment</text>
+          <text x="654" y="291" text-anchor="middle" class="small">shader</text>
+          <text x="816" y="260" text-anchor="middle" class="label">Frame</text>
+          <text x="816" y="291" text-anchor="middle" class="small">buffer</text>
+          <g>
+            <rect x="80" y="58" width="150" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="155" y="94" text-anchor="middle">VAO</text>
+            <path d="M155 116 V226" stroke="#2563EB" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#pipe-arrow)"></path>
+          </g>
+          <g>
+            <rect x="282" y="58" width="150" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="357" y="94" text-anchor="middle">Uniforms</text>
+            <path d="M357 116 C338 150, 318 182, 305 226" fill="none" stroke="#0F766E" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#pipe-arrow)"></path>
+          </g>
+          <g>
+            <rect x="492" y="58" width="150" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="567" y="94" text-anchor="middle">Textures</text>
+            <path d="M567 116 C590 154, 628 184, 648 226" fill="none" stroke="#6D28D9" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#pipe-arrow)"></path>
+          </g>
+          <g>
+            <rect x="678" y="58" width="150" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="753" y="94" text-anchor="middle">Tests</text>
+            <path d="M753 116 C758 154, 794 184, 808 226" fill="none" stroke="#B45309" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#pipe-arrow)"></path>
+          </g>
+          <rect x="130" y="390" width="660" height="58" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="460" y="428" text-anchor="middle" class="small">A wrong binding can be just as fatal as a wrong algorithm.</text>
+        </svg>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Contract Rule 1</div>
+            <p>The draw call consumes the state that is current at submission time.</p>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">Contract Rule 2</div>
+            <p>Buffers, textures, and shader programs should already live on the device.</p>
+          </div>
+          <div class="panel amber">
+            <div class="panel-title">Contract Rule 3</div>
+            <p>Framebuffer tests can discard or combine fragments after shader work is done.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Pipeline thinking turns rendering bugs into missing dependencies.</span><span>GPU pipeline and state</span></div>
+      <aside class="speaker-notes">Emphasize that the pipeline diagram is a contract diagram. The horizontal arrows show data moving toward the display, while the vertical feeders show state that must already be current. When a frame is wrong, the debugging question is which contract was broken before the draw reached rasterization.</aside>
+    </section>
+
+    <section class="slide alt" data-label="State Machine">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">OpenGL-Style State</div>
+          <h2>The Context Is A Mutable Ledger</h2>
+        </div>
+        <div class="kicker">bindings<br>outlive calls</div>
+      </div>
+      <div class="content narrow-left">
+        <div class="stack">
+          <div class="panel amber">
+            <div class="panel-title">Diagnostic Warning</div>
+            <p>A later draw can fail because an earlier setup call changed a binding, disabled a test, or left a texture unit pointing at the wrong object.</p>
+          </div>
+          <div class="code">glUseProgram(program)
+glBindVertexArray(vao)
+glBindTexture(unit, texture)
+glUniformMatrix4fv(MVP, ...)
+glDrawElements(...)</div>
+        </div>
+        <div class="matrix" role="table" aria-label="State dependencies for draw call">
+          <div class="head">State entry</div>
+          <div class="head">Vertex</div>
+          <div class="head">Raster</div>
+          <div class="head">Fragment</div>
+          <div class="head">Output</div>
+          <div>Program object</div><div class="yes">reads</div><div class="dim">-</div><div class="yes">reads</div><div class="dim">-</div>
+          <div>Vertex array</div><div class="yes">reads</div><div class="dim">-</div><div class="dim">-</div><div class="dim">-</div>
+          <div>Uniform values</div><div class="yes">reads</div><div class="dim">-</div><div class="yes">reads</div><div class="dim">-</div>
+          <div>Texture unit</div><div class="dim">-</div><div class="dim">-</div><div class="yes">reads</div><div class="dim">-</div>
+          <div>Depth and stencil</div><div class="dim">-</div><div class="warn">gates</div><div class="warn">gates</div><div class="yes">writes</div>
+          <div>Blend mode</div><div class="dim">-</div><div class="dim">-</div><div class="dim">-</div><div class="warn">combines</div>
+        </div>
+      </div>
+      <div class="footer"><span>State is not decoration; it is an input to the draw.</span><span>State machine model</span></div>
+      <aside class="speaker-notes">This slide prevents a common misconception: OpenGL-style APIs are not just function libraries, they are state machines. The draw command reads the current program, vertex array, buffers, uniforms, textures, and framebuffer tests. Changing one binding can affect a later draw even if the later line of code looks harmless.</aside>
+    </section>
+
+    <section class="slide" data-label="Buffers and VAOs">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Buffers And Vertex Arrays</div>
+          <h2>Bytes Need An Interpretation Contract</h2>
+        </div>
+        <div class="kicker">storage<br>versus meaning</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 930 520" role="img" aria-label="Interleaved vertex buffer and VAO attribute interpretation">
+          <defs>
+            <marker id="vao-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <text x="60" y="58" class="label">VBO: one repeated vertex record</text>
+          <g transform="translate(60 90)">
+            <rect x="0" y="0" width="750" height="86" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <rect x="0" y="0" width="210" height="86" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+            <rect x="210" y="0" width="210" height="86" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <rect x="420" y="0" width="210" height="86" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <rect x="630" y="0" width="120" height="86" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+            <text x="105" y="38" text-anchor="middle" class="label">position</text>
+            <text x="105" y="68" text-anchor="middle" class="small">3 floats</text>
+            <text x="315" y="38" text-anchor="middle" class="label">normal</text>
+            <text x="315" y="68" text-anchor="middle" class="small">3 floats</text>
+            <text x="525" y="38" text-anchor="middle" class="label">color</text>
+            <text x="525" y="68" text-anchor="middle" class="small">3 floats</text>
+            <text x="690" y="38" text-anchor="middle" class="label">uv</text>
+            <text x="690" y="68" text-anchor="middle" class="small">2 floats</text>
+          </g>
+          <path d="M60 210 H810" stroke="#1E3A8A" stroke-width="3"></path>
+          <path d="M60 200 V220 M810 200 V220" stroke="#1E3A8A" stroke-width="3"></path>
+          <text x="435" y="252" text-anchor="middle" class="math">stride = 44 bytes</text>
+          <g transform="translate(90 315)">
+            <rect x="0" y="0" width="690" height="116" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="34" y="38" class="label">VAO entries</text>
+            <text x="34" y="78" class="mono">loc 0 -> offset 0,  vec3 position</text>
+            <text x="350" y="78" class="mono">loc 1 -> offset 12, vec3 normal</text>
+            <text x="34" y="108" class="mono">loc 2 -> offset 24, vec3 color</text>
+            <text x="350" y="108" class="mono">loc 3 -> offset 36, vec2 uv</text>
+          </g>
+          <path d="M435 176 V310" stroke="#0F766E" stroke-width="4" stroke-dasharray="8 7" marker-end="url(#vao-arrow)"></path>
+        </svg>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Buffer Object</div>
+            <p>Owns bytes in GPU memory. It does not know which bytes are positions, normals, colors, or texture coordinates.</p>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">Vertex Array Object</div>
+            <p>Records the interpretation: attribute location, component count, type, stride, offset, and enabled attributes.</p>
+          </div>
+          <div class="panel slate">
+            <div class="panel-title">Invariant</div>
+            <p class="formula">address = base + vertex_index * stride + offset</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Buffers store; vertex arrays explain.</span><span>VBO and VAO layout</span></div>
+      <aside class="speaker-notes">Separate storage from interpretation slowly. The buffer owns bytes on the device, but the vertex array records how those bytes become named shader attributes. The same byte stream can be useful or meaningless depending on stride, offset, scalar type, component count, and attribute location.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Stride Bugs">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">The Cost Of A Wrong Stride</div>
+          <h2>The Shader Can Be Right And Still Receive Nonsense</h2>
+        </div>
+        <div class="kicker">debug the<br>byte contract</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Correct and incorrect stride decoding">
+          <defs>
+            <marker id="stride-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <text x="92" y="54" class="label">Correct decode</text>
+          <polygon points="105,370 285,138 455,370" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+          <circle cx="105" cy="370" r="14" fill="#2563EB"></circle>
+          <circle cx="285" cy="138" r="14" fill="#0F766E"></circle>
+          <circle cx="455" cy="370" r="14" fill="#B45309"></circle>
+          <text x="105" y="407" text-anchor="middle" class="small">p0</text>
+          <text x="285" y="111" text-anchor="middle" class="small">p1</text>
+          <text x="455" y="407" text-anchor="middle" class="small">p2</text>
+          <path d="M512 254 H592" stroke="#1E3A8A" stroke-width="4" marker-end="url(#stride-arrow)"></path>
+          <text x="724" y="54" text-anchor="middle" class="label">Wrong stride</text>
+          <polyline points="640,370 724,186 826,246 694,404 824,372" fill="none" stroke="#B45309" stroke-width="6" stroke-linejoin="round"></polyline>
+          <circle cx="640" cy="370" r="12" fill="#2563EB"></circle>
+          <circle cx="724" cy="186" r="12" fill="#0F766E"></circle>
+          <circle cx="826" cy="246" r="12" fill="#B45309"></circle>
+          <circle cx="694" cy="404" r="12" fill="#6D28D9"></circle>
+          <circle cx="824" cy="372" r="12" fill="#64748B"></circle>
+          <g transform="translate(92 438)">
+            <rect x="0" y="0" width="716" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="358" y="33" text-anchor="middle" class="mono">base + i * 32 + offset  !=  base + i * 44 + offset</text>
+          </g>
+          <path d="M630 150 C585 126, 545 126, 504 148" fill="none" stroke="#94A3B8" stroke-width="3" stroke-dasharray="9 7"></path>
+          <text x="568" y="113" text-anchor="middle" class="small">same shader</text>
+        </svg>
+        <div class="stack">
+          <div class="panel amber">
+            <div class="panel-title">Symptom</div>
+            <p>Exploding triangles, black lighting, or random colors can all be attribute decode errors.</p>
+          </div>
+          <div class="panel blue">
+            <div class="panel-title">Debug Moves</div>
+            <ul>
+              <li>Output position, normal, color, or UV directly.</li>
+              <li>Check each attribute's offset and stride.</li>
+              <li>Confirm the bound VAO at the draw call.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>A byte layout bug masquerades as a shader bug.</span><span>Stride and offset checks</span></div>
+      <aside class="speaker-notes">Use the wrong-stride panel as a visual explanation of corrupted geometry. The shader may be perfectly correct while receiving positions read from colors or normals read from texture coordinates. The address formula is the invariant: base plus vertex index times stride plus attribute offset.</aside>
+    </section>
+
+    <section class="slide" data-label="Shaders">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Shader Programs</div>
+          <h2>Programmable Stages Inside A Fixed Pipeline</h2>
+        </div>
+        <div class="kicker">vertex<br>to fragment</div>
+      </div>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Vertex Shader</div>
+            <p>Runs per incoming vertex. It reads attributes and uniforms, then writes clip-space position and varying outputs.</p>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">Rasterizer</div>
+            <p>Groups vertices into primitives and interpolates varyings for candidate fragments.</p>
+          </div>
+          <div class="panel amber">
+            <div class="panel-title">Fragment Shader</div>
+            <p>Runs per candidate fragment. It usually computes color, but depth, stencil, and blending still affect the final target.</p>
+          </div>
+        </div>
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Shader inputs and outputs">
+          <defs>
+            <marker id="shader-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="58" y="180" width="190" height="160" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="153" y="235" text-anchor="middle" class="label">Vertex</text>
+          <text x="153" y="270" text-anchor="middle" class="label">shader</text>
+          <text x="153" y="308" text-anchor="middle" class="small">gl_Position</text>
+          <rect x="358" y="180" width="184" height="160" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="450" y="235" text-anchor="middle" class="label">Raster</text>
+          <text x="450" y="270" text-anchor="middle" class="label">stage</text>
+          <text x="450" y="308" text-anchor="middle" class="small">interpolate</text>
+          <rect x="650" y="180" width="190" height="160" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="745" y="235" text-anchor="middle" class="label">Fragment</text>
+          <text x="745" y="270" text-anchor="middle" class="label">shader</text>
+          <text x="745" y="308" text-anchor="middle" class="small">out color</text>
+          <path d="M248 260 H354" stroke="#1E3A8A" stroke-width="4" marker-end="url(#shader-arrow)"></path>
+          <path d="M542 260 H646" stroke="#1E3A8A" stroke-width="4" marker-end="url(#shader-arrow)"></path>
+          <g transform="translate(54 48)">
+            <rect x="0" y="0" width="238" height="74" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="119" y="32" text-anchor="middle">attributes</text>
+            <text x="119" y="60" text-anchor="middle" class="small">position, normal, uv</text>
+            <path d="M119 74 V174" stroke="#2563EB" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#shader-arrow)"></path>
+          </g>
+          <g transform="translate(324 48)">
+            <rect x="0" y="0" width="252" height="74" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="126" y="32" text-anchor="middle">uniforms</text>
+            <text x="126" y="60" text-anchor="middle" class="small">MVP, lights, material</text>
+            <path d="M126 74 C105 114, 62 134, 34 174" fill="none" stroke="#0F766E" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#shader-arrow)"></path>
+            <path d="M126 74 C170 118, 300 136, 402 174" fill="none" stroke="#0F766E" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#shader-arrow)"></path>
+          </g>
+          <g transform="translate(632 48)">
+            <rect x="0" y="0" width="236" height="74" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="118" y="32" text-anchor="middle">samplers</text>
+            <text x="118" y="60" text-anchor="middle" class="small">texture units</text>
+            <path d="M118 74 V174" stroke="#6D28D9" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#shader-arrow)"></path>
+          </g>
+          <rect x="206" y="408" width="488" height="58" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="445" text-anchor="middle" class="math">varyings are interpolated, not copied</text>
+        </svg>
+      </div>
+      <div class="footer"><span>Shaders compute; fixed-function stages assemble, interpolate, test, and blend.</span><span>GLSL stage model</span></div>
+      <aside class="speaker-notes">Frame shaders as programmable islands inside a larger fixed pipeline. The vertex shader is responsible for per-vertex outputs such as clip position and varyings; rasterization then interpolates varyings; the fragment shader chooses output color or other framebuffer values for each candidate fragment.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Transform Uniforms">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Transformation Uniforms</div>
+          <h2>Local Vertices Become Clip-Space Candidates</h2>
+        </div>
+        <div class="kicker">model<br>view<br>projection</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Model view projection transformation chain">
+          <defs>
+            <marker id="mvp-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g transform="translate(55 140)">
+            <rect x="0" y="0" width="128" height="104" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <polygon points="36,80 64,22 98,80" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></polygon>
+            <text x="64" y="139" text-anchor="middle" class="label">local</text>
+          </g>
+          <g transform="translate(248 140)">
+            <rect x="0" y="0" width="128" height="104" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <polygon points="32,74 82,20 108,86" fill="none" stroke="#0F766E" stroke-width="4"></polygon>
+            <text x="64" y="139" text-anchor="middle" class="label">world</text>
+          </g>
+          <g transform="translate(441 140)">
+            <rect x="0" y="0" width="128" height="104" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+            <path d="M24 78 L64 28 L105 78" fill="none" stroke="#1E3A8A" stroke-width="4"></path>
+            <circle cx="64" cy="86" r="9" fill="#B45309"></circle>
+            <text x="64" y="139" text-anchor="middle" class="label">eye</text>
+          </g>
+          <g transform="translate(634 140)">
+            <rect x="0" y="0" width="164" height="104" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <path d="M38 78 L82 30 L126 78 Z" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></path>
+            <rect x="40" y="34" width="84" height="54" fill="none" stroke="#6D28D9" stroke-width="3" stroke-dasharray="7 6"></rect>
+            <text x="82" y="139" text-anchor="middle" class="label">clip / NDC</text>
+          </g>
+          <path d="M183 192 H244" stroke="#1E3A8A" stroke-width="4" marker-end="url(#mvp-arrow)"></path>
+          <path d="M376 192 H437" stroke="#1E3A8A" stroke-width="4" marker-end="url(#mvp-arrow)"></path>
+          <path d="M569 192 H630" stroke="#1E3A8A" stroke-width="4" marker-end="url(#mvp-arrow)"></path>
+          <text x="214" y="174" text-anchor="middle" class="math">M</text>
+          <text x="407" y="174" text-anchor="middle" class="math">V</text>
+          <text x="600" y="174" text-anchor="middle" class="math">P</text>
+          <rect x="112" y="358" width="676" height="72" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="404" text-anchor="middle" class="math">p_clip = P V M [x y z 1]^T,   p_ndc = p_clip / w</text>
+        </svg>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Uniforms Replace Hidden Stacks</div>
+            <p>The host sends matrices explicitly. The shader applies them explicitly.</p>
+          </div>
+          <div class="panel amber">
+            <div class="panel-title">Clip-Space Checks</div>
+            <ul>
+              <li>Is \(w\) positive for visible geometry?</li>
+              <li>Are NDC coordinates in the expected range?</li>
+              <li>Does viewport mapping explain the pixel location?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Transform bugs become coordinate-space bugs once the chain is visible.</span><span>MVP uniforms</span></div>
+      <aside class="speaker-notes">Connect transformation uniforms to the end of the old hidden matrix-stack era. The application now assembles model, view, and projection matrices explicitly, sends them as uniforms, and the vertex shader applies them. Ask students to track where coordinates change spaces and where clipping becomes meaningful.</aside>
+    </section>
+
+    <section class="slide" data-label="Attribute Interpolation">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Attributes And Interpolation</div>
+          <h2>Varyings Become Fragment Inputs</h2>
+        </div>
+        <div class="kicker">barycentric<br>mental model</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Barycentric interpolation of vertex attributes across a triangle">
+          <defs>
+            <linearGradient id="tri-grad" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#0F766E"></stop>
+              <stop offset="52%" stop-color="#2563EB"></stop>
+              <stop offset="100%" stop-color="#B45309"></stop>
+            </linearGradient>
+          </defs>
+          <polygon points="142,400 452,98 714,400" fill="url(#tri-grad)" fill-opacity="0.78" stroke="#1E3A8A" stroke-width="5"></polygon>
+          <circle cx="142" cy="400" r="18" fill="#2563EB" stroke="#FFFFFF" stroke-width="4"></circle>
+          <circle cx="452" cy="98" r="18" fill="#0F766E" stroke="#FFFFFF" stroke-width="4"></circle>
+          <circle cx="714" cy="400" r="18" fill="#B45309" stroke="#FFFFFF" stroke-width="4"></circle>
+          <circle cx="436" cy="288" r="15" fill="#FFFFFF" stroke="#111827" stroke-width="4"></circle>
+          <line x1="436" y1="288" x2="142" y2="400" stroke="#FFFFFF" stroke-width="3" stroke-dasharray="8 7"></line>
+          <line x1="436" y1="288" x2="452" y2="98" stroke="#FFFFFF" stroke-width="3" stroke-dasharray="8 7"></line>
+          <line x1="436" y1="288" x2="714" y2="400" stroke="#FFFFFF" stroke-width="3" stroke-dasharray="8 7"></line>
+          <text x="142" y="444" text-anchor="middle" class="label">v0</text>
+          <text x="452" y="65" text-anchor="middle" class="label">v1</text>
+          <text x="714" y="444" text-anchor="middle" class="label">v2</text>
+          <text x="436" y="260" text-anchor="middle" class="label">fragment</text>
+          <rect x="122" y="34" width="660" height="54" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="452" y="70" text-anchor="middle" class="math">a_f = lambda_0 a_0 + lambda_1 a_1 + lambda_2 a_2</text>
+          <rect x="212" y="466" width="476" height="34" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="490" text-anchor="middle" class="small">debug output: color, normal, UV, depth, or flat constant</text>
+        </svg>
+        <div class="stack">
+          <div class="panel teal">
+            <div class="panel-title">Attribute Contract</div>
+            <p>Vertex attributes are read at vertices, but varying outputs are interpolated for fragments.</p>
+          </div>
+          <div class="panel blue">
+            <div class="panel-title">Shader Debug Views</div>
+            <div class="mini-grid">
+              <div class="metric"><strong>Color</strong><span>reveals attribute order</span></div>
+              <div class="metric"><strong>Normal</strong><span>reveals orientation</span></div>
+              <div class="metric"><strong>UV</strong><span>reveals texture mapping</span></div>
+              <div class="metric"><strong>Depth</strong><span>reveals visibility</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Interpolation is geometry applied to shader data.</span><span>Varying attributes</span></div>
+      <aside class="speaker-notes">The important idea is that attributes are not just attached to vertices; after rasterization they become interpolated fragment inputs. Barycentric weights give a compact mental model: colors, UVs, normals, and other varyings should stay inside the convex combination dictated by the triangle.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Depth Stencil">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Rasterization Context</div>
+          <h2>Depth And Stencil Are Part Of The Frame Equation</h2>
+        </div>
+        <div class="kicker">hidden<br>buffers</div>
+      </div>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Rasterization</div>
+            <p>Converts primitives into candidate fragments with interpolated attributes and depth.</p>
+          </div>
+          <div class="panel amber">
+            <div class="panel-title">Tests</div>
+            <p>Depth and stencil state decide whether a fragment is discarded, recorded, or allowed to update the color target.</p>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">Inspection Habit</div>
+            <p>Render depth, stencil labels, overdraw, or a flat color before assuming the material shader is the problem.</p>
+          </div>
+        </div>
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Fragment processing through depth and stencil tests">
+          <defs>
+            <marker id="frag-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g transform="translate(54 88)">
+            <rect x="0" y="0" width="160" height="90" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+            <text x="80" y="39" text-anchor="middle" class="label">Fragment</text>
+            <text x="80" y="70" text-anchor="middle" class="small">color + z</text>
+          </g>
+          <g transform="translate(302 88)">
+            <rect x="0" y="0" width="160" height="90" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <text x="80" y="39" text-anchor="middle" class="label">Depth</text>
+            <text x="80" y="70" text-anchor="middle" class="small">near wins</text>
+          </g>
+          <g transform="translate(550 88)">
+            <rect x="0" y="0" width="160" height="90" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+            <text x="80" y="39" text-anchor="middle" class="label">Stencil</text>
+            <text x="80" y="70" text-anchor="middle" class="small">mask / label</text>
+          </g>
+          <path d="M214 133 H298" stroke="#1E3A8A" stroke-width="4" marker-end="url(#frag-arrow)"></path>
+          <path d="M462 133 H546" stroke="#1E3A8A" stroke-width="4" marker-end="url(#frag-arrow)"></path>
+          <path d="M710 133 H808 V244" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#frag-arrow)"></path>
+          <g transform="translate(90 260)">
+            <rect x="0" y="0" width="200" height="160" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <polygon points="34,124 96,32 168,124" fill="#2563EB" fill-opacity="0.66"></polygon>
+            <polygon points="74,132 130,48 186,132" fill="#B45309" fill-opacity="0.62"></polygon>
+            <text x="100" y="192" text-anchor="middle" class="small">color target</text>
+          </g>
+          <g transform="translate(354 260)">
+            <rect x="0" y="0" width="200" height="160" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <rect x="22" y="26" width="156" height="108" fill="#EFF6FF"></rect>
+            <path d="M28 128 C72 88, 116 74, 174 34" fill="none" stroke="#1E3A8A" stroke-width="8"></path>
+            <text x="100" y="192" text-anchor="middle" class="small">depth target</text>
+          </g>
+          <g transform="translate(618 260)">
+            <rect x="0" y="0" width="200" height="160" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <rect x="28" y="30" width="62" height="94" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <rect x="110" y="30" width="62" height="94" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+            <text x="59" y="87" text-anchor="middle" class="label">1</text>
+            <text x="141" y="87" text-anchor="middle" class="label">2</text>
+            <text x="100" y="192" text-anchor="middle" class="small">stencil target</text>
+          </g>
+        </svg>
+      </div>
+      <div class="footer"><span>A correct shader can still produce no visible pixel.</span><span>Depth, stencil, blending</span></div>
+      <aside class="speaker-notes">Make the hidden framebuffer attachments visible. Fragment shading proposes values, but depth, stencil, and blending state decide what is kept, rejected, labeled, or combined. This is why a color shader can look correct in isolation while the final frame is empty or unexpectedly overwritten.</aside>
+    </section>
+
+    <section class="slide" data-label="Textures">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Texture Objects And Samplers</div>
+          <h2>The Image Is Only One Part Of Texture State</h2>
+        </div>
+        <div class="kicker">uv + sampler<br>+ texture unit</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Texture coordinates and sampler wrap modes">
+          <defs>
+            <pattern id="checker" width="38" height="38" patternUnits="userSpaceOnUse">
+              <rect width="38" height="38" fill="#EFF6FF"></rect>
+              <rect width="19" height="19" fill="#2563EB" fill-opacity="0.62"></rect>
+              <rect x="19" y="19" width="19" height="19" fill="#0F766E" fill-opacity="0.62"></rect>
+            </pattern>
+            <marker id="tex-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g transform="translate(70 80)">
+            <rect x="0" y="0" width="250" height="250" fill="url(#checker)" stroke="#1E3A8A" stroke-width="4"></rect>
+            <path d="M0 250 H292" stroke="#64748B" stroke-width="3" marker-end="url(#tex-arrow)"></path>
+            <path d="M0 250 V-42" stroke="#64748B" stroke-width="3" marker-end="url(#tex-arrow)"></path>
+            <text x="292" y="286" text-anchor="middle" class="math">u</text>
+            <text x="-24" y="-32" text-anchor="middle" class="math">v</text>
+            <circle cx="75" cy="176" r="10" fill="#B45309"></circle>
+            <circle cx="292" cy="-22" r="10" fill="#6D28D9"></circle>
+            <text x="75" y="211" text-anchor="middle" class="small">inside</text>
+            <text x="292" y="-48" text-anchor="middle" class="small">outside</text>
+          </g>
+          <g transform="translate(430 75)">
+            <rect x="0" y="0" width="350" height="80" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="24" y="34" class="label">Wrap</text>
+            <text x="128" y="34">clamp</text>
+            <text x="238" y="34">repeat</text>
+            <text x="24" y="64" class="small">outside coordinates are policy, not magic</text>
+            <rect x="0" y="116" width="350" height="80" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="24" y="150" class="label">Filter</text>
+            <text x="128" y="150">nearest</text>
+            <text x="238" y="150">linear</text>
+            <text x="24" y="180" class="small">between texels, choose a reconstruction rule</text>
+            <rect x="0" y="232" width="350" height="80" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="24" y="266" class="label">Bind</text>
+            <text x="128" y="266">unit</text>
+            <text x="238" y="266">sampler</text>
+            <text x="24" y="296" class="small">fragment shader samples the active object</text>
+          </g>
+          <rect x="120" y="404" width="660" height="58" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="442" text-anchor="middle" class="math">sample = texture(sampler2D, uv)</text>
+        </svg>
+        <div class="stack">
+          <div class="panel teal">
+            <div class="panel-title">Texture Object</div>
+            <p>Device-resident image data with target, format, mip levels, and storage.</p>
+          </div>
+          <div class="panel violet">
+            <div class="panel-title">Sampler State</div>
+            <p>Defines wrap and filtering behavior, especially when UV coordinates leave the unit square.</p>
+          </div>
+          <div class="panel amber">
+            <div class="panel-title">Common Failure</div>
+            <p>The shader samples the wrong texture unit, or the UV attribute is misread by the vertex array.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Texture mapping is geometry plus state plus memory lookup.</span><span>Texture coordinates and samplers</span></div>
+      <aside class="speaker-notes">Textures are best taught as data plus sampling state. The image alone does not determine the result; coordinates, wrap modes, filter modes, mip level, texture unit, and sampler binding all participate. The same checker data can clamp, repeat, or blur depending on the active sampler.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Meshes">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Meshes For Hardware</div>
+          <h2>Topology Becomes Indexed Draw Streams</h2>
+        </div>
+        <div class="kicker">vertices<br>indices<br>attributes</div>
+      </div>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Offline Mesh</div>
+            <p>May know adjacency, materials, groups, smoothing, and authoring history.</p>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">Hardware Draw Mesh</div>
+            <p>Usually becomes compact vertex buffers plus index buffers for triangles.</p>
+          </div>
+          <div class="panel slate">
+            <div class="panel-title">Practical Split</div>
+            <p>Keep rich topology for editing and validation; stream compact indexed arrays for rendering.</p>
+          </div>
+        </div>
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Indexed triangle mesh and GPU buffers">
+          <defs>
+            <marker id="mesh-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g transform="translate(70 86)">
+            <polygon points="80,250 190,70 330,250" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+            <polygon points="330,250 190,70 470,76" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></polygon>
+            <polygon points="330,250 470,76 570,250" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></polygon>
+            <circle cx="80" cy="250" r="13" fill="#2563EB"></circle>
+            <circle cx="190" cy="70" r="13" fill="#0F766E"></circle>
+            <circle cx="330" cy="250" r="13" fill="#1E3A8A"></circle>
+            <circle cx="470" cy="76" r="13" fill="#B45309"></circle>
+            <circle cx="570" cy="250" r="13" fill="#6D28D9"></circle>
+            <text x="80" y="289" text-anchor="middle" class="small">0</text>
+            <text x="190" y="42" text-anchor="middle" class="small">1</text>
+            <text x="330" y="289" text-anchor="middle" class="small">2</text>
+            <text x="470" y="48" text-anchor="middle" class="small">3</text>
+            <text x="570" y="289" text-anchor="middle" class="small">4</text>
+          </g>
+          <path d="M642 236 H742" stroke="#1E3A8A" stroke-width="4" marker-end="url(#mesh-arrow)"></path>
+          <g transform="translate(730 74)">
+            <rect x="0" y="0" width="116" height="82" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="58" y="33" text-anchor="middle" class="label">VBO</text>
+            <text x="58" y="63" text-anchor="middle" class="small">0..4</text>
+            <rect x="0" y="116" width="116" height="118" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+            <text x="58" y="149" text-anchor="middle" class="label">IBO</text>
+            <text x="58" y="181" text-anchor="middle" class="mono">0,1,2</text>
+            <text x="58" y="207" text-anchor="middle" class="mono">2,1,3</text>
+            <text x="58" y="233" text-anchor="middle" class="mono">2,3,4</text>
+          </g>
+          <rect x="108" y="432" width="684" height="50" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="465" text-anchor="middle" class="math">shared vertices reduce repeated attribute fetches</text>
+        </svg>
+      </div>
+      <div class="footer"><span>The mesh sent to hardware is a compact contract, not the whole modeling story.</span><span>Indexed mesh drawing</span></div>
+      <aside class="speaker-notes">Relate meshes to the memory structures from earlier chapters. Hardware usually wants linear vertex and index buffers, while modeling tools often remember richer adjacency. The lecture distinction is practical: keep enough topology offline for editing, then stream compact indexed triangles for drawing.</aside>
+    </section>
+
+    <section class="slide" data-label="Instancing">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Meshes And Instancing</div>
+          <h2>One Geometry Upload, Many Model Matrices</h2>
+        </div>
+        <div class="kicker">reuse<br>without copies</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Instancing one mesh with multiple transforms">
+          <defs>
+            <marker id="inst-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g transform="translate(70 170)">
+            <rect x="0" y="0" width="190" height="140" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <polygon points="54,106 94,34 138,106" fill="#FFFFFF" stroke="#2563EB" stroke-width="5"></polygon>
+            <text x="95" y="176" text-anchor="middle" class="label">base mesh buffer</text>
+          </g>
+          <path d="M280 240 C376 96, 508 94, 620 126" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#inst-arrow)"></path>
+          <path d="M280 240 C390 220, 498 230, 626 246" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#inst-arrow)"></path>
+          <path d="M280 240 C392 390, 520 392, 638 350" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#inst-arrow)"></path>
+          <g transform="translate(620 82)">
+            <ellipse cx="70" cy="58" rx="58" ry="40" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></ellipse>
+            <text x="70" y="126" text-anchor="middle" class="small">M0, material A</text>
+          </g>
+          <g transform="translate(630 210)">
+            <ellipse cx="70" cy="58" rx="84" ry="34" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></ellipse>
+            <text x="70" y="126" text-anchor="middle" class="small">M1, material B</text>
+          </g>
+          <g transform="translate(642 340)">
+            <ellipse cx="70" cy="50" rx="46" ry="58" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></ellipse>
+            <text x="70" y="128" text-anchor="middle" class="small">M2, material C</text>
+          </g>
+          <rect x="90" y="58" width="300" height="64" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="240" y="99" text-anchor="middle" class="math">draw N instances</text>
+          <rect x="108" y="430" width="684" height="52" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="464" text-anchor="middle" class="math">per-instance attributes: model matrix, color, id</text>
+        </svg>
+        <div class="stack">
+          <div class="panel teal">
+            <div class="panel-title">Reuse Contract</div>
+            <p>Shared VBO and index buffers stay resident; instance records supply transforms or materials.</p>
+          </div>
+          <div class="panel blue">
+            <div class="panel-title">Normal Transform</div>
+            <p>Nonuniform scale needs a correct normal matrix, often derived from the inverse transpose of the model transform.</p>
+          </div>
+          <div class="panel violet">
+            <div class="panel-title">Why It Matters</div>
+            <p>Instancing reduces repeated uploads and draw setup for repeated objects such as trees, particles, or identical props.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Instancing separates shared geometry from per-object state.</span><span>Mesh instancing</span></div>
+      <aside class="speaker-notes">Instancing is the reuse slide. One resident mesh can be drawn many times by changing per-instance transforms, materials, or attributes. The saving is not only fewer bytes transferred; it also makes the scene conceptually cleaner because shared geometry and instance-specific state are separated.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Performance">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Performance And Debugging</div>
+          <h2>Find The Active Pressure Point Before Optimizing</h2>
+        </div>
+        <div class="kicker">measure<br>then change</div>
+      </div>
+      <div class="content two">
+        <div class="mini-grid">
+          <div class="metric"><strong>Host uploads</strong><span>Too much data crosses the CPU/GPU boundary each frame.</span></div>
+          <div class="metric"><strong>State changes</strong><span>Pipeline rebinding dominates small draw calls.</span></div>
+          <div class="metric"><strong>Vertex work</strong><span>Heavy transforms or duplicated vertices limit throughput.</span></div>
+          <div class="metric"><strong>Fragment work</strong><span>Overdraw, expensive materials, or texture traffic dominate.</span></div>
+          <div class="metric"><strong>Synchronization</strong><span>CPU waits for GPU results or overwrites busy resources.</span></div>
+          <div class="metric"><strong>Memory locality</strong><span>Index order, texture access, and batching affect cache behavior.</span></div>
+        </div>
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Performance budget pressure points along frame pipeline">
+          <defs>
+            <marker id="perf-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <path d="M90 390 H810" stroke="#CBD5E1" stroke-width="8" stroke-linecap="round"></path>
+          <path d="M90 390 H810" stroke="#1E3A8A" stroke-width="4" marker-end="url(#perf-arrow)"></path>
+          <g transform="translate(102 90)">
+            <rect x="0" y="0" width="116" height="250" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+            <rect x="0" y="144" width="116" height="106" rx="8" fill="#2563EB" fill-opacity="0.24"></rect>
+            <text x="58" y="284" text-anchor="middle" class="small">uploads</text>
+          </g>
+          <g transform="translate(254 90)">
+            <rect x="0" y="0" width="116" height="250" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <rect x="0" y="92" width="116" height="158" rx="8" fill="#0F766E" fill-opacity="0.25"></rect>
+            <text x="58" y="284" text-anchor="middle" class="small">state</text>
+          </g>
+          <g transform="translate(406 90)">
+            <rect x="0" y="0" width="116" height="250" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+            <rect x="0" y="122" width="116" height="128" rx="8" fill="#1E3A8A" fill-opacity="0.24"></rect>
+            <text x="58" y="284" text-anchor="middle" class="small">vertex</text>
+          </g>
+          <g transform="translate(558 90)">
+            <rect x="0" y="0" width="116" height="250" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <rect x="0" y="42" width="116" height="208" rx="8" fill="#B45309" fill-opacity="0.26"></rect>
+            <text x="58" y="284" text-anchor="middle" class="small">fragment</text>
+          </g>
+          <g transform="translate(710 90)">
+            <rect x="0" y="0" width="116" height="250" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+            <rect x="0" y="178" width="116" height="72" rx="8" fill="#6D28D9" fill-opacity="0.24"></rect>
+            <text x="58" y="284" text-anchor="middle" class="small">sync</text>
+          </g>
+          <text x="450" y="462" text-anchor="middle" class="math">optimize the bottleneck you can name</text>
+        </svg>
+      </div>
+      <div class="footer"><span>Retained resources and instancing help only after the bottleneck is identified.</span><span>Performance checks</span></div>
+      <aside class="speaker-notes">Treat performance as a set of pressure points rather than a single speed number. Host uploads, state changes, vertex work, fragment overdraw, texture traffic, and synchronization stalls each have different symptoms. A good optimization begins by identifying which pressure point is active.</aside>
+    </section>
+
+    <section class="slide" data-label="Draw Call Lab">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Applied Lab</div>
+          <h2>Diagnose The Draw Before Rewriting The Renderer</h2>
+        </div>
+        <div class="kicker">minimal<br>state tree</div>
+      </div>
+      <div class="content two">
+        <svg class="diagram compact-diagram" viewBox="0 0 900 520" role="img" aria-label="Draw call diagnostic decision tree">
+          <defs>
+            <marker id="diag-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="326" y="36" width="248" height="58" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+          <text x="450" y="73" text-anchor="middle" class="label">Bad frame</text>
+          <path d="M450 94 V134" stroke="#1E3A8A" stroke-width="4" marker-end="url(#diag-arrow)"></path>
+          <rect x="310" y="138" width="280" height="62" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="177" text-anchor="middle">Is the context valid?</text>
+          <path d="M450 200 V242" stroke="#1E3A8A" stroke-width="4" marker-end="url(#diag-arrow)"></path>
+          <rect x="310" y="246" width="280" height="62" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="285" text-anchor="middle">Program linked?</text>
+          <path d="M450 308 V350" stroke="#1E3A8A" stroke-width="4" marker-end="url(#diag-arrow)"></path>
+          <rect x="310" y="354" width="280" height="62" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+          <text x="450" y="393" text-anchor="middle">VAO and buffers bound?</text>
+          <path d="M310 277 H170 V406" fill="none" stroke="#B45309" stroke-width="4" marker-end="url(#diag-arrow)"></path>
+          <path d="M590 385 H746 V406" fill="none" stroke="#0F766E" stroke-width="4" marker-end="url(#diag-arrow)"></path>
+          <rect x="54" y="410" width="232" height="58" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+          <text x="170" y="447" text-anchor="middle" class="small">flat color shader</text>
+          <rect x="630" y="410" width="232" height="58" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+          <text x="746" y="447" text-anchor="middle" class="small">attribute debug view</text>
+          <rect x="328" y="444" width="244" height="46" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+          <text x="450" y="475" text-anchor="middle" class="small">transform / texture / tests</text>
+        </svg>
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">Earliest-Failing Contract</div>
+            <ol>
+              <li>Context and framebuffer exist.</li>
+              <li>Shader program links and is active.</li>
+              <li>VAO decodes attributes correctly.</li>
+              <li>Transforms put geometry inside clip range.</li>
+              <li>Texture and tests are intentionally bound.</li>
+            </ol>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">Good Lab Habit</div>
+            <p>Replace the material with one debug output at a time; every temporary color should answer a specific state question.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Small diagnostic shaders turn hidden contracts into visible evidence.</span><span>Draw-state lab</span></div>
+      <aside class="speaker-notes">The diagnostic tree is meant to be used before rewriting code. Start with the earliest contract that can make the frame fail: context, program, vertex array, transform, texture, then depth or stencil state. Visual debug shaders are useful because they turn invisible state into inspected color.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Recap">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Recap</div>
+          <h2>Five Invariants For Graphics Hardware Work</h2>
+        </div>
+        <div class="kicker">chapter 17<br>takeaways</div>
+      </div>
+      <div class="content two">
+        <div class="stack">
+          <div class="panel blue">
+            <div class="panel-title">1. Resource Residency</div>
+            <p>Large buffers and textures should live on the GPU across frames.</p>
+          </div>
+          <div class="panel teal">
+            <div class="panel-title">2. Interpretation State</div>
+            <p>The VAO must match the byte layout expected by the shader.</p>
+          </div>
+          <div class="panel amber">
+            <div class="panel-title">3. Coordinate Spaces</div>
+            <p>Track local, world, eye, clip, NDC, viewport, and depth values.</p>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="panel violet">
+            <div class="panel-title">4. Hidden Framebuffers</div>
+            <p>Depth, stencil, and blending can change what survives after shading.</p>
+          </div>
+          <div class="panel slate">
+            <div class="panel-title">5. Reuse And Instancing</div>
+            <p>Separate shared geometry from per-instance transforms and material state.</p>
+          </div>
+          <svg class="diagram" viewBox="0 0 780 230" role="img" aria-label="Compact pipeline recap">
+            <defs>
+              <marker id="recap-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="36" y="78" width="120" height="64" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+            <rect x="210" y="78" width="120" height="64" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <rect x="384" y="78" width="120" height="64" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+            <rect x="558" y="78" width="150" height="64" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <path d="M156 110 H206" stroke="#1E3A8A" stroke-width="4" marker-end="url(#recap-arrow)"></path>
+            <path d="M330 110 H380" stroke="#1E3A8A" stroke-width="4" marker-end="url(#recap-arrow)"></path>
+            <path d="M504 110 H554" stroke="#1E3A8A" stroke-width="4" marker-end="url(#recap-arrow)"></path>
+            <text x="96" y="118" text-anchor="middle" class="small">data</text>
+            <text x="270" y="118" text-anchor="middle" class="small">state</text>
+            <text x="444" y="118" text-anchor="middle" class="small">shader</text>
+            <text x="633" y="118" text-anchor="middle" class="small">framebuffer</text>
+            <text x="390" y="188" text-anchor="middle" class="math">debug by exposing the contract</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Final mental model: draw calls are precise contracts with the current GPU state.</span><span>End of chapter 17</span></div>
+      <aside class="speaker-notes">Close by turning the lecture into a checklist students can actually use at a workstation. The five invariants cover resource residency, interpretation state, coordinate spaces, hidden buffers, and reuse. They are deliberately small because a small checklist survives the stress of debugging a broken frame.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

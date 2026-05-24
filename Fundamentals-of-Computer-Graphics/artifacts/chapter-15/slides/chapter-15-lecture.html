@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curves</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-15">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-15-curves/15-curves.ipynb">
+  <meta name="source_span" content="printed pages 383-428; PDF pages 400-445.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text fonts and KaTeX auto-render support are enabled.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open the lecture by making curves feel like a representation problem rather than a drawing problem. The same visible stroke can be named implicitly, sampled parametrically, or assembled from editable pieces. Graphics prefers representations that are easy to evaluate, edit, join, and test."
+    },
+    {
+      "slide": 2,
+      "notes": "Use the route slide as the chapter contract. The story moves from a single parametric map to distance-aware sampling, then to piecewise polynomial structure, and finally to the industry workhorses: Bezier segments, B-splines, and NURBS. Keep asking what each representation makes cheap."
+    },
+    {
+      "slide": 3,
+      "notes": "Stress that representation choice changes the natural question. An implicit curve gives a membership test, a parametric curve gives an evaluator, and a procedural rule gives a construction recipe. Rendering and modeling lean on parametric pieces because sampling and interpolation are direct."
+    },
+    {
+      "slide": 4,
+      "notes": "Frame reparameterization as a timing change, not a geometric change. Two maps can trace the same point set while placing parameter values at very different visible locations. This is the source of many uneven animation, stroking, and texture placement artifacts."
+    },
+    {
+      "slide": 5,
+      "notes": "Arc length is the practical antidote to misleading parameter spacing. Most useful free-form curves do not give a closed-form inverse from distance back to parameter, so graphics systems build a monotone table and interpolate through it. The diagnostic is uniform chord spacing."
+    },
+    {
+      "slide": 6,
+      "notes": "Treat continuity as a contract between neighboring curve pieces. C0 says the endpoints meet, C1 says the velocity vectors match, and G1 says only tangent direction matches. These are distinct visible and numerical conditions, especially when curves drive motion or shading."
+    },
+    {
+      "slide": 7,
+      "notes": "This slide turns many named curve families into one schema. A piece stores coefficients, a basis turns input data into weights, and constraints decide which coefficients are allowed. The implementation habit is to evaluate locally and check joins globally."
+    },
+    {
+      "slide": 8,
+      "notes": "Emphasize why cubics dominate practice. Four scalar degrees of freedom per coordinate are enough for endpoints and tangents, or four control points, while still staying cheap to evaluate. Different cubic bases change the editing interface more than the polynomial space."
+    },
+    {
+      "slide": 9,
+      "notes": "Introduce a Bezier segment as a controlled average. Bernstein weights are nonnegative on the unit interval and sum to one, so the curve stays inside the control polygon hull. Moving a control point affects the whole segment, which is powerful but global."
+    },
+    {
+      "slide": 10,
+      "notes": "De Casteljau evaluation should feel like geometry, not just arithmetic. Repeated linear interpolation gives the same point as the Bernstein formula, but every intermediate point is inspectable. Subdivision at the chosen parameter produces two smaller Bezier segments with the same trace."
+    },
+    {
+      "slide": 11,
+      "notes": "Use the handle diagram to connect continuity definitions to authoring practice. Bezier pieces meet in position when endpoints coincide, become G1 when the handles are collinear, and become C1 when the handle lengths match the derivative scale across the join."
+    },
+    {
+      "slide": 12,
+      "notes": "B-splines are the locality answer to Bezier global control. The curve is still a weighted sum of control points, but only a few basis functions are nonzero at any parameter. The partition of unity keeps affine transformations and translation behavior predictable."
+    },
+    {
+      "slide": 13,
+      "notes": "Explain knots as the parameter schedule that decides where basis functions turn on and off. Nonuniform knots concentrate detail, endpoint repetition forces interpolation, and interior repetition reduces smoothness. The useful mental model is trading smooth flow for intentional control."
+    },
+    {
+      "slide": 14,
+      "notes": "NURBS add one more lever: weights. The weighted numerator and denominator form a rational curve, so changing a weight pulls the curve toward or away from a control point. That rational form is why conic sections can be represented exactly."
+    },
+    {
+      "slide": 15,
+      "notes": "Make the checks feel like engineering rather than ceremony. A robust curve evaluator verifies membership residuals, monotone arc tables, continuity residuals, partition of unity, locality, and rational conic accuracy. Each check corresponds to a visible failure mode in modeling or rendering."
+    },
+    {
+      "slide": 16,
+      "notes": "The comparison slide is about editing psychology. Bezier control is compact and expressive for one segment, but a single handle can affect the whole segment. B-spline control spreads a longer curve across local supports, so edits stay contained."
+    },
+    {
+      "slide": 17,
+      "notes": "Close by giving students a reusable checklist. For any curve representation, identify the parameter, the basis, the local support, the join contract, and the invariant to test. That checklist transfers directly to animation paths, font outlines, CAD curves, and surface patches."
+    }
+  ]
+}
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: 'Source Sans 3', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 80px 80px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.04;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.16;
+      color: var(--slide-accent);
+      margin-bottom: 12px;
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.32;
+    }
+
+    ul, ol {
+      margin: 0;
+      padding-left: 32px;
+    }
+
+    li + li {
+      margin-top: 10px;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.25;
+      max-width: 1240px;
+      margin-top: 20px;
+    }
+
+    .meta-line {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      margin-top: 18px;
+    }
+
+    .rule {
+      width: 100px;
+      height: 6px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+      margin: 24px 0 30px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 34px;
+      align-items: stretch;
+    }
+
+    .two {
+      grid-template-columns: 0.98fr 1.02fr;
+    }
+
+    .two.right {
+      grid-template-columns: 1.06fr 0.94fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .row {
+      display: flex;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .panel {
+      border: 1px solid #CBD5E1;
+      border-left: 5px solid var(--slide-blue);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 22px 24px;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    }
+
+    .panel.teal {
+      border-left-color: var(--slide-teal);
+      background: #F0FDFA;
+    }
+
+    .panel.blue {
+      border-left-color: var(--slide-blue);
+      background: #EFF6FF;
+    }
+
+    .panel.amber {
+      border-left-color: var(--slide-amber);
+      background: #FFFBEB;
+    }
+
+    .panel.violet {
+      border-left-color: var(--slide-violet);
+      background: #F5F3FF;
+    }
+
+    .panel.slate {
+      border-left-color: #94A3B8;
+      background: #F8FAFC;
+    }
+
+    .panel-label {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .formula {
+      font-family: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      font-size: 34px;
+      line-height: 1.28;
+      color: var(--slide-ink);
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .formula.center {
+      text-align: center;
+      font-size: 38px;
+      padding: 24px 28px;
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      border-radius: 6px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      padding: 8px 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-muted);
+    }
+
+    .diagram {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .diagram.plain {
+      border-color: transparent;
+      background: transparent;
+      padding: 0;
+    }
+
+    .svg-label {
+      font-family: 'Source Sans 3', Arial, sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      fill: #111827;
+    }
+
+    .svg-small {
+      font-family: 'Source Sans 3', Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      fill: #475569;
+    }
+
+    .svg-math {
+      font-family: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      font-size: 30px;
+      fill: #111827;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 25px;
+      line-height: 1.22;
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+    }
+
+    .mini-table th {
+      font-size: 23px;
+      text-align: left;
+      color: var(--slide-accent);
+      background: #EEF2FF;
+      padding: 15px 16px;
+      border-bottom: 1px solid #CBD5E1;
+    }
+
+    .mini-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #E2E8F0;
+      color: var(--slide-ink);
+      vertical-align: top;
+    }
+
+    .mini-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .footer {
+      margin-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      font-weight: 600;
+    }
+
+    .katex {
+      font-size: 1.02em;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="eyebrow">Fundamentals of Computer Graphics</div>
+        <h1>Chapter 15: Curves</h1>
+        <div class="rule"></div>
+        <p class="subtitle">Parametric representations, continuity contracts, cubic pieces, Bezier control, B-spline locality, and rational NURBS weights.</p>
+        <div class="content two" style="margin-top: 42px;">
+          <div class="stack">
+            <div class="panel blue">
+              <div class="panel-label">Chapter Question</div>
+              <p>How can a graphics program specify a smooth curve so it is easy to draw, edit, evaluate, and validate?</p>
+            </div>
+            <div class="panel teal">
+              <div class="panel-label">Source Grounding</div>
+              <p>Original lecture material for printed pages 383-428 and PDF pages 400-445.</p>
+            </div>
+          </div>
+          <div class="diagram plain">
+            <svg viewBox="0 0 860 470" role="img" aria-label="Curve families as editable routes">
+              <defs>
+                <marker id="titleArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <path d="M70,300 C170,80 290,115 375,255 S560,455 720,170" fill="none" stroke="#2563EB" stroke-width="10" stroke-linecap="round"></path>
+              <path d="M70,300 L210,120 L390,260 L560,420 L720,170" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="14 12"></path>
+              <g fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5">
+                <circle cx="70" cy="300" r="15"></circle>
+                <circle cx="210" cy="120" r="15"></circle>
+                <circle cx="390" cy="260" r="15"></circle>
+                <circle cx="560" cy="420" r="15"></circle>
+                <circle cx="720" cy="170" r="15"></circle>
+              </g>
+              <path d="M150,342 C275,390 385,386 505,338" fill="none" stroke="#0F766E" stroke-width="6" marker-end="url(#titleArrow)"></path>
+              <text x="418" y="80" text-anchor="middle" class="svg-label">curve = geometry plus representation</text>
+              <text x="418" y="386" text-anchor="middle" class="svg-small">sample, edit, join, test</text>
+              <rect x="82" y="28" width="180" height="52" rx="8" fill="#EFF6FF" stroke="#2563EB"></rect>
+              <text x="172" y="62" text-anchor="middle" class="svg-small">parametric</text>
+              <rect x="340" y="30" width="180" height="52" rx="8" fill="#F0FDFA" stroke="#0F766E"></rect>
+              <text x="430" y="64" text-anchor="middle" class="svg-small">piecewise</text>
+              <rect x="600" y="28" width="180" height="52" rx="8" fill="#F5F3FF" stroke="#6D28D9"></rect>
+              <text x="690" y="62" text-anchor="middle" class="svg-small">rational</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Notebook: Fundamentals-of-Computer-Graphics/chapter-15-curves/15-curves.ipynb</span><span>chapter-15</span></div>
+      </div>
+      <aside class="speaker-notes">Open the lecture by making curves feel like a representation problem rather than a drawing problem. The same visible stroke can be named implicitly, sampled parametrically, or assembled from editable pieces. Graphics prefers representations that are easy to evaluate, edit, join, and test.</aside>
+    </section>
+
+    <section data-label="Lecture Route">
+      <div class="slide">
+        <div class="eyebrow">Lecture Route</div>
+        <h2>Every Curve Tool Answers A Different Query</h2>
+        <div class="content three" style="margin-top: 34px;">
+          <div class="panel blue">
+            <h3>1. Parameter</h3>
+            <p>Choose a map \( \mathbf{p}(u) \) and learn what the parameter does, including when it is not distance.</p>
+          </div>
+          <div class="panel teal">
+            <h3>2. Join Contract</h3>
+            <p>Assemble pieces and state whether a join should satisfy \(C^0\), \(C^1\), or \(G^1\).</p>
+          </div>
+          <div class="panel violet">
+            <h3>3. Basis</h3>
+            <p>Encode constraints with polynomial bases: Hermite, Lagrange, Bezier, or B-spline.</p>
+          </div>
+          <div class="panel amber">
+            <h3>4. Locality</h3>
+            <p>Ask whether moving one control point changes a whole segment or a small parameter interval.</p>
+          </div>
+          <div class="panel slate">
+            <h3>5. Weights</h3>
+            <p>Add rational weights when conics and exact circular arcs matter to the representation.</p>
+          </div>
+          <div class="panel blue">
+            <h3>6. Invariants</h3>
+            <p>Check partition of unity, monotone arc tables, continuity residuals, and exact conic tests.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Focus: representation choices for modeling, rendering, and animation paths</span><span>383-428</span></div>
+      </div>
+      <aside class="speaker-notes">Use the route slide as the chapter contract. The story moves from a single parametric map to distance-aware sampling, then to piecewise polynomial structure, and finally to the industry workhorses: Bezier segments, B-splines, and NURBS. Keep asking what each representation makes cheap.</aside>
+    </section>
+
+    <section data-label="Representation Questions">
+      <div class="slide alt">
+        <div class="eyebrow">Representations</div>
+        <h2>A Curve Is A Point Set; A Representation Is A Query Interface</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Implicit parametric and procedural curve routes">
+              <defs>
+                <marker id="repArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#64748B"></path>
+                </marker>
+              </defs>
+              <g transform="translate(55,70)">
+                <circle cx="120" cy="150" r="88" fill="#EFF6FF" stroke="#2563EB" stroke-width="6"></circle>
+                <path d="M32,150 C100,35 196,35 208,150 C190,248 62,248 32,150" fill="none" stroke="#B45309" stroke-width="4"></path>
+                <text x="120" y="295" text-anchor="middle" class="svg-label">implicit</text>
+                <text x="120" y="332" text-anchor="middle" class="svg-math">f(x,y)=0?</text>
+              </g>
+              <g transform="translate(320,70)">
+                <path d="M35,240 C100,40 190,58 228,145 S330,275 380,90" fill="none" stroke="#0F766E" stroke-width="8" stroke-linecap="round"></path>
+                <g fill="#FFFFFF" stroke="#0F766E" stroke-width="4">
+                  <circle cx="35" cy="240" r="10"></circle>
+                  <circle cx="125" cy="86" r="10"></circle>
+                  <circle cx="228" cy="145" r="10"></circle>
+                  <circle cx="320" cy="222" r="10"></circle>
+                  <circle cx="380" cy="90" r="10"></circle>
+                </g>
+                <path d="M70,270 L350,270" stroke="#64748B" stroke-width="4" marker-end="url(#repArrow)"></path>
+                <text x="208" y="295" text-anchor="middle" class="svg-label">parametric</text>
+                <text x="208" y="332" text-anchor="middle" class="svg-math">p(u)=?</text>
+              </g>
+              <g transform="translate(70,385)">
+                <polyline points="0,80 45,80 67,42 90,80 135,80 158,42 180,80 225,80 248,42 270,80" fill="none" stroke="#6D28D9" stroke-width="5"></polyline>
+                <polyline points="345,80 390,80 412,42 435,80 480,80 503,42 525,80 570,80 593,42 615,80" fill="none" stroke="#6D28D9" stroke-width="5"></polyline>
+                <path d="M290,68 L330,68" stroke="#64748B" stroke-width="4" marker-end="url(#repArrow)"></path>
+                <text x="310" y="130" text-anchor="middle" class="svg-label">procedural: repeat a rule</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Membership</h3><p>Implicit form is natural when the main question is whether a point lies on, inside, or outside a shape.</p></div>
+            <div class="panel teal"><h3>Evaluation</h3><p>Parametric form is natural when the renderer needs positions, tangents, samples, and animation states.</p></div>
+            <div class="panel violet"><h3>Construction</h3><p>Procedural curves are recipes. The data is a rule, an iteration count, and a starting configuration.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Stress that representation choice changes the natural question. An implicit curve gives a membership test, a parametric curve gives an evaluator, and a procedural rule gives a construction recipe. Rendering and modeling lean on parametric pieces because sampling and interpolation are direct.</aside>
+    </section>
+
+    <section data-label="Parameter Timing">
+      <div class="slide">
+        <div class="eyebrow">Parametric Curves</div>
+        <h2>Reparameterization Changes Timing, Not The Traced Set</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula center">\( \tilde{\mathbf{p}}(v)=\mathbf{p}(\phi(v)) \)</div>
+            <div class="panel blue"><h3>Same Geometry</h3><p>If \( \phi \) is monotone and covers the same interval, the visible point set is unchanged.</p></div>
+            <div class="panel amber"><h3>Different Speeds</h3><p>Equal parameter steps can cluster on slow portions and spread out on fast portions.</p></div>
+            <div class="panel teal"><h3>Rendering Consequence</h3><p>Stroking, texture coordinates, and camera paths often need distance-aware samples.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Same curve with equal parameter and reparameterized samples">
+              <path d="M90,290 C190,110 320,120 405,280 S620,475 760,145" fill="none" stroke="#111827" stroke-width="6" stroke-linecap="round"></path>
+              <path d="M90,290 C190,110 320,120 405,280 S620,475 760,145" fill="none" stroke="#2563EB" stroke-width="3" stroke-dasharray="10 12"></path>
+              <g fill="#B45309">
+                <circle cx="90" cy="290" r="10"></circle>
+                <circle cx="160" cy="195" r="10"></circle>
+                <circle cx="250" cy="150" r="10"></circle>
+                <circle cx="352" cy="205" r="10"></circle>
+                <circle cx="438" cy="314" r="10"></circle>
+                <circle cx="535" cy="395" r="10"></circle>
+                <circle cx="640" cy="365" r="10"></circle>
+                <circle cx="720" cy="230" r="10"></circle>
+              </g>
+              <g fill="#2563EB" stroke="#FFFFFF" stroke-width="4">
+                <circle cx="90" cy="340" r="11"></circle>
+                <circle cx="130" cy="280" r="11"></circle>
+                <circle cx="190" cy="218" r="11"></circle>
+                <circle cx="285" cy="182" r="11"></circle>
+                <circle cx="410" cy="300" r="11"></circle>
+                <circle cx="565" cy="428" r="11"></circle>
+                <circle cx="675" cy="335" r="11"></circle>
+                <circle cx="760" cy="145" r="11"></circle>
+              </g>
+              <rect x="74" y="40" width="310" height="64" rx="8" fill="#FFFBEB" stroke="#B45309"></rect>
+              <text x="229" y="80" text-anchor="middle" class="svg-small">equal steps in u</text>
+              <rect x="470" y="40" width="310" height="64" rx="8" fill="#EFF6FF" stroke="#2563EB"></rect>
+              <text x="625" y="80" text-anchor="middle" class="svg-small">equal steps after lookup</text>
+              <text x="430" y="515" text-anchor="middle" class="svg-math">same point set, different parameter timing</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Frame reparameterization as a timing change, not a geometric change. Two maps can trace the same point set while placing parameter values at very different visible locations. This is the source of many uneven animation, stroking, and texture placement artifacts.</aside>
+    </section>
+
+    <section data-label="Arc Length">
+      <div class="slide alt">
+        <div class="eyebrow">Arc Length</div>
+        <h2>Distance Along A Curve Is An Integral, Then Usually A Table</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Arc length table mapping distance fractions to parameters">
+              <defs>
+                <marker id="arcArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <path d="M80,210 C170,65 310,115 360,260 S540,410 650,270 S760,105 800,210" fill="none" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></path>
+              <g fill="#FFFFFF" stroke="#2563EB" stroke-width="4">
+                <circle cx="80" cy="210" r="12"></circle>
+                <circle cx="185" cy="112" r="12"></circle>
+                <circle cx="310" cy="158" r="12"></circle>
+                <circle cx="405" cy="298" r="12"></circle>
+                <circle cx="535" cy="368" r="12"></circle>
+                <circle cx="665" cy="248" r="12"></circle>
+                <circle cx="800" cy="210" r="12"></circle>
+              </g>
+              <g transform="translate(130,405)">
+                <rect x="0" y="0" width="600" height="76" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+                <line x1="52" y1="38" x2="548" y2="38" stroke="#94A3B8" stroke-width="5"></line>
+                <g fill="#0F766E">
+                  <circle cx="52" cy="38" r="10"></circle>
+                  <circle cx="140" cy="38" r="10"></circle>
+                  <circle cx="232" cy="38" r="10"></circle>
+                  <circle cx="325" cy="38" r="10"></circle>
+                  <circle cx="420" cy="38" r="10"></circle>
+                  <circle cx="548" cy="38" r="10"></circle>
+                </g>
+                <text x="300" y="-18" text-anchor="middle" class="svg-label">monotone arc table</text>
+                <text x="52" y="69" text-anchor="middle" class="svg-small">0</text>
+                <text x="548" y="69" text-anchor="middle" class="svg-small">1</text>
+              </g>
+              <path d="M430,360 L430,405" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arcArrow)"></path>
+              <text x="430" y="325" text-anchor="middle" class="svg-math">s(u)=int ||p'(t)|| dt</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">\( s(u)=\int_a^u \lVert \mathbf{p}'(t)\rVert\,dt \)</div>
+            <div class="panel blue"><h3>Build</h3><p>Sample the curve densely, accumulate chord lengths, normalize to distance fraction.</p></div>
+            <div class="panel teal"><h3>Invert</h3><p>Given a desired distance fraction, interpolate in the table to recover the parameter.</p></div>
+            <div class="panel amber"><h3>Check</h3><p>The cumulative table must be monotone, and equal-distance chords should be less variable.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Arc length is the practical antidote to misleading parameter spacing. Most useful free-form curves do not give a closed-form inverse from distance back to parameter, so graphics systems build a monotone table and interpolate through it. The diagnostic is uniform chord spacing.</aside>
+    </section>
+
+    <section data-label="Continuity Contracts">
+      <div class="slide">
+        <div class="eyebrow">Piecewise Curves</div>
+        <h2>Continuity Contracts Say What A Join Must Preserve</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula">\(C^0:\ \mathbf{p}_i(1)=\mathbf{p}_{i+1}(0)\)</div>
+            <div class="formula">\(C^1:\ \mathbf{p}'_i(1)=\mathbf{p}'_{i+1}(0)\)</div>
+            <div class="formula">\(G^1:\ \mathbf{p}'_i(1)=\lambda\,\mathbf{p}'_{i+1}(0),\ \lambda > 0\)</div>
+            <div class="panel amber"><h3>Distinguish Artifacts</h3><p>A position gap, a corner, and a speed jump are different bugs even when the curves look close.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="C0 G1 and C1 joins">
+              <defs>
+                <marker id="tanBlue" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="tanAmber" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <g transform="translate(40,40)">
+                <path d="M20,170 C95,50 175,80 240,170" fill="none" stroke="#2563EB" stroke-width="6"></path>
+                <path d="M240,170 C300,270 380,250 445,170" fill="none" stroke="#B45309" stroke-width="6"></path>
+                <circle cx="240" cy="170" r="12" fill="#111827"></circle>
+                <line x1="240" y1="170" x2="312" y2="220" stroke="#2563EB" stroke-width="5" marker-end="url(#tanBlue)"></line>
+                <line x1="240" y1="170" x2="290" y2="90" stroke="#B45309" stroke-width="5" marker-end="url(#tanAmber)"></line>
+                <text x="235" y="330" text-anchor="middle" class="svg-label">C0 only</text>
+              </g>
+              <g transform="translate(400,45)">
+                <path d="M25,170 C105,55 190,65 245,170" fill="none" stroke="#2563EB" stroke-width="6"></path>
+                <path d="M245,170 C330,325 400,250 430,200" fill="none" stroke="#B45309" stroke-width="6"></path>
+                <circle cx="245" cy="170" r="12" fill="#111827"></circle>
+                <line x1="245" y1="170" x2="315" y2="245" stroke="#2563EB" stroke-width="5" marker-end="url(#tanBlue)"></line>
+                <line x1="245" y1="170" x2="352" y2="284" stroke="#B45309" stroke-width="5" marker-end="url(#tanAmber)"></line>
+                <text x="240" y="325" text-anchor="middle" class="svg-label">G1 direction</text>
+              </g>
+              <g transform="translate(210,300)">
+                <path d="M25,135 C115,25 190,55 260,135" fill="none" stroke="#2563EB" stroke-width="6"></path>
+                <path d="M260,135 C330,215 405,190 505,92" fill="none" stroke="#B45309" stroke-width="6"></path>
+                <circle cx="260" cy="135" r="12" fill="#111827"></circle>
+                <line x1="260" y1="135" x2="335" y2="185" stroke="#0F766E" stroke-width="6" marker-end="url(#tanBlue)"></line>
+                <text x="260" y="222" text-anchor="middle" class="svg-label">C1 vector match</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Treat continuity as a contract between neighboring curve pieces. C0 says the endpoints meet, C1 says the velocity vectors match, and G1 says only tangent direction matches. These are distinct visible and numerical conditions, especially when curves drive motion or shading.</aside>
+    </section>
+
+    <section data-label="Polynomial Pieces">
+      <div class="slide alt">
+        <div class="eyebrow">Polynomial Pieces</div>
+        <h2>Local Pieces Make Curves Editable And Testable</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Piecewise polynomial curve assembled from intervals">
+              <defs>
+                <marker id="pieceArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(85,80)">
+                <path d="M0,250 C95,55 195,75 260,235" fill="none" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></path>
+                <path d="M260,235 C345,420 455,360 520,185" fill="none" stroke="#0F766E" stroke-width="8" stroke-linecap="round"></path>
+                <path d="M520,185 C610,25 705,95 735,245" fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"></path>
+                <g fill="#FFFFFF" stroke="#111827" stroke-width="4">
+                  <circle cx="0" cy="250" r="12"></circle>
+                  <circle cx="260" cy="235" r="12"></circle>
+                  <circle cx="520" cy="185" r="12"></circle>
+                  <circle cx="735" cy="245" r="12"></circle>
+                </g>
+                <line x1="0" y1="350" x2="735" y2="350" stroke="#CBD5E1" stroke-width="5"></line>
+                <g stroke="#CBD5E1" stroke-width="5">
+                  <line x1="0" y1="330" x2="0" y2="370"></line>
+                  <line x1="260" y1="330" x2="260" y2="370"></line>
+                  <line x1="520" y1="330" x2="520" y2="370"></line>
+                  <line x1="735" y1="330" x2="735" y2="370"></line>
+                </g>
+                <text x="130" y="395" text-anchor="middle" class="svg-small">piece 0</text>
+                <text x="390" y="395" text-anchor="middle" class="svg-small">piece 1</text>
+                <text x="628" y="395" text-anchor="middle" class="svg-small">piece 2</text>
+                <path d="M255,260 L305,300" stroke="#1E3A8A" stroke-width="5" marker-end="url(#pieceArrow)"></path>
+                <text x="356" y="326" text-anchor="middle" class="svg-small">join constraint</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">\( \mathbf{p}_j(u)=\sum_{r=0}^{d}\mathbf{a}_{jr}u^r,\quad 0\le u\le 1 \)</div>
+            <div class="panel blue"><h3>Why Pieces?</h3><p>One high-degree polynomial is hard to control. Many low-degree pieces keep edits local.</p></div>
+            <div class="panel teal"><h3>What Stores?</h3><p>Each piece stores a basis, input data, and a parameter interval.</p></div>
+            <div class="panel amber"><h3>What Tests?</h3><p>Neighboring pieces must satisfy their stated endpoint and derivative constraints.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This slide turns many named curve families into one schema. A piece stores coefficients, a basis turns input data into weights, and constraints decide which coefficients are allowed. The implementation habit is to evaluate locally and check joins globally.</aside>
+    </section>
+
+    <section data-label="Cubic Bases">
+      <div class="slide">
+        <div class="eyebrow">Cubics</div>
+        <h2>Four Degrees Of Freedom Encode Useful Editing Constraints</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="panel blue"><h3>Hermite</h3><p>Inputs are endpoints and tangent vectors. The curve is designed around join control.</p></div>
+            <div class="panel teal"><h3>Lagrange</h3><p>Inputs are interpolation samples. The curve is designed around passing through data.</p></div>
+            <div class="panel violet"><h3>Bezier</h3><p>Inputs are control points. The curve is designed around an editable control polygon.</p></div>
+            <div class="formula">\( \mathbf{p}(u)=\mathbf{b}(u)^T M\,\mathbf{g} \)</div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Three cubic basis families">
+              <g transform="translate(70,82)">
+                <rect x="0" y="0" width="210" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <path d="M35,230 C95,65 150,90 178,220" fill="none" stroke="#2563EB" stroke-width="6"></path>
+                <line x1="35" y1="230" x2="85" y2="130" stroke="#1E3A8A" stroke-width="5"></line>
+                <line x1="178" y1="220" x2="130" y2="110" stroke="#1E3A8A" stroke-width="5"></line>
+                <circle cx="35" cy="230" r="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="4"></circle>
+                <circle cx="178" cy="220" r="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="4"></circle>
+                <text x="105" y="285" text-anchor="middle" class="svg-label">Hermite</text>
+                <text x="105" y="318" text-anchor="middle" class="svg-small">points plus tangents</text>
+              </g>
+              <g transform="translate(325,82)">
+                <rect x="0" y="0" width="210" height="330" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+                <path d="M25,230 C75,60 128,285 188,95" fill="none" stroke="#0F766E" stroke-width="6"></path>
+                <g fill="#FFFFFF" stroke="#0F766E" stroke-width="4">
+                  <circle cx="25" cy="230" r="10"></circle>
+                  <circle cx="72" cy="112" r="10"></circle>
+                  <circle cx="135" cy="235" r="10"></circle>
+                  <circle cx="188" cy="95" r="10"></circle>
+                </g>
+                <text x="105" y="285" text-anchor="middle" class="svg-label">Lagrange</text>
+                <text x="105" y="318" text-anchor="middle" class="svg-small">sample interpolation</text>
+              </g>
+              <g transform="translate(580,82)">
+                <rect x="0" y="0" width="210" height="330" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+                <path d="M25,240 C75,35 150,60 188,220" fill="none" stroke="#6D28D9" stroke-width="6"></path>
+                <polyline points="25,240 70,65 150,55 188,220" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></polyline>
+                <g fill="#FFFFFF" stroke="#6D28D9" stroke-width="4">
+                  <circle cx="25" cy="240" r="10"></circle>
+                  <circle cx="70" cy="65" r="10"></circle>
+                  <circle cx="150" cy="55" r="10"></circle>
+                  <circle cx="188" cy="220" r="10"></circle>
+                </g>
+                <text x="105" y="285" text-anchor="middle" class="svg-label">Bezier</text>
+                <text x="105" y="318" text-anchor="middle" class="svg-small">control polygon</text>
+              </g>
+              <text x="430" y="492" text-anchor="middle" class="svg-math">same cubic space, different geometric handles</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Emphasize why cubics dominate practice. Four scalar degrees of freedom per coordinate are enough for endpoints and tangents, or four control points, while still staying cheap to evaluate. Different cubic bases change the editing interface more than the polynomial space.</aside>
+    </section>
+
+    <section data-label="Bezier Basis">
+      <div class="slide alt">
+        <div class="eyebrow">Bezier Curves</div>
+        <h2>Bernstein Weights Make A Controlled Average</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Cubic Bezier curve and Bernstein basis weights">
+              <g transform="translate(60,70)">
+                <polyline points="20,360 170,95 360,120 510,340" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="14 12"></polyline>
+                <path d="M20,360 C170,95 360,120 510,340" fill="none" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></path>
+                <g fill="#FFFFFF" stroke="#2563EB" stroke-width="5">
+                  <circle cx="20" cy="360" r="13"></circle>
+                  <circle cx="170" cy="95" r="13"></circle>
+                  <circle cx="360" cy="120" r="13"></circle>
+                  <circle cx="510" cy="340" r="13"></circle>
+                </g>
+                <text x="20" y="400" text-anchor="middle" class="svg-small">P0</text>
+                <text x="170" y="70" text-anchor="middle" class="svg-small">P1</text>
+                <text x="360" y="94" text-anchor="middle" class="svg-small">P2</text>
+                <text x="510" y="380" text-anchor="middle" class="svg-small">P3</text>
+              </g>
+              <g transform="translate(610,105)">
+                <rect x="-20" y="-35" width="220" height="300" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+                <line x1="0" y1="230" x2="170" y2="230" stroke="#CBD5E1" stroke-width="3"></line>
+                <line x1="0" y1="230" x2="0" y2="10" stroke="#CBD5E1" stroke-width="3"></line>
+                <path d="M0,10 C50,80 100,170 170,230" fill="none" stroke="#2563EB" stroke-width="5"></path>
+                <path d="M0,230 C55,55 112,55 170,230" fill="none" stroke="#0F766E" stroke-width="5"></path>
+                <path d="M0,230 C58,230 115,55 170,10" fill="none" stroke="#B45309" stroke-width="5"></path>
+                <path d="M0,230 C60,210 120,85 170,10" fill="none" stroke="#6D28D9" stroke-width="5" opacity="0.82"></path>
+                <text x="84" y="286" text-anchor="middle" class="svg-small">basis weights</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">\( \mathbf{p}(u)=\sum_{i=0}^{n} B_i^n(u)\mathbf{P}_i \)</div>
+            <div class="formula">\( B_i^n(u)=\binom{n}{i}(1-u)^{n-i}u^i \)</div>
+            <div class="panel blue"><h3>Convex Hull</h3><p>On \(0\le u\le1\), Bernstein weights are nonnegative and sum to one.</p></div>
+            <div class="panel amber"><h3>Global Segment Control</h3><p>Moving any control point influences the whole Bezier segment.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Introduce a Bezier segment as a controlled average. Bernstein weights are nonnegative on the unit interval and sum to one, so the curve stays inside the control polygon hull. Moving a control point affects the whole segment, which is powerful but global.</aside>
+    </section>
+
+    <section data-label="De Casteljau">
+      <div class="slide">
+        <div class="eyebrow">Bezier Evaluation</div>
+        <h2>De Casteljau Turns Evaluation Into Repeated Linear Interpolation</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula">\( \mathbf{P}_i^{(r)}=(1-u)\mathbf{P}_i^{(r-1)}+u\mathbf{P}_{i+1}^{(r-1)} \)</div>
+            <div class="panel blue"><h3>Stable Evaluation</h3><p>Each new point lies on a segment between two previous-level points.</p></div>
+            <div class="panel teal"><h3>Subdivision</h3><p>The left and right staircases become two Bezier curves that exactly reproduce the original trace.</p></div>
+            <div class="panel violet"><h3>Debug View</h3><p>The construction exposes every intermediate point, so a bad parameter or control point is visible.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="De Casteljau interpolation levels">
+              <polyline points="90,420 250,90 555,120 740,390" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="14 12"></polyline>
+              <path d="M90,420 C250,90 555,120 740,390" fill="none" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></path>
+              <polyline points="180,235 418,105 625,258" fill="none" stroke="#0F766E" stroke-width="5"></polyline>
+              <polyline points="322,157 542,183" fill="none" stroke="#B45309" stroke-width="5"></polyline>
+              <circle cx="447" cy="172" r="15" fill="#111827"></circle>
+              <g fill="#FFFFFF" stroke="#2563EB" stroke-width="5">
+                <circle cx="90" cy="420" r="13"></circle>
+                <circle cx="250" cy="90" r="13"></circle>
+                <circle cx="555" cy="120" r="13"></circle>
+                <circle cx="740" cy="390" r="13"></circle>
+              </g>
+              <g fill="#FFFFFF" stroke="#0F766E" stroke-width="5">
+                <circle cx="180" cy="235" r="12"></circle>
+                <circle cx="418" cy="105" r="12"></circle>
+                <circle cx="625" cy="258" r="12"></circle>
+              </g>
+              <g fill="#FFFFFF" stroke="#B45309" stroke-width="5">
+                <circle cx="322" cy="157" r="12"></circle>
+                <circle cx="542" cy="183" r="12"></circle>
+              </g>
+              <rect x="96" y="32" width="305" height="62" rx="8" fill="#F0FDFA" stroke="#0F766E"></rect>
+              <text x="248" y="72" text-anchor="middle" class="svg-small">level 1 at fixed u</text>
+              <rect x="500" y="32" width="265" height="62" rx="8" fill="#FFFBEB" stroke="#B45309"></rect>
+              <text x="632" y="72" text-anchor="middle" class="svg-small">level 2 then point</text>
+              <text x="447" y="214" text-anchor="middle" class="svg-small">p(u)</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">De Casteljau evaluation should feel like geometry, not just arithmetic. Repeated linear interpolation gives the same point as the Bernstein formula, but every intermediate point is inspectable. Subdivision at the chosen parameter produces two smaller Bezier segments with the same trace.</aside>
+    </section>
+
+    <section data-label="Bezier Joins">
+      <div class="slide alt">
+        <div class="eyebrow">Bezier Piece Joins</div>
+        <h2>Endpoint Handles Translate Continuity Into Authoring Rules</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Bezier handle alignment for C0 G1 and C1">
+              <g transform="translate(50,72)">
+                <path d="M30,220 C120,40 220,110 300,220" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <path d="M300,220 C380,330 485,285 565,135" fill="none" stroke="#B45309" stroke-width="7"></path>
+                <polyline points="30,220 120,40 220,110 300,220 380,330 485,285 565,135" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></polyline>
+                <circle cx="300" cy="220" r="15" fill="#111827"></circle>
+                <circle cx="220" cy="110" r="12" fill="#FFFFFF" stroke="#2563EB" stroke-width="4"></circle>
+                <circle cx="380" cy="330" r="12" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></circle>
+                <text x="300" y="262" text-anchor="middle" class="svg-small">C0: endpoints coincide</text>
+                <path d="M222,112 L380,330" stroke="#6D28D9" stroke-width="5"></path>
+                <text x="300" y="388" text-anchor="middle" class="svg-small">aligned handles give G1; equal scaled lengths give C1</text>
+              </g>
+              <g transform="translate(655,92)">
+                <rect x="0" y="0" width="150" height="340" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+                <text x="75" y="54" text-anchor="middle" class="svg-label">Join Test</text>
+                <text x="75" y="115" text-anchor="middle" class="svg-small">same point</text>
+                <text x="75" y="178" text-anchor="middle" class="svg-small">same line</text>
+                <text x="75" y="241" text-anchor="middle" class="svg-small">same vector</text>
+                <g fill="none" stroke-width="4">
+                  <path d="M30,128 L120,128" stroke="#2563EB"></path>
+                  <path d="M30,190 L120,190" stroke="#0F766E"></path>
+                  <path d="M30,252 L120,252" stroke="#B45309"></path>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Position</h3><p>For Bezier pieces, set the last control point of the left segment equal to the first control point of the right segment.</p></div>
+            <div class="panel teal"><h3>Direction</h3><p>For \(G^1\), the adjacent handles must lie on the same line through the join.</p></div>
+            <div class="panel amber"><h3>Derivative Scale</h3><p>For \(C^1\), the handle lengths must match the derivative scale required by the parameter intervals.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the handle diagram to connect continuity definitions to authoring practice. Bezier pieces meet in position when endpoints coincide, become G1 when the handles are collinear, and become C1 when the handle lengths match the derivative scale across the join.</aside>
+    </section>
+
+    <section data-label="B-Spline Locality">
+      <div class="slide">
+        <div class="eyebrow">B-Splines</div>
+        <h2>Local Basis Functions Give Local Control</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula center">\( \mathbf{C}(t)=\sum_i N_{i,p}(t)\mathbf{P}_i \)</div>
+            <div class="panel blue"><h3>Local Support</h3><p>For degree \(p\), at most \(p+1\) basis functions are active at a generic parameter.</p></div>
+            <div class="panel teal"><h3>Partition Of Unity</h3><p>The active basis weights sum to one, keeping affine behavior predictable.</p></div>
+            <div class="panel violet"><h3>Editing Consequence</h3><p>Moving one control point changes only the parameter range where its basis is nonzero.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="B-spline basis functions and local support">
+              <g transform="translate(70,60)">
+                <rect x="0" y="0" width="720" height="210" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+                <line x1="45" y1="170" x2="675" y2="170" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="45" y1="170" x2="45" y2="35" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M45,170 C90,60 150,60 195,170" fill="none" stroke="#2563EB" stroke-width="5"></path>
+                <path d="M150,170 C205,35 285,35 340,170" fill="none" stroke="#0F766E" stroke-width="5"></path>
+                <path d="M295,170 C350,35 430,35 485,170" fill="none" stroke="#B45309" stroke-width="5"></path>
+                <path d="M440,170 C495,35 575,35 630,170" fill="none" stroke="#6D28D9" stroke-width="5"></path>
+                <rect x="285" y="25" width="150" height="170" fill="#EFF6FF" opacity="0.72" stroke="#2563EB" stroke-width="3"></rect>
+                <text x="360" y="220" text-anchor="middle" class="svg-small">only nearby bases are active</text>
+              </g>
+              <g transform="translate(95,330)">
+                <polyline points="0,100 110,35 220,145 340,65 470,125 610,45" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="12 10"></polyline>
+                <path d="M45,92 C140,62 175,112 250,122 S390,96 560,70" fill="none" stroke="#6D28D9" stroke-width="8" stroke-linecap="round"></path>
+                <g fill="#FFFFFF" stroke="#6D28D9" stroke-width="4">
+                  <circle cx="0" cy="100" r="11"></circle>
+                  <circle cx="110" cy="35" r="11"></circle>
+                  <circle cx="220" cy="145" r="11"></circle>
+                  <circle cx="340" cy="65" r="11"></circle>
+                  <circle cx="470" cy="125" r="11"></circle>
+                  <circle cx="610" cy="45" r="11"></circle>
+                </g>
+                <circle cx="340" cy="65" r="22" fill="none" stroke="#B45309" stroke-width="5"></circle>
+                <text x="340" y="205" text-anchor="middle" class="svg-small">one selected control point affects a limited span</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">B-splines are the locality answer to Bezier global control. The curve is still a weighted sum of control points, but only a few basis functions are nonzero at any parameter. The partition of unity keeps affine transformations and translation behavior predictable.</aside>
+    </section>
+
+    <section data-label="Knots">
+      <div class="slide alt">
+        <div class="eyebrow">Knot Vectors</div>
+        <h2>Knots Schedule Support And Spend Smoothness</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Uniform nonuniform and repeated knots">
+              <g transform="translate(70,82)">
+                <text x="0" y="0" class="svg-label">uniform</text>
+                <line x1="0" y1="48" x2="690" y2="48" stroke="#CBD5E1" stroke-width="5"></line>
+                <g fill="#2563EB">
+                  <circle cx="0" cy="48" r="9"></circle><circle cx="115" cy="48" r="9"></circle><circle cx="230" cy="48" r="9"></circle><circle cx="345" cy="48" r="9"></circle><circle cx="460" cy="48" r="9"></circle><circle cx="575" cy="48" r="9"></circle><circle cx="690" cy="48" r="9"></circle>
+                </g>
+                <text x="0" y="132" class="svg-label">nonuniform</text>
+                <line x1="0" y1="180" x2="690" y2="180" stroke="#CBD5E1" stroke-width="5"></line>
+                <g fill="#0F766E">
+                  <circle cx="0" cy="180" r="9"></circle><circle cx="78" cy="180" r="9"></circle><circle cx="160" cy="180" r="9"></circle><circle cx="340" cy="180" r="9"></circle><circle cx="410" cy="180" r="9"></circle><circle cx="570" cy="180" r="9"></circle><circle cx="690" cy="180" r="9"></circle>
+                </g>
+                <rect x="58" y="152" width="120" height="56" rx="8" fill="#F0FDFA" stroke="#0F766E"></rect>
+                <text x="118" y="242" text-anchor="middle" class="svg-small">detail zone</text>
+                <text x="0" y="312" class="svg-label">repeated</text>
+                <line x1="0" y1="360" x2="690" y2="360" stroke="#CBD5E1" stroke-width="5"></line>
+                <g fill="#B45309">
+                  <circle cx="0" cy="360" r="9"></circle><circle cx="0" cy="360" r="17" fill="none" stroke="#B45309" stroke-width="4"></circle>
+                  <circle cx="165" cy="360" r="9"></circle><circle cx="330" cy="360" r="9"></circle><circle cx="330" cy="360" r="17" fill="none" stroke="#B45309" stroke-width="4"></circle>
+                  <circle cx="500" cy="360" r="9"></circle><circle cx="690" cy="360" r="9"></circle><circle cx="690" cy="360" r="17" fill="none" stroke="#B45309" stroke-width="4"></circle>
+                </g>
+                <text x="330" y="423" text-anchor="middle" class="svg-small">multiplicity reduces smoothness at that parameter</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">degree \(p\), knot multiplicity \(m\): smoothness \(C^{p-m}\)</div>
+            <div class="panel blue"><h3>Uniform</h3><p>Even spacing gives a regular parameter schedule and predictable basis shapes.</p></div>
+            <div class="panel teal"><h3>Nonuniform</h3><p>Uneven spacing concentrates parameter influence where the model needs detail.</p></div>
+            <div class="panel amber"><h3>Repeated</h3><p>Endpoint repetition can force interpolation; interior repetition can create a deliberate crease.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Explain knots as the parameter schedule that decides where basis functions turn on and off. Nonuniform knots concentrate detail, endpoint repetition forces interpolation, and interior repetition reduces smoothness. The useful mental model is trading smooth flow for intentional control.</aside>
+    </section>
+
+    <section data-label="NURBS">
+      <div class="slide">
+        <div class="eyebrow">NURBS</div>
+        <h2>Rational Weights Pull Curves And Represent Conics Exactly</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="formula center">\( \mathbf{C}(t)=\dfrac{\sum_i w_iN_{i,p}(t)\mathbf{P}_i}{\sum_i w_iN_{i,p}(t)} \)</div>
+            <div class="panel blue"><h3>Weight As Attraction</h3><p>Increasing \(w_i\) pulls the curve toward control point \(\mathbf{P}_i\) without moving the point itself.</p></div>
+            <div class="panel teal"><h3>Projective View</h3><p>Evaluate a polynomial curve in homogeneous coordinates, then divide by the weighted coordinate.</p></div>
+            <div class="panel amber"><h3>Exact Conics</h3><p>A rational quadratic with middle weight \(\sqrt{2}/2\) represents a quarter circle.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="NURBS weighted quarter circle and control point attraction">
+              <g transform="translate(70,70)">
+                <path d="M80,390 A310,310 0 0 1 390,80" fill="none" stroke="#CBD5E1" stroke-width="6"></path>
+                <path d="M80,390 Q390,390 390,80" fill="none" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></path>
+                <path d="M80,390 Q470,390 390,80" fill="none" stroke="#B45309" stroke-width="6" stroke-linecap="round" stroke-dasharray="12 10"></path>
+                <polyline points="80,390 390,390 390,80" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="14 12"></polyline>
+                <g fill="#FFFFFF" stroke="#2563EB" stroke-width="5">
+                  <circle cx="80" cy="390" r="13"></circle>
+                  <circle cx="390" cy="390" r="13"></circle>
+                  <circle cx="390" cy="80" r="13"></circle>
+                </g>
+                <circle cx="390" cy="390" r="31" fill="none" stroke="#B45309" stroke-width="5"></circle>
+                <text x="235" y="470" text-anchor="middle" class="svg-label">rational quadratic quarter circle</text>
+              </g>
+              <g transform="translate(560,110)">
+                <rect x="0" y="0" width="230" height="300" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+                <text x="115" y="55" text-anchor="middle" class="svg-label">Weights</text>
+                <text x="115" y="118" text-anchor="middle" class="svg-math">w0 = 1</text>
+                <text x="115" y="178" text-anchor="middle" class="svg-math">w1 = sqrt(2)/2</text>
+                <text x="115" y="238" text-anchor="middle" class="svg-math">w2 = 1</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">NURBS add one more lever: weights. The weighted numerator and denominator form a rational curve, so changing a weight pulls the curve toward or away from a control point. That rational form is why conic sections can be represented exactly.</aside>
+    </section>
+
+    <section data-label="Curve Checks">
+      <div class="slide alt">
+        <div class="eyebrow">Implementation Checks</div>
+        <h2>Curve Code Needs Small Invariants With Visible Consequences</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="stack">
+            <table class="mini-table">
+              <tr><th>Contract</th><th>Failure It Catches</th></tr>
+              <tr><td>implicit residual near zero</td><td>wrong evaluator or coordinate transform</td></tr>
+              <tr><td>arc table monotone</td><td>bad sampling or duplicate distance bins</td></tr>
+              <tr><td>join residuals small</td><td>position gaps, corners, speed jumps</td></tr>
+              <tr><td>basis sums to one</td><td>unexpected drift under translation</td></tr>
+              <tr><td>active basis count bounded</td><td>B-spline locality lost</td></tr>
+              <tr><td>rational conic residual small</td><td>NURBS weights or denominator wrong</td></tr>
+            </table>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Curve evaluator validation loop">
+              <defs>
+                <marker id="checkArrow" markerWidth="12" markerHeight="12" refX="9" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <circle cx="430" cy="270" r="190" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+              <g fill="#FFFFFF" stroke-width="4">
+                <rect x="295" y="45" width="270" height="68" rx="8" stroke="#2563EB"></rect>
+                <rect x="570" y="235" width="220" height="68" rx="8" stroke="#0F766E"></rect>
+                <rect x="295" y="425" width="270" height="68" rx="8" stroke="#B45309"></rect>
+                <rect x="70" y="235" width="220" height="68" rx="8" stroke="#6D28D9"></rect>
+              </g>
+              <text x="430" y="88" text-anchor="middle" class="svg-small">evaluate samples</text>
+              <text x="680" y="278" text-anchor="middle" class="svg-small">measure invariant</text>
+              <text x="430" y="468" text-anchor="middle" class="svg-small">inspect residual</text>
+              <text x="180" y="278" text-anchor="middle" class="svg-small">adjust data</text>
+              <path d="M520,95 C615,128 675,178 685,235" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#checkArrow)"></path>
+              <path d="M675,303 C638,378 558,425 498,444" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#checkArrow)"></path>
+              <path d="M360,444 C265,413 195,352 180,303" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#checkArrow)"></path>
+              <path d="M180,235 C205,158 290,105 360,88" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#checkArrow)"></path>
+              <text x="430" y="260" text-anchor="middle" class="svg-label">curve</text>
+              <text x="430" y="296" text-anchor="middle" class="svg-label">debug loop</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Make the checks feel like engineering rather than ceremony. A robust curve evaluator verifies membership residuals, monotone arc tables, continuity residuals, partition of unity, locality, and rational conic accuracy. Each check corresponds to a visible failure mode in modeling or rendering.</aside>
+    </section>
+
+    <section data-label="Control Comparison">
+      <div class="slide">
+        <div class="eyebrow">Editing Behavior</div>
+        <h2>Bezier Is Compact; B-Spline Is Local</h2>
+        <div class="content two" style="margin-top: 30px;">
+          <div class="diagram">
+            <svg viewBox="0 0 830 560" role="img" aria-label="Bezier global control compared with B-spline local control">
+              <g transform="translate(45,55)">
+                <rect x="0" y="0" width="330" height="420" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <path d="M42,300 C120,58 250,70 288,300" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <path d="M42,335 C135,35 250,70 288,300" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></path>
+                <polyline points="42,300 120,58 250,70 288,300" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="10 10"></polyline>
+                <circle cx="120" cy="58" r="24" fill="none" stroke="#B45309" stroke-width="5"></circle>
+                <text x="165" y="382" text-anchor="middle" class="svg-label">Bezier segment</text>
+                <text x="165" y="418" text-anchor="middle" class="svg-small">one handle affects all u</text>
+              </g>
+              <g transform="translate(455,55)">
+                <rect x="0" y="0" width="330" height="420" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+                <polyline points="25,300 85,95 150,260 215,110 285,300" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="10 10"></polyline>
+                <path d="M55,240 C95,150 135,178 168,205 S235,205 260,245" fill="none" stroke="#6D28D9" stroke-width="7"></path>
+                <path d="M55,240 C95,150 150,135 178,168 S230,200 260,245" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></path>
+                <circle cx="150" cy="260" r="24" fill="none" stroke="#B45309" stroke-width="5"></circle>
+                <rect x="92" y="105" width="132" height="210" rx="8" fill="#F5F3FF" opacity="0.58" stroke="#6D28D9" stroke-width="3"></rect>
+                <text x="165" y="382" text-anchor="middle" class="svg-label">B-spline curve</text>
+                <text x="165" y="418" text-anchor="middle" class="svg-small">one point affects a span</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Bezier Use Case</h3><p>Icons, glyph outlines, and short authored segments where a compact handle set is natural.</p></div>
+            <div class="panel violet"><h3>B-Spline Use Case</h3><p>Long smooth paths, CAD curves, and editable trajectories where local modification is valuable.</p></div>
+            <div class="panel amber"><h3>Design Question</h3><p>Should one edit reshape the whole segment or only a neighborhood?</p></div>
+            <div class="formula">editing behavior is part of the representation</div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The comparison slide is about editing psychology. Bezier control is compact and expressive for one segment, but a single handle can affect the whole segment. B-spline control spreads a longer curve across local supports, so edits stay contained.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide alt">
+        <div class="eyebrow">Takeaways</div>
+        <h2>A Curve Representation Is A Bundle Of Promises</h2>
+        <div class="content two right" style="margin-top: 30px;">
+          <div class="stack">
+            <table class="mini-table">
+              <tr><th>Question</th><th>Representation Promise</th></tr>
+              <tr><td>Where is the point?</td><td>parametric evaluation</td></tr>
+              <tr><td>How far along?</td><td>arc-length table or reparameterization</td></tr>
+              <tr><td>Do pieces meet?</td><td>C0, C1, or G1 continuity residuals</td></tr>
+              <tr><td>How is it edited?</td><td>basis and control data</td></tr>
+              <tr><td>What edit is local?</td><td>B-spline support from knots</td></tr>
+              <tr><td>Can it draw conics?</td><td>NURBS rational weights</td></tr>
+            </table>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" role="img" aria-label="Curve representation checklist">
+              <g transform="translate(120,70)">
+                <path d="M55,350 C150,40 350,75 455,260 S600,410 650,145" fill="none" stroke="#2563EB" stroke-width="9" stroke-linecap="round"></path>
+                <polyline points="55,350 150,40 350,75 455,260 600,410 650,145" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="14 12"></polyline>
+                <g fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5">
+                  <circle cx="55" cy="350" r="13"></circle>
+                  <circle cx="150" cy="40" r="13"></circle>
+                  <circle cx="350" cy="75" r="13"></circle>
+                  <circle cx="455" cy="260" r="13"></circle>
+                  <circle cx="600" cy="410" r="13"></circle>
+                  <circle cx="650" cy="145" r="13"></circle>
+                </g>
+                <g>
+                  <rect x="0" y="430" width="150" height="58" rx="8" fill="#EFF6FF" stroke="#2563EB"></rect>
+                  <rect x="170" y="430" width="150" height="58" rx="8" fill="#F0FDFA" stroke="#0F766E"></rect>
+                  <rect x="340" y="430" width="150" height="58" rx="8" fill="#FFFBEB" stroke="#B45309"></rect>
+                  <rect x="510" y="430" width="150" height="58" rx="8" fill="#F5F3FF" stroke="#6D28D9"></rect>
+                  <text x="75" y="468" text-anchor="middle" class="svg-small">parameter</text>
+                  <text x="245" y="468" text-anchor="middle" class="svg-small">basis</text>
+                  <text x="415" y="468" text-anchor="middle" class="svg-small">joins</text>
+                  <text x="585" y="468" text-anchor="middle" class="svg-small">checks</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by giving students a reusable checklist. For any curve representation, identify the parameter, the basis, the local support, the join contract, and the invariant to test. That checklist transfers directly to animation paths, font outlines, CAD curves, and surface patches.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

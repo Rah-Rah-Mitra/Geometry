@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-08">
+  <meta name="chapter_title" content="Chapter 08: Viewing">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-08-viewing/08-viewing.ipynb">
+  <meta name="source_span" content="printed pages 157-176; PDF pages 174-193.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 08: Viewing</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Fundamentals of Computer Graphics",
+  "chapter_id": "chapter-08",
+  "chapter_title": "Chapter 08: Viewing",
+  "notebook_path": "Fundamentals-of-Computer-Graphics/chapter-08-viewing/08-viewing.ipynb",
+  "source_span": "printed pages 157-176; PDF pages 174-193.",
+  "source_pdf": "Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23",
+  "math_support": "STIX Two Text and KaTeX assets are declared for formulas; this deck writes formulas as accessible HTML text."
+}
+  </script>
+  <script type="application/json" id="speaker-notes">{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Viewing Without A Magic Matrix",
+      "notes": "Open by making viewing a debugging story rather than a single matrix. The learner should leave the first slide expecting each transform to have a domain, a codomain, and an invariant. Mention the assigned source span, printed pages 157 through 176, only as orientation for the chapter coverage."
+    },
+    {
+      "slide": 2,
+      "title": "The Route From Model To Pixels",
+      "notes": "Use the route map as the lecture contract. Each arrow has a different responsibility: modeling places objects, the camera changes coordinates, projection normalizes a view volume, and the viewport assigns pixel centers. This prevents the common mistake of blaming one matrix when the failure belongs to another stage."
+    },
+    {
+      "slide": 3,
+      "title": "A Matrix Product Is A Contract",
+      "notes": "Emphasize that matrix order is not notation decoration. The rightmost matrix consumes the original world point, and each later matrix assumes the previous coordinate system has already been produced. Ask students to name the coordinate space before and after every multiplication in the product."
+    },
+    {
+      "slide": 4,
+      "title": "Viewport As A Pixel Window Map",
+      "notes": "Explain the pixel-center convention before writing the matrix. The canonical square is continuous, but a raster image stores samples at pixel centers. Mapping -1 to -0.5 and 1 to nx minus 0.5 makes the visible image boundary align with the outer edges of the first and last pixels."
+    },
+    {
+      "slide": 5,
+      "title": "Orthographic Box To Canonical Cube",
+      "notes": "Frame orthographic projection as the same windowing idea in three coordinates. Nothing about perspective is needed yet; the matrix merely recenters and rescales an axis-aligned view box. Stress the sign convention: in the right-handed camera setup, farther points usually have more negative z values."
+    },
+    {
+      "slide": 6,
+      "title": "Camera Basis From Eye, Gaze, And Up",
+      "notes": "This is the most common source of viewing bugs. The inputs eye, gaze, and up do not automatically form an orthonormal frame. The construction turns gaze into the backward camera axis, removes the up-vector skew through a cross product, and then rebuilds a consistent right-handed basis."
+    },
+    {
+      "slide": 7,
+      "title": "The Camera Matrix Is Translate Then Rotate",
+      "notes": "Separate the two jobs of the camera matrix. Translation moves the eye to the origin, while the basis rows measure coordinates along the camera axes. The eye must map to zero, and the basis rows must remain orthonormal; those two checks catch many sign and ordering errors."
+    },
+    {
+      "slide": 8,
+      "title": "Homogeneous Coordinates Add A Denominator",
+      "notes": "Projective coordinates are the conceptual turn of the chapter. Affine transforms keep w equal to one, but viewing benefits from letting w change with depth. Only after the matrix product is finished do we divide by w to recover Cartesian coordinates for clipping and rasterization."
+    },
+    {
+      "slide": 9,
+      "title": "Projective Maps Keep Lines Straight",
+      "notes": "Use the square-to-quadrilateral visual to separate what survives from what does not. Incidence and straightness survive under a projective map, while parallelism and midpoint ratios can change. This distinction prepares students for perspective images, where railroad tracks may meet but edges still draw as lines."
+    },
+    {
+      "slide": 10,
+      "title": "Perspective Starts With A Frustum",
+      "notes": "The frustum diagram should be read from the eye outward. Points on the near plane keep their x and y positions after the perspective step, while the larger far rectangle is squeezed to match the orthographic box. That makes the later orthographic machinery reusable instead of special-casing perspective everywhere."
+    },
+    {
+      "slide": 11,
+      "title": "Insert P Before The Orthographic Map",
+      "notes": "Keep the matrix ordering visible here. The perspective matrix P operates in camera coordinates, before the orthographic normalization and before the viewport. Once P has reshaped the frustum into a box, the same canonical-cube map and screen-window map can serve both projection styles."
+    },
+    {
+      "slide": 12,
+      "title": "Depth Becomes Nonlinear But Ordered",
+      "notes": "Students often expect depth to be linear because x and y are easy to picture. The useful invariant is weaker and more important: inside a clipped view volume, nearer and farther points keep their order after the transform. The depth curve explains why z precision becomes concentrated near the eye."
+    },
+    {
+      "slide": 13,
+      "title": "Lines Survive, Parameters Do Not",
+      "notes": "The line preservation claim is exact, but the sampling parameter is not preserved. A point halfway along a 3D segment can project away from the midpoint between projected endpoints. This is the reason interpolation in later pipeline stages must respect homogeneous coordinates rather than naive screen-space fractions."
+    },
+    {
+      "slide": 14,
+      "title": "Field Of View Chooses The Near Window",
+      "notes": "Field of view is not an extra projection method. It is a compact way to compute the near-plane window before constructing the general perspective map. Increasing the vertical angle increases the window height through a tangent, and the aspect ratio expands width without changing the chosen vertical angle."
+    },
+    {
+      "slide": 15,
+      "title": "Viewing Bugs Have Signatures",
+      "notes": "Use this slide as a diagnostic lab. A mirrored image points to a handedness or cross-product issue, a shifted image points to viewport or window bounds, clipped near objects suggest frustum signs, and w crossing zero warns that geometry needs clipping before the homogeneous divide."
+    },
+    {
+      "slide": 16,
+      "title": "A Rendering Recipe For Wireframe Viewing",
+      "notes": "Walk through the recipe as executable thinking rather than API ceremony. Build camera axes, compose the projection and viewport matrices once, transform every endpoint, divide when required, reject or clip invalid segments, and finally draw in pixel coordinates. The order is what makes the implementation testable."
+    },
+    {
+      "slide": 17,
+      "title": "Invariant Ledger",
+      "notes": "Close by revisiting the invariant ledger. Viewport corners, orthographic box corners, camera orthonormality, projective scale equivalence, perspective near and far corners, depth order, line preservation, and field-of-view formulas form a compact checklist for verifying a viewing implementation before adding rasterization details."
+    }
+  ]
+}</script>
+  <style>
+    body { margin: 0; background: #020617; }
+    deck-stage { display: block; }
+    section.slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
+      background: #ffffff;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+    .pad {
+      height: 100%;
+      box-sizing: border-box;
+      padding: 78px 96px 64px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .soft { background: #f8fafc; }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 99, 235, 0.045) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+    }
+    .ray-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 70px; line-height: 1.04; font-weight: 700; letter-spacing: 0; }
+    h2 { font-size: 53px; line-height: 1.1; font-weight: 700; letter-spacing: 0; }
+    h3 { font-size: 31px; line-height: 1.18; font-weight: 700; letter-spacing: 0; }
+    p, li { font-size: 27px; line-height: 1.38; }
+    .eyebrow {
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-muted);
+      margin-bottom: 16px;
+    }
+    .rule { width: 86px; height: 5px; border-radius: 4px; background: var(--slide-blue); margin: 20px 0 28px; }
+    .subtitle { font-size: 31px; line-height: 1.42; color: var(--slide-muted); max-width: 1080px; }
+    .source-line { margin-top: 28px; display: flex; gap: 16px; align-items: center; color: var(--slide-dimmed); font-size: 23px; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 5px 13px;
+      border-radius: 6px;
+      background: #eef2ff;
+      color: var(--slide-accent);
+      font-size: 21px;
+      font-weight: 700;
+    }
+    .topline { display: flex; justify-content: space-between; gap: 32px; align-items: baseline; margin-bottom: 22px; }
+    .topline .source { font-size: 22px; color: var(--slide-dimmed); }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 54px; flex: 1; align-items: center; }
+    .two.wide-left { grid-template-columns: 1.12fr 0.88fr; }
+    .two.wide-right { grid-template-columns: 0.9fr 1.1fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; flex: 1; align-items: stretch; }
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 26px;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel.soft-panel { background: #f8fafc; }
+    .math-box {
+      border-radius: 8px;
+      padding: 22px 26px;
+      border-left: 5px solid var(--slide-blue);
+      background: #eff6ff;
+    }
+    .math-box.theorem { background: #eef2ff; border-left-color: var(--slide-accent); }
+    .math-box.example { background: #f0fdfa; border-left-color: var(--slide-teal); }
+    .math-box.warning { background: #fffbeb; border-left-color: var(--slide-amber); }
+    .math-box.exercise { background: #f5f3ff; border-left-color: var(--slide-violet); }
+    .math-box h3 { margin-bottom: 10px; }
+    .math-box p { color: var(--slide-muted); }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.45;
+      font-style: italic;
+      color: var(--slide-ink);
+    }
+    .formula.big { font-size: 43px; }
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 25px;
+      line-height: 1.45;
+      color: #0f172a;
+    }
+    .list { list-style: none; padding: 0; margin: 0; display: grid; gap: 15px; }
+    .list li { padding-left: 30px; position: relative; color: var(--slide-muted); }
+    .list li::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--slide-blue);
+      position: absolute;
+      left: 0;
+      top: 14px;
+    }
+    .step-list { display: grid; gap: 14px; }
+    .step {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 16px;
+      align-items: start;
+      font-size: 27px;
+      color: var(--slide-muted);
+      line-height: 1.35;
+    }
+    .step b {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--slide-accent);
+      color: #ffffff;
+      font-size: 23px;
+    }
+    .diagram { margin: 0; }
+    .diagram svg { width: 100%; height: auto; display: block; }
+    .caption { margin-top: 12px; font-size: 22px; line-height: 1.35; color: var(--slide-dimmed); }
+    .footer {
+      position: absolute;
+      left: 96px;
+      right: 96px;
+      bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--slide-dimmed);
+      font-size: 20px;
+    }
+    .speaker-notes { display: none; }
+  </style>
+</head>
+<body>
+<deck-stage>
+  <section class="slide soft" data-label="Title">
+    <div class="grid-bg"></div>
+    <svg class="ray-bg" viewBox="0 0 1920 1080" aria-hidden="true">
+      <path d="M1650 120 L1180 540 L1650 960" fill="none" stroke="#1E3A8A" stroke-width="18"></path>
+      <path d="M1650 120 L420 240 M1650 120 L420 420 M1650 960 L420 660 M1650 960 L420 840" stroke="#2563EB" stroke-width="10" fill="none"></path>
+      <rect x="390" y="210" width="96" height="660" fill="#0F766E"></rect>
+    </svg>
+    <div class="pad" style="justify-content: center;">
+      <div style="max-width: 1160px;">
+        <div class="eyebrow">Fundamentals of Computer Graphics · Chapter 08</div>
+        <h1>Viewing Without<br>A Magic Matrix</h1>
+        <div class="rule"></div>
+        <p class="subtitle">A point travels from world coordinates to camera coordinates, then through projection, normalization, and the viewport before it lands on a pixel center.</p>
+        <div class="source-line">
+          <span class="tag">Printed pages 157-176</span>
+          <span class="tag" style="background: #f0fdfa; color: var(--slide-teal);">PDF pages 174-193</span>
+          <span>Viewing transforms, frusta, perspective, and field of view</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Geometry Atlas</span><span>Viewing</span></div>
+    <aside class="speaker-notes">Open by making viewing a debugging story rather than a single matrix. The learner should leave the first slide expecting each transform to have a domain, a codomain, and an invariant. Mention the assigned source span, printed pages 157 through 176, only as orientation for the chapter coverage.</aside>
+  </section>
+
+  <section class="slide" data-label="Route">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Pipeline geography</div>
+        <div class="source">Notebook: 08-viewing.ipynb</div>
+      </div>
+      <h2>The Route From Model To Pixels</h2>
+      <div class="rule"></div>
+      <figure class="diagram panel soft-panel" aria-label="Viewing pipeline route">
+        <svg viewBox="0 0 1560 500" role="img">
+          <defs>
+            <marker id="arrow-route" markerWidth="18" markerHeight="18" refX="14" refY="5" orient="auto">
+              <path d="M1,1 L15,5 L1,9 Z" fill="#2563EB"></path>
+            </marker>
+          </defs>
+          <g font-family="Source Sans 3, Arial, sans-serif">
+            <rect x="36" y="135" width="238" height="150" rx="8" fill="#ffffff" stroke="#CBD5E1" stroke-width="4"></rect>
+            <rect x="360" y="135" width="238" height="150" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <rect x="684" y="135" width="238" height="150" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <rect x="1008" y="135" width="238" height="150" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <rect x="1332" y="135" width="188" height="150" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="155" y="205" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">Object</text>
+            <text x="155" y="244" text-anchor="middle" font-size="27" fill="#475569">local model</text>
+            <text x="479" y="205" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">World</text>
+            <text x="479" y="244" text-anchor="middle" font-size="27" fill="#475569">scene frame</text>
+            <text x="803" y="205" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">Camera</text>
+            <text x="803" y="244" text-anchor="middle" font-size="27" fill="#475569">eye frame</text>
+            <text x="1127" y="197" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">Canonical</text>
+            <text x="1127" y="238" text-anchor="middle" font-size="27" fill="#475569">view volume</text>
+            <text x="1426" y="205" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">Screen</text>
+            <text x="1426" y="244" text-anchor="middle" font-size="27" fill="#475569">pixels</text>
+            <path d="M280 210 H348" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-route)"></path>
+            <path d="M604 210 H672" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-route)"></path>
+            <path d="M928 210 H996" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-route)"></path>
+            <path d="M1252 210 H1320" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-route)"></path>
+            <text x="314" y="132" text-anchor="middle" font-size="24" fill="#2563EB" font-weight="700">modeling</text>
+            <text x="638" y="132" text-anchor="middle" font-size="24" fill="#2563EB" font-weight="700">Mcam</text>
+            <text x="962" y="132" text-anchor="middle" font-size="24" fill="#2563EB" font-weight="700">Morth or Morth P</text>
+            <text x="1286" y="132" text-anchor="middle" font-size="24" fill="#2563EB" font-weight="700">Mvp</text>
+            <path d="M180 360 H1380" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="14 16"></path>
+            <text x="780" y="420" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">Every arrow owns one debugging question.</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="three" style="margin-top: 30px;">
+        <div class="math-box"><h3>Coordinate change</h3><p>Describe the same point in the camera frame.</p></div>
+        <div class="math-box example"><h3>Volume normalization</h3><p>Map a box or frustum into the canonical cube.</p></div>
+        <div class="math-box warning"><h3>Sample placement</h3><p>Map continuous coordinates to pixel-center coordinates.</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use the route map as the lecture contract. Each arrow has a different responsibility: modeling places objects, the camera changes coordinates, projection normalizes a view volume, and the viewport assigns pixel centers. This prevents the common mistake of blaming one matrix when the failure belongs to another stage.</aside>
+  </section>
+
+  <section class="slide" data-label="Matrix Product">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Composition order</div>
+        <div class="source">Rightmost map acts first</div>
+      </div>
+      <h2>A Matrix Product Is A Contract</h2>
+      <div class="rule"></div>
+      <div class="two wide-left">
+        <div>
+          <div class="math-box theorem">
+            <h3>Orthographic viewing</h3>
+            <p class="formula big">p_screen = M_vp M_orth M_cam p_world</p>
+          </div>
+          <div class="math-box example" style="margin-top: 22px;">
+            <h3>Perspective viewing</h3>
+            <p class="formula big">p_screen = M_vp M_orth P M_cam p_world</p>
+          </div>
+          <ul class="list" style="margin-top: 26px;">
+            <li><b>M_cam</b> expects world coordinates and emits camera coordinates.</li>
+            <li><b>P</b> expects camera coordinates and changes homogeneous w.</li>
+            <li><b>M_orth</b> expects a box and emits the canonical cube.</li>
+            <li><b>M_vp</b> expects canonical x,y and emits pixel-center x,y.</li>
+          </ul>
+        </div>
+        <figure class="diagram panel" aria-label="Matrix product as stacked contracts">
+          <svg viewBox="0 0 720 620" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="90" y="60" width="540" height="96" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <rect x="90" y="180" width="540" height="96" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <rect x="90" y="300" width="540" height="96" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <rect x="90" y="420" width="540" height="96" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="360" y="119" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">viewport</text>
+              <text x="360" y="239" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">orthographic normalization</text>
+              <text x="360" y="359" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">perspective reshape</text>
+              <text x="360" y="479" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">camera basis change</text>
+              <text x="360" y="560" text-anchor="middle" font-size="29" fill="#475569">world point enters from the bottom</text>
+              <path d="M360 548 V524" stroke="#2563EB" stroke-width="5"></path>
+              <path d="M360 420 V402 M360 300 V282 M360 180 V162" stroke="#CBD5E1" stroke-width="5" stroke-dasharray="12 12"></path>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Emphasize that matrix order is not notation decoration. The rightmost matrix consumes the original world point, and each later matrix assumes the previous coordinate system has already been produced. Ask students to name the coordinate space before and after every multiplication in the product.</aside>
+  </section>
+
+  <section class="slide" data-label="Viewport">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Viewport transform</div>
+        <div class="source">Canonical square to pixel centers</div>
+      </div>
+      <h2>Viewport As A Pixel Window Map</h2>
+      <div class="rule"></div>
+      <div class="two">
+        <figure class="diagram panel soft-panel" aria-label="Viewport maps canonical coordinates to pixel centers">
+          <svg viewBox="0 0 760 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="70" y="70" width="270" height="270" fill="#ffffff" stroke="#2563EB" stroke-width="5"></rect>
+              <line x1="70" y1="205" x2="340" y2="205" stroke="#CBD5E1" stroke-width="3"></line>
+              <line x1="205" y1="70" x2="205" y2="340" stroke="#CBD5E1" stroke-width="3"></line>
+              <text x="205" y="385" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">canonical [-1,1]^2</text>
+              <rect x="430" y="92" width="260" height="146" fill="#ffffff" stroke="#0F766E" stroke-width="5"></rect>
+              <g fill="#0F766E">
+                <circle cx="462" cy="124" r="7"></circle><circle cx="526" cy="124" r="7"></circle><circle cx="590" cy="124" r="7"></circle><circle cx="654" cy="124" r="7"></circle>
+                <circle cx="462" cy="188" r="7"></circle><circle cx="526" cy="188" r="7"></circle><circle cx="590" cy="188" r="7"></circle><circle cx="654" cy="188" r="7"></circle>
+              </g>
+              <text x="560" y="286" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">pixel centers</text>
+              <path d="M356 205 C382 205 390 166 418 166" stroke="#1E3A8A" stroke-width="6" fill="none" marker-end="url(#arrow-route)"></path>
+              <text x="382" y="152" text-anchor="middle" font-size="25" fill="#1E3A8A" font-weight="700">Mvp</text>
+              <text x="205" y="445" text-anchor="middle" font-size="25" fill="#475569">(-1,-1) to (1,1)</text>
+              <text x="560" y="445" text-anchor="middle" font-size="25" fill="#475569">(-0.5,-0.5) to (nx-0.5,ny-0.5)</text>
+            </g>
+          </svg>
+        </figure>
+        <div>
+          <div class="math-box">
+            <h3>Window-map formula</h3>
+            <p class="formula">x_p = (n_x / 2) x_c + (n_x - 1) / 2</p>
+            <p class="formula">y_p = (n_y / 2) y_c + (n_y - 1) / 2</p>
+          </div>
+          <ul class="list" style="margin-top: 28px;">
+            <li>Canonical coordinates remain continuous until sampling decisions happen.</li>
+            <li>Depth can be carried unchanged for hidden-surface work.</li>
+            <li>The endpoints describe image boundaries, not only stored samples.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Explain the pixel-center convention before writing the matrix. The canonical square is continuous, but a raster image stores samples at pixel centers. Mapping -1 to -0.5 and 1 to nx minus 0.5 makes the visible image boundary align with the outer edges of the first and last pixels.</aside>
+  </section>
+
+  <section class="slide soft" data-label="Orthographic">
+    <div class="grid-bg"></div>
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Orthographic projection</div>
+        <div class="source">A 3D window map</div>
+      </div>
+      <h2>Orthographic Box To Canonical Cube</h2>
+      <div class="rule"></div>
+      <div class="two wide-right">
+        <div>
+          <ul class="list">
+            <li>Input view box: [l,r] x [b,t] x [f,n].</li>
+            <li>Output canonical cube: [-1,1] x [-1,1] x [-1,1].</li>
+            <li>Right-handed camera convention looks along negative z.</li>
+          </ul>
+          <div class="math-box theorem" style="margin-top: 28px;">
+            <h3>Corner checks</h3>
+            <p class="formula">(l,b,f) maps to (-1,-1,-1)</p>
+            <p class="formula">(r,t,n) maps to (1,1,1)</p>
+          </div>
+        </div>
+        <figure class="diagram panel" aria-label="Orthographic box becomes canonical cube">
+          <svg viewBox="0 0 820 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <polygon points="120,160 410,110 530,230 240,280" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+              <polygon points="240,280 530,230 530,430 240,480" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></polygon>
+              <polygon points="120,160 240,280 240,480 120,360" fill="#BFDBFE" stroke="#2563EB" stroke-width="5"></polygon>
+              <text x="305" y="74" text-anchor="middle" font-size="29" font-weight="700" fill="#2563EB">view box</text>
+              <text x="114" y="388" text-anchor="end" font-size="24" fill="#475569">far z=f</text>
+              <text x="548" y="224" font-size="24" fill="#475569">near z=n</text>
+              <path d="M575 295 H665" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-route)"></path>
+              <rect x="690" y="205" width="92" height="190" fill="#ffffff" stroke="#0F766E" stroke-width="5"></rect>
+              <text x="736" y="183" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">cube</text>
+              <text x="736" y="430" text-anchor="middle" font-size="24" fill="#475569">canonical</text>
+              <line x1="690" y1="300" x2="782" y2="300" stroke="#CBD5E1" stroke-width="3"></line>
+              <line x1="736" y1="205" x2="736" y2="395" stroke="#CBD5E1" stroke-width="3"></line>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Frame orthographic projection as the same windowing idea in three coordinates. Nothing about perspective is needed yet; the matrix merely recenters and rescales an axis-aligned view box. Stress the sign convention: in the right-handed camera setup, farther points usually have more negative z values.</aside>
+  </section>
+
+  <section class="slide" data-label="Camera Basis">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Camera frame</div>
+        <div class="source">eye, gaze, and up become u,v,w</div>
+      </div>
+      <h2>Camera Basis From Eye, Gaze, And Up</h2>
+      <div class="rule"></div>
+      <div class="two">
+        <figure class="diagram panel soft-panel" aria-label="Camera basis vectors">
+          <svg viewBox="0 0 760 560" role="img">
+            <defs>
+              <marker id="axis-blue" markerWidth="16" markerHeight="16" refX="13" refY="5" orient="auto"><path d="M1,1 L14,5 L1,9 Z" fill="#2563EB"></path></marker>
+              <marker id="axis-teal" markerWidth="16" markerHeight="16" refX="13" refY="5" orient="auto"><path d="M1,1 L14,5 L1,9 Z" fill="#0F766E"></path></marker>
+              <marker id="axis-violet" markerWidth="16" markerHeight="16" refX="13" refY="5" orient="auto"><path d="M1,1 L14,5 L1,9 Z" fill="#6D28D9"></path></marker>
+              <marker id="axis-amber" markerWidth="16" markerHeight="16" refX="13" refY="5" orient="auto"><path d="M1,1 L14,5 L1,9 Z" fill="#B45309"></path></marker>
+            </defs>
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <circle cx="338" cy="314" r="18" fill="#111827"></circle>
+              <text x="338" y="356" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">eye e</text>
+              <path d="M338 314 L540 250" stroke="#2563EB" stroke-width="8" marker-end="url(#axis-blue)"></path>
+              <path d="M338 314 L298 128" stroke="#0F766E" stroke-width="8" marker-end="url(#axis-teal)"></path>
+              <path d="M338 314 L190 436" stroke="#6D28D9" stroke-width="8" marker-end="url(#axis-violet)"></path>
+              <path d="M338 314 L612 404" stroke="#B45309" stroke-width="7" stroke-dasharray="16 13" marker-end="url(#axis-amber)"></path>
+              <text x="552" y="242" font-size="29" fill="#2563EB" font-weight="700">u right</text>
+              <text x="268" y="112" font-size="29" fill="#0F766E" font-weight="700">v up</text>
+              <text x="94" y="454" font-size="29" fill="#6D28D9" font-weight="700">w back</text>
+              <text x="622" y="418" font-size="29" fill="#B45309" font-weight="700">gaze</text>
+              <polygon points="220,442 612,404 540,250 190,436" fill="#2563EB" opacity="0.08" stroke="#94A3B8" stroke-width="3"></polygon>
+            </g>
+          </svg>
+        </figure>
+        <div>
+          <div class="math-box">
+            <h3>Basis construction</h3>
+            <p class="formula">w = -g / ||g||</p>
+            <p class="formula">u = normalize(t x w)</p>
+            <p class="formula">v = w x u</p>
+          </div>
+          <div class="math-box warning" style="margin-top: 24px;">
+            <h3>Degenerate input</h3>
+            <p>If the view-up vector is parallel to gaze, the cross product cannot supply a sideways axis.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">This is the most common source of viewing bugs. The inputs eye, gaze, and up do not automatically form an orthonormal frame. The construction turns gaze into the backward camera axis, removes the up-vector skew through a cross product, and then rebuilds a consistent right-handed basis.</aside>
+  </section>
+
+  <section class="slide" data-label="Camera Matrix">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Camera transformation</div>
+        <div class="source">Rigid basis change</div>
+      </div>
+      <h2>The Camera Matrix Is Translate Then Rotate</h2>
+      <div class="rule"></div>
+      <div class="two wide-left">
+        <div>
+          <div class="panel soft-panel">
+            <p class="formula big" style="text-align: center;">p_cam = [u^T; v^T; w^T] (p_world - e)</p>
+          </div>
+          <div class="step-list" style="margin-top: 32px;">
+            <div class="step"><b>1</b><span>Translate the world so the eye position becomes the origin.</span></div>
+            <div class="step"><b>2</b><span>Measure coordinates against u, v, and w through dot products.</span></div>
+            <div class="step"><b>3</b><span>Verify the eye maps to zero and the basis determinant stays positive.</span></div>
+          </div>
+        </div>
+        <figure class="diagram panel" aria-label="Camera matrix ledger">
+          <svg viewBox="0 0 760 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="60" y="70" width="640" height="420" rx="8" fill="#ffffff" stroke="#CBD5E1" stroke-width="4"></rect>
+              <line x1="60" y1="170" x2="700" y2="170" stroke="#CBD5E1" stroke-width="3"></line>
+              <line x1="60" y1="270" x2="700" y2="270" stroke="#CBD5E1" stroke-width="3"></line>
+              <line x1="60" y1="370" x2="700" y2="370" stroke="#CBD5E1" stroke-width="3"></line>
+              <text x="105" y="132" font-size="31" fill="#2563EB" font-weight="700">u row</text>
+              <text x="105" y="232" font-size="31" fill="#0F766E" font-weight="700">v row</text>
+              <text x="105" y="332" font-size="31" fill="#6D28D9" font-weight="700">w row</text>
+              <text x="105" y="432" font-size="31" fill="#B45309" font-weight="700">shift</text>
+              <text x="300" y="132" font-size="28" fill="#111827">right coordinate</text>
+              <text x="300" y="232" font-size="28" fill="#111827">up coordinate</text>
+              <text x="300" y="332" font-size="28" fill="#111827">back coordinate</text>
+              <text x="300" y="432" font-size="28" fill="#111827">subtract eye e</text>
+              <circle cx="615" cy="120" r="22" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></circle>
+              <circle cx="615" cy="220" r="22" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></circle>
+              <circle cx="615" cy="320" r="22" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></circle>
+              <circle cx="615" cy="420" r="22" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Separate the two jobs of the camera matrix. Translation moves the eye to the origin, while the basis rows measure coordinates along the camera axes. The eye must map to zero, and the basis rows must remain orthonormal; those two checks catch many sign and ordering errors.</aside>
+  </section>
+
+  <section class="slide soft" data-label="Homogeneous">
+    <div class="grid-bg"></div>
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Projective coordinates</div>
+        <div class="source">Let w carry a denominator</div>
+      </div>
+      <h2>Homogeneous Coordinates Add A Denominator</h2>
+      <div class="rule"></div>
+      <div class="two">
+        <div>
+          <div class="math-box theorem">
+            <h3>Scale equivalence</h3>
+            <p class="formula big">[x, y, z, w] ~ [lambda x, lambda y, lambda z, lambda w]</p>
+          </div>
+          <div class="math-box" style="margin-top: 24px;">
+            <h3>Read Cartesian coordinates after the product</h3>
+            <p class="formula big">(x / w, y / w, z / w)</p>
+          </div>
+        </div>
+        <figure class="diagram panel" aria-label="Homogeneous coordinate funnel">
+          <svg viewBox="0 0 760 560" role="img">
+            <defs>
+              <marker id="hom-arrow" markerWidth="18" markerHeight="18" refX="14" refY="5" orient="auto">
+                <path d="M1,1 L15,5 L1,9 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="80" y="100" width="225" height="110" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <rect x="455" y="100" width="225" height="110" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <rect x="268" y="335" width="225" height="110" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="192" y="165" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">[x,y,z,1]</text>
+              <text x="568" y="165" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">[x',y',z',w']</text>
+              <text x="380" y="402" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">divide by w'</text>
+              <path d="M310 155 H440" stroke="#1E3A8A" stroke-width="6" marker-end="url(#hom-arrow)"></path>
+              <path d="M568 215 C568 296 486 332 430 350" stroke="#1E3A8A" stroke-width="6" fill="none" marker-end="url(#hom-arrow)"></path>
+              <path d="M192 215 C192 296 274 332 330 350" stroke="#94A3B8" stroke-width="5" fill="none" stroke-dasharray="14 12"></path>
+              <text x="375" y="91" text-anchor="middle" font-size="25" fill="#475569">matrix may alter w</text>
+              <text x="380" y="486" text-anchor="middle" font-size="25" fill="#475569">Cartesian point appears only after division</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Projective coordinates are the conceptual turn of the chapter. Affine transforms keep w equal to one, but viewing benefits from letting w change with depth. Only after the matrix product is finished do we divide by w to recover Cartesian coordinates for clipping and rasterization.</aside>
+  </section>
+
+  <section class="slide" data-label="Projective Lines">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Projective behavior</div>
+        <div class="source">Straightness survives</div>
+      </div>
+      <h2>Projective Maps Keep Lines Straight</h2>
+      <div class="rule"></div>
+      <div class="two wide-right">
+        <div>
+          <ul class="list">
+            <li>A line maps to a line when w does not cross zero on the segment.</li>
+            <li>Parallel edges may meet after projection.</li>
+            <li>Midpoints and equal spacing are not generally preserved.</li>
+          </ul>
+          <div class="math-box warning" style="margin-top: 28px;">
+            <h3>Do not interpolate too late</h3>
+            <p>Perspective-correct interpolation exists because screen-space linear fractions are not the original 3D fractions.</p>
+          </div>
+        </div>
+        <figure class="diagram panel soft-panel" aria-label="Projective square to quadrilateral">
+          <svg viewBox="0 0 820 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="105" y="120" width="230" height="230" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+              <circle cx="105" cy="120" r="9" fill="#2563EB"></circle><circle cx="335" cy="120" r="9" fill="#2563EB"></circle><circle cx="335" cy="350" r="9" fill="#2563EB"></circle><circle cx="105" cy="350" r="9" fill="#2563EB"></circle>
+              <polygon points="520,96 735,154 688,406 468,336" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></polygon>
+              <circle cx="520" cy="96" r="9" fill="#B45309"></circle><circle cx="735" cy="154" r="9" fill="#B45309"></circle><circle cx="688" cy="406" r="9" fill="#B45309"></circle><circle cx="468" cy="336" r="9" fill="#B45309"></circle>
+              <path d="M356 236 H450" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-route)"></path>
+              <text x="220" y="404" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">unit square</text>
+              <text x="603" y="458" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">projective image</text>
+              <line x1="105" y1="235" x2="335" y2="235" stroke="#0F766E" stroke-width="5" stroke-dasharray="14 10"></line>
+              <line x1="493" y1="216" x2="710" y2="280" stroke="#0F766E" stroke-width="5" stroke-dasharray="14 10"></line>
+              <text x="410" y="204" text-anchor="middle" font-size="25" fill="#1E3A8A" font-weight="700">H</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use the square-to-quadrilateral visual to separate what survives from what does not. Incidence and straightness survive under a projective map, while parallelism and midpoint ratios can change. This distinction prepares students for perspective images, where railroad tracks may meet but edges still draw as lines.</aside>
+  </section>
+
+  <section class="slide soft" data-label="Frustum">
+    <div class="grid-bg"></div>
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Perspective volume</div>
+        <div class="source">Frustum to box</div>
+      </div>
+      <h2>Perspective Starts With A Frustum</h2>
+      <div class="rule"></div>
+      <div class="two">
+        <figure class="diagram panel" aria-label="Perspective frustum">
+          <svg viewBox="0 0 780 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <circle cx="110" cy="280" r="18" fill="#111827"></circle>
+              <text x="110" y="326" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">eye</text>
+              <rect x="285" y="190" width="130" height="180" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></rect>
+              <rect x="540" y="100" width="190" height="360" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+              <path d="M110 280 L285 190 M110 280 L285 370 M110 280 L540 100 M110 280 L540 460" stroke="#B45309" stroke-width="5" fill="none"></path>
+              <path d="M415 190 L540 100 M415 370 L540 460" stroke="#94A3B8" stroke-width="4" fill="none" stroke-dasharray="12 10"></path>
+              <text x="350" y="170" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">near z=n</text>
+              <text x="635" y="82" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">far z=f</text>
+              <text x="450" y="520" text-anchor="middle" font-size="25" fill="#475569">far rectangle is larger because it subtends the same view window</text>
+            </g>
+          </svg>
+        </figure>
+        <div>
+          <div class="math-box theorem">
+            <h3>Perspective step P</h3>
+            <p>Reshape the pyramid slice into an orthographic view box before applying the usual cube normalization.</p>
+          </div>
+          <ul class="list" style="margin-top: 28px;">
+            <li>Near-plane x and y are left unchanged after homogeneous division.</li>
+            <li>Far-plane x and y are compressed to fit the near window.</li>
+            <li>The eye plane is dangerous because w can vanish there.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">The frustum diagram should be read from the eye outward. Points on the near plane keep their x and y positions after the perspective step, while the larger far rectangle is squeezed to match the orthographic box. That makes the later orthographic machinery reusable instead of special-casing perspective everywhere.</aside>
+  </section>
+
+  <section class="slide" data-label="Perspective Product">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Perspective product</div>
+        <div class="source">Reuse orthographic infrastructure</div>
+      </div>
+      <h2>Insert P Before The Orthographic Map</h2>
+      <div class="rule"></div>
+      <div class="two wide-left">
+        <div>
+          <div class="panel soft-panel">
+            <p class="formula big">M_per = M_orth P</p>
+            <p class="formula big" style="margin-top: 18px;">p_screen = M_vp M_per M_cam p_world</p>
+          </div>
+          <div class="math-box example" style="margin-top: 28px;">
+            <h3>Implementation benefit</h3>
+            <p>Orthographic and perspective views can share clipping, canonical-space diagnostics, and the viewport stage after the projection matrix is chosen.</p>
+          </div>
+        </div>
+        <figure class="diagram panel" aria-label="Perspective matrix inserted before orthographic mapping">
+          <svg viewBox="0 0 780 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="84" y="95" width="160" height="110" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <rect x="310" y="95" width="160" height="110" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <rect x="536" y="95" width="160" height="110" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <rect x="536" y="340" width="160" height="110" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <rect x="310" y="340" width="160" height="110" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="164" y="158" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">camera</text>
+              <text x="390" y="158" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">P</text>
+              <text x="616" y="145" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">ortho</text>
+              <text x="616" y="180" text-anchor="middle" font-size="24" fill="#475569">cube</text>
+              <text x="616" y="403" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">ortho</text>
+              <text x="390" y="403" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">viewport</text>
+              <path d="M250 150 H296 M476 150 H522" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-route)"></path>
+              <path d="M616 210 V326" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-route)"></path>
+              <path d="M530 395 H484" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-route)"></path>
+              <text x="390" y="282" text-anchor="middle" font-size="29" fill="#475569">perspective only changes the route into the shared box</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Keep the matrix ordering visible here. The perspective matrix P operates in camera coordinates, before the orthographic normalization and before the viewport. Once P has reshaped the frustum into a box, the same canonical-cube map and screen-window map can serve both projection styles.</aside>
+  </section>
+
+  <section class="slide" data-label="Depth">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Depth mapping</div>
+        <div class="source">Nonlinear, but monotone after clipping</div>
+      </div>
+      <h2>Depth Becomes Nonlinear But Ordered</h2>
+      <div class="rule"></div>
+      <div class="two">
+        <figure class="diagram panel soft-panel" aria-label="Perspective depth curve">
+          <svg viewBox="0 0 760 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <line x1="105" y1="440" x2="670" y2="440" stroke="#111827" stroke-width="4"></line>
+              <line x1="105" y1="440" x2="105" y2="90" stroke="#111827" stroke-width="4"></line>
+              <path d="M130 405 C220 340 300 260 390 185 C475 116 565 97 650 92" fill="none" stroke="#2563EB" stroke-width="8"></path>
+              <circle cx="130" cy="405" r="11" fill="#B45309"></circle>
+              <circle cx="650" cy="92" r="11" fill="#0F766E"></circle>
+              <text x="130" y="475" text-anchor="middle" font-size="25" fill="#475569">far</text>
+              <text x="650" y="475" text-anchor="middle" font-size="25" fill="#475569">near</text>
+              <text x="82" y="405" text-anchor="end" font-size="25" fill="#475569">-1</text>
+              <text x="82" y="100" text-anchor="end" font-size="25" fill="#475569">+1</text>
+              <text x="385" y="520" text-anchor="middle" font-size="27" fill="#111827" font-weight="700">camera z increases toward the near plane</text>
+              <text x="372" y="72" text-anchor="middle" font-size="27" fill="#2563EB" font-weight="700">canonical depth</text>
+            </g>
+          </svg>
+        </figure>
+        <div>
+          <div class="math-box theorem">
+            <h3>Depth transform shape</h3>
+            <p class="formula">z_new = n + f - (f n) / z</p>
+          </div>
+          <ul class="list" style="margin-top: 28px;">
+            <li>Depth order is preserved for points inside the frustum.</li>
+            <li>Spacing is compressed unevenly, which matters for depth buffers.</li>
+            <li>Segments crossing the eye plane must be clipped before division.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Students often expect depth to be linear because x and y are easy to picture. The useful invariant is weaker and more important: inside a clipped view volume, nearer and farther points keep their order after the transform. The depth curve explains why z precision becomes concentrated near the eye.</aside>
+  </section>
+
+  <section class="slide soft" data-label="Line Parameters">
+    <div class="grid-bg"></div>
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Perspective property</div>
+        <div class="source">Line preservation without affine parameters</div>
+      </div>
+      <h2>Lines Survive, Parameters Do Not</h2>
+      <div class="rule"></div>
+      <div class="two wide-right">
+        <div>
+          <div class="math-box">
+            <h3>Invariant</h3>
+            <p>Projected samples remain collinear when the whole segment stays in one valid projective chart.</p>
+          </div>
+          <div class="math-box warning" style="margin-top: 24px;">
+            <h3>Non-invariant</h3>
+            <p>Equal steps in 3D do not become equal steps after homogeneous division.</p>
+          </div>
+        </div>
+        <figure class="diagram panel" aria-label="Line maps to line with nonuniform parameter spacing">
+          <svg viewBox="0 0 820 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <line x1="90" y1="420" x2="330" y2="120" stroke="#B45309" stroke-width="7"></line>
+              <circle cx="90" cy="420" r="10" fill="#B45309"></circle>
+              <circle cx="150" cy="345" r="10" fill="#B45309"></circle>
+              <circle cx="210" cy="270" r="10" fill="#B45309"></circle>
+              <circle cx="270" cy="195" r="10" fill="#B45309"></circle>
+              <circle cx="330" cy="120" r="10" fill="#B45309"></circle>
+              <path d="M370 270 H450" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-route)"></path>
+              <line x1="505" y1="420" x2="735" y2="120" stroke="#2563EB" stroke-width="7"></line>
+              <circle cx="505" cy="420" r="10" fill="#2563EB"></circle>
+              <circle cx="575" cy="329" r="10" fill="#2563EB"></circle>
+              <circle cx="630" cy="257" r="10" fill="#2563EB"></circle>
+              <circle cx="685" cy="185" r="10" fill="#2563EB"></circle>
+              <circle cx="735" cy="120" r="10" fill="#2563EB"></circle>
+              <text x="210" y="490" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">equal 3D parameter steps</text>
+              <text x="620" y="490" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">unequal screen spacing</text>
+              <text x="410" y="248" text-anchor="middle" font-size="25" font-weight="700" fill="#1E3A8A">divide</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">The line preservation claim is exact, but the sampling parameter is not preserved. A point halfway along a 3D segment can project away from the midpoint between projected endpoints. This is the reason interpolation in later pipeline stages must respect homogeneous coordinates rather than naive screen-space fractions.</aside>
+  </section>
+
+  <section class="slide" data-label="Field Of View">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Field of view</div>
+        <div class="source">Angle and aspect choose l,r,b,t</div>
+      </div>
+      <h2>Field Of View Chooses The Near Window</h2>
+      <div class="rule"></div>
+      <div class="two">
+        <figure class="diagram panel soft-panel" aria-label="Field of view near plane">
+          <svg viewBox="0 0 760 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <circle cx="140" cy="280" r="17" fill="#111827"></circle>
+              <rect x="475" y="145" width="100" height="270" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+              <path d="M140 280 L475 145 M140 280 L475 415" stroke="#B45309" stroke-width="6" fill="none"></path>
+              <path d="M235 205 A120 120 0 0 1 235 355" fill="none" stroke="#0F766E" stroke-width="7"></path>
+              <text x="265" y="288" font-size="31" font-weight="700" fill="#0F766E">theta</text>
+              <line x1="575" y1="280" x2="620" y2="280" stroke="#111827" stroke-width="4"></line>
+              <line x1="620" y1="145" x2="620" y2="415" stroke="#111827" stroke-width="4"></line>
+              <text x="652" y="286" font-size="26" fill="#475569">2t</text>
+              <text x="520" y="455" text-anchor="middle" font-size="26" fill="#475569">near plane</text>
+              <text x="140" y="326" text-anchor="middle" font-size="26" fill="#111827" font-weight="700">eye</text>
+            </g>
+          </svg>
+        </figure>
+        <div>
+          <div class="math-box theorem">
+            <h3>Centered vertical FOV</h3>
+            <p class="formula big">t = |n| tan(theta / 2)</p>
+            <p class="formula big">r = (n_x / n_y) t</p>
+          </div>
+          <ul class="list" style="margin-top: 28px;">
+            <li>Large angles widen the frustum quickly through the tangent.</li>
+            <li>Aspect ratio sets width after the vertical choice is made.</li>
+            <li>Distortion at wide FOV is a geometric consequence, not a matrix bug.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Field of view is not an extra projection method. It is a compact way to compute the near-plane window before constructing the general perspective map. Increasing the vertical angle increases the window height through a tangent, and the aspect ratio expands width without changing the chosen vertical angle.</aside>
+  </section>
+
+  <section class="slide" data-label="Debugging">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Debugging signatures</div>
+        <div class="source">Matrix bugs leave geometry clues</div>
+      </div>
+      <h2>Viewing Bugs Have Signatures</h2>
+      <div class="rule"></div>
+      <div class="three">
+        <div class="math-box warning">
+          <h3>Mirrored scene</h3>
+          <p>Check the cross-product order and the determinant of the camera basis.</p>
+        </div>
+        <div class="math-box warning">
+          <h3>Shifted pixels</h3>
+          <p>Check pixel-center offsets and whether the viewport uses nx or nx minus one.</p>
+        </div>
+        <div class="math-box warning">
+          <h3>Objects vanish</h3>
+          <p>Check near and far signs, then clip before any divide by w.</p>
+        </div>
+      </div>
+      <figure class="diagram panel soft-panel" style="margin-top: 34px;" aria-label="Debugging triangle">
+        <svg viewBox="0 0 1500 310" role="img">
+          <g font-family="Source Sans 3, Arial, sans-serif">
+            <polygon points="750,40 1260,260 240,260" fill="#ffffff" stroke="#CBD5E1" stroke-width="5"></polygon>
+            <circle cx="750" cy="40" r="18" fill="#2563EB"></circle>
+            <circle cx="1260" cy="260" r="18" fill="#0F766E"></circle>
+            <circle cx="240" cy="260" r="18" fill="#B45309"></circle>
+            <text x="750" y="92" text-anchor="middle" font-size="29" font-weight="700" fill="#2563EB">basis tests</text>
+            <text x="1150" y="225" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">corner tests</text>
+            <text x="350" y="225" text-anchor="middle" font-size="29" font-weight="700" fill="#B45309">depth tests</text>
+            <text x="750" y="182" text-anchor="middle" font-size="28" fill="#475569">diagnose the failed invariant before editing formulas</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <aside class="speaker-notes">Use this slide as a diagnostic lab. A mirrored image points to a handedness or cross-product issue, a shifted image points to viewport or window bounds, clipped near objects suggest frustum signs, and w crossing zero warns that geometry needs clipping before the homogeneous divide.</aside>
+  </section>
+
+  <section class="slide soft" data-label="Recipe">
+    <div class="grid-bg"></div>
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Operational recipe</div>
+        <div class="source">Wireframe viewing before rasterization</div>
+      </div>
+      <h2>A Rendering Recipe For Wireframe Viewing</h2>
+      <div class="rule"></div>
+      <div class="two wide-left">
+        <div class="step-list">
+          <div class="step"><b>1</b><span>Build camera axes from eye, gaze, and up; reject degenerate input.</span></div>
+          <div class="step"><b>2</b><span>Choose orthographic bounds or compute a perspective near window from FOV.</span></div>
+          <div class="step"><b>3</b><span>Compose the matrix product once for the whole batch of line endpoints.</span></div>
+          <div class="step"><b>4</b><span>Transform endpoints, divide by w when using projective coordinates, and clip invalid pieces.</span></div>
+          <div class="step"><b>5</b><span>Send pixel-center coordinates to the line drawing stage.</span></div>
+        </div>
+        <div class="math-box theorem" style="margin-top: 28px;">
+          <h3>Implementation principle</h3>
+          <p>Compute the composite map once, but keep the factorization visible in tests and debug tools.</p>
+        </div>
+        <aside class="speaker-notes">Walk through the recipe as executable thinking rather than API ceremony. Build camera axes, compose the projection and viewport matrices once, transform every endpoint, divide when required, reject or clip invalid segments, and finally draw in pixel coordinates. The order is what makes the implementation testable.</aside>
+      </div>
+      <figure class="diagram panel" aria-label="Wireframe endpoint workflow">
+        <svg viewBox="0 0 720 560" role="img">
+          <g font-family="Source Sans 3, Arial, sans-serif">
+            <rect x="80" y="80" width="560" height="95" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <rect x="80" y="230" width="560" height="95" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <rect x="80" y="380" width="560" height="95" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <path d="M360 178 V218 M360 328 V368" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-route)"></path>
+            <text x="360" y="138" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">endpoint list</text>
+            <text x="360" y="288" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">transform and divide</text>
+            <text x="360" y="438" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">clip and draw pixels</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+  </section>
+
+  <section class="slide" data-label="Invariant Ledger">
+    <div class="pad">
+      <div class="topline">
+        <div class="eyebrow">Takeaways</div>
+        <div class="source">Checks from the chapter notebook</div>
+      </div>
+      <h2>Invariant Ledger</h2>
+      <div class="rule"></div>
+      <div class="two wide-left">
+        <div class="panel soft-panel">
+          <div class="step-list">
+            <div class="step"><b>1</b><span>Viewport endpoints match the pixel-center convention.</span></div>
+            <div class="step"><b>2</b><span>Orthographic corners map to canonical corners.</span></div>
+            <div class="step"><b>3</b><span>Camera rows are orthonormal and map the eye to zero.</span></div>
+            <div class="step"><b>4</b><span>Homogeneous scale changes do not change represented points.</span></div>
+            <div class="step"><b>5</b><span>Perspective preserves depth order and straight lines inside the valid chart.</span></div>
+            <div class="step"><b>6</b><span>FOV and aspect formulas produce the intended near-plane window.</span></div>
+          </div>
+        </div>
+        <figure class="diagram panel" aria-label="Invariant ledger">
+          <svg viewBox="0 0 760 560" role="img">
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <circle cx="380" cy="280" r="190" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></circle>
+              <circle cx="380" cy="280" r="125" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+              <circle cx="380" cy="280" r="56" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></circle>
+              <text x="380" y="288" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">view</text>
+              <text x="380" y="90" text-anchor="middle" font-size="27" font-weight="700" fill="#1E3A8A">factorization</text>
+              <text x="575" y="286" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">corners</text>
+              <text x="380" y="486" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">depth</text>
+              <text x="185" y="286" text-anchor="middle" font-size="27" font-weight="700" fill="#6D28D9">basis</text>
+              <path d="M380 90 L380 224 M575 280 L436 280 M380 470 L380 336 M185 280 L324 280" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 12"></path>
+            </g>
+          </svg>
+          <p class="caption">The notebook's checks turn each geometric promise into a small numerical test.</p>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close by revisiting the invariant ledger. Viewport corners, orthographic box corners, camera orthonormality, projective scale equivalence, perspective near and far corners, depth order, line preservation, and field-of-view formulas form a compact checklist for verifying a viewing implementation before adding rasterization details.</aside>
+  </section>
+</deck-stage>
+</body>
+</html>

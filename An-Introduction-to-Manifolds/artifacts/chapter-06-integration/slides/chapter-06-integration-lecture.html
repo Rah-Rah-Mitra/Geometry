@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 6: Integration</title>
+  <meta name="course" content="An Introduction to Manifolds">
+  <meta name="chapter_id" content="chapter-06-integration">
+  <meta name="notebook_path" content="An-Introduction-to-Manifolds/chapter-06-integration/06-integration.ipynb">
+  <meta name="source_span" content="printed pages 236-273; PDF pages 255-292">
+  <meta name="source_pdf" content="An-Introduction-to-Manifolds/An Introduction to Manifolds.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    * { box-sizing: border-box; letter-spacing: 0; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 54px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 66px; line-height: 1.05; font-weight: 700; }
+    h2 { font-size: 50px; line-height: 1.12; font-weight: 700; }
+    h3 { font-size: 31px; line-height: 1.18; color: var(--slide-accent); margin: 0 0 12px; }
+    p, li { font-size: 27px; line-height: 1.34; }
+    ul { margin: 0; padding-left: 30px; }
+    a { color: var(--slide-accent); text-decoration: none; font-weight: 700; }
+    .eyebrow {
+      font-size: 23px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .lead { font-size: 32px; line-height: 1.28; color: var(--slide-muted); max-width: 1260px; }
+    .rule { width: 94px; height: 6px; border-radius: 4px; background: var(--slide-accent); margin: 22px 0 28px; }
+    .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 24px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 42px; flex: 1; min-height: 0; align-items: stretch; }
+    .wide-left { grid-template-columns: 1.14fr 0.86fr; }
+    .wide-right { grid-template-columns: 0.86fr 1.14fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 22px 24px;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel.slate { background: var(--slide-bg-alt); border-left: 6px solid var(--slide-border); }
+    .math-box { margin: 0; padding: 18px 22px 18px 26px; }
+    .math-box-label { font-size: 22px; letter-spacing: 0; }
+    .math-box-body { font-size: 27px; line-height: 1.34; }
+    .mathline { font-family: var(--font-math); font-size: 34px; line-height: 1.25; }
+    .mathline.big { font-size: 42px; }
+    .mini { font-size: 23px; line-height: 1.28; color: var(--slide-muted); }
+    .caption { font-size: 22px; line-height: 1.25; color: var(--slide-dimmed); }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--slide-border-light);
+      background: #fff;
+      color: var(--slide-accent);
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .badge.teal { color: var(--slide-teal); background: var(--math-example-bg); border-color: rgba(15,118,110,0.18); }
+    .badge.amber { color: var(--slide-amber); background: var(--math-warning-bg); border-color: rgba(180,83,9,0.2); }
+    .badge.violet { color: var(--slide-violet); background: var(--math-exercise-bg); border-color: rgba(109,40,217,0.18); }
+    .diagram {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .diagram svg { width: 100%; height: 100%; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: center;
+      margin-top: 22px;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      line-height: 1.2;
+      border-top: 1px solid var(--slide-border-light);
+      padding-top: 13px;
+    }
+    .small-table {
+      display: grid;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      overflow: clip;
+      font-size: 24px;
+      line-height: 1.22;
+    }
+    .small-table div { padding: 11px 14px; border-bottom: 1px solid var(--slide-border-light); }
+    .small-table .head { background: var(--slide-bg-alt); font-weight: 700; color: var(--slide-accent); }
+    .small-table .last { border-bottom: 0; }
+    .checkline { display: flex; gap: 14px; align-items: flex-start; font-size: 25px; line-height: 1.28; color: var(--slide-muted); }
+    .dot { width: 14px; height: 14px; border-radius: 50%; margin-top: 9px; flex: 0 0 auto; background: var(--slide-accent); }
+    .dot.teal { background: var(--slide-teal); }
+    .dot.amber { background: var(--slide-amber); }
+    .dot.violet { background: var(--slide-violet); }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section data-label="Integration Is Signed Geometry">
+    <div class="slide alt">
+      <div class="eyebrow">An Introduction to Manifolds | Chapter 6 | Printed pages 236-273; PDF pages 255-292</div>
+      <h1>Integration Is Signed Geometry</h1>
+      <div class="rule"></div>
+      <p class="lead">Chapter 6 turns differential forms into numbers. The new hazard is not size but sign: a frame, a chart, a boundary normal, or a parametrization can reverse the answer.</p>
+      <div class="content" style="margin-top: 6px;">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 1040 520" role="img" aria-label="Sign flow from orientation to Stokes theorem">
+              <defs>
+                <marker id="arr-flow-1" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+                  <path d="M0,0 L14,7 L0,14 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="42" y="92" width="190" height="108" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="137" y="137" text-anchor="middle" font-size="29" font-weight="700" fill="#111827">Frames</text>
+              <text x="137" y="172" text-anchor="middle" font-size="24" fill="#475569">determinant sign</text>
+              <rect x="310" y="92" width="190" height="108" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="405" y="137" text-anchor="middle" font-size="29" font-weight="700" fill="#111827">Top Forms</text>
+              <text x="405" y="172" text-anchor="middle" font-size="24" fill="#475569">positive testers</text>
+              <rect x="578" y="92" width="190" height="108" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <text x="673" y="137" text-anchor="middle" font-size="29" font-weight="700" fill="#111827">Charts</text>
+              <text x="673" y="172" text-anchor="middle" font-size="24" fill="#475569">transition signs</text>
+              <rect x="846" y="92" width="150" height="108" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <text x="921" y="137" text-anchor="middle" font-size="29" font-weight="700" fill="#111827">Boundary</text>
+              <text x="921" y="172" text-anchor="middle" font-size="24" fill="#475569">outward first</text>
+              <path d="M232 146 H310" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-flow-1)"></path>
+              <path d="M500 146 H578" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-flow-1)"></path>
+              <path d="M768 146 H846" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-flow-1)"></path>
+              <path d="M137 200 C137 322 400 346 520 346 C640 346 921 322 921 200" fill="none" stroke="#94A3B8" stroke-width="5"></path>
+              <rect x="308" y="300" width="424" height="112" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="520" y="348" text-anchor="middle" font-size="31" font-weight="700" fill="#1E3A8A">Integral</text>
+              <text x="520" y="386" text-anchor="middle" font-size="26" fill="#475569">a signed total of an oriented top form</text>
+              <path d="M520 412 V472" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-flow-1)"></path>
+              <text x="520" y="507" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">Stokes: interior derivative becomes boundary integral</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="panel blue">
+              <h3>Lecture Thesis</h3>
+              <p>Orientation is the bookkeeping system that lets integration on manifolds be invariant under chart changes and still remember direction.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Local Artifacts</h3>
+              <p class="mini">Use the chapter checks as numerical anchors: <a href="../checks/final_sanity.json">final_sanity.json</a>, <a href="../figures/orientation-frame-sign.png">orientation-frame-sign.png</a>, and <a href="../figures/stokes-green-line-checks.png">stokes-green-line-checks.png</a>.</p>
+            </div>
+            <div class="badge-row">
+              <span class="badge">Orientation</span>
+              <span class="badge teal">Pullback</span>
+              <span class="badge amber">Boundary</span>
+              <span class="badge violet">Stokes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Chapter 6: Integration</span><span>HTML lecture source</span></div>
+    </div>
+    <aside class="speaker-notes">Open with the idea that integration on a manifold is not merely a way to add local densities. It is a sign-sensitive construction. The same numerical magnitude can change sign when a frame is flipped, a chart reverses orientation, or a boundary normal is chosen inconsistently. The flow diagram gives the lecture map: determinants define positive frames, top forms test those frames, atlases globalize the choice, boundaries inherit a convention, and Stokes ties interior and boundary signs together.</aside>
+  </section>
+
+  <section data-label="Roadmap: Four Sign Checkpoints">
+    <div class="slide">
+      <div class="eyebrow">Learning Roadmap</div>
+      <h2>Four Places Where The Sign Can Change</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="four">
+          <div class="panel blue">
+            <h3>1. Frame</h3>
+            <p>A basis is positive only relative to an orientation class.</p>
+            <div class="mathline" style="margin-top: 20px;">\(u=vA,\quad \det A>0\)</div>
+          </div>
+          <div class="panel teal">
+            <h3>2. Chart</h3>
+            <p>Coordinate overlaps must preserve determinant sign.</p>
+            <div class="mathline" style="margin-top: 20px;">\(\det\left(\frac{\partial y^i}{\partial x^j}\right)>0\)</div>
+          </div>
+          <div class="panel amber">
+            <h3>3. Boundary</h3>
+            <p>The outward vector is placed before the boundary frame.</p>
+            <div class="mathline" style="margin-top: 20px;">\(\iota_X\omega\)</div>
+          </div>
+          <div class="panel violet">
+            <h3>4. Integral</h3>
+            <p>Pullbacks carry the Jacobian determinant, not its absolute value.</p>
+            <div class="mathline" style="margin-top: 20px;">\(F^*\eta=(\det JF)\,\omega\)</div>
+          </div>
+        </div>
+        <div class="diagram" style="min-height: 430px;">
+          <svg viewBox="0 0 1510 360" role="img" aria-label="Roadmap from local signs to calculus theorems">
+            <defs>
+              <marker id="arr-road-2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <path d="M80 180 C250 70 380 70 550 180 S850 290 1020 180 S1270 70 1430 180" fill="none" stroke="#CBD5E1" stroke-width="12"></path>
+            <circle cx="80" cy="180" r="42" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+            <text x="80" y="188" text-anchor="middle" font-size="29" font-weight="700" fill="#2563EB">F</text>
+            <circle cx="550" cy="180" r="42" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></circle>
+            <text x="550" y="188" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">C</text>
+            <circle cx="1020" cy="180" r="42" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></circle>
+            <text x="1020" y="188" text-anchor="middle" font-size="29" font-weight="700" fill="#B45309">B</text>
+            <circle cx="1430" cy="180" r="42" fill="#F5F3FF" stroke="#6D28D9" stroke-width="5"></circle>
+            <text x="1430" y="188" text-anchor="middle" font-size="29" font-weight="700" fill="#6D28D9">S</text>
+            <path d="M132 180 H488" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-road-2)"></path>
+            <path d="M602 180 H958" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-road-2)"></path>
+            <path d="M1072 180 H1368" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-road-2)"></path>
+            <text x="80" y="265" text-anchor="middle" font-size="25" fill="#475569">frames</text>
+            <text x="550" y="265" text-anchor="middle" font-size="25" fill="#475569">charts</text>
+            <text x="1020" y="265" text-anchor="middle" font-size="25" fill="#475569">boundary</text>
+            <text x="1430" y="265" text-anchor="middle" font-size="25" fill="#475569">Stokes</text>
+            <text x="755" y="64" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">Keep determinants signed until the final theorem.</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Frames, charts, boundaries, integrals</span><span>Roadmap</span></div>
+    </div>
+    <aside class="speaker-notes">Use this slide as the explicit contract for the lecture. Students should hear that there are four sign checkpoints, and each one has a simple local test. A frame is compared by a determinant, a chart overlap is compared by the determinant of its transition Jacobian, a boundary is oriented by placing an outward vector first, and an integral changes by the signed Jacobian under pullback. The later examples are not separate tricks; they are repeated uses of these four checks.</aside>
+  </section>
+
+  <section data-label="Orientation Of A Vector Space">
+    <div class="slide">
+      <div class="eyebrow">Vector Space Orientation</div>
+      <h2>A Positive Frame Is An Equivalence Class</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-right">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Definition</div>
+              <div class="math-box-body">Two ordered bases \(u=(u_1,\ldots,u_n)\) and \(v=(v_1,\ldots,v_n)\) have the same orientation when \(u=vA\) with \(\det A>0\).</div>
+            </div>
+            <div class="panel slate">
+              <h3>Chapter Check</h3>
+              <p>The notebook compares one positive frame with determinant \(14/15\) and one negative frame with determinant \(-1\).</p>
+              <p class="mini" style="margin-top: 12px;">Payload: <a href="../checks/orientation-frame-sign.json">../checks/orientation-frame-sign.json</a></p>
+            </div>
+            <div class="checkline"><span class="dot teal"></span><span>Positive changes of basis can stretch, shear, or rotate, but they do not cross determinant zero.</span></div>
+            <div class="checkline"><span class="dot amber"></span><span>A negative determinant means exactly one orientation reversal has occurred.</span></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 900 590" role="img" aria-label="Positive and negative ordered frames">
+              <defs>
+                <marker id="arrow-pos-3" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto">
+                  <path d="M0,0 L13,6.5 L0,13 Z" fill="#0F766E"></path>
+                </marker>
+                <marker id="arrow-neg-3" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto">
+                  <path d="M0,0 L13,6.5 L0,13 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <rect x="35" y="40" width="380" height="500" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <rect x="485" y="40" width="380" height="500" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <line x1="90" y1="450" x2="355" y2="450" stroke="#CBD5E1" stroke-width="3"></line>
+              <line x1="125" y1="500" x2="125" y2="110" stroke="#CBD5E1" stroke-width="3"></line>
+              <path d="M125 450 L335 450" stroke="#0F766E" stroke-width="8" marker-end="url(#arrow-pos-3)"></path>
+              <path d="M125 450 L194 176" stroke="#2563EB" stroke-width="8" marker-end="url(#arrow-pos-3)"></path>
+              <path d="M125 450 L300 220" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 12"></path>
+              <text x="225" y="505" text-anchor="middle" font-size="26" font-weight="700" fill="#0F766E">same orientation</text>
+              <text x="225" y="92" text-anchor="middle" font-size="27" fill="#111827">det = 14/15 &gt; 0</text>
+              <line x1="540" y1="450" x2="805" y2="450" stroke="#CBD5E1" stroke-width="3"></line>
+              <line x1="575" y1="500" x2="575" y2="110" stroke="#CBD5E1" stroke-width="3"></line>
+              <path d="M575 450 L575 168" stroke="#B45309" stroke-width="8" marker-end="url(#arrow-neg-3)"></path>
+              <path d="M575 450 L800 394" stroke="#2563EB" stroke-width="8" marker-end="url(#arrow-neg-3)"></path>
+              <path d="M575 450 C650 360 710 312 790 250" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 12"></path>
+              <text x="675" y="505" text-anchor="middle" font-size="26" font-weight="700" fill="#B45309">opposite orientation</text>
+              <text x="675" y="92" text-anchor="middle" font-size="27" fill="#111827">det = -1 &lt; 0</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Orientation starts before manifolds appear</span><span>Frame sign test</span></div>
+    </div>
+    <aside class="speaker-notes">Begin at the linear algebra level because every later manifold definition is pointwise. The formula u equals v times A should be read as a comparison between two ordered frames. If the determinant of A is positive, a continuous motion through invertible frames can carry one to the other without crossing singularity. If the determinant is negative, the frame has crossed to the opposite component. The chapter check gives concrete numbers, so this is not only an abstract equivalence relation.</aside>
+  </section>
+
+  <section data-label="Top Covectors Detect Orientation">
+    <div class="slide">
+      <div class="eyebrow">Top-Degree Forms</div>
+      <h2>A Top Covector Is An Orientation Tester</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 930 560" role="img" aria-label="Top covector testing positive and negative frames">
+              <defs>
+                <marker id="arr-cov-4" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto">
+                  <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="55" y="72" width="350" height="350" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <polygon points="140,335 338,335 390,160 192,160" fill="#2563EB" opacity="0.14" stroke="#2563EB" stroke-width="5"></polygon>
+              <path d="M140 335 L338 335" stroke="#0F766E" stroke-width="8" marker-end="url(#arr-cov-4)"></path>
+              <path d="M140 335 L192 160" stroke="#0F766E" stroke-width="8" marker-end="url(#arr-cov-4)"></path>
+              <text x="230" y="470" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">dx wedge dy(v1,v2) = 14/15</text>
+              <rect x="525" y="72" width="350" height="350" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <polygon points="610,335 610,145 820,100 820,290" fill="#B45309" opacity="0.13" stroke="#B45309" stroke-width="5"></polygon>
+              <path d="M610 335 L610 145" stroke="#B45309" stroke-width="8" marker-end="url(#arr-cov-4)"></path>
+              <path d="M610 335 L820 290" stroke="#B45309" stroke-width="8" marker-end="url(#arr-cov-4)"></path>
+              <text x="700" y="470" text-anchor="middle" font-size="28" font-weight="700" fill="#B45309">dx wedge dy(w1,w2) = -1</text>
+              <text x="465" y="528" text-anchor="middle" font-size="26" fill="#475569">The same top form assigns opposite signs to opposite frame classes.</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Test</div>
+              <div class="math-box-body">A nonzero top covector \(\beta\in \Lambda^n(V^*)\) selects the positive frames by \(\beta(v_1,\ldots,v_n)>0\).</div>
+            </div>
+            <div class="panel blue">
+              <h3>Why Top Degree?</h3>
+              <p>An \(n\)-form eats exactly \(n\) tangent vectors. Its output is the signed volume of the frame they span.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Useful Warning</h3>
+              <p>For integration of forms, the sign is not erased. Replacing a determinant by its absolute value would change the theory.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Top covectors turn orientation into evaluation</span><span>\(\beta(v_1,\ldots,v_n)>0\)</span></div>
+    </div>
+    <aside class="speaker-notes">Move from frames to forms by emphasizing that a top covector is a measuring device with a sign. In two dimensions, dx wedge dy is the familiar signed area form, but the definition is dimension independent. A positive frame is exactly one on which the chosen top covector evaluates positively. This is the bridge to integration: a top-degree form is locally a signed volume element, so its integral must remember which frames count as positive.</aside>
+  </section>
+
+  <section data-label="Orientations On Manifolds">
+    <div class="slide">
+      <div class="eyebrow">From Vector Spaces To Manifolds</div>
+      <h2>An Orientation Is A Smooth Choice Of Positive Frames</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 930 555" role="img" aria-label="Positive tangent frames varying smoothly on a manifold">
+              <defs>
+                <marker id="arr-man-5" markerWidth="13" markerHeight="13" refX="11" refY="6.5" orient="auto">
+                  <path d="M0,0 L13,6.5 L0,13 Z" fill="#2563EB"></path>
+                </marker>
+              </defs>
+              <path d="M70 315 C155 105 350 70 470 185 C610 320 742 145 870 245 C790 420 580 490 390 430 C230 380 138 438 70 315 Z" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="5"></path>
+              <path d="M120 310 C230 245 332 238 430 285 S650 340 804 260" fill="none" stroke="#0F766E" stroke-width="4" stroke-dasharray="14 12"></path>
+              <g transform="translate(220 300) rotate(-18)">
+                <path d="M0 0 L130 0" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-man-5)"></path>
+                <path d="M0 0 L20 -110" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-man-5)"></path>
+                <circle r="7" fill="#111827"></circle>
+              </g>
+              <g transform="translate(455 287) rotate(8)">
+                <path d="M0 0 L130 0" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-man-5)"></path>
+                <path d="M0 0 L18 -110" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-man-5)"></path>
+                <circle r="7" fill="#111827"></circle>
+              </g>
+              <g transform="translate(690 302) rotate(22)">
+                <path d="M0 0 L130 0" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-man-5)"></path>
+                <path d="M0 0 L18 -110" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-man-5)"></path>
+                <circle r="7" fill="#111827"></circle>
+              </g>
+              <rect x="115" y="55" width="700" height="72" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="465" y="100" text-anchor="middle" font-size="29" font-weight="700" fill="#111827">The positive component varies continuously from point to point.</text>
+              <text x="465" y="507" text-anchor="middle" font-size="26" fill="#475569">A nowhere-zero top form gives one way to encode the choice.</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Orientation On \(M\)</div>
+              <div class="math-box-body">For each \(p\in M\), choose one of the two orientation classes of \(T_pM\), locally represented by a smooth positive frame.</div>
+            </div>
+            <div class="panel teal">
+              <h3>Equivalent Signal</h3>
+              <p>A nowhere-vanishing smooth \(n\)-form \(\omega\) makes a frame positive exactly when \(\omega_p(v_1,\ldots,v_n)>0\).</p>
+            </div>
+            <div class="panel slate">
+              <h3>Lecture Habit</h3>
+              <p>Whenever a formula says “positive,” ask which tangent frames are being tested and which top form or atlas has declared them positive.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Orientation is pointwise linear algebra made smooth</span><span>Manifold orientation</span></div>
+    </div>
+    <aside class="speaker-notes">Now globalize the linear picture. An orientation on a manifold is not one basis chosen forever; tangent spaces change from point to point. The smoothness condition says the choice of positive component is locally represented by smooth frames, or equivalently by a nowhere-zero top form. This is also where students should separate orientability from a particular orientation: orientability means such a smooth choice exists, while an orientation is one of the possible choices.</aside>
+  </section>
+
+  <section data-label="Oriented Atlases">
+    <div class="slide">
+      <div class="eyebrow">Coordinate Compatibility</div>
+      <h2>Oriented Atlases Keep Chart Changes Positive</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-right">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Oriented Atlas</div>
+              <div class="math-box-body">On every overlap, the transition map must satisfy \(\det\left(\partial y^i/\partial x^j\right)>0\).</div>
+            </div>
+            <div class="panel blue">
+              <h3>What The Determinant Protects</h3>
+              <p>The coordinate frame \((\partial/\partial x^1,\ldots,\partial/\partial x^n)\) and the coordinate frame in \(y\)-coordinates lie in the same orientation class.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Failure Mode</h3>
+              <p>A single negative transition does not always destroy orientability, but a negative sign around a closed chart cycle does.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 920 560" role="img" aria-label="Two coordinate charts with positive transition determinant">
+              <defs>
+                <marker id="arr-chart-6" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <ellipse cx="346" cy="285" rx="210" ry="165" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></ellipse>
+              <ellipse cx="575" cy="285" rx="210" ry="165" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></ellipse>
+              <path d="M454 165 C515 205 532 367 454 405 C416 343 416 229 454 165 Z" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></path>
+              <text x="265" y="180" text-anchor="middle" font-size="30" font-weight="700" fill="#2563EB">chart x</text>
+              <text x="665" y="180" text-anchor="middle" font-size="30" font-weight="700" fill="#0F766E">chart y</text>
+              <path d="M330 285 H520" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr-chart-6)"></path>
+              <text x="425" y="265" text-anchor="middle" font-size="28" fill="#111827">transition</text>
+              <rect x="165" y="438" width="590" height="76" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="460" y="484" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">det D(y o x^-1) &gt; 0</text>
+              <g transform="translate(252 300) rotate(-20)">
+                <path d="M0 0 L96 0" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-chart-6)"></path>
+                <path d="M0 0 L18 -86" stroke="#2563EB" stroke-width="7" marker-end="url(#arr-chart-6)"></path>
+              </g>
+              <g transform="translate(646 300) rotate(18)">
+                <path d="M0 0 L96 0" stroke="#0F766E" stroke-width="7" marker-end="url(#arr-chart-6)"></path>
+                <path d="M0 0 L18 -86" stroke="#0F766E" stroke-width="7" marker-end="url(#arr-chart-6)"></path>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>The atlas is a sign agreement across overlaps</span><span>Positive transition Jacobians</span></div>
+    </div>
+    <aside class="speaker-notes">This slide translates orientation into coordinates. A chart gives an ordered coordinate frame, and an oriented atlas is one where all overlap maps compare those frames by positive determinants. Emphasize that the determinant belongs to the transition map, not to the manifold by itself. The point is compatibility: when two charts describe the same tangent frame, they must not disagree about which side of determinant zero they occupy.</aside>
+  </section>
+
+  <section data-label="Mobius Sign-Cycle Obstruction">
+    <div class="slide">
+      <div class="eyebrow">Nonorientability</div>
+      <h2>The Mobius Band Forces A Negative Sign Cycle</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 940 560" role="img" aria-label="Mobius orientation obstruction as a sign cycle">
+              <defs>
+                <linearGradient id="mobius-grad-7" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%" stop-color="#EFF6FF"></stop>
+                  <stop offset="50%" stop-color="#F0FDFA"></stop>
+                  <stop offset="100%" stop-color="#FFFBEB"></stop>
+                </linearGradient>
+                <marker id="arr-mob-7" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <path d="M130 315 C250 140 520 130 720 260 C795 310 782 388 685 408 C520 442 340 270 206 296 C146 308 112 355 155 394 C230 462 470 442 665 370" fill="none" stroke="url(#mobius-grad-7)" stroke-width="72" stroke-linecap="round"></path>
+              <path d="M130 315 C250 140 520 130 720 260 C795 310 782 388 685 408 C520 442 340 270 206 296 C146 308 112 355 155 394 C230 462 470 442 665 370" fill="none" stroke="#1E3A8A" stroke-width="5" stroke-linecap="round"></path>
+              <circle cx="230" cy="278" r="34" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+              <text x="230" y="287" text-anchor="middle" font-size="29" font-weight="700" fill="#2563EB">+</text>
+              <circle cx="496" cy="203" r="34" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></circle>
+              <text x="496" y="212" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">+</text>
+              <circle cx="718" cy="355" r="34" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></circle>
+              <text x="718" y="364" text-anchor="middle" font-size="29" font-weight="700" fill="#B45309">-</text>
+              <path d="M270 270 C330 226 390 205 452 203" stroke="#1E3A8A" stroke-width="5" fill="none" marker-end="url(#arr-mob-7)"></path>
+              <path d="M535 212 C620 234 676 282 704 321" stroke="#1E3A8A" stroke-width="5" fill="none" marker-end="url(#arr-mob-7)"></path>
+              <path d="M690 391 C546 488 305 430 236 316" stroke="#94A3B8" stroke-width="5" fill="none" stroke-dasharray="13 11" marker-end="url(#arr-mob-7)"></path>
+              <rect x="160" y="45" width="620" height="70" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="470" y="90" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">transition signs: +, +, -, product = -1</text>
+              <text x="470" y="520" text-anchor="middle" font-size="26" fill="#475569">After one circuit, a chosen positive frame returns as negative.</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--warning">
+              <div class="math-box-label">Obstruction</div>
+              <div class="math-box-body">If transition signs around a closed cycle multiply to \(-1\), no globally consistent positive frame can exist.</div>
+            </div>
+            <div class="panel amber">
+              <h3>Notebook Certificate</h3>
+              <p>The gluing derivative \(\begin{pmatrix}1&0\\0&-1\end{pmatrix}\) has determinant \(-1\), so the Mobius cycle test fails.</p>
+              <p class="mini" style="margin-top: 12px;">Check: <a href="../checks/mobius-orientation-obstruction.json">../checks/mobius-orientation-obstruction.json</a></p>
+            </div>
+            <div class="panel slate">
+              <h3>Interpretation</h3>
+              <p>Orientability is the ability to choose signs consistently around every loop, not merely on each individual chart.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>A closed sign cycle can obstruct orientation</span><span>Mobius band</span></div>
+    </div>
+    <aside class="speaker-notes">Use the Mobius band as the first global obstruction. Locally everything looks fine, so this is not a failure of charts or tangent spaces. The problem appears after transport around a loop: the twist returns a frame with the opposite sign. The check file records transition signs plus, plus, minus, whose product is minus one. That product is the compact witness that no oriented atlas can be chosen around the cycle.</aside>
+  </section>
+
+  <section data-label="Manifolds With Boundary">
+    <div class="slide">
+      <div class="eyebrow">Half-Space Charts</div>
+      <h2>A Boundary Point Looks Like The Edge Of \(H^n\)</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-right">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Model Half-Space</div>
+              <div class="math-box-body">\(H^n=\{(x_1,\ldots,x_n)\in\mathbb R^n: x_n\ge 0\}\), with boundary \(\partial H^n=\{x_n=0\}\).</div>
+            </div>
+            <div class="panel blue">
+              <h3>Interior Versus Boundary</h3>
+              <p>Interior points have neighborhoods modeled on open subsets of \(\mathbb R^n\). Boundary points require half-space neighborhoods.</p>
+            </div>
+            <div class="panel slate">
+              <h3>Geometric Meaning</h3>
+              <p>The coordinate \(x_n\) measures inward distance in the local model. The missing side is where an outward normal will point.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 910 555" role="img" aria-label="Half-space model for manifolds with boundary">
+              <defs>
+                <marker id="arr-half-8" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="80" y="118" width="750" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+              <rect x="80" y="448" width="750" height="42" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></rect>
+              <line x1="118" y1="448" x2="798" y2="448" stroke="#B45309" stroke-width="8"></line>
+              <path d="M160 448 L160 175" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-half-8)"></path>
+              <path d="M160 448 L760 448" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-half-8)"></path>
+              <text x="790" y="480" text-anchor="middle" font-size="28" fill="#111827">x1, ..., x(n-1)</text>
+              <text x="118" y="170" text-anchor="middle" font-size="28" fill="#111827">xn</text>
+              <text x="455" y="292" text-anchor="middle" font-size="42" font-weight="700" fill="#2563EB">xn &gt;= 0</text>
+              <text x="455" y="530" text-anchor="middle" font-size="29" font-weight="700" fill="#B45309">boundary hyperplane xn = 0</text>
+              <circle cx="315" cy="448" r="10" fill="#111827"></circle>
+              <text x="315" y="414" text-anchor="middle" font-size="25" fill="#475569">boundary point</text>
+              <circle cx="610" cy="302" r="10" fill="#111827"></circle>
+              <text x="610" y="267" text-anchor="middle" font-size="25" fill="#475569">interior point</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Boundary geometry is locally half-space geometry</span><span>\(H^n\)</span></div>
+    </div>
+    <aside class="speaker-notes">Introduce boundary through the model space H to the n. This is deliberately local: a manifold with boundary is still n dimensional, but some points have neighborhoods that include only one side of a coordinate hyperplane. The last coordinate plays a special role in the local model, and that role is what later creates the outward normal. Keep the distinction sharp: the boundary is not a lower-dimensional manifold attached from outside; it is detected by the half-space charts of the original manifold.</aside>
+  </section>
+
+  <section data-label="Boundary Is Intrinsic">
+    <div class="slide">
+      <div class="eyebrow">Well-Defined Boundary</div>
+      <h2>A Boundary Point Cannot Be Recharted Away</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 930 555" role="img" aria-label="Two boundary charts agree on boundary status">
+              <defs>
+                <marker id="arr-intr-9" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <path d="M110 350 C190 205 330 155 465 220 C610 290 734 190 824 320 C724 470 494 498 306 434 C220 406 160 408 110 350 Z" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="5"></path>
+              <path d="M146 350 C250 395 365 405 462 390 C598 367 707 366 785 324" fill="none" stroke="#B45309" stroke-width="8"></path>
+              <circle cx="463" cy="390" r="11" fill="#111827"></circle>
+              <text x="463" y="352" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">p</text>
+              <rect x="92" y="50" width="290" height="142" rx="8" fill="#fff" stroke="#2563EB" stroke-width="4"></rect>
+              <path d="M122 160 H352" stroke="#B45309" stroke-width="6"></path>
+              <path d="M142 160 V80" stroke="#2563EB" stroke-width="4" marker-end="url(#arr-intr-9)"></path>
+              <text x="237" y="112" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">chart x</text>
+              <text x="237" y="178" text-anchor="middle" font-size="23" fill="#475569">xn = 0</text>
+              <rect x="548" y="50" width="290" height="142" rx="8" fill="#fff" stroke="#0F766E" stroke-width="4"></rect>
+              <path d="M578 160 H808" stroke="#B45309" stroke-width="6"></path>
+              <path d="M598 160 V80" stroke="#0F766E" stroke-width="4" marker-end="url(#arr-intr-9)"></path>
+              <text x="693" y="112" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">chart y</text>
+              <text x="693" y="178" text-anchor="middle" font-size="23" fill="#475569">yn = 0</text>
+              <path d="M370 153 C440 123 510 123 580 153" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arr-intr-9)"></path>
+              <text x="465" y="96" text-anchor="middle" font-size="25" fill="#475569">transition maps boundary to boundary</text>
+              <rect x="200" y="465" width="530" height="58" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="465" y="502" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">Boundary status is independent of chart.</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Invariance Of Boundary</div>
+              <div class="math-box-body">If one half-space chart sends \(p\) to \(x_n=0\), then every compatible half-space chart sends \(p\) to its boundary hyperplane.</div>
+            </div>
+            <div class="panel blue">
+              <h3>What This Buys</h3>
+              <p>\(\partial M\) is a genuine \((n-1)\)-manifold, so it can carry its own charts, tangent frames, forms, and integrals.</p>
+            </div>
+            <div class="panel slate">
+              <h3>Instructor Cue</h3>
+              <p>The proof uses invariance of domain in spirit: a homeomorphism between half-space neighborhoods cannot turn a boundary point into an interior point.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>The boundary is intrinsic, not a coordinate artifact</span><span>\(\partial M\)</span></div>
+    </div>
+    <aside class="speaker-notes">This is the conceptual pause after the definition. Students may worry that boundary status depends on the chosen half-space coordinate. The theorem says it does not: if one chart sees the point on the edge, compatible charts must also see it on their edge. This makes the notation partial M legitimate. Once that is granted, the boundary can be treated as its own lower-dimensional manifold, which is necessary before Stokes can even be stated.</aside>
+  </section>
+
+  <section data-label="Boundary Orientation">
+    <div class="slide">
+      <div class="eyebrow">Outward-First Convention</div>
+      <h2>Boundary Orientation Comes From Contraction</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-right">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Contraction Rule</div>
+              <div class="math-box-body">If \(X\) is outward along \(\partial M\), the induced boundary form is \(\iota_X\omega\).</div>
+            </div>
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Outward First</div>
+              <div class="math-box-body">\((v_1,\ldots,v_{n-1})\) is positive on \(\partial M\) iff \((X,v_1,\ldots,v_{n-1})\) is positive on \(M\).</div>
+            </div>
+            <div class="panel amber">
+              <h3>Half-Space Formula</h3>
+              <p class="mathline">\( \iota_{-\partial/\partial x_n}(dx^1\wedge\cdots\wedge dx^n)=(-1)^n dx^1\wedge\cdots\wedge dx^{n-1}\)</p>
+            </div>
+            <p class="mini">Chapter check: <a href="../checks/boundary-outward-first.json">../checks/boundary-outward-first.json</a> records \(\iota_{(0,-1)}(dx\wedge dy)=dx\).</p>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 910 560" role="img" aria-label="Outward-first boundary orientation in the upper half-plane">
+              <defs>
+                <marker id="arr-bound-10-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="arr-bound-10-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <rect x="90" y="92" width="730" height="310" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+              <line x1="90" y1="402" x2="820" y2="402" stroke="#B45309" stroke-width="9"></line>
+              <path d="M220 402 H700" stroke="#0F766E" stroke-width="8" marker-end="url(#arr-bound-10-blue)"></path>
+              <path d="M455 402 V500" stroke="#B45309" stroke-width="8" marker-end="url(#arr-bound-10-amber)"></path>
+              <path d="M455 402 V230" stroke="#94A3B8" stroke-width="5" stroke-dasharray="12 12"></path>
+              <text x="705" y="383" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">positive boundary tangent</text>
+              <text x="565" y="486" text-anchor="middle" font-size="28" font-weight="700" fill="#B45309">outward X = -d/dy</text>
+              <text x="455" y="210" text-anchor="middle" font-size="25" fill="#475569">inward side</text>
+              <rect x="165" y="35" width="580" height="60" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="455" y="74" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">(X, d/dx) positive for dx wedge dy</text>
+              <rect x="208" y="448" width="204" height="68" rx="8" fill="#fff" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="310" y="491" text-anchor="middle" font-size="29" fill="#111827">i_X omega = dx</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Boundary signs are not arbitrary once \(M\) is oriented</span><span>\(\iota_X\omega\)</span></div>
+    </div>
+    <aside class="speaker-notes">This is the sign convention students will use every time Stokes appears. The boundary orientation is created by contracting the ambient top form with an outward vector. Equivalently, a boundary frame is positive precisely when putting the outward vector in front gives a positive ambient frame. In the upper half-plane example, the outward vector is negative partial y, and contraction of dx wedge dy gives dx, so the bottom boundary points to the right.</aside>
+  </section>
+
+  <section data-label="Domains Of Integration">
+    <div class="slide">
+      <div class="eyebrow">Riemann Domains</div>
+      <h2>Boundaries With Measure Zero Do Not Disturb The Integral</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 930 560" role="img" aria-label="Disk Darboux grid refinement">
+              <rect x="80" y="62" width="430" height="430" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="4"></rect>
+              <g stroke="#E2E8F0" stroke-width="2">
+                <path d="M116 62 V492 M152 62 V492 M188 62 V492 M224 62 V492 M260 62 V492 M296 62 V492 M332 62 V492 M368 62 V492 M404 62 V492 M440 62 V492 M476 62 V492"></path>
+                <path d="M80 98 H510 M80 134 H510 M80 170 H510 M80 206 H510 M80 242 H510 M80 278 H510 M80 314 H510 M80 350 H510 M80 386 H510 M80 422 H510 M80 458 H510"></path>
+              </g>
+              <circle cx="295" cy="277" r="185" fill="#2563EB" opacity="0.12" stroke="#2563EB" stroke-width="6"></circle>
+              <path d="M295 92 A185 185 0 0 1 480 277 A185 185 0 0 1 295 462 A185 185 0 0 1 110 277 A185 185 0 0 1 295 92" fill="none" stroke="#B45309" stroke-width="7"></path>
+              <text x="295" y="528" text-anchor="middle" font-size="27" fill="#475569">Boundary squares shrink under refinement.</text>
+              <rect x="575" y="86" width="280" height="92" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="715" y="123" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">N = 12</text>
+              <text x="715" y="158" text-anchor="middle" font-size="25" fill="#475569">gap 1.2222</text>
+              <rect x="575" y="232" width="280" height="92" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="715" y="269" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">N = 24</text>
+              <text x="715" y="304" text-anchor="middle" font-size="25" fill="#475569">gap 0.6389</text>
+              <rect x="575" y="378" width="280" height="92" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <text x="715" y="415" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">N = 48</text>
+              <text x="715" y="450" text-anchor="middle" font-size="25" fill="#475569">gap 0.3264</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Integrable Domain</div>
+              <div class="math-box-body">A bounded set with boundary of measure zero can be integrated by Darboux sums because upper and lower contributions squeeze together.</div>
+            </div>
+            <div class="panel teal">
+              <h3>Disk Grid Certificate</h3>
+              <p>For the unit disk grid, the upper-lower area gap decreases from \(1.2222\) to \(0.3264\) across the recorded refinements.</p>
+              <p class="mini" style="margin-top: 12px;">Table: <a href="../tables/riemann-disk-darboux-bounds.csv">../tables/riemann-disk-darboux-bounds.csv</a></p>
+            </div>
+            <div class="panel slate">
+              <h3>Bridge To Manifolds</h3>
+              <p>Charts reduce manifold integration to Euclidean integration on such local domains.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Local Euclidean integration still matters</span><span>Darboux grid</span></div>
+    </div>
+    <aside class="speaker-notes">This slide is a short analytic interlude. Before integrating forms on a manifold, the chapter needs ordinary integration over acceptable coordinate domains. The disk grid shows the reason a boundary of measure zero is harmless: the ambiguous cells live near the boundary, and their total area shrinks as the grid is refined. This prepares students for chart-based integrals, where the local domain may have a rough boundary but still supports a well-defined integral.</aside>
+  </section>
+
+  <section data-label="Signed Pullbacks">
+    <div class="slide">
+      <div class="eyebrow">Parametrization And Sign</div>
+      <h2>Pullbacks Carry The Signed Jacobian</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-right">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Pullback Of A Top Form</div>
+              <div class="math-box-body">For \(F:\mathbb R^n\to\mathbb R^n\), \(F^*(dy^1\wedge\cdots\wedge dy^n)=\det(JF)\,dx^1\wedge\cdots\wedge dx^n\).</div>
+            </div>
+            <div class="panel teal">
+              <h3>Ellipse Check</h3>
+              <p>With \(a=2\), \(b=0.75\), the preserving parametrization gives \(\pi ab=4.7124\), while the reversing parametrization gives \(-\pi ab=-4.7124\).</p>
+              <p class="mini" style="margin-top: 12px;">Interactive: <a href="../html/parameterized-ellipse-orientation.html">../html/parameterized-ellipse-orientation.html</a></p>
+            </div>
+            <div class="panel amber">
+              <h3>Do Not Hide The Sign</h3>
+              <p>Area as a scalar uses absolute value. Integration of a differential form uses the signed determinant.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 920 560" role="img" aria-label="Ellipse parametrization with orientation-preserving and reversing signs">
+              <defs>
+                <marker id="arr-ell-teal-12" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"></path>
+                </marker>
+                <marker id="arr-ell-amber-12" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <ellipse cx="250" cy="260" rx="170" ry="96" fill="#F0FDFA" stroke="#0F766E" stroke-width="6"></ellipse>
+              <path d="M420 260 C418 204 360 166 296 164" fill="none" stroke="#0F766E" stroke-width="8" marker-end="url(#arr-ell-teal-12)"></path>
+              <path d="M80 260 C82 316 140 354 204 356" fill="none" stroke="#0F766E" stroke-width="8" marker-end="url(#arr-ell-teal-12)"></path>
+              <text x="250" y="405" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">det = ab &gt; 0</text>
+              <text x="250" y="445" text-anchor="middle" font-size="27" fill="#475569">integral = pi ab</text>
+              <ellipse cx="670" cy="260" rx="170" ry="96" fill="#FFFBEB" stroke="#B45309" stroke-width="6"></ellipse>
+              <path d="M500 260 C502 204 560 166 624 164" fill="none" stroke="#B45309" stroke-width="8" marker-end="url(#arr-ell-amber-12)"></path>
+              <path d="M840 260 C838 316 780 354 716 356" fill="none" stroke="#B45309" stroke-width="8" marker-end="url(#arr-ell-amber-12)"></path>
+              <text x="670" y="405" text-anchor="middle" font-size="29" font-weight="700" fill="#B45309">det = -ab &lt; 0</text>
+              <text x="670" y="445" text-anchor="middle" font-size="27" fill="#475569">integral = -pi ab</text>
+              <rect x="170" y="42" width="580" height="70" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="460" y="87" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">Same ellipse, opposite parametrization, opposite form integral.</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>The Jacobian determinant is signed</span><span>Pullback formula</span></div>
+    </div>
+    <aside class="speaker-notes">Here the determinant sign directly changes an integral. The pullback formula for a top form is the cleanest way to say it: the coefficient is the determinant of the Jacobian, not its magnitude. The ellipse example is useful because the geometric region is unchanged. Only the parametrization has been reflected, and the integral flips from pi a b to negative pi a b. This reinforces the distinction between unsigned area and integration of oriented forms.</aside>
+  </section>
+
+  <section data-label="Integration Via Charts">
+    <div class="slide">
+      <div class="eyebrow">Manifold Integral</div>
+      <h2>Charts And Partitions Of Unity Localize The Integral</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 930 555" role="img" aria-label="Partition of unity patches on an oriented manifold">
+              <defs>
+                <marker id="arr-part-13" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <path d="M80 318 C150 130 330 78 475 164 C628 254 735 160 848 300 C780 455 552 500 350 432 C218 388 122 420 80 318 Z" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="5"></path>
+              <ellipse cx="315" cy="275" rx="205" ry="145" fill="#2563EB" opacity="0.12" stroke="#2563EB" stroke-width="5"></ellipse>
+              <ellipse cx="520" cy="285" rx="215" ry="150" fill="#0F766E" opacity="0.12" stroke="#0F766E" stroke-width="5"></ellipse>
+              <ellipse cx="650" cy="305" rx="180" ry="130" fill="#6D28D9" opacity="0.1" stroke="#6D28D9" stroke-width="5"></ellipse>
+              <text x="245" y="190" text-anchor="middle" font-size="29" font-weight="700" fill="#2563EB">U1</text>
+              <text x="520" y="215" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">U2</text>
+              <text x="725" y="275" text-anchor="middle" font-size="29" font-weight="700" fill="#6D28D9">U3</text>
+              <rect x="188" y="452" width="555" height="66" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="465" y="494" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">rho1 + rho2 + rho3 = 1 on the support</text>
+              <path d="M320 420 C342 445 370 460 405 468" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arr-part-13)"></path>
+              <path d="M530 435 C520 452 505 464 488 472" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arr-part-13)"></path>
+              <path d="M655 430 C640 452 620 466 594 474" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arr-part-13)"></path>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Definition Pattern</div>
+              <div class="math-box-body">For compactly supported \(\omega\), choose an oriented chart cover and partition of unity \(\{\rho_\alpha\}\), then sum local coordinate integrals of \(\rho_\alpha\omega\).</div>
+            </div>
+            <div class="panel blue">
+              <h3>Compact Support</h3>
+              <p>Only finitely many localized pieces matter, so the sum is controlled even when the atlas is large.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Independence</h3>
+              <p>Positive transition determinants ensure overlapping chart computations agree with the chosen orientation.</p>
+            </div>
+            <div class="mathline big" style="text-align: center;">\(\int_M\omega=\sum_\alpha\int_{U_\alpha}\rho_\alpha\omega\)</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Global integration is assembled from oriented local integrals</span><span>Partitions of unity</span></div>
+    </div>
+    <aside class="speaker-notes">This slide states the manifold integral in the operational form students can use. A compactly supported top form is cut by a partition of unity, each piece is moved into coordinates by an oriented chart, and the resulting Euclidean integrals are added. The important point is independence from the auxiliary choices. Oriented chart changes preserve sign, and partition of unity refinements add to one, so the global number is not tied to a particular cover.</aside>
+  </section>
+
+  <section data-label="Stokes Theorem">
+    <div class="slide">
+      <div class="eyebrow">The Main Theorem</div>
+      <h2>Stokes Turns An Exterior Derivative Into A Boundary Integral</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-right">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Stokes Theorem</div>
+              <div class="math-box-body">If \(M\) is an oriented \(n\)-manifold with boundary and \(\omega\) is a compactly supported \((n-1)\)-form, then \(\int_M d\omega=\int_{\partial M} i^*\omega\), where \(i:\partial M\hookrightarrow M\) is inclusion and \(\partial M\) has the outward-first orientation.</div>
+            </div>
+            <div class="panel blue">
+              <h3>Sign Dependency</h3>
+              <p>The theorem uses exactly the boundary orientation defined by contraction with an outward vector.</p>
+            </div>
+            <div class="panel slate">
+              <h3>Proof Roadmap</h3>
+              <p>Reduce by partitions of unity to coordinate half-spaces, then apply the one-variable fundamental theorem in the normal direction.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 920 560" role="img" aria-label="Stokes theorem on an oriented surface with boundary">
+              <defs>
+                <marker id="arr-stokes-14" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <path d="M158 314 C190 142 388 86 548 142 C724 204 790 358 646 442 C496 530 250 492 158 314 Z" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="6"></path>
+              <path d="M158 314 C190 142 388 86 548 142 C724 204 790 358 646 442 C496 530 250 492 158 314 Z" fill="none" stroke="#B45309" stroke-width="9" stroke-dasharray="76 30" marker-end="url(#arr-stokes-14)"></path>
+              <path d="M300 310 C370 240 505 245 585 330" fill="none" stroke="#2563EB" stroke-width="5" stroke-dasharray="12 12"></path>
+              <path d="M350 366 C440 316 525 330 600 390" fill="none" stroke="#0F766E" stroke-width="5" stroke-dasharray="12 12"></path>
+              <circle cx="455" cy="305" r="70" fill="#0F766E" opacity="0.12" stroke="#0F766E" stroke-width="4"></circle>
+              <text x="455" y="313" text-anchor="middle" font-size="34" font-weight="700" fill="#0F766E">d omega</text>
+              <rect x="178" y="40" width="564" height="74" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="460" y="87" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">int_M d omega = int_dM i*omega</text>
+              <text x="690" y="460" text-anchor="middle" font-size="28" font-weight="700" fill="#B45309">oriented boundary</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Stokes is the global sign-consistent fundamental theorem</span><span>\(\int_M d\omega=\int_{\partial M}i^*\omega\)</span></div>
+    </div>
+    <aside class="speaker-notes">State Stokes as the climax of the chapter. The exterior derivative raises degree by one, so an n-dimensional integral of d omega is compared to an integral of omega over the n minus one dimensional boundary through the inclusion i from partial M into M. The sign convention is not optional: the boundary orientation from the previous slide is exactly what makes the local half-space calculation agree with the theorem. Present the proof roadmap rather than a full proof, highlighting partitions of unity and the normal direction.</aside>
+  </section>
+
+  <section data-label="Stokes In Calculus">
+    <div class="slide">
+      <div class="eyebrow">Classical Faces Of Stokes</div>
+      <h2>Line Integrals And Green's Theorem Are Sign Tests</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols">
+          <div class="panel teal" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3>Gradient Line Integral</h3>
+            <p>The line integral of a gradient depends only on endpoints.</p>
+            <div class="mathline">\( \int_C \nabla f\cdot dr=f(q)-f(p)\)</div>
+            <div class="diagram" style="min-height: 250px;">
+              <svg viewBox="0 0 720 250" role="img" aria-label="Gradient line integral path from p to q">
+                <defs>
+                  <marker id="arr-line-15" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"></path>
+                  </marker>
+                </defs>
+                <path d="M80 170 C190 45 320 220 445 105 S610 70 650 155" fill="none" stroke="#0F766E" stroke-width="8" marker-end="url(#arr-line-15)"></path>
+                <circle cx="80" cy="170" r="10" fill="#111827"></circle>
+                <circle cx="650" cy="155" r="10" fill="#111827"></circle>
+                <text x="80" y="210" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">p</text>
+                <text x="650" y="196" text-anchor="middle" font-size="28" font-weight="700" fill="#111827">q</text>
+                <text x="365" y="58" text-anchor="middle" font-size="26" fill="#475569">check residual 2.57e-8</text>
+              </svg>
+            </div>
+          </div>
+          <div class="panel blue" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3>Green's Theorem</h3>
+            <p>A planar circulation equals the oriented integral of scalar curl.</p>
+            <div class="mathline">\( \oint_{\partial D}P\,dx+Q\,dy=\iint_D\left(\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}\right)dx\,dy\)</div>
+            <div class="diagram" style="min-height: 250px;">
+              <svg viewBox="0 0 720 250" role="img" aria-label="Green theorem region and oriented boundary">
+                <defs>
+                  <marker id="arr-green-15" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+                  </marker>
+                </defs>
+                <ellipse cx="355" cy="132" rx="225" ry="82" fill="#EFF6FF" stroke="#2563EB" stroke-width="6"></ellipse>
+                <path d="M580 132 C575 77 490 50 404 52" fill="none" stroke="#2563EB" stroke-width="8" marker-end="url(#arr-green-15)"></path>
+                <path d="M130 132 C135 188 220 214 306 212" fill="none" stroke="#2563EB" stroke-width="8" marker-end="url(#arr-green-15)"></path>
+                <text x="355" y="140" text-anchor="middle" font-size="32" font-weight="700" fill="#1E3A8A">D</text>
+                <text x="355" y="232" text-anchor="middle" font-size="26" fill="#475569">boundary and area integrals = 4.7124</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <p class="mini">Verification payload: <a href="../checks/stokes-green-line-checks.json">../checks/stokes-green-line-checks.json</a> records zero Green residual and the endpoint line-integral check.</p>
+      </div>
+      <div class="footer"><span>Classical vector calculus inherits the same orientation conventions</span><span>Line integral and Green</span></div>
+    </div>
+    <aside class="speaker-notes">Connect the abstract theorem to familiar calculus without changing the sign story. For a gradient field, Stokes in one dimension is the fundamental theorem for line integrals: the oriented boundary of an interval is endpoint minus start point. In the plane, Green's theorem is Stokes for the one-form P dx plus Q dy. The counterclockwise boundary orientation and the dx dy area orientation are paired; reversing one would reverse the equality.</aside>
+  </section>
+
+  <section data-label="Sphere Area And Recap">
+    <div class="slide alt">
+      <div class="eyebrow">Final Example</div>
+      <h2>The Sphere Area Form Pulls Back To \(\sin\phi\)</h2>
+      <div class="rule"></div>
+      <div class="content">
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 930 555" role="img" aria-label="Sphere parameterization and area strip">
+              <defs>
+                <radialGradient id="sphere-grad-16" cx="42%" cy="34%" r="66%">
+                  <stop offset="0%" stop-color="#FFFFFF"></stop>
+                  <stop offset="55%" stop-color="#EFF6FF"></stop>
+                  <stop offset="100%" stop-color="#BFDBFE"></stop>
+                </radialGradient>
+              </defs>
+              <circle cx="310" cy="278" r="210" fill="url(#sphere-grad-16)" stroke="#1E3A8A" stroke-width="5"></circle>
+              <ellipse cx="310" cy="278" rx="210" ry="46" fill="none" stroke="#2563EB" stroke-width="5"></ellipse>
+              <ellipse cx="310" cy="220" rx="190" ry="36" fill="none" stroke="#0F766E" stroke-width="4"></ellipse>
+              <ellipse cx="310" cy="342" rx="178" ry="38" fill="none" stroke="#0F766E" stroke-width="4"></ellipse>
+              <path d="M310 68 C250 144 250 410 310 488" fill="none" stroke="#94A3B8" stroke-width="4"></path>
+              <path d="M310 68 C370 144 370 410 310 488" fill="none" stroke="#94A3B8" stroke-width="4"></path>
+              <path d="M310 68 C310 160 310 394 310 488" fill="none" stroke="#1E3A8A" stroke-width="4"></path>
+              <path d="M310 68 A210 210 0 0 1 490 384" fill="none" stroke="#B45309" stroke-width="8"></path>
+              <text x="512" y="270" font-size="29" font-weight="700" fill="#B45309">phi</text>
+              <rect x="600" y="74" width="270" height="92" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="735" y="111" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">pullback</text>
+              <text x="735" y="146" text-anchor="middle" font-size="28" fill="#475569">sin(phi) dphi dtheta</text>
+              <rect x="600" y="214" width="270" height="92" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="735" y="251" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">integral</text>
+              <text x="735" y="286" text-anchor="middle" font-size="28" fill="#475569">4 pi</text>
+              <rect x="600" y="354" width="270" height="92" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <text x="735" y="391" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">orientation</text>
+              <text x="735" y="426" text-anchor="middle" font-size="28" fill="#475569">choose parameter order</text>
+            </svg>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Sphere Parametrization</div>
+              <div class="math-box-body">\(F(\phi,\theta)=(\sin\phi\cos\theta,\sin\phi\sin\theta,\cos\phi)\), and the area-form coefficient is \(\sin\phi\).</div>
+            </div>
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Area Computation</div>
+              <div class="math-box-body">\(\displaystyle \int_0^{2\pi}\int_0^\pi \sin\phi\,d\phi\,d\theta=4\pi\).</div>
+            </div>
+            <div class="panel slate">
+              <h3>Recap</h3>
+              <div class="checkline"><span class="dot"></span><span>Frame signs choose orientation classes.</span></div>
+              <div class="checkline"><span class="dot teal"></span><span>Chart signs make integrals invariant.</span></div>
+              <div class="checkline"><span class="dot amber"></span><span>Boundary signs make Stokes correct.</span></div>
+              <div class="checkline"><span class="dot violet"></span><span>Pullback signs decide the value of examples.</span></div>
+              <p class="mini" style="margin-top: 12px;">Sphere check: <a href="../checks/sphere-area-form.json">../checks/sphere-area-form.json</a> and <a href="../html/sphere-area-form.html">../html/sphere-area-form.html</a>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>The lecture ends where signs produce a familiar number</span><span>End of Chapter 6 deck</span></div>
+    </div>
+    <aside class="speaker-notes">Close with the sphere because it feels familiar while still using the chapter machinery. The parametrization pulls the sphere area form back to the coefficient sine phi, and the double integral gives four pi. The example also lets you recap the sign arc in a concrete setting: choose an orientation, choose parameter order, pull back the form, and integrate. The final takeaway is that orientation is not extra decoration; it is the structure that lets local signed calculations assemble into global theorems.</aside>
+  </section>
+
+</deck-stage>
+
+<script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "title": "Integration Is Signed Geometry",
+    "notes": "Open with the idea that integration on a manifold is not merely a way to add local densities. It is a sign-sensitive construction. The same numerical magnitude can change sign when a frame is flipped, a chart reverses orientation, or a boundary normal is chosen inconsistently. The flow diagram gives the lecture map: determinants define positive frames, top forms test those frames, atlases globalize the choice, boundaries inherit a convention, and Stokes ties interior and boundary signs together."
+  },
+  {
+    "slide": 2,
+    "title": "Roadmap: Four Sign Checkpoints",
+    "notes": "Use this slide as the explicit contract for the lecture. Students should hear that there are four sign checkpoints, and each one has a simple local test. A frame is compared by a determinant, a chart overlap is compared by the determinant of its transition Jacobian, a boundary is oriented by placing an outward vector first, and an integral changes by the signed Jacobian under pullback. The later examples are not separate tricks; they are repeated uses of these four checks."
+  },
+  {
+    "slide": 3,
+    "title": "Orientation Of A Vector Space",
+    "notes": "Begin at the linear algebra level because every later manifold definition is pointwise. The formula u equals v times A should be read as a comparison between two ordered frames. If the determinant of A is positive, a continuous motion through invertible frames can carry one to the other without crossing singularity. If the determinant is negative, the frame has crossed to the opposite component. The chapter check gives concrete numbers, so this is not only an abstract equivalence relation."
+  },
+  {
+    "slide": 4,
+    "title": "Top Covectors Detect Orientation",
+    "notes": "Move from frames to forms by emphasizing that a top covector is a measuring device with a sign. In two dimensions, dx wedge dy is the familiar signed area form, but the definition is dimension independent. A positive frame is exactly one on which the chosen top covector evaluates positively. This is the bridge to integration: a top-degree form is locally a signed volume element, so its integral must remember which frames count as positive."
+  },
+  {
+    "slide": 5,
+    "title": "Orientations On Manifolds",
+    "notes": "Now globalize the linear picture. An orientation on a manifold is not one basis chosen forever; tangent spaces change from point to point. The smoothness condition says the choice of positive component is locally represented by smooth frames, or equivalently by a nowhere-zero top form. This is also where students should separate orientability from a particular orientation: orientability means such a smooth choice exists, while an orientation is one of the possible choices."
+  },
+  {
+    "slide": 6,
+    "title": "Oriented Atlases",
+    "notes": "This slide translates orientation into coordinates. A chart gives an ordered coordinate frame, and an oriented atlas is one where all overlap maps compare those frames by positive determinants. Emphasize that the determinant belongs to the transition map, not to the manifold by itself. The point is compatibility: when two charts describe the same tangent frame, they must not disagree about which side of determinant zero they occupy."
+  },
+  {
+    "slide": 7,
+    "title": "Mobius Sign-Cycle Obstruction",
+    "notes": "Use the Mobius band as the first global obstruction. Locally everything looks fine, so this is not a failure of charts or tangent spaces. The problem appears after transport around a loop: the twist returns a frame with the opposite sign. The check file records transition signs plus, plus, minus, whose product is minus one. That product is the compact witness that no oriented atlas can be chosen around the cycle."
+  },
+  {
+    "slide": 8,
+    "title": "Manifolds With Boundary",
+    "notes": "Introduce boundary through the model space H to the n. This is deliberately local: a manifold with boundary is still n dimensional, but some points have neighborhoods that include only one side of a coordinate hyperplane. The last coordinate plays a special role in the local model, and that role is what later creates the outward normal. Keep the distinction sharp: the boundary is not a lower-dimensional manifold attached from outside; it is detected by the half-space charts of the original manifold."
+  },
+  {
+    "slide": 9,
+    "title": "Boundary Is Intrinsic",
+    "notes": "This is the conceptual pause after the definition. Students may worry that boundary status depends on the chosen half-space coordinate. The theorem says it does not: if one chart sees the point on the edge, compatible charts must also see it on their edge. This makes the notation partial M legitimate. Once that is granted, the boundary can be treated as its own lower-dimensional manifold, which is necessary before Stokes can even be stated."
+  },
+  {
+    "slide": 10,
+    "title": "Boundary Orientation",
+    "notes": "This is the sign convention students will use every time Stokes appears. The boundary orientation is created by contracting the ambient top form with an outward vector. Equivalently, a boundary frame is positive precisely when putting the outward vector in front gives a positive ambient frame. In the upper half-plane example, the outward vector is negative partial y, and contraction of dx wedge dy gives dx, so the bottom boundary points to the right."
+  },
+  {
+    "slide": 11,
+    "title": "Domains Of Integration",
+    "notes": "This slide is a short analytic interlude. Before integrating forms on a manifold, the chapter needs ordinary integration over acceptable coordinate domains. The disk grid shows the reason a boundary of measure zero is harmless: the ambiguous cells live near the boundary, and their total area shrinks as the grid is refined. This prepares students for chart-based integrals, where the local domain may have a rough boundary but still supports a well-defined integral."
+  },
+  {
+    "slide": 12,
+    "title": "Signed Pullbacks",
+    "notes": "Here the determinant sign directly changes an integral. The pullback formula for a top form is the cleanest way to say it: the coefficient is the determinant of the Jacobian, not its magnitude. The ellipse example is useful because the geometric region is unchanged. Only the parametrization has been reflected, and the integral flips from pi a b to negative pi a b. This reinforces the distinction between unsigned area and integration of oriented forms."
+  },
+  {
+    "slide": 13,
+    "title": "Integration Via Charts",
+    "notes": "This slide states the manifold integral in the operational form students can use. A compactly supported top form is cut by a partition of unity, each piece is moved into coordinates by an oriented chart, and the resulting Euclidean integrals are added. The important point is independence from the auxiliary choices. Oriented chart changes preserve sign, and partition of unity refinements add to one, so the global number is not tied to a particular cover."
+  },
+  {
+    "slide": 14,
+    "title": "Stokes Theorem",
+    "notes": "State Stokes as the climax of the chapter. The exterior derivative raises degree by one, so an n-dimensional integral of d omega is compared to an integral of omega over the n minus one dimensional boundary through the inclusion i from partial M into M. The sign convention is not optional: the boundary orientation from the previous slide is exactly what makes the local half-space calculation agree with the theorem. Present the proof roadmap rather than a full proof, highlighting partitions of unity and the normal direction."
+  },
+  {
+    "slide": 15,
+    "title": "Stokes In Calculus",
+    "notes": "Connect the abstract theorem to familiar calculus without changing the sign story. For a gradient field, Stokes in one dimension is the fundamental theorem for line integrals: the oriented boundary of an interval is endpoint minus start point. In the plane, Green's theorem is Stokes for the one-form P dx plus Q dy. The counterclockwise boundary orientation and the dx dy area orientation are paired; reversing one would reverse the equality."
+  },
+  {
+    "slide": 16,
+    "title": "Sphere Area And Recap",
+    "notes": "Close with the sphere because it feels familiar while still using the chapter machinery. The parametrization pulls the sphere area form back to the coefficient sine phi, and the double integral gives four pi. The example also lets you recap the sign arc in a concrete setting: choose an orientation, choose parameter order, pull back the form, and integrate. The final takeaway is that orientation is not extra decoration; it is the structure that lets local signed calculations assemble into global theorems."
+  }
+]
+</script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appendix A: Lie Groups And Robot Kinematics</title>
+  <meta name="course" content="A Mathematical Introduction to Robotic Manipulation">
+  <meta name="chapter_id" content="appendix-a">
+  <meta name="chapter_title" content="Appendix A: Lie Groups and Robot Kinematics">
+  <meta name="notebook_path" content="A-Mathematical-Introduction-to-Robotic-Manipulation/part-04-outlook-and-appendices/appendix-a-lie-groups-and-robot-kinematics/appendix-a-lie-groups-and-robot-kinematics.ipynb">
+  <meta name="source_span" content="printed pages 403-434; PDF pages 421-452">
+  <meta name="source_pdf" content="A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      padding: 72px 96px 54px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 66px; line-height: 1.04; font-weight: 700; max-width: 1320px; }
+    h2 { font-size: 50px; line-height: 1.1; font-weight: 700; color: var(--slide-ink); }
+    h3 { font-size: 30px; line-height: 1.15; font-weight: 700; color: var(--slide-accent); margin-bottom: 12px; }
+    p, li { font-size: 26px; line-height: 1.28; }
+    ul, ol { margin: 0; padding-left: 32px; }
+    li + li { margin-top: 10px; }
+    a { color: inherit; }
+    svg { max-width: 100%; height: auto; }
+    .eyebrow {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 700;
+      color: var(--slide-teal);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .subtitle { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1320px; }
+    .topline { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      background: #fff;
+      color: var(--slide-accent);
+      font-size: 21px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .content { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 24px; }
+    .cols { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 34px; align-items: center; }
+    .cols.wide-left { grid-template-columns: 1.1fr 0.9fr; }
+    .cols.wide-right { grid-template-columns: 0.9fr 1.1fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 24px;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+    .panel.blue { border-left: 5px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 5px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 5px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 5px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 5px solid var(--slide-border); background: #f8fafc; }
+    .panel.compact { padding: 20px 22px; }
+    .diagram {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff, #f8fafc);
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .diagram.tall { min-height: 610px; }
+    .figure-wrap {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+    .figure-wrap img { width: 100%; max-height: 610px; object-fit: contain; display: block; }
+    .figure-wrap.small img { max-height: 520px; }
+    .caption { font-size: 21px; line-height: 1.22; color: var(--slide-dimmed); }
+    .formula { font-family: var(--font-math); font-size: 36px; line-height: 1.3; color: var(--slide-ink); }
+    .formula.big { font-size: 43px; line-height: 1.22; }
+    .mathline { font-family: var(--font-math); font-size: 31px; line-height: 1.3; }
+    .small { font-size: 23px; color: var(--slide-muted); line-height: 1.25; }
+    .tiny { font-size: 21px; color: var(--slide-dimmed); line-height: 1.2; }
+    .mono { font-family: var(--font-mono); font-size: 23px; line-height: 1.35; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      border-top: 1px solid var(--slide-border);
+      padding-top: 13px;
+      font-size: 20px;
+      line-height: 1.2;
+      color: var(--slide-dimmed);
+    }
+    .footer span { font-size: 20px; }
+    .callout { font-size: 29px; line-height: 1.22; font-weight: 600; color: var(--slide-accent); }
+    .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .mini-title { font-size: 20px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--slide-dimmed); margin-bottom: 8px; }
+    .svg-label { font-family: var(--font-sans); font-size: 28px; font-weight: 700; fill: #111827; }
+    .svg-small { font-family: var(--font-sans); font-size: 23px; font-weight: 600; fill: #475569; }
+    .svg-math { font-family: var(--font-math); font-size: 31px; fill: #111827; }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "A Mathematical Introduction to Robotic Manipulation",
+  "chapter_id": "appendix-a",
+  "chapter_title": "Appendix A: Lie Groups and Robot Kinematics",
+  "notebook_path": "A-Mathematical-Introduction-to-Robotic-Manipulation/part-04-outlook-and-appendices/appendix-a-lie-groups-and-robot-kinematics/appendix-a-lie-groups-and-robot-kinematics.ipynb",
+  "source_span": "printed pages 403-434; PDF pages 421-452",
+  "source_pdf": "A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Lie Groups And Robot Kinematics">
+      <div class="eyebrow">Appendix A</div>
+      <h1>Lie Groups And Robot Kinematics</h1>
+      <p class="subtitle">The appendix supplies the geometric grammar behind rigid poses, instantaneous velocities, wrenches, constraints, and the frame-change rules used throughout robot manipulation.</p>
+      <div class="content">
+        <div class="three">
+          <div class="panel blue"><h3>Poses Are Group Elements</h3><p>Configurations of a rigid body live in \(SE(3)\), where composition means doing one displacement after another.</p></div>
+          <div class="panel teal"><h3>Velocities Are Tangent Data</h3><p>Instantaneous robot motion is a vector in a tangent space, represented by a twist after choosing a frame.</p></div>
+          <div class="panel amber"><h3>Forces Are Dual Data</h3><p>Wrenches pair with twists through power; this pairing is the invariant to protect under coordinate changes.</p></div>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 1260 360" width="1260" height="360" role="img" aria-label="Robotics stack from manifold to velocities and forces">
+            <defs>
+              <marker id="s1-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker>
+            </defs>
+            <rect x="45" y="102" width="235" height="120" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <rect x="372" y="102" width="235" height="120" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <rect x="699" y="102" width="235" height="120" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <rect x="1026" y="102" width="190" height="120" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <path d="M280 162 H362" stroke="#64748b" stroke-width="5" marker-end="url(#s1-arrow)"/>
+            <path d="M607 162 H689" stroke="#64748b" stroke-width="5" marker-end="url(#s1-arrow)"/>
+            <path d="M934 162 H1016" stroke="#64748b" stroke-width="5" marker-end="url(#s1-arrow)"/>
+            <text x="94" y="153" class="svg-label">manifold</text>
+            <text x="103" y="189" class="svg-small">charts, tangent</text>
+            <text x="422" y="153" class="svg-label">Lie group</text>
+            <text x="436" y="189" class="svg-small">SO(3), SE(3)</text>
+            <text x="742" y="153" class="svg-label">Lie algebra</text>
+            <text x="751" y="189" class="svg-small">twists, brackets</text>
+            <text x="1070" y="153" class="svg-label">dual</text>
+            <text x="1060" y="189" class="svg-small">wrenches</text>
+            <path d="M440 258 C540 318, 665 318, 780 258" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 8" marker-end="url(#s1-arrow)"/>
+            <text x="542" y="337" class="svg-small">exponential coordinates are local tools</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Source span: printed pages 403-434; PDF pages 421-452</span><span>Notebook: appendix-a-lie-groups-and-robot-kinematics.ipynb</span></div>
+      <aside class="speaker-notes">Open by naming the appendix as the language layer for the rest of the robotics course. Students have already seen matrices, twists, Jacobians, and wrenches; here those objects are reorganized as manifolds, Lie groups, tangent vectors, and dual covectors. Emphasize that the lecture is not adding abstraction for its own sake. It is explaining which quantities are geometric and which quantities are coordinates that must be handled with frame discipline.</aside>
+    </section>
+
+    <section class="slide" data-label="Local Coordinates">
+      <div class="topline"><h2>Local Coordinates Are Not The Geometry</h2><span class="badge">Charts serve objects</span></div>
+      <div class="cols wide-right">
+        <div class="stack">
+          <div class="panel blue"><h3>Manifold View</h3><p>A chart assigns numbers to nearby points, but the point on the manifold remains the primary object.</p></div>
+          <div class="panel teal"><h3>Robotics Translation</h3><p>Euler angles, exponential coordinates, and joint coordinates are useful local encodings, not the pose itself.</p></div>
+          <div class="panel amber"><h3>Failure Mode</h3><p>When a coordinate chart becomes singular, the robot has not vanished; the representation has stopped being reliable.</p></div>
+        </div>
+        <figure class="figure-wrap small">
+          <img src="../figures/manifold-chart-tangent-view.png" alt="Generated manifold chart tangent view showing charts, tangent vectors, and covectors">
+          <figcaption class="caption">Generated artifact: chart, tangent vector, and covector data for the appendix.</figcaption>
+        </figure>
+      </div>
+      <div class="footer"><span>Manifolds and charts anchor the appendix source span.</span><span>Inspection target: chart dependence versus geometric data.</span></div>
+      <aside class="speaker-notes">Use the artifact as a vocabulary map. A chart is an instrument for assigning coordinates, not a replacement for the underlying geometric object. This distinction matters in robotics because common parameterizations can fail while the rigid pose remains perfectly valid. The instructor should invite students to name examples from earlier chapters: Euler angle singularities, local logarithms on SO(3), and joint coordinates that describe a configuration without being the task-space geometry itself.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Tangent And Cotangent Data">
+      <div class="topline"><h2>Tangent And Cotangent Data</h2><span class="badge">Vectors and covectors</span></div>
+      <div class="cols">
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Tangent vector and covector level sets at a manifold point">
+            <defs>
+              <marker id="s3-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s3-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/></marker>
+            </defs>
+            <path d="M110 410 C180 250, 330 208, 505 256 C612 286, 660 360, 612 436 C542 548, 280 535, 150 470 C105 448, 92 438, 110 410 Z" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <ellipse cx="360" cy="368" rx="230" ry="112" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <circle cx="360" cy="368" r="12" fill="#1e3a8a"/>
+            <line x1="360" y1="368" x2="500" y2="305" stroke="#2563eb" stroke-width="7" marker-end="url(#s3-arrow)"/>
+            <line x1="360" y1="368" x2="236" y2="322" stroke="#0f766e" stroke-width="7" marker-end="url(#s3-arrow)"/>
+            <line x1="190" y1="438" x2="580" y2="300" stroke="#b45309" stroke-width="5" stroke-dasharray="12 9" marker-end="url(#s3-amber)"/>
+            <path d="M238 465 C306 420, 418 375, 545 356" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="9 8"/>
+            <path d="M202 402 C302 363, 430 320, 595 282" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="9 8"/>
+            <text x="382" y="356" class="svg-small">p</text>
+            <text x="507" y="293" class="svg-label">tangent vector</text>
+            <text x="210" y="304" class="svg-label">w</text>
+            <text x="466" y="438" class="svg-label" fill="#b45309">covector alpha</text>
+            <text x="172" y="115" class="svg-math">alpha(v) is a number</text>
+            <text x="176" y="152" class="svg-small">covectors measure tangent vectors</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue"><h3>Tangent Vector</h3><p>A tangent vector is an infinitesimal direction attached to a point, not a free-floating arrow in Euclidean space.</p></div>
+          <div class="panel amber"><h3>Cotangent Covector</h3><p>A covector is a linear measurement on tangent vectors. Constraints, gradients, and wrenches naturally live here.</p></div>
+          <div class="panel teal"><p class="formula">\( \alpha \in T_p^*M,\quad v \in T_pM,\quad \alpha(v) \in \mathbb{R} \)</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Appendix focus: tangent vectors and cotangent covectors.</span><span>Robotics reading: velocities are measured by constraints and forces.</span></div>
+      <aside class="speaker-notes">Separate the two roles carefully. A tangent vector is a possible instantaneous motion at a configuration or pose. A covector is a linear test applied to such a motion. This distinction is the quiet source of several robotics formulas: a wrench evaluates a twist to produce power, a constraint row evaluates a velocity to produce a forbidden component, and a gradient evaluates a displacement to produce a first-order change. The pairing is geometric even when both objects are represented by arrays.</aside>
+    </section>
+
+    <section class="slide" data-label="Flows And Lie Brackets">
+      <div class="topline"><h2>Flows And Lie Brackets</h2><span class="badge">Motion from commutators</span></div>
+      <div class="cols wide-left">
+        <div class="stack">
+          <div class="panel blue"><p class="formula big">\( [X,Y] = XY - YX \)</p><p>The bracket records the first non-canceling drift when two infinitesimal motions are alternated.</p></div>
+          <div class="panel teal"><h3>Robot Meaning</h3><p>Velocity fields that seem individually limited can generate new directions through small loops.</p></div>
+          <div class="panel amber"><h3>Coordinate Warning</h3><p>The bracket is not ordinary vector subtraction; it tracks how one flow changes another nearby.</p></div>
+        </div>
+        <div class="diagram tall">
+          <svg viewBox="0 0 740 610" width="740" height="610" role="img" aria-label="Lie bracket flow loop with residual drift">
+            <defs>
+              <marker id="s4-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s4-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#0f766e"/></marker>
+              <marker id="s4-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/></marker>
+            </defs>
+            <path d="M100 470 C168 260, 335 174, 584 232 C642 246, 663 322, 616 402 C542 526, 278 553, 100 470 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <path d="M248 392 C300 333, 376 320, 430 356" fill="none" stroke="#2563eb" stroke-width="8" marker-end="url(#s4-blue)"/>
+            <path d="M430 356 C468 316, 510 280, 558 238" fill="none" stroke="#0f766e" stroke-width="8" marker-end="url(#s4-teal)"/>
+            <path d="M558 238 C502 302, 442 344, 382 364" fill="none" stroke="#2563eb" stroke-width="8" stroke-dasharray="16 10" marker-end="url(#s4-blue)"/>
+            <path d="M382 364 C334 395, 302 413, 260 422" fill="none" stroke="#0f766e" stroke-width="8" stroke-dasharray="16 10" marker-end="url(#s4-teal)"/>
+            <circle cx="248" cy="392" r="12" fill="#1e3a8a"/>
+            <circle cx="260" cy="422" r="12" fill="#b45309"/>
+            <line x1="248" y1="392" x2="260" y2="422" stroke="#b45309" stroke-width="7" marker-end="url(#s4-amber)"/>
+            <text x="155" y="382" class="svg-small">start</text>
+            <text x="278" y="462" class="svg-small">residual drift</text>
+            <text x="292" y="286" class="svg-label">flow X</text>
+            <text x="508" y="307" class="svg-label">flow Y</text>
+            <text x="184" y="118" class="svg-math">small commutator loop</text>
+            <text x="244" y="160" class="svg-small">leaves an epsilon-squared bracket direction</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Lie brackets connect differential geometry to robot controllability ideas.</span><span>No global coordinates are needed to define the bracket.</span></div>
+      <aside class="speaker-notes">Present the bracket as a motion experiment before presenting it as algebra. Move a small amount along one vector field, then along another, then undo the first two moves in reverse order. On a curved or noncommuting system the loop does not close to second order, and the residual direction is the Lie bracket. This prepares students for why nonholonomic mechanisms can gain directions through maneuvers even when their instantaneous velocity set looks restricted.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Robotics Stack">
+      <div class="topline"><h2>Lie Groups In The Robotics Stack</h2><span class="badge">One language, many formulas</span></div>
+      <div class="content">
+        <div class="diagram">
+          <svg viewBox="0 0 1460 520" width="1460" height="520" role="img" aria-label="Lie group structures in the robotics computation stack">
+            <defs>
+              <marker id="s5-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker>
+            </defs>
+            <rect x="55" y="90" width="260" height="120" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <rect x="440" y="90" width="260" height="120" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <rect x="825" y="90" width="260" height="120" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <rect x="1210" y="90" width="205" height="120" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <path d="M315 150 H430" stroke="#64748b" stroke-width="5" marker-end="url(#s5-arrow)"/>
+            <path d="M700 150 H815" stroke="#64748b" stroke-width="5" marker-end="url(#s5-arrow)"/>
+            <path d="M1085 150 H1200" stroke="#64748b" stroke-width="5" marker-end="url(#s5-arrow)"/>
+            <text x="105" y="142" class="svg-label">joint q</text>
+            <text x="84" y="180" class="svg-small">local coordinates</text>
+            <text x="505" y="142" class="svg-label">g(q)</text>
+            <text x="498" y="180" class="svg-small">pose in SE(3)</text>
+            <text x="888" y="142" class="svg-label">V, J(q)</text>
+            <text x="858" y="180" class="svg-small">tangent velocity</text>
+            <text x="1255" y="142" class="svg-label">F</text>
+            <text x="1234" y="180" class="svg-small">wrench dual</text>
+            <rect x="150" y="318" width="260" height="95" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <rect x="505" y="318" width="260" height="95" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <rect x="860" y="318" width="260" height="95" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <text x="185" y="360" class="svg-math">g1 g2</text>
+            <text x="184" y="392" class="svg-small">compose poses</text>
+            <text x="526" y="360" class="svg-math">exp(V-hat t)</text>
+            <text x="538" y="392" class="svg-small">integrate twist</text>
+            <text x="888" y="360" class="svg-math">F^T V</text>
+            <text x="896" y="392" class="svg-small">instantaneous power</text>
+            <path d="M280 318 C365 270, 482 245, 575 218" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="12 8"/>
+            <path d="M635 318 C720 270, 832 244, 940 218" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="12 8"/>
+            <path d="M990 318 C1070 272, 1174 244, 1296 218" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="12 8"/>
+          </svg>
+        </div>
+        <div class="three">
+          <div class="panel blue"><h3>Configuration To Pose</h3><p>The forward kinematics map lands in a group, not in a flat vector space.</p></div>
+          <div class="panel teal"><h3>Pose To Velocity</h3><p>Differentiating a group-valued curve gives a tangent vector that is represented as a twist.</p></div>
+          <div class="panel amber"><h3>Velocity To Power</h3><p>Wrenches live in the dual space and must transform contragrediently to twists.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Appendix theme: SO(3), SE(3), adjoints, and invariant quantities.</span><span>Engineering payoff: fewer frame-convention mistakes.</span></div>
+      <aside class="speaker-notes">This slide compresses the robotics stack into a sequence of geometric types. Joint variables are local coordinates. The end-effector pose is a group element. A velocity is tangent data, and a force or moment object is dual data. The point is not to memorize a taxonomy, but to see why the same adjoint machinery keeps returning in kinematics, Jacobians, wrench transformations, and virtual work.</aside>
+    </section>
+
+    <section class="slide" data-label="Lie Algebra At The Identity">
+      <div class="topline"><h2>Lie Algebra At The Identity</h2><span class="badge">Linearize once, transport often</span></div>
+      <div class="cols">
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Lie group tangent space at identity transported to another group element">
+            <defs>
+              <marker id="s6-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+            </defs>
+            <path d="M100 430 C170 260, 304 190, 486 212 C620 228, 690 314, 638 425 C584 539, 292 552, 128 488 C92 474, 86 458, 100 430 Z" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <circle cx="250" cy="405" r="13" fill="#1e3a8a"/>
+            <circle cx="522" cy="322" r="13" fill="#0f766e"/>
+            <ellipse cx="250" cy="405" rx="122" ry="58" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <line x1="250" y1="405" x2="348" y2="366" stroke="#2563eb" stroke-width="7" marker-end="url(#s6-arrow)"/>
+            <path d="M300 385 C372 333, 434 319, 510 322" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 8" marker-end="url(#s6-arrow)"/>
+            <ellipse cx="522" cy="322" rx="118" ry="52" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <line x1="522" y1="322" x2="618" y2="288" stroke="#0f766e" stroke-width="7" marker-end="url(#s6-arrow)"/>
+            <text x="217" y="384" class="svg-small">identity e</text>
+            <text x="536" y="302" class="svg-small">g</text>
+            <text x="318" y="357" class="svg-label">xi in Lie algebra</text>
+            <text x="426" y="278" class="svg-small">left or right translation</text>
+            <text x="104" y="112" class="svg-math">T_e G is the Lie algebra</text>
+            <text x="104" y="152" class="svg-small">the Lie algebra is the tangent space at the identity</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue"><h3>Definition</h3><p>The Lie algebra \(\mathfrak{g}\) is \(T_eG\), the tangent space at the identity element of a Lie group \(G\).</p></div>
+          <div class="panel teal"><h3>For Rigid Motion</h3><p class="formula">\( \hat V = \begin{bmatrix} \hat\omega & v \\ 0 & 0 \end{bmatrix},\quad V=(\omega,v) \)</p><p>This deck reorders the textbook's \(\xi=(v,\omega)\) convention to match the local utilities; adjoint block forms depend on that choice.</p></div>
+          <div class="panel amber"><h3>Teaching Rule</h3><p>Linear algebra happens in the tangent space; group multiplication happens on the manifold.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Convention bridge: textbook \(\xi=(v,\omega)\); deck/utilities use \(V=(\omega,v)\).</span><span>Hat and vee maps connect six-vectors to \(\mathfrak{se}(3)\) matrices.</span></div>
+      <aside class="speaker-notes">The Lie algebra is the linear object attached to the nonlinear group at the identity. That is why so much robot kinematics can use matrices and vectors without pretending that SE(3) itself is a vector space. Declare the convention bridge here: the textbook writes twists as xi equals linear part then angular part, while this deck and the local utilities use angular part then linear part. That convention must remain fixed when discussing adjoints, body velocity, spatial velocity, and wrench pairing.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Exponential Map">
+      <div class="topline"><h2>Exponential Map As Screw Motion</h2><span class="badge">Algebra to group</span></div>
+      <div class="cols wide-right">
+        <div class="stack">
+          <div class="panel blue"><p class="formula big">\( g(t)=\exp(\hat V t) \)</p><p>A constant twist integrates to a one-parameter subgroup when expressed with a fixed convention.</p></div>
+          <div class="panel teal"><h3>Screw Reading</h3><p>A revolute component rotates about an axis while the pitch contributes translation along that axis.</p></div>
+          <div class="panel amber"><h3>Robotics Use</h3><p>Product-of-exponentials kinematics is built from these one-joint screw motions.</p></div>
+        </div>
+        <figure class="figure-wrap">
+          <img src="../figures/se3-exponential-screw-reference.png" alt="Generated SE(3) exponential screw reference with a helical path">
+          <figcaption class="caption">Generated artifact: \(SE(3)\) exponential as a screw reference.</figcaption>
+        </figure>
+      </div>
+      <div class="footer"><span>Inspection target: twist exponential and helical path.</span><span>The exponential maps \(\mathfrak{se}(3)\) data into \(SE(3)\).</span></div>
+      <aside class="speaker-notes">Treat the exponential as a bridge rather than as a formula to memorize. A twist lives in the Lie algebra, while the exponential produces a finite rigid motion in the group. The figure makes the screw interpretation visible: rotation and translation are coupled by an axis and pitch. Connect this back to earlier manipulator kinematics, where each joint in the product of exponentials contributes exactly this kind of one-parameter motion.</aside>
+    </section>
+
+    <section class="slide" data-label="Canonical Coordinates">
+      <div class="topline"><h2>Canonical Coordinates Are Local Tools</h2><span class="badge">Logarithms have domains</span></div>
+      <div class="cols">
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Exponential and logarithm maps are local coordinate tools">
+            <defs>
+              <marker id="s8-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s8-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/></marker>
+            </defs>
+            <ellipse cx="265" cy="350" rx="178" ry="94" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <path d="M476 236 C612 264, 658 382, 560 468 C470 546, 306 515, 270 420 C236 330, 330 214, 476 236 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <circle cx="476" cy="350" r="12" fill="#1e3a8a"/>
+            <path d="M338 350 C374 316, 414 300, 462 336" fill="none" stroke="#2563eb" stroke-width="7" marker-end="url(#s8-blue)"/>
+            <path d="M470 365 C420 430, 342 462, 258 424" fill="none" stroke="#0f766e" stroke-width="7" marker-end="url(#s8-blue)"/>
+            <path d="M570 265 C630 298, 642 362, 590 414" fill="none" stroke="#b45309" stroke-width="7" stroke-dasharray="13 9" marker-end="url(#s8-amber)"/>
+            <text x="162" y="332" class="svg-label">T_eG</text>
+            <text x="425" y="334" class="svg-label">G</text>
+            <text x="354" y="294" class="svg-small">exp</text>
+            <text x="334" y="468" class="svg-small">log near identity</text>
+            <text x="575" y="252" class="svg-small">branch or cut locus</text>
+            <text x="118" y="118" class="svg-math">g = exp(V-hat)</text>
+            <text x="118" y="157" class="svg-small">canonical coordinates describe a neighborhood, not the whole group</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue"><h3>Useful Local Coordinate</h3><p>Near the identity, a group element can often be represented by a Lie algebra vector through the logarithm.</p></div>
+          <div class="panel amber"><h3>Not A Global Promise</h3><p>Multiple algebra vectors can map to the same rotation, and logarithms become delicate near singular cases.</p></div>
+          <div class="panel teal"><p class="formula">\( \xi = \log(g)^\vee \quad \) only after choosing a valid local branch.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Canonical coordinates are excellent computational tools when their neighborhood is respected.</span><span>They are coordinates, not replacement geometry.</span></div>
+      <aside class="speaker-notes">This slide prevents an overcorrection. The lecture has warned against treating coordinates as geometry, but canonical coordinates are still extremely useful. The safe statement is local: near the identity, the logarithm gives Lie algebra coordinates for a group element. The unsafe statement is global: pretending that every pose or rotation has a unique, well-conditioned logarithm in all circumstances. Ask students to connect this to rotations near angle pi and to iterative pose-error algorithms.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Actions Adjoint Coadjoint">
+      <div class="topline"><h2>Actions, Adjoint, Coadjoint</h2><span class="badge">Transport with duality</span></div>
+      <div class="cols wide-left">
+        <div class="stack">
+          <div class="panel blue"><h3>Action</h3><p>A group element changes the frame or point of view from which geometric data is represented.</p></div>
+          <div class="panel teal"><h3>Adjoint</h3><p class="formula">\( V' = \operatorname{Ad}_g V \)</p><p>Twist coordinates transform by the adjoint representation.</p></div>
+          <div class="panel amber"><h3>Coadjoint</h3><p class="formula">\( F' = \operatorname{Ad}_g^{-T}F \)</p><p>Wrench coordinates transform by the dual rule so power is unchanged.</p></div>
+        </div>
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Adjoint and coadjoint transformations preserving pairing">
+            <defs>
+              <marker id="s9-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker>
+              <marker id="s9-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s9-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/></marker>
+            </defs>
+            <rect x="80" y="95" width="220" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <rect x="460" y="95" width="220" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <rect x="80" y="385" width="220" height="110" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <rect x="460" y="385" width="220" height="110" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <path d="M300 150 H450" stroke="#2563eb" stroke-width="6" marker-end="url(#s9-blue)"/>
+            <path d="M300 440 H450" stroke="#b45309" stroke-width="6" marker-end="url(#s9-amber)"/>
+            <path d="M190 205 V375" stroke="#64748b" stroke-width="5" marker-end="url(#s9-arrow)"/>
+            <path d="M570 205 V375" stroke="#64748b" stroke-width="5" marker-end="url(#s9-arrow)"/>
+            <text x="145" y="160" class="svg-label">V</text>
+            <text x="506" y="160" class="svg-label">adjoint V</text>
+            <text x="146" y="450" class="svg-label">F</text>
+            <text x="492" y="450" class="svg-label">coadjoint F</text>
+            <text x="326" y="136" class="svg-small">twist transport</text>
+            <text x="318" y="426" class="svg-small">dual transport</text>
+            <text x="238" y="304" class="svg-math">power before</text>
+            <text x="452" y="304" class="svg-math">power after</text>
+            <path d="M328 304 H438" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 8" marker-end="url(#s9-arrow)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Adjoint moves twists; coadjoint moves covectors.</span><span>Power pairing is the test that the convention is coherent.</span></div>
+      <aside class="speaker-notes">Make the duality explicit. It is tempting to transform a wrench exactly the same way as a twist because both may be stored as six-vectors. That temptation is wrong in general. A twist is tangent data, and a wrench is cotangent data. The adjoint and coadjoint are linked by the requirement that the scalar pairing, instantaneous power, stay unchanged when the frame changes.</aside>
+    </section>
+
+    <section class="slide" data-label="Body And Spatial Velocity">
+      <div class="topline"><h2>Body And Spatial Velocity</h2><span class="badge">Convention declared</span></div>
+      <div class="cols">
+        <div class="stack">
+          <div class="panel blue"><h3>Twist Convention</h3><p>Use column twists ordered \(V=(\omega,v)\), with \(\hat V=\begin{bmatrix}\hat\omega&v\\0&0\end{bmatrix}\).</p></div>
+          <div class="panel teal"><h3>Spatial Velocity</h3><p class="formula">\( V_s = (\dot g g^{-1})^\vee \)</p><p>Velocity represented in the space frame.</p></div>
+          <div class="panel amber"><h3>Body Velocity</h3><p class="formula">\( V_b = (g^{-1}\dot g)^\vee \)</p><p>Velocity represented in the body frame.</p></div>
+        </div>
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Body and spatial velocity frames connected by the adjoint">
+            <defs>
+              <marker id="s10-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s10-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/></marker>
+            </defs>
+            <line x1="130" y1="460" x2="270" y2="460" stroke="#1e3a8a" stroke-width="7" marker-end="url(#s10-blue)"/>
+            <line x1="130" y1="460" x2="130" y2="320" stroke="#1e3a8a" stroke-width="7" marker-end="url(#s10-blue)"/>
+            <text x="92" y="502" class="svg-label">space S</text>
+            <path d="M360 355 C430 290, 520 276, 604 330" fill="none" stroke="#94a3b8" stroke-width="7" stroke-dasharray="13 9"/>
+            <rect x="500" y="294" width="120" height="78" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <line x1="560" y1="333" x2="664" y2="310" stroke="#b45309" stroke-width="7" marker-end="url(#s10-amber)"/>
+            <line x1="560" y1="333" x2="536" y2="232" stroke="#b45309" stroke-width="7" marker-end="url(#s10-amber)"/>
+            <text x="594" y="408" class="svg-label">body B</text>
+            <path d="M270 460 C385 506, 500 458, 560 372" fill="none" stroke="#0f766e" stroke-width="5" marker-end="url(#s10-blue)"/>
+            <text x="332" y="515" class="svg-small">g maps body frame into space frame</text>
+            <rect x="114" y="92" width="540" height="112" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <text x="172" y="138" class="svg-math">spatial = adjoint(body)</text>
+            <text x="172" y="176" class="svg-small">same motion, two coordinate descriptions</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Declared convention: \(V=(\omega,v)\), \(V_s=(\dot g g^{-1})^\vee\), \(V_b=(g^{-1}\dot g)^\vee\).</span><span>Relation: \(V_s=\operatorname{Ad}_gV_b\).</span></div>
+      <aside class="speaker-notes">This is the explicit convention slide. State the order of twist coordinates and the definitions of spatial and body velocity slowly. Both velocities describe the same physical curve in SE(3), but they trivialize the tangent vector on different sides of the group. Once this is declared, the relation by the adjoint is no longer a mysterious six-by-six matrix; it is the coordinate-change rule between two frame choices.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Wrenches Pair With Twists">
+      <div class="topline"><h2>Wrenches Pair With Twists</h2><span class="badge">Power error 0.0</span></div>
+      <div class="cols wide-right">
+        <div class="stack">
+          <div class="panel blue"><h3>Dual Convention</h3><p>With \(V=(\omega,v)\), write a wrench as \(F=(n,f)\) so \(F^TV=n\cdot\omega+f\cdot v\).</p></div>
+          <div class="panel teal"><p class="formula big">\( F'^T V' = F^T V \)</p><p>The notebook check records <span class="mono">power_invariance_error = 0.0</span>.</p></div>
+          <div class="panel amber"><h3>Practical Test</h3><p>If a frame transform changes instantaneous power, a twist/wrench convention has been mixed.</p></div>
+        </div>
+        <figure class="figure-wrap">
+          <img src="../figures/adjoint-coadjoint-power-invariance.png" alt="Generated adjoint coadjoint power invariance artifact">
+          <figcaption class="caption">Generated artifact: adjoint and coadjoint transformations preserving power.</figcaption>
+        </figure>
+      </div>
+      <div class="footer"><span>Check payload: power_invariance_error = 0.0.</span><span>Source object: adjoint/coadjoint pairing in Appendix A.</span></div>
+      <aside class="speaker-notes">This is the deck's numerical anchor. The figure and saved check payload agree that the twist and wrench transformations preserve the scalar power pairing. Make clear that zero is not a decorative value. It means the chosen adjoint and coadjoint conventions are compatible for the tested frame displacement. In a robotics codebase, this kind of check catches sign errors, order mistakes, and attempts to transform wrenches as if they were ordinary tangent vectors.</aside>
+    </section>
+
+    <section class="slide" data-label="No Invariant Euclidean Metric">
+      <div class="topline"><h2>Why There Is No Invariant Euclidean Metric</h2><span class="badge">Length is fragile</span></div>
+      <div class="cols">
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Translated frame shears twist coordinates so Euclidean length changes">
+            <defs>
+              <marker id="s12-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s12-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/></marker>
+            </defs>
+            <rect x="90" y="100" width="240" height="180" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <rect x="430" y="100" width="240" height="180" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <line x1="210" y1="220" x2="210" y2="145" stroke="#2563eb" stroke-width="7" marker-end="url(#s12-blue)"/>
+            <line x1="210" y1="220" x2="292" y2="220" stroke="#2563eb" stroke-width="7" marker-end="url(#s12-blue)"/>
+            <line x1="550" y1="220" x2="550" y2="145" stroke="#b45309" stroke-width="7" marker-end="url(#s12-amber)"/>
+            <line x1="550" y1="220" x2="632" y2="220" stroke="#b45309" stroke-width="7" marker-end="url(#s12-amber)"/>
+            <path d="M330 190 H420" stroke="#64748b" stroke-width="5" stroke-dasharray="12 8" marker-end="url(#s12-amber)"/>
+            <text x="147" y="252" class="svg-small">origin O</text>
+            <text x="493" y="252" class="svg-small">origin O+p</text>
+            <text x="222" y="386" class="svg-math">v</text>
+            <text x="440" y="386" class="svg-math">v plus p cross omega</text>
+            <path d="M260 380 H410" stroke="#64748b" stroke-width="5" marker-end="url(#s12-amber)"/>
+            <rect x="100" y="455" width="560" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <text x="138" y="505" class="svg-math">six-vector length can change</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel amber"><h3>The Obstruction</h3><p>A translated frame mixes angular and linear velocity through cross-product terms such as \(p\times\omega\).</p></div>
+          <div class="panel blue"><h3>Euclidean Six-Vector Length</h3><p>The ordinary dot product on stacked coordinates is a chart-dependent convenience, not a group-invariant metric on \(SE(3)\).</p></div>
+          <div class="panel teal"><h3>What Survives</h3><p>Dual pairings and invariant volume are more natural invariants than a universal Euclidean length of a twist.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Failure mode: comparing six-vector norms after a translated frame change.</span><span>The appendix turns this into structure, not a warning label.</span></div>
+      <aside class="speaker-notes">This is a conceptual warning with practical consequences. A six-vector norm may be useful after a convention and scale have been chosen, but it is not automatically an invariant measurement of physical motion. A change of frame can mix angular and linear components, especially through translation. Students should understand why a Euclidean metric on the coordinate vector is fragile, while the twist-wrench power pairing remains meaningful because it uses the correct dual transformation.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Constraints Are Covectors">
+      <div class="topline"><h2>Constraints Are Covectors</h2><span class="badge">Rows measure velocities</span></div>
+      <div class="cols wide-left">
+        <div class="stack">
+          <div class="panel blue"><h3>Velocity Constraint</h3><p class="formula">\( a(q)\dot q = 0 \)</p><p>The row \(a(q)\) is a covector: it evaluates allowable velocity directions.</p></div>
+          <div class="panel teal"><h3>Rigid-Body Version</h3><p class="formula">\( \lambda(V)=0,\quad \lambda \in \mathfrak{se}(3)^* \)</p><p>A contact normal, rolling constraint, or task restriction can be read as an annihilator.</p></div>
+          <div class="panel amber"><h3>Geometric Payoff</h3><p>Constraints define which tangent directions survive, rather than merely deleting coordinates from a vector.</p></div>
+        </div>
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Constraint covector annihilating allowed tangent directions">
+            <defs>
+              <marker id="s13-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s13-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#b45309"/></marker>
+            </defs>
+            <ellipse cx="365" cy="360" rx="260" ry="128" fill="#f8fafc" stroke="#cbd5e1" stroke-width="5"/>
+            <line x1="150" y1="384" x2="580" y2="304" stroke="#0f766e" stroke-width="7"/>
+            <circle cx="365" cy="360" r="12" fill="#1e3a8a"/>
+            <line x1="365" y1="360" x2="498" y2="335" stroke="#2563eb" stroke-width="7" marker-end="url(#s13-blue)"/>
+            <line x1="365" y1="360" x2="385" y2="244" stroke="#b45309" stroke-width="7" marker-end="url(#s13-amber)"/>
+            <path d="M190 438 C300 404, 424 380, 556 356" fill="none" stroke="#0f766e" stroke-width="4" stroke-dasharray="10 8"/>
+            <text x="504" y="326" class="svg-label">allowed V</text>
+            <text x="396" y="242" class="svg-label">constraint covector</text>
+            <text x="250" y="292" class="svg-small">kernel of the covector</text>
+            <rect x="110" y="95" width="545" height="100" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <text x="155" y="139" class="svg-math">constraint(V) = 0</text>
+            <text x="155" y="173" class="svg-small">allowed directions are annihilated by the constraint row</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Cotangent language explains constraints, gradients, and wrenches with one pairing idea.</span><span>Rows are not second-class vectors.</span></div>
+      <aside class="speaker-notes">Return to cotangent data from slide three and make it operational. A scalar velocity constraint is a covector evaluating a tangent vector. Its kernel is the set of allowed velocities. That viewpoint makes contact normals, rolling constraints, and Jacobian task constraints feel related rather than scattered. It also discourages the common mistake of treating every row vector as if it were an ordinary direction vector in the same space as the velocity.</aside>
+    </section>
+
+    <section class="slide" data-label="Invariant Volume">
+      <div class="topline"><h2>Volume Survives Where Length Does Not</h2><span class="badge">Final invariant</span></div>
+      <div class="cols">
+        <div class="diagram tall">
+          <svg viewBox="0 0 760 610" width="760" height="610" role="img" aria-label="Volume element preserved by an adjoint shear while lengths change">
+            <defs>
+              <marker id="s14-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/></marker>
+              <marker id="s14-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#0f766e"/></marker>
+            </defs>
+            <polygon points="162,405 322,363 394,448 235,490" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <line x1="162" y1="405" x2="322" y2="363" stroke="#2563eb" stroke-width="7" marker-end="url(#s14-blue)"/>
+            <line x1="162" y1="405" x2="235" y2="490" stroke="#2563eb" stroke-width="7" marker-end="url(#s14-blue)"/>
+            <polygon points="442,390 608,342 654,430 489,478" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <line x1="442" y1="390" x2="608" y2="342" stroke="#0f766e" stroke-width="7" marker-end="url(#s14-teal)"/>
+            <line x1="442" y1="390" x2="489" y2="478" stroke="#0f766e" stroke-width="7" marker-end="url(#s14-teal)"/>
+            <path d="M350 420 H430" stroke="#64748b" stroke-width="5" stroke-dasharray="12 8" marker-end="url(#s14-teal)"/>
+            <text x="166" y="340" class="svg-small">coordinate box</text>
+            <text x="486" y="318" class="svg-small">sheared by the adjoint</text>
+            <rect x="118" y="100" width="525" height="112" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <text x="158" y="146" class="svg-math">adjoint determinant = 1 for SE(3)</text>
+            <text x="158" y="184" class="svg-small">volume can be invariant even when coordinate lengths are not</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue"><h3>Invariant Volume</h3><p>For the rigid-motion adjoint, the transformation can shear coordinates while preserving the natural volume scale.</p></div>
+          <div class="panel teal"><h3>Manipulability Payoff</h3><p>For a six-dimensional robot map, \(|\det J|\) measures a work-volume scale that is well posed under the invariant volume form, even though individual coordinate lengths are not.</p></div>
+          <div class="panel violet"><h3>Optimal 6R Design</h3><p>The appendix's design consequence is qualitative: compare manipulators by invariant work volume, then seek architectures whose Jacobian volume stays large and balanced.</p></div>
+          <div class="panel amber"><h3>Working Habit</h3><p>For every robotics formula, ask: which space is this object in, which frame represents it, and what scalar should survive?</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Late Appendix A payoff: determinant work volume and optimal six-revolute design framing.</span><span>Checks: rotation_det = 1.0, power_invariance_error = 0.0.</span></div>
+      <aside class="speaker-notes">Close by contrasting length and volume, then connect that invariant to the robotics payoff late in the appendix. Ordinary Euclidean length of a six-coordinate twist is not a universal invariant, but determinant volume gives a meaningful work-volume scale for a six-dimensional Jacobian. That is why the appendix can discuss manipulability and optimal six-revolute design without pretending that every twist norm is frame invariant. The final habit is diagnostic: identify the space, the convention, and the invariant before trusting the computation.</aside>
+    </section>
+  </deck-stage>
+
+  <script type="application/json" id="speaker-notes">
+[
+  {"slide":1,"title":"Lie Groups And Robot Kinematics","notes":"Open by naming the appendix as the language layer for the rest of the robotics course. Students have already seen matrices, twists, Jacobians, and wrenches; here those objects are reorganized as manifolds, Lie groups, tangent vectors, and dual covectors. Emphasize that the lecture is not adding abstraction for its own sake. It is explaining which quantities are geometric and which quantities are coordinates that must be handled with frame discipline."},
+  {"slide":2,"title":"Local Coordinates Are Not The Geometry","notes":"Use the artifact as a vocabulary map. A chart is an instrument for assigning coordinates, not a replacement for the underlying geometric object. This distinction matters in robotics because common parameterizations can fail while the rigid pose remains perfectly valid. The instructor should invite students to name examples from earlier chapters: Euler angle singularities, local logarithms on SO(3), and joint coordinates that describe a configuration without being the task-space geometry itself."},
+  {"slide":3,"title":"Tangent And Cotangent Data","notes":"Separate the two roles carefully. A tangent vector is a possible instantaneous motion at a configuration or pose. A covector is a linear test applied to such a motion. This distinction is the quiet source of several robotics formulas: a wrench evaluates a twist to produce power, a constraint row evaluates a velocity to produce a forbidden component, and a gradient evaluates a displacement to produce a first-order change. The pairing is geometric even when both objects are represented by arrays."},
+  {"slide":4,"title":"Flows And Lie Brackets","notes":"Present the bracket as a motion experiment before presenting it as algebra. Move a small amount along one vector field, then along another, then undo the first two moves in reverse order. On a curved or noncommuting system the loop does not close to second order, and the residual direction is the Lie bracket. This prepares students for why nonholonomic mechanisms can gain directions through maneuvers even when their instantaneous velocity set looks restricted."},
+  {"slide":5,"title":"Lie Groups In The Robotics Stack","notes":"This slide compresses the robotics stack into a sequence of geometric types. Joint variables are local coordinates. The end-effector pose is a group element. A velocity is tangent data, and a force or moment object is dual data. The point is not to memorize a taxonomy, but to see why the same adjoint machinery keeps returning in kinematics, Jacobians, wrench transformations, and virtual work."},
+  {"slide":6,"title":"Lie Algebra At The Identity","notes":"The Lie algebra is the linear object attached to the nonlinear group at the identity. That is why so much robot kinematics can use matrices and vectors without pretending that SE(3) itself is a vector space. Declare the convention bridge here: the textbook writes twists as xi equals linear part then angular part, while this deck and the local utilities use angular part then linear part. That convention must remain fixed when discussing adjoints, body velocity, spatial velocity, and wrench pairing."},
+  {"slide":7,"title":"Exponential Map As Screw Motion","notes":"Treat the exponential as a bridge rather than as a formula to memorize. A twist lives in the Lie algebra, while the exponential produces a finite rigid motion in the group. The figure makes the screw interpretation visible: rotation and translation are coupled by an axis and pitch. Connect this back to earlier manipulator kinematics, where each joint in the product of exponentials contributes exactly this kind of one-parameter motion."},
+  {"slide":8,"title":"Canonical Coordinates Are Local Tools","notes":"This slide prevents an overcorrection. The lecture has warned against treating coordinates as geometry, but canonical coordinates are still extremely useful. The safe statement is local: near the identity, the logarithm gives Lie algebra coordinates for a group element. The unsafe statement is global: pretending that every pose or rotation has a unique, well-conditioned logarithm in all circumstances. Ask students to connect this to rotations near angle pi and to iterative pose-error algorithms."},
+  {"slide":9,"title":"Actions, Adjoint, Coadjoint","notes":"Make the duality explicit. It is tempting to transform a wrench exactly the same way as a twist because both may be stored as six-vectors. That temptation is wrong in general. A twist is tangent data, and a wrench is cotangent data. The adjoint and coadjoint are linked by the requirement that the scalar pairing, instantaneous power, stay unchanged when the frame changes."},
+  {"slide":10,"title":"Body And Spatial Velocity","notes":"This is the explicit convention slide. State the order of twist coordinates and the definitions of spatial and body velocity slowly. Both velocities describe the same physical curve in SE(3), but they trivialize the tangent vector on different sides of the group. Once this is declared, the relation by the adjoint is no longer a mysterious six-by-six matrix; it is the coordinate-change rule between two frame choices."},
+  {"slide":11,"title":"Wrenches Pair With Twists","notes":"This is the deck's numerical anchor. The figure and saved check payload agree that the twist and wrench transformations preserve the scalar power pairing. Make clear that zero is not a decorative value. It means the chosen adjoint and coadjoint conventions are compatible for the tested frame displacement. In a robotics codebase, this kind of check catches sign errors, order mistakes, and attempts to transform wrenches as if they were ordinary tangent vectors."},
+  {"slide":12,"title":"Why There Is No Invariant Euclidean Metric","notes":"This is a conceptual warning with practical consequences. A six-vector norm may be useful after a convention and scale have been chosen, but it is not automatically an invariant measurement of physical motion. A change of frame can mix angular and linear components, especially through translation. Students should understand why a Euclidean metric on the coordinate vector is fragile, while the twist-wrench power pairing remains meaningful because it uses the correct dual transformation."},
+  {"slide":13,"title":"Constraints Are Covectors","notes":"Return to cotangent data from slide three and make it operational. A scalar velocity constraint is a covector evaluating a tangent vector. Its kernel is the set of allowed velocities. That viewpoint makes contact normals, rolling constraints, and Jacobian task constraints feel related rather than scattered. It also discourages the common mistake of treating every row vector as if it were an ordinary direction vector in the same space as the velocity."},
+  {"slide":14,"title":"Volume Survives Where Length Does Not","notes":"Close by contrasting length and volume, then connect that invariant to the robotics payoff late in the appendix. Ordinary Euclidean length of a six-coordinate twist is not a universal invariant, but determinant volume gives a meaningful work-volume scale for a six-dimensional Jacobian. That is why the appendix can discuss manipulability and optimal six-revolute design without pretending that every twist norm is frame invariant. The final habit is diagnostic: identify the space, the convention, and the invariant before trusting the computation."}
+]
+  </script>
+</body>
+</html>

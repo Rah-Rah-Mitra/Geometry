@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-01">
+  <meta name="chapter_title" content="01 - Computational Geometry">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-01-computational-geometry/01-computational-geometry.ipynb">
+  <meta name="source_span" content="printed pages 1-18; PDF pages 12-29">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>01 - Computational Geometry</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-01",
+  "chapter_title": "01 - Computational Geometry",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-01-computational-geometry/01-computational-geometry.ipynb",
+  "source_span": "printed pages 1-18; PDF pages 12-29",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "title": "Computational Geometry: From Models To Predicates",
+    "notes": "Open by making the chapter's promise concrete: computational geometry begins with real spatial situations, but the algorithm never sees a city, robot, or map directly. It sees points, segments, polygons, and predicate answers. The triptych is synthetic, not copied from the book, and lets the instructor ask what modeling decision each application forces before any theorem can be useful."
+  },
+  {
+    "slide": 2,
+    "title": "What Counts As A Geometric Algorithm",
+    "notes": "Use this slide to define the working pipeline for the whole course. An application suggests a geometric object, the object is reduced to a small set of primitives, and the primitives are organized by a data structure. The point is that a geometric algorithm is not only arithmetic on coordinates; it is a representation choice plus a sequence of certified local decisions."
+  },
+  {
+    "slide": 3,
+    "title": "Convexity As A Segment Test",
+    "notes": "Introduce convexity as a universal segment test rather than as a picture of a rounded object. For every pair of points inside the set, the connecting segment must remain inside. This turns a global-looking shape property into a simple inspection question, and it prepares students for why hull algorithms only need to preserve boundary evidence."
+  },
+  {
+    "slide": 4,
+    "title": "Hull As A Computable Boundary",
+    "notes": "Shift from convex sets to the finite output an algorithm can return. The convex hull may be defined as the smallest convex set containing the points, but a program reports a cyclic list of extreme vertices. Emphasize that the clockwise order is part of the answer because later predicates, containment checks, and edge traversals depend on that order."
+  },
+  {
+    "slide": 5,
+    "title": "Why The Definition Is Not The Algorithm",
+    "notes": "Use the contrast between the infinite intersection definition and the finite edge certificate. The mathematical definition explains uniqueness, but it does not say which lines or halfplanes to examine. A hull algorithm succeeds by finding enough boundary witnesses so that every input point is on the allowed side of every reported oriented edge."
+  },
+  {
+    "slide": 6,
+    "title": "Slow Convex Hull",
+    "notes": "Present the slow method as a correctness microscope. For each directed pair of input points, test whether all other points lie on the same side. If they do, that directed pair is a hull edge candidate. There are quadratically many pairs and a linear witness scan for each, giving cubic time, which is too slow but very useful for understanding the certificate."
+  },
+  {
+    "slide": 7,
+    "title": "The Orientation Predicate",
+    "notes": "Make the determinant the first real primitive of the chapter. Its sign says whether the triple turns left, turns right, or is collinear, and its magnitude is twice the signed area of the triangle. This is the bridge from geometry to implementation: the algorithm does not reason with pictures; it branches on this predicate."
+  },
+  {
+    "slide": 8,
+    "title": "Degeneracy Is Not A Footnote",
+    "notes": "Treat collinearity as part of the specification rather than a rare annoyance. When the orientation value is zero, left and right are not valid categories, so the algorithm needs an on-segment or tie-breaking rule. Students should see that degeneracy changes control flow, output conventions, and proof statements, not merely a line of defensive code."
+  },
+  {
+    "slide": 9,
+    "title": "When Floating Point Breaks Topology",
+    "notes": "Explain robustness through topology, not just through numeric error. If nearly collinear triples are classified inconsistently, the directed edge graph can acquire crossings, gaps, or repeated boundary decisions that no polygon could realize. The lesson is that a tiny arithmetic perturbation can become a discrete structural error after predicates drive branching."
+  },
+  {
+    "slide": 10,
+    "title": "Incremental Design Move",
+    "notes": "Now replace the cubic search with a sorted incremental plan. Sorting the points left to right gives a one-dimensional schedule, and the hull boundary splits naturally into an upper chain and a lower chain. The design move is powerful because it limits every update to the current chain end instead of reconsidering every pair of points."
+  },
+  {
+    "slide": 11,
+    "title": "Andrew/Graham Scan Stepper",
+    "notes": "Walk through the stack behavior as an algorithmic state diagram. Append the next point, inspect the last three points, and pop the middle one while the local turn violates the chosen clockwise invariant. Each pop removes a vertex that cannot remain on the final chain once the new point is included, so the state keeps a visible geometric meaning."
+  },
+  {
+    "slide": 12,
+    "title": "Handling Equal x And Collinear Runs",
+    "notes": "Use this slide to pin down output convention. Equal x-coordinates require a secondary order so the scan has a deterministic schedule. Collinear runs require a choice: keep only endpoints for the minimal hull polygon, or keep boundary collinear points for an inclusive boundary listing. Either convention can be correct if the predicate and proof use the same rule."
+  },
+  {
+    "slide": 13,
+    "title": "Proof Of Theorem 1.1 As Invariants",
+    "notes": "Frame the theorem proof as three invariants rather than as a block of text. After processing a prefix of the sorted points, the stored chain is the relevant hull chain for that prefix; the empty slab between consecutive processed points prevents hidden future points from invalidating past interior decisions; and each point is appended once and popped at most once, explaining linear scan work after sorting."
+  },
+  {
+    "slide": 14,
+    "title": "Cost Model",
+    "notes": "Compare the two algorithms on the same axes. The slow method spends work on all directed pairs and all witnesses, leading to cubic growth. The scan pays for sorting and then performs a linear number of stack actions. The point is not just a better asymptotic bound; it is the design pattern of trading global search for an ordered local invariant."
+  },
+  {
+    "slide": 15,
+    "title": "Robustness Design Phases",
+    "notes": "Connect the chapter's robustness discussion to a disciplined workflow. First simplify the problem under a general-position assumption so the idea is visible. Then integrate degeneracies into the formal cases. Finally choose predicate implementations that preserve the combinatorial decisions the proof assumes. This order keeps clarity without pretending that hostile inputs disappear."
+  },
+  {
+    "slide": 16,
+    "title": "Where This Book Goes Next",
+    "notes": "Close with a routing map from the introductory hull story to later computational geometry themes without using Chapter 2 content as substance. The common thread is the same: model a spatial problem, choose primitives, maintain a data structure, and certify local events with predicates. The slide should leave students seeing convex hull as the first example of a broader algorithm design language."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 64px 92px 48px;
+      gap: 20px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 64px; line-height: 1.04; font-weight: 700; max-width: 1420px; }
+    h2 { font-size: 52px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 30px; line-height: 1.15; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 26px; line-height: 1.28; }
+    ul { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 21px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1240px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 28px; align-items: stretch; }
+    .cols { grid-template-columns: 0.92fr 1.08fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 22px 24px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .math-box { padding: 22px 24px; border-radius: 8px; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.35; }
+    .code { font-family: var(--font-mono); font-size: 24px; line-height: 1.35; }
+    .small { font-size: 22px; line-height: 1.25; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 21px; font-weight: 600; }
+    .svg-label { font: 700 26px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 25px 'STIX Two Text', Georgia, serif; fill: #111827; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Models To Predicates">
+      <div class="topline"><div class="eyebrow">Computational Geometry</div><div class="badge">source span pp. 1-18 / PDF 12-29</div></div>
+      <h1>Computational Geometry: From Models To Predicates</h1>
+      <p class="lead">The chapter begins with spatial applications, then compresses them into objects, primitives, and predicates that an algorithm can certify.</p>
+      <div class="content three">
+        <div class="panel blue">
+          <h3>Nearest Service</h3>
+          <figure class="diagram" aria-label="Sites around a query point">
+            <svg viewBox="0 0 500 520" role="img">
+              <path d="M58 96 L430 72 L455 410 L84 450 Z" fill="#eff6ff" stroke="#cbd5e1" stroke-width="4"/>
+              <path d="M96 180 C180 132,260 218,402 150" fill="none" stroke="#94a3b8" stroke-width="10"/>
+              <path d="M104 340 C205 282,286 354,410 286" fill="none" stroke="#94a3b8" stroke-width="10"/>
+              <circle cx="246" cy="258" r="12" fill="#b45309"/><text x="265" y="266" class="svg-label">q</text>
+              <circle cx="146" cy="150" r="12" fill="#2563eb"/><circle cx="360" cy="178" r="12" fill="#2563eb"/><circle cx="196" cy="374" r="12" fill="#2563eb"/>
+              <path d="M246 258 L360 178" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 10"/>
+              <text x="86" y="494" class="svg-small">model: points + distance comparison</text>
+            </svg>
+          </figure>
+        </div>
+        <div class="panel teal">
+          <h3>Robot Motion</h3>
+          <figure class="diagram" aria-label="Robot path through obstacles">
+            <svg viewBox="0 0 500 520" role="img">
+              <rect x="60" y="64" width="380" height="380" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+              <polygon points="132,120 210,160 170,246 98,218" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+              <polygon points="306,118 398,146 376,244 298,220" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+              <polygon points="236,312 344,326 316,410 214,392" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+              <path d="M94 382 C160 300,190 286,250 256 C304 230,346 254,406 184" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="94" cy="382" r="14" fill="#0f766e"/><circle cx="406" cy="184" r="14" fill="#6d28d9"/>
+              <text x="82" y="494" class="svg-small">model: free space + collision predicate</text>
+            </svg>
+          </figure>
+        </div>
+        <div class="panel amber">
+          <h3>Map Overlay</h3>
+          <figure class="diagram" aria-label="Two subdivisions overlaid">
+            <svg viewBox="0 0 500 520" role="img">
+              <rect x="58" y="64" width="386" height="380" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+              <path d="M86 120 L408 390 M112 396 L426 110 M68 250 L444 250" stroke="#2563eb" stroke-width="5"/>
+              <path d="M118 80 L170 444 M272 68 L230 444 M390 80 L338 444" stroke="#0f766e" stroke-width="5" stroke-dasharray="16 10"/>
+              <circle cx="153" cy="250" r="9" fill="#b45309"/><circle cx="250" cy="250" r="9" fill="#b45309"/><circle cx="355" cy="250" r="9" fill="#b45309"/>
+              <text x="82" y="494" class="svg-small">model: segments + intersection events</text>
+            </svg>
+          </figure>
+        </div>
+      </div>
+      <div class="footer"><span>Applications motivate geometry, but predicates drive code</span><span>Chapter 1 builds the vocabulary through convex hulls</span></div>
+      <aside class="speaker-notes">Open by making the chapter's promise concrete: computational geometry begins with real spatial situations, but the algorithm never sees a city, robot, or map directly. It sees points, segments, polygons, and predicate answers. The triptych is synthetic, not copied from the book, and lets the instructor ask what modeling decision each application forces before any theorem can be useful.</aside>
+    </section>
+
+    <section class="slide" data-label="Geometric Algorithm Pipeline">
+      <div class="topline"><div class="eyebrow">Vocabulary</div><div class="badge">application -> object -> primitive -> data structure</div></div>
+      <h2>What Counts As A Geometric Algorithm</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Working Definition</div><p>A geometric algorithm converts a spatial question into finite objects, updates a finite state, and branches on geometric predicates.</p></div>
+          <div class="panel teal"><h3>Inspect The Contract</h3><ul><li>Input model: points, segments, polygons, subdivisions.</li><li>Primitive predicates: orientation, containment, intersection, distance.</li><li>State: ordered lists, edge records, search structures.</li></ul></div>
+        </div>
+        <figure class="diagram" aria-label="Four-stage geometric algorithm pipeline">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow2" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="54" y="238" width="170" height="118" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="91" y="286" class="svg-label">Application</text><text x="82" y="322" class="svg-small">route, map, service</text>
+            <rect x="270" y="238" width="170" height="118" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="313" y="286" class="svg-label">Object</text><text x="302" y="322" class="svg-small">points, edges</text>
+            <rect x="486" y="238" width="170" height="118" rx="14" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="518" y="286" class="svg-label">Primitive</text><text x="514" y="322" class="svg-small">turn, compare</text>
+            <rect x="702" y="238" width="170" height="118" rx="14" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="735" y="286" class="svg-label">Structure</text><text x="733" y="322" class="svg-small">list, tree, graph</text>
+            <line x1="225" y1="297" x2="260" y2="297" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow2)"/><line x1="441" y1="297" x2="476" y2="297" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow2)"/><line x1="657" y1="297" x2="692" y2="297" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow2)"/>
+            <path d="M786 360 C735 468,578 500,410 452 C250 407,166 386,136 360" fill="none" stroke="#94a3b8" stroke-width="5" stroke-dasharray="12 10" marker-end="url(#arrow2)"/>
+            <text x="312" y="508" class="svg-label">verification loops back to the model</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>The finite state is the algorithm's memory of geometry</span><span>Predicates are where correctness meets computation</span></div>
+      <aside class="speaker-notes">Use this slide to define the working pipeline for the whole course. An application suggests a geometric object, the object is reduced to a small set of primitives, and the primitives are organized by a data structure. The point is that a geometric algorithm is not only arithmetic on coordinates; it is a representation choice plus a sequence of certified local decisions.</aside>
+    </section>
+
+    <section class="slide" data-label="Convexity Segment Test">
+      <div class="topline"><div class="eyebrow">Convexity</div><div class="badge">global shape, local segment inspection</div></div>
+      <h2>Convexity As A Segment Test</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Convex and non-convex segment tests">
+          <svg viewBox="0 0 900 620" role="img">
+            <path d="M92 156 C152 72,312 86,356 176 C410 286,316 430,178 410 C62 394,34 238,92 156 Z" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/>
+            <circle cx="128" cy="244" r="10" fill="#111827"/><circle cx="302" cy="332" r="10" fill="#111827"/><line x1="128" y1="244" x2="302" y2="332" stroke="#0f766e" stroke-width="6"/>
+            <text x="136" y="502" class="svg-label">convex: every chord stays inside</text>
+            <path d="M540 154 C596 74,764 96,782 206 C706 186,664 244,714 304 C668 420,512 406,490 292 C470 230,492 180,540 154 Z" fill="#fffbeb" stroke="#b45309" stroke-width="6"/>
+            <circle cx="548" cy="236" r="10" fill="#111827"/><circle cx="742" cy="318" r="10" fill="#111827"/><line x1="548" y1="236" x2="742" y2="318" stroke="#b45309" stroke-width="6"/>
+            <circle cx="640" cy="276" r="18" fill="#fff" stroke="#b45309" stroke-width="5"/><text x="540" y="502" class="svg-label">not convex: one chord exits</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Definition</div><p>A set \(S\) is convex when for all \(p,q\in S\), the entire segment \(\overline{pq}\) lies in \(S\).</p></div>
+          <div class="panel blue"><h3>Algorithmic Reading</h3><p>The test is quantified over infinitely many pairs, but it hints that boundary edges should be certified by side-of-line predicates.</p></div>
+          <div class="panel slate"><p class="small">In Chapter 1, this idea becomes a convex hull: the smallest convex container for a finite point set.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Convexity turns a set property into segment containment</span><span>The hull is the finite boundary we can compute</span></div>
+      <aside class="speaker-notes">Introduce convexity as a universal segment test rather than as a picture of a rounded object. For every pair of points inside the set, the connecting segment must remain inside. This turns a global-looking shape property into a simple inspection question, and it prepares students for why hull algorithms only need to preserve boundary evidence.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Computable Boundary">
+      <div class="topline"><div class="eyebrow">Convex Hull Output</div><div class="badge">clockwise polygon list</div></div>
+      <h2>Hull As A Computable Boundary</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Finite Output</div><p>For a point set \(P\), report extreme vertices as a cyclic list, for example \(h_1,h_2,\ldots,h_k\) in clockwise order.</p></div>
+          <div class="panel teal"><h3>Why Order Matters</h3><p>The same vertices as an unordered set do not define edge traversal, inside tests, or the local turn checks used by scans.</p></div>
+          <div class="panel amber"><h3>Certificate</h3><p>Every input point lies inside or on the oriented polygon boundary.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Point set with clockwise convex hull boundary">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow4" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <polygon points="144,366 218,154 520,92 760,260 662,472 330,508" fill="#eff6ff" stroke="#2563eb" stroke-width="7"/>
+            <polyline points="144,366 218,154 520,92 760,260" fill="none" stroke="#1e3a8a" stroke-width="8" marker-end="url(#arrow4)"/>
+            <g fill="#111827"><circle cx="144" cy="366" r="10"/><circle cx="218" cy="154" r="10"/><circle cx="520" cy="92" r="10"/><circle cx="760" cy="260" r="10"/><circle cx="662" cy="472" r="10"/><circle cx="330" cy="508" r="10"/><circle cx="338" cy="258" r="8"/><circle cx="504" cy="260" r="8"/><circle cx="418" cy="386" r="8"/><circle cx="620" cy="326" r="8"/><circle cx="284" cy="330" r="8"/></g>
+            <text x="186" y="132" class="svg-label">h1</text><text x="524" y="72" class="svg-label">h2</text><text x="770" y="252" class="svg-label">h3</text><text x="650" y="514" class="svg-label">h4</text><text x="282" y="548" class="svg-label">h5</text><text x="86" y="396" class="svg-label">h6</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Boundary list = geometric object plus traversal convention</span><span>Interior points are evidence, not output</span></div>
+      <aside class="speaker-notes">Shift from convex sets to the finite output an algorithm can return. The convex hull may be defined as the smallest convex set containing the points, but a program reports a cyclic list of extreme vertices. Emphasize that the clockwise order is part of the answer because later predicates, containment checks, and edge traversals depend on that order.</aside>
+    </section>
+
+    <section class="slide" data-label="Definition Versus Algorithm">
+      <div class="topline"><div class="eyebrow">Translation Gap</div><div class="badge">infinite definition -> finite certificate</div></div>
+      <h2>Why The Definition Is Not The Algorithm</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Infinite halfplanes versus finite hull edges">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="70" y="74" width="326" height="470" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <text x="116" y="126" class="svg-label">Definition View</text>
+            <g stroke="#94a3b8" stroke-width="4" opacity=".72"><line x1="54" y1="210" x2="416" y2="92"/><line x1="64" y1="284" x2="418" y2="172"/><line x1="68" y1="362" x2="410" y2="520"/><line x1="106" y1="546" x2="374" y2="80"/><line x1="52" y1="438" x2="410" y2="314"/></g>
+            <path d="M154 346 L184 218 L294 176 L344 296 L280 408 Z" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/>
+            <rect x="504" y="74" width="326" height="470" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <text x="548" y="126" class="svg-label">Algorithm View</text>
+            <polygon points="570,376 612,204 724,160 778,306 690,430" fill="#eff6ff" stroke="#2563eb" stroke-width="7"/>
+            <g stroke="#0f766e" stroke-width="5"><line x1="570" y1="376" x2="612" y2="204"/><line x1="612" y1="204" x2="724" y2="160"/><line x1="724" y1="160" x2="778" y2="306"/><line x1="778" y1="306" x2="690" y2="430"/><line x1="690" y1="430" x2="570" y2="376"/></g>
+            <text x="536" y="500" class="svg-small">five oriented edges certify all points</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Definition</h3><p>Intersection of all convex sets containing \(P\): elegant, unique, not directly enumerable.</p></div>
+          <div class="panel teal"><h3>Certificate</h3><p>A finite boundary list whose oriented edges keep all input points on the interior side.</p></div>
+          <div class="math-box math-box--remark"><div class="math-box-label">Design Principle</div><p>Keep the definition for correctness; compute a certificate whose verification is finite.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Definitions identify the target</span><span>Algorithms expose a finite witness</span></div>
+      <aside class="speaker-notes">Use the contrast between the infinite intersection definition and the finite edge certificate. The mathematical definition explains uniqueness, but it does not say which lines or halfplanes to examine. A hull algorithm succeeds by finding enough boundary witnesses so that every input point is on the allowed side of every reported oriented edge.</aside>
+    </section>
+
+    <section class="slide" data-label="Slow Convex Hull">
+      <div class="topline"><div class="eyebrow">First Algorithm</div><div class="badge">directed pair witnesses and O(n^3)</div></div>
+      <h2>Slow Convex Hull</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="panel blue"><h3>Directed Pair Test</h3><p class="code">for ordered pair (p,q):<br>  scan every r<br>  accept edge if all r lie one side</p></div>
+          <div class="math-box math-box--theorem"><div class="math-box-label">Cost</div><p>\(n(n-1)\) directed pairs times \(O(n)\) witnesses gives \(O(n^3)\).</p></div>
+          <div class="panel slate"><p>This is slow, but it makes the edge certificate completely visible.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Directed edge with witness points on one side">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow6" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <line x1="158" y1="430" x2="714" y2="172" stroke="#2563eb" stroke-width="8" marker-end="url(#arrow6)"/>
+            <path d="M168 430 C330 384,520 310,710 176 L790 440 L160 540 Z" fill="#eff6ff" opacity=".85"/>
+            <g fill="#111827"><circle cx="158" cy="430" r="12"/><circle cx="714" cy="172" r="12"/><circle cx="282" cy="426" r="10"/><circle cx="404" cy="374" r="10"/><circle cx="566" cy="342" r="10"/><circle cx="620" cy="454" r="10"/><circle cx="742" cy="360" r="10"/></g>
+            <g stroke="#b45309" stroke-width="4" stroke-dasharray="8 8"><line x1="404" y1="374" x2="404" y2="282"/><line x1="620" y1="454" x2="620" y2="282"/><line x1="282" y1="426" x2="282" y2="282"/></g>
+            <text x="132" y="468" class="svg-label">p</text><text x="724" y="158" class="svg-label">q</text><text x="264" y="258" class="svg-label">witness scan: all points on one side</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Brute force is a proof aid</span><span>The next algorithm avoids retesting every pair</span></div>
+      <aside class="speaker-notes">Present the slow method as a correctness microscope. For each directed pair of input points, test whether all other points lie on the same side. If they do, that directed pair is a hull edge candidate. There are quadratically many pairs and a linear witness scan for each, giving cubic time, which is too slow but very useful for understanding the certificate.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Orientation Predicate">
+      <div class="topline"><div class="eyebrow">Primitive Predicate</div><div class="badge">determinant sign = turn direction</div></div>
+      <h2>The Orientation Predicate</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Orientation determinant and twice-area triangle">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow7" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#0f766e"/></marker></defs>
+            <line x1="100" y1="506" x2="806" y2="506" stroke="#cbd5e1" stroke-width="4"/><line x1="100" y1="506" x2="100" y2="72" stroke="#cbd5e1" stroke-width="4"/>
+            <polygon points="206,430 594,390 408,150" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/>
+            <path d="M206 430 L594 390 L408 150" fill="none" stroke="#0f766e" stroke-width="7" marker-end="url(#arrow7)"/>
+            <circle cx="206" cy="430" r="12" fill="#111827"/><circle cx="594" cy="390" r="12" fill="#111827"/><circle cx="408" cy="150" r="12" fill="#111827"/>
+            <text x="176" y="466" class="svg-label">a</text><text x="604" y="390" class="svg-label">b</text><text x="414" y="142" class="svg-label">c</text>
+            <text x="470" y="250" class="svg-label">positive area</text><text x="468" y="286" class="svg-small">left turn</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Predicate</div><p class="formula">\(\operatorname{orient}(a,b,c)=\det\begin{pmatrix} b_x-a_x & b_y-a_y\\ c_x-a_x & c_y-a_y\end{pmatrix}\)</p></div>
+          <div class="panel teal"><h3>Sign Meaning</h3><ul><li>\(>0\): left turn.</li><li>\(<0\): right turn.</li><li>\(=0\): collinear.</li></ul></div>
+          <div class="panel amber"><p class="small">Magnitude equals twice signed triangle area.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The determinant is the algorithm's turning sensor</span><span>It replaces visual intuition with a branchable test</span></div>
+      <aside class="speaker-notes">Make the determinant the first real primitive of the chapter. Its sign says whether the triple turns left, turns right, or is collinear, and its magnitude is twice the signed area of the triangle. This is the bridge from geometry to implementation: the algorithm does not reason with pictures; it branches on this predicate.</aside>
+    </section>
+
+    <section class="slide" data-label="Degeneracy">
+      <div class="topline"><div class="eyebrow">Robust Specification</div><div class="badge">collinear is a real case</div></div>
+      <h2>Degeneracy Is Not A Footnote</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--warning"><div class="math-box-label">Replacement Rule</div><p>When \(\operatorname{orient}(a,b,c)=0\), replace left/right branching with an on-segment or ordering convention.</p></div>
+          <div class="panel blue"><h3>Typical Choices</h3><ul><li>Keep only endpoints on a hull edge.</li><li>Keep all boundary collinear points.</li><li>Break ties lexicographically before scanning.</li></ul></div>
+        </div>
+        <figure class="diagram" aria-label="Collinear on-segment replacement for left-right turn">
+          <svg viewBox="0 0 900 620" role="img">
+            <line x1="120" y1="330" x2="780" y2="330" stroke="#2563eb" stroke-width="8"/>
+            <g fill="#111827"><circle cx="162" cy="330" r="13"/><circle cx="350" cy="330" r="13"/><circle cx="614" cy="330" r="13"/><circle cx="744" cy="330" r="13"/></g>
+            <text x="142" y="374" class="svg-label">a</text><text x="330" y="374" class="svg-label">c</text><text x="596" y="374" class="svg-label">b</text><text x="724" y="374" class="svg-label">d</text>
+            <rect x="242" y="146" width="440" height="86" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <text x="278" y="199" class="svg-label">orientation = 0</text>
+            <path d="M350 314 C384 240,520 240,614 314" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 10"/>
+            <text x="316" y="486" class="svg-label">c is on segment ab; d is beyond b</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Degenerate cases define output semantics</span><span>They must be integrated into the proof</span></div>
+      <aside class="speaker-notes">Treat collinearity as part of the specification rather than a rare annoyance. When the orientation value is zero, left and right are not valid categories, so the algorithm needs an on-segment or tie-breaking rule. Students should see that degeneracy changes control flow, output conventions, and proof statements, not merely a line of defensive code.</aside>
+    </section>
+
+    <section class="slide" data-label="Floating Point Breaks Topology">
+      <div class="topline"><div class="eyebrow">Numerical Robustness</div><div class="badge">small error, discrete consequence</div></div>
+      <h2>When Floating Point Breaks Topology</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Near-collinear inconsistent edge graph">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="74" y="84" width="752" height="452" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#94a3b8" stroke-width="3" opacity=".5"><line x1="120" y1="420" x2="760" y2="188"/><line x1="120" y1="424" x2="760" y2="192"/><line x1="120" y1="416" x2="760" y2="184"/></g>
+            <g fill="#111827"><circle cx="150" cy="410" r="11"/><circle cx="286" cy="360" r="11"/><circle cx="424" cy="310" r="11"/><circle cx="560" cy="258" r="11"/><circle cx="704" cy="206" r="11"/></g>
+            <path d="M150 410 L424 310 L286 360 L560 258 L704 206" fill="none" stroke="#b45309" stroke-width="7"/>
+            <circle cx="286" cy="360" r="32" fill="none" stroke="#b45309" stroke-width="5"/><circle cx="424" cy="310" r="32" fill="none" stroke="#b45309" stroke-width="5"/>
+            <text x="166" y="136" class="svg-label">inconsistent signs can create a non-polygonal boundary record</text>
+            <text x="210" y="510" class="svg-small">near-collinear triples classified differently by roundoff</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel amber"><h3>Failure Mode</h3><p>A predicate value near zero may flip sign under roundoff, so two local decisions can disagree about the same intended line.</p></div>
+          <div class="math-box math-box--warning"><div class="math-box-label">Topological Cost</div><p>The output can stop being a simple polygon even when all coordinate errors look tiny.</p></div>
+          <div class="panel teal"><p class="small">Robustness means preserving the combinatorial decisions required by the proof.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Numerical error becomes structural after branching</span><span>Predicates deserve engineering attention</span></div>
+      <aside class="speaker-notes">Explain robustness through topology, not just through numeric error. If nearly collinear triples are classified inconsistently, the directed edge graph can acquire crossings, gaps, or repeated boundary decisions that no polygon could realize. The lesson is that a tiny arithmetic perturbation can become a discrete structural error after predicates drive branching.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Incremental Design Move">
+      <div class="topline"><div class="eyebrow">Faster Hull</div><div class="badge">sort left-to-right; split chains</div></div>
+      <h2>Incremental Design Move</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="panel blue"><h3>Schedule</h3><p>Sort points lexicographically by \(x\), then \(y\). Add them in that fixed order.</p></div>
+          <div class="panel teal"><h3>State</h3><p>Maintain an upper hull chain and a lower hull chain. Each update touches the chain end.</p></div>
+          <div class="math-box math-box--remark"><div class="math-box-label">Design Move</div><p>Ordered input converts global edge search into local turn repair.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Sorted points split into upper and lower hull chains">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow10" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <line x1="100" y1="510" x2="820" y2="510" stroke="#cbd5e1" stroke-width="4" marker-end="url(#arrow10)"/>
+            <text x="750" y="552" class="svg-label">x order</text>
+            <g fill="#111827"><circle cx="136" cy="386" r="11"/><circle cx="228" cy="210" r="11"/><circle cx="318" cy="332" r="11"/><circle cx="430" cy="146" r="11"/><circle cx="546" cy="292" r="11"/><circle cx="664" cy="198" r="11"/><circle cx="752" cy="404" r="11"/></g>
+            <polyline points="136,386 228,210 430,146 664,198 752,404" fill="none" stroke="#2563eb" stroke-width="8"/>
+            <polyline points="136,386 318,332 546,292 752,404" fill="none" stroke="#0f766e" stroke-width="8"/>
+            <text x="286" y="104" class="svg-label">upper chain</text><text x="314" y="430" class="svg-label">lower chain</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Sorting creates a prefix invariant</span><span>Upper and lower chains avoid all-pairs search</span></div>
+      <aside class="speaker-notes">Now replace the cubic search with a sorted incremental plan. Sorting the points left to right gives a one-dimensional schedule, and the hull boundary splits naturally into an upper chain and a lower chain. The design move is powerful because it limits every update to the current chain end instead of reconsidering every pair of points.</aside>
+    </section>
+
+    <section class="slide" data-label="Scan Stepper">
+      <div class="topline"><div class="eyebrow">Stack State</div><div class="badge">append/pop and right-turn invariant</div></div>
+      <h2>Andrew/Graham Scan Stepper</h2>
+      <div class="content three">
+        <div class="panel blue"><h3>1. Append</h3><figure class="diagram" aria-label="Append next point"><svg viewBox="0 0 520 420" role="img"><polyline points="80,300 180,150 310,220" fill="none" stroke="#2563eb" stroke-width="8"/><circle cx="80" cy="300" r="12"/><circle cx="180" cy="150" r="12"/><circle cx="310" cy="220" r="12"/><circle cx="420" cy="130" r="15" fill="#b45309"/><line x1="310" y1="220" x2="420" y2="130" stroke="#0f766e" stroke-width="6" stroke-dasharray="12 10"/><text x="142" y="368" class="svg-small">new point joins the chain end</text></svg></figure></div>
+        <div class="panel amber"><h3>2. Inspect Turn</h3><figure class="diagram" aria-label="Inspect last three points"><svg viewBox="0 0 520 420" role="img"><polyline points="80,300 180,150 310,220 420,130" fill="none" stroke="#2563eb" stroke-width="8"/><circle cx="180" cy="150" r="34" fill="none" stroke="#b45309" stroke-width="5"/><circle cx="310" cy="220" r="34" fill="none" stroke="#b45309" stroke-width="5"/><circle cx="420" cy="130" r="34" fill="none" stroke="#b45309" stroke-width="5"/><text x="150" y="368" class="svg-small">last triple violates the invariant</text></svg></figure></div>
+        <div class="panel teal"><h3>3. Pop</h3><figure class="diagram" aria-label="Pop middle point"><svg viewBox="0 0 520 420" role="img"><polyline points="80,300 180,150 420,130" fill="none" stroke="#2563eb" stroke-width="8"/><circle cx="80" cy="300" r="12"/><circle cx="180" cy="150" r="12"/><circle cx="420" cy="130" r="12"/><circle cx="310" cy="220" r="12" fill="#b45309"/><line x1="270" y1="180" x2="354" y2="258" stroke="#b45309" stroke-width="6"/><line x1="354" y1="180" x2="270" y2="258" stroke="#b45309" stroke-width="6"/><text x="144" y="368" class="svg-small">middle point cannot be extreme</text></svg></figure></div>
+      </div>
+      <div class="footer"><span>The state is a chain, not just a stack</span><span>Each pop has a geometric reason</span></div>
+      <aside class="speaker-notes">Walk through the stack behavior as an algorithmic state diagram. Append the next point, inspect the last three points, and pop the middle one while the local turn violates the chosen clockwise invariant. Each pop removes a vertex that cannot remain on the final chain once the new point is included, so the state keeps a visible geometric meaning.</aside>
+    </section>
+
+    <section class="slide" data-label="Equal X And Collinear Runs">
+      <div class="topline"><div class="eyebrow">Implementation Convention</div><div class="badge">ties and boundary policy</div></div>
+      <h2>Handling Equal x And Collinear Runs</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Equal x sorting and collinear boundary runs">
+          <svg viewBox="0 0 900 620" role="img">
+            <line x1="172" y1="520" x2="172" y2="100" stroke="#cbd5e1" stroke-width="4"/><text x="116" y="78" class="svg-label">same x</text>
+            <g fill="#111827"><circle cx="172" cy="420" r="12"/><circle cx="172" cy="302" r="12"/><circle cx="172" cy="184" r="12"/></g>
+            <path d="M172 420 L172 302 L172 184" stroke="#b45309" stroke-width="6" stroke-dasharray="12 10"/>
+            <line x1="352" y1="420" x2="748" y2="248" stroke="#2563eb" stroke-width="8"/>
+            <g fill="#111827"><circle cx="352" cy="420" r="12"/><circle cx="482" cy="364" r="12"/><circle cx="620" cy="304" r="12"/><circle cx="748" cy="248" r="12"/></g>
+            <circle cx="482" cy="364" r="28" fill="none" stroke="#0f766e" stroke-width="5"/><circle cx="620" cy="304" r="28" fill="none" stroke="#0f766e" stroke-width="5"/>
+            <text x="340" y="510" class="svg-label">collinear boundary run</text>
+            <text x="346" y="552" class="svg-small">endpoint-only hull or inclusive boundary list</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Equal x</h3><p>Sort by \(x\), then \(y\), so vertical stacks enter the scan deterministically.</p></div>
+          <div class="panel teal"><h3>Collinear Boundary</h3><p>Choose whether intermediate boundary points are omitted or retained.</p></div>
+          <div class="math-box math-box--warning"><div class="math-box-label">Consistency Rule</div><p>The scan predicate, output convention, and proof must all use the same tie policy.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Tie-breaking is part of the algorithm</span><span>Boundary policy changes the returned list, not the convex set</span></div>
+      <aside class="speaker-notes">Use this slide to pin down output convention. Equal x-coordinates require a secondary order so the scan has a deterministic schedule. Collinear runs require a choice: keep only endpoints for the minimal hull polygon, or keep boundary collinear points for an inclusive boundary listing. Either convention can be correct if the predicate and proof use the same rule.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Theorem 1.1 Invariants">
+      <div class="topline"><div class="eyebrow">Correctness Proof</div><div class="badge">Theorem 1.1 as invariants</div></div>
+      <h2>Proof Of Theorem 1.1 As Invariants</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Invariant 1</div><p>After a prefix is processed, the stored chain is the hull chain of that prefix.</p></div>
+          <div class="math-box math-box--proof"><div class="math-box-label">Invariant 2</div><p>No unseen point lies in the finished vertical slab, because the input is processed left-to-right.</p></div>
+          <div class="math-box math-box--example"><div class="math-box-label">Invariant 3</div><p>Each point is appended once and popped at most once from each chain.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Proof graph for incremental hull invariants">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow13" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="86" y="112" width="238" height="112" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="128" y="158" class="svg-label">prefix hull</text><text x="124" y="194" class="svg-small">induction state</text>
+            <rect x="338" y="292" width="238" height="112" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="386" y="338" class="svg-label">local repair</text><text x="380" y="374" class="svg-small">append / pop</text>
+            <rect x="590" y="112" width="238" height="112" rx="14" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="638" y="158" class="svg-label">empty slab</text><text x="638" y="194" class="svg-small">sorted order</text>
+            <rect x="338" y="464" width="238" height="92" rx="14" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="374" y="520" class="svg-label">linear pops</text>
+            <line x1="324" y1="168" x2="580" y2="168" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow13)"/><line x1="690" y1="226" x2="526" y2="286" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow13)"/><line x1="206" y1="226" x2="386" y2="286" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow13)"/><line x1="458" y1="406" x2="458" y2="454" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow13)"/>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Correctness follows the maintained chain meaning</span><span>Time follows from one append and limited pops</span></div>
+      <aside class="speaker-notes">Frame the theorem proof as three invariants rather than as a block of text. After processing a prefix of the sorted points, the stored chain is the relevant hull chain for that prefix; the empty slab between consecutive processed points prevents hidden future points from invalidating past interior decisions; and each point is appended once and popped at most once, explaining linear scan work after sorting.</aside>
+    </section>
+
+    <section class="slide" data-label="Cost Model">
+      <div class="topline"><div class="eyebrow">Asymptotics</div><div class="badge">slow n^3 versus sort plus scan</div></div>
+      <h2>Cost Model</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Complexity chart comparing cubic and n log n">
+          <svg viewBox="0 0 900 620" role="img">
+            <line x1="112" y1="514" x2="800" y2="514" stroke="#111827" stroke-width="4"/><line x1="112" y1="514" x2="112" y2="80" stroke="#111827" stroke-width="4"/>
+            <path d="M120 506 C230 500,324 462,410 380 C522 272,600 156,760 92" fill="none" stroke="#b45309" stroke-width="8"/>
+            <path d="M120 506 C238 478,356 444,474 398 C592 352,690 306,774 262" fill="none" stroke="#2563eb" stroke-width="8"/>
+            <path d="M120 506 L774 430" fill="none" stroke="#0f766e" stroke-width="8"/>
+            <text x="626" y="124" class="svg-label">O(n^3)</text><text x="620" y="290" class="svg-label">sort: O(n log n)</text><text x="620" y="450" class="svg-label">scan: O(n)</text>
+            <text x="770" y="556" class="svg-label">n</text><text x="62" y="92" class="svg-label">work</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel amber"><h3>Slow Hull</h3><p>All directed pairs times all witnesses: \(O(n^3)\).</p></div>
+          <div class="panel blue"><h3>Incremental Hull</h3><p>Sort once, then scan upper and lower chains: \(O(n\log n)\).</p></div>
+          <div class="panel teal"><h3>Design Pattern</h3><p>Pay for order so local invariants can replace global search.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The scan work is linear after sorting</span><span>The proof and cost model share the same stack invariant</span></div>
+      <aside class="speaker-notes">Compare the two algorithms on the same axes. The slow method spends work on all directed pairs and all witnesses, leading to cubic growth. The scan pays for sorting and then performs a linear number of stack actions. The point is not just a better asymptotic bound; it is the design pattern of trading global search for an ordered local invariant.</aside>
+    </section>
+
+    <section class="slide" data-label="Robustness Design Phases">
+      <div class="topline"><div class="eyebrow">Algorithm Engineering</div><div class="badge">simplify, integrate, certify</div></div>
+      <h2>Robustness Design Phases</h2>
+      <div class="content three">
+        <div class="panel blue"><h3>1. Simplify</h3><p>Start under general position so the core geometric invariant is visible.</p><figure class="diagram" aria-label="Simplified point set"><svg viewBox="0 0 500 300" role="img"><g fill="#2563eb"><circle cx="90" cy="210" r="12"/><circle cx="160" cy="90" r="12"/><circle cx="260" cy="170" r="12"/><circle cx="370" cy="82" r="12"/><circle cx="424" cy="220" r="12"/></g><polyline points="90,210 160,90 370,82 424,220" fill="none" stroke="#1e3a8a" stroke-width="6"/></svg></figure></div>
+        <div class="panel amber"><h3>2. Integrate Degeneracy</h3><p>Add collinear, equal-coordinate, and repeated-point cases to the specification.</p><figure class="diagram" aria-label="Degenerate point set"><svg viewBox="0 0 500 300" role="img"><line x1="72" y1="190" x2="430" y2="110" stroke="#b45309" stroke-width="6"/><g fill="#111827"><circle cx="72" cy="190" r="12"/><circle cx="190" cy="164" r="12"/><circle cx="310" cy="136" r="12"/><circle cx="430" cy="110" r="12"/></g><line x1="248" y1="50" x2="248" y2="238" stroke="#cbd5e1" stroke-width="4"/><circle cx="248" cy="96" r="12" fill="#2563eb"/><circle cx="248" cy="218" r="12" fill="#2563eb"/></svg></figure></div>
+        <div class="panel teal"><h3>3. Robust Predicates</h3><p>Choose arithmetic or symbolic rules that preserve the proof's combinatorial signs.</p><figure class="diagram" aria-label="Predicate wrapper"><svg viewBox="0 0 500 300" role="img"><rect x="80" y="82" width="340" height="120" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/><text x="118" y="134" class="svg-label">orient(a,b,c)</text><text x="124" y="172" class="svg-small">sign is a certified decision</text><path d="M250 202 L250 254" stroke="#0f766e" stroke-width="6"/><text x="194" y="278" class="svg-label">left / right / zero</text></svg></figure></div>
+      </div>
+      <div class="footer"><span>Clarity first, completeness next, certified predicates always</span><span>Robustness is a design phase, not a patch</span></div>
+      <aside class="speaker-notes">Connect the chapter's robustness discussion to a disciplined workflow. First simplify the problem under a general-position assumption so the idea is visible. Then integrate degeneracies into the formal cases. Finally choose predicate implementations that preserve the combinatorial decisions the proof assumes. This order keeps clarity without pretending that hostile inputs disappear.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Where The Book Goes Next">
+      <div class="topline"><div class="eyebrow">Course Map</div><div class="badge">from hulls to geometric data structures</div></div>
+      <h2>Where This Book Goes Next</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="panel blue"><h3>Shared Algorithm Language</h3><p>Model the domain, choose primitives, maintain a finite state, and certify local events with predicates.</p></div>
+          <div class="panel teal"><h3>Chapter 1 Takeaway</h3><p>Convex hulls are the first full example of the book's translation from geometry to computation.</p></div>
+          <div class="math-box math-box--exercise"><div class="math-box-label">Exit Question</div><p>For any later topic, ask: what is the object, what are the predicates, and what state must remain valid?</p></div>
+        </div>
+        <figure class="diagram" aria-label="Domain routing map to later computational geometry concepts">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow16" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <circle cx="450" cy="306" r="86" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/><text x="386" y="298" class="svg-label">Predicates</text><text x="374" y="334" class="svg-small">orientation first</text>
+            <rect x="74" y="86" width="238" height="96" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="112" y="144" class="svg-label">Subdivisions</text>
+            <rect x="588" y="86" width="238" height="96" rx="14" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="640" y="144" class="svg-label">Searching</text>
+            <rect x="74" y="434" width="238" height="96" rx="14" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="108" y="492" class="svg-label">Proximity</text>
+            <rect x="588" y="434" width="238" height="96" rx="14" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="624" y="492" class="svg-label">Robotics</text>
+            <line x1="312" y1="134" x2="382" y2="246" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow16)"/><line x1="588" y1="134" x2="518" y2="246" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow16)"/><line x1="312" y1="482" x2="382" y2="366" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow16)"/><line x1="588" y1="482" x2="518" y2="366" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow16)"/>
+            <text x="344" y="586" class="svg-small">Boundary, events, queries, and motion all reuse the same translation discipline.</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Do not jump to Chapter 2 content here</span><span>Use Chapter 1 as the method map</span></div>
+      <aside class="speaker-notes">Close with a routing map from the introductory hull story to later computational geometry themes without using Chapter 2 content as substance. The common thread is the same: model a spatial problem, choose primitives, maintain a data structure, and certify local events with predicates. The slide should leave students seeing convex hull as the first example of a broader algorithm design language.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

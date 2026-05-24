@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-08-motion-planning">
+  <meta name="chapter_title" content="Chapter 8 - Motion Planning">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-08-motion-planning/08-motion-planning.ipynb">
+  <meta name="source_span" content="printed pages 294-346.">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 8 - Motion Planning</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Computational Geometry in C",
+  "chapter_id": "chapter-08-motion-planning",
+  "chapter_title": "Chapter 8 - Motion Planning",
+  "notebook_path": "Computational-Geometry-in-C/chapter-08-motion-planning/08-motion-planning.ipynb",
+  "source_span": "printed pages 294-346.",
+  "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23",
+  "source_provenance": "Assigned printed span 294-346 maps to PDF pages 303-355 by PDF page = printed page + 9. PDF page 303 begins Chapter 8 printed page 294; PDF page 355 contains the end of printed page 346."
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "title": "Motion Planning As Reduction",
+    "notes": "Open by naming the chapter's main move: a robot moving through continuous space becomes a smaller geometric object that can be searched. The deck follows the printed span 294-346, with provenance that these pages map to PDF pages 303-355. Emphasize that every visual today is synthetic or notebook-generated, not a textbook figure."
+  },
+  {
+    "slide": 2,
+    "title": "The Planning Problem",
+    "notes": "Set up the vocabulary before any algorithm appears. A configuration is one complete placement of the robot, obstacles carve out forbidden configurations, and a feasible motion is a continuous curve that stays in free space. The drawing deliberately separates workspace intuition from configuration-space bookkeeping."
+  },
+  {
+    "slide": 3,
+    "title": "Three Questions: Decision, Path, Shortest",
+    "notes": "Frame the chapter as a hierarchy of tasks, not a single problem. The decision question asks only whether two configurations lie in the same free-space component. The path question asks for a witness curve. The shortest-path question adds an optimization layer, which is why visibility graphs and Dijkstra enter."
+  },
+  {
+    "slide": 4,
+    "title": "Point Robot: Infinite Paths To Finite Graph",
+    "notes": "Use the notebook visual as the first concrete reduction. Infinitely many polygonal routes are possible, but a shortest route only needs to turn at obstacle vertices. Once those visible vertex pairs are turned into graph edges, the geometric problem becomes a weighted graph problem with fourteen nodes and twenty-seven visibility edges in the checked scene."
+  },
+  {
+    "slide": 5,
+    "title": "Visibility Lemma Proof Roadmap",
+    "notes": "The proof idea should feel physical. If a shortest path bends in empty space, slide or pull the bend until it either disappears or hits an obstacle vertex. Repeating this local straightening leaves only start, target, and obstacle vertices as possible turn points. That is the bridge from continuous paths to a finite graph."
+  },
+  {
+    "slide": 6,
+    "title": "Dijkstra As Paint Spread",
+    "notes": "Explain Dijkstra with the paint-spread picture because it matches shortest-path geometry. Distances expand from the start like a front. The next settled vertex is the first unsettled vertex reached by the front, so its distance can no longer improve. In the notebook scene, the settled chain recovers s, O0.1, O1.1, and t."
+  },
+  {
+    "slide": 7,
+    "title": "Disk Robot: Grow The Obstacles",
+    "notes": "Now change the robot, not the algorithm. A disk collides when its center gets within one radius of an obstacle, so the disk center must avoid expanded obstacles. This converts the disk robot back into a point robot problem, provided the start and target centers remain outside the grown forbidden regions."
+  },
+  {
+    "slide": 8,
+    "title": "Minkowski Sum Language",
+    "notes": "Introduce Minkowski addition as the notation that makes obstacle growth precise. The forbidden reference-point region is the obstacle plus the reflected robot. Reflection matters because we ask where the robot's reference point can be placed so that some robot point overlaps an obstacle point."
+  },
+  {
+    "slide": 9,
+    "title": "Convex Polygon Translation",
+    "notes": "Use the convex robot artifact to make the formula computational. The notebook forms all pairwise sums between obstacle vertices and reflected robot vertices, then takes the convex hull. In the checked example, fifteen pairwise sums collapse to an eight-vertex convex configuration-space obstacle."
+  },
+  {
+    "slide": 10,
+    "title": "From Translation To Free-Space Components",
+    "notes": "Tie the growth construction to the decision problem. Once every obstacle is replaced by a configuration-space obstacle, the question is whether the start and target reference points occupy the same connected component of free space. A path planner can then search a roadmap, a cell graph, or another finite representation."
+  },
+  {
+    "slide": 11,
+    "title": "Ladder: Rotation Adds A Dimension",
+    "notes": "The ladder is the warning that translation-only pictures are not enough. A rigid segment has position and angle, so the configuration space has one more dimension than the floor plan. Narrow passages can be reachable only by coordinating translation with rotation, which is why the slide uses slices by angle."
+  },
+  {
+    "slide": 12,
+    "title": "Cell Decomposition And Retraction",
+    "notes": "Present cell decomposition as the general recipe behind many planners. Decompose free space into simple cells, connect adjacent cells in a graph, and retract each cell to a lower-dimensional spine. The important idea is not the exact decomposition shown, but the reduction from continuous motion to graph connectivity."
+  },
+  {
+    "slide": 13,
+    "title": "Robot Arm Reachability Annulus",
+    "notes": "Switch from translating bodies to an articulated chain. The endpoint cannot go farther than the sum of link lengths, and if one link dominates all the others it also cannot get too close to the base. The checked notebook instance has outer radius 4.1, inner radius 0, and the target lies inside that annulus."
+  },
+  {
+    "slide": 14,
+    "title": "Two-Kinks Construction",
+    "notes": "The two-kinks theorem compresses many joint angles into two grouped directions. Partition the links into two straight subchains, solve the two-circle intersection problem for the grouped lengths, then unfold each group along the same direction. The notebook witness uses grouped lengths 2.6 and 1.5 and reaches the target to numerical precision."
+  },
+  {
+    "slide": 15,
+    "title": "Separability: Easy Order, Hard Variants",
+    "notes": "The separability section changes the flavor of the chapter. For convex pieces translating in one fixed direction, a clean order can remove one piece at a time. But general variants can encode combinatorial choices, including Partition-style and Towers-of-Hanoi-style behavior, so the easy ordering theorem should not be mistaken for a universal planner."
+  },
+  {
+    "slide": 16,
+    "title": "Reduction Map Recap",
+    "notes": "Close by revisiting the chapter goal: each motion-planning family becomes a geometric reduction, and then often a graph or ordering problem. Point robots use visibility graphs, disks use offset obstacles, convex translators use Minkowski sums, ladders use configuration-space dimensions, arms use annuli and circle intersections, and separability exposes both clean orders and hard variants."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 62px 92px 48px;
+      gap: 18px;
+      border-top: 10px solid var(--slide-accent);
+      overflow: clip;
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, .04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, .035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 66px; line-height: 1.04; font-weight: 700; max-width: 1350px; }
+    h2 { font-size: 52px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 30px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 26px; line-height: 1.3; }
+    ul, ol { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    table { border-collapse: collapse; width: 100%; font-size: 24px; line-height: 1.22; }
+    th { text-align: left; background: #f8fafc; color: var(--slide-accent); border-bottom: 2px solid var(--slide-border); padding: 12px 14px; }
+    td { border-bottom: 1px solid var(--slide-border-light); padding: 10px 14px; vertical-align: top; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 0; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 21px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1320px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 26px; align-items: stretch; }
+    .cols { grid-template-columns: .96fr 1.04fr; }
+    .cols-wide { grid-template-columns: 1.12fr .88fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 17px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 21px 23px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .math-box { padding: 21px 23px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); letter-spacing: 0; }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.3; }
+    .small { font-size: 22px; line-height: 1.24; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .diagram img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 21px; font-weight: 600; }
+    .svg-label { font: 700 26px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 21px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 27px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .pill-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .pill { border: 1px solid var(--slide-border); background: #fff; color: var(--slide-accent); border-radius: 6px; padding: 7px 12px; font-size: 22px; font-weight: 700; }
+    .katex { font-size: 1em !important; }
+    .katex-display { margin: 8px 0 !important; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Motion Planning As Reduction">
+      <div class="topline"><div class="eyebrow">Computational Geometry in C</div><div class="badge">printed pp. 294-346 / PDF pp. 303-355</div></div>
+      <h1>Motion Planning As Reduction</h1>
+      <p class="lead">Continuous robot motion becomes finite or lower-dimensional geometry: graphs, offsets, Minkowski sums, configuration cells, annuli, and ordering arguments.</p>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Chapter Goal</div><p>For each robot model, identify the forbidden configurations and replace the motion question by a tractable geometric structure.</p></div>
+          <div class="panel teal"><h3>Checked Notebook Signals</h3><p>Visibility path, disk expansion, convex-robot Minkowski sum, two-kink arm witness, and separability order all have local validation artifacts.</p></div>
+          <div class="panel slate"><p class="small">Notebook: Computational-Geometry-in-C/chapter-08-motion-planning/08-motion-planning.ipynb. Source provenance uses PDF page = printed page + 9.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Motion planning reduction pipeline">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-title" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 Z" fill="#1e3a8a"/></marker></defs>
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="54" y="86" width="240" height="118" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="92" y="138" class="svg-label">workspace</text><text x="92" y="174" class="svg-small">obstacles + robot</text>
+              <rect x="330" y="86" width="240" height="118" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="366" y="138" class="svg-label">configuration</text><text x="386" y="174" class="svg-small">reference point</text>
+              <rect x="606" y="86" width="240" height="118" rx="12" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="660" y="138" class="svg-label">roadmap</text><text x="642" y="174" class="svg-small">finite search object</text>
+              <g stroke="#1e3a8a" stroke-width="5" marker-end="url(#arr-title)"><line x1="296" y1="145" x2="318" y2="145"/><line x1="572" y1="145" x2="594" y2="145"/></g>
+              <g transform="translate(60,300)">
+                <circle cx="74" cy="74" r="46" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="38" y="164" class="svg-small">point</text>
+                <circle cx="226" cy="74" r="46" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="178" y="164" class="svg-small">disk</text>
+                <polygon points="354,28 414,92 330,112" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="312" y="164" class="svg-small">polygon</text>
+                <line x1="488" y1="108" x2="618" y2="28" stroke="#6d28d9" stroke-width="10" stroke-linecap="round"/><text x="488" y="164" class="svg-small">ladder</text>
+                <polyline points="700,120 760,72 824,102" fill="none" stroke="#1e3a8a" stroke-width="10" stroke-linecap="round"/><circle cx="824" cy="102" r="11" fill="#0f766e"/><text x="710" y="164" class="svg-small">arm</text>
+              </g>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Manifest row 100</span><span>Design system: lecture-design-system-2026-05-23</span></div>
+      <aside class="speaker-notes">Open by naming the chapter's main move: a robot moving through continuous space becomes a smaller geometric object that can be searched. The deck follows the printed span 294-346, with provenance that these pages map to PDF pages 303-355. Emphasize that every visual today is synthetic or notebook-generated, not a textbook figure.</aside>
+    </section>
+
+    <section class="slide" data-label="The Planning Problem">
+      <div class="topline"><div class="eyebrow">Specification</div><div class="badge">configuration space first</div></div>
+      <h2>The Planning Problem</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Workspace and configuration space">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-problem" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="58" y="70" width="340" height="420" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="88" y="116" class="svg-label">workspace</text>
+            <polygon points="126,220 218,168 286,238 220,308" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <rect x="234" y="346" width="102" height="74" rx="6" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <circle cx="148" cy="400" r="26" fill="#2563eb"/><text x="90" y="462" class="svg-small">robot at q</text>
+            <rect x="500" y="70" width="340" height="420" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="530" y="116" class="svg-label">configuration space</text>
+            <path d="M560 180 C630 118,750 154,778 232 C804 308,740 406,630 390 C544 378,500 254,560 180 Z" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <path d="M616 226 C660 178,728 206,714 268 C702 320,620 324,602 274 C596 256,600 240,616 226 Z" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <circle cx="558" cy="370" r="12" fill="#0f766e"/><text x="528" y="416" class="svg-small">start</text>
+            <circle cx="772" cy="174" r="12" fill="#6d28d9"/><text x="742" y="146" class="svg-small">target</text>
+            <path d="M558 370 C610 316,620 248,684 222 C726 204,750 188,772 174" fill="none" stroke="#0f766e" stroke-width="7" stroke-linecap="round" marker-end="url(#arr-problem)"/>
+            <text x="606" y="468" class="svg-small">path stays in free space</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Configuration</div><p>A point \(q \in C\) records all parameters needed to place the robot: position, angle, or joint angles.</p></div>
+          <div class="math-box math-box--definition"><div class="math-box-label">Free Space</div><p class="formula">\(C_{\mathrm{free}} = C \setminus C_{\mathrm{obs}}\)</p><p>Collisions define \(C_{\mathrm{obs}}\); feasible motions are continuous curves in \(C_{\mathrm{free}}\).</p></div>
+          <div class="panel amber"><h3>Common Pitfall</h3><p>Searching the drawing of the room is not enough once the robot has radius, shape, rotation, or articulated joints.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Problem data: robot, obstacles, start, target</span><span>Output: a continuous collision-free motion or a certificate of no path</span></div>
+      <aside class="speaker-notes">Set up the vocabulary before any algorithm appears. A configuration is one complete placement of the robot, obstacles carve out forbidden configurations, and a feasible motion is a continuous curve that stays in free space. The drawing deliberately separates workspace intuition from configuration-space bookkeeping.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Three Questions">
+      <div class="topline"><div class="eyebrow">Hierarchy</div><div class="badge">same geometry, increasing demands</div></div>
+      <h2>Three Questions: Decision, Path, Shortest</h2>
+      <div class="content">
+        <div class="stack">
+          <table aria-label="Motion planning question hierarchy">
+            <thead><tr><th>Question</th><th>Input</th><th>Output</th><th>Typical Reduction</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Decision</strong></td><td>\(q_s, q_t \in C_{\mathrm{free}}\)</td><td>same component?</td><td>connectivity in a cell graph or roadmap</td></tr>
+              <tr><td><strong>Construct Path</strong></td><td>decision instance plus witness request</td><td>continuous curve \(\gamma\)</td><td>lift graph route back to geometric arcs or segments</td></tr>
+              <tr><td><strong>Shortest Path</strong></td><td>metric and obstacles</td><td>minimum-length feasible path</td><td>visibility graph plus Dijkstra for point robots</td></tr>
+            </tbody>
+          </table>
+          <figure class="diagram" aria-label="Three nested motion-planning questions">
+            <svg viewBox="0 0 1700 360" role="img">
+              <defs><marker id="arr-three" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 Z" fill="#1e3a8a"/></marker></defs>
+              <rect x="88" y="88" width="330" height="156" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="164" y="154" class="svg-label">decision</text><text x="132" y="198" class="svg-small">is there any path?</text>
+              <rect x="672" y="88" width="330" height="156" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="736" y="154" class="svg-label">construction</text><text x="720" y="198" class="svg-small">return a witness curve</text>
+              <rect x="1256" y="88" width="330" height="156" rx="14" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="1330" y="154" class="svg-label">optimization</text><text x="1326" y="198" class="svg-small">minimize path length</text>
+              <g stroke="#1e3a8a" stroke-width="6" marker-end="url(#arr-three)"><line x1="430" y1="166" x2="658" y2="166"/><line x1="1014" y1="166" x2="1242" y2="166"/></g>
+              <text x="556" y="132" class="svg-small">stronger output</text><text x="1138" y="132" class="svg-small">add metric</text>
+            </svg>
+          </figure>
+        </div>
+      </div>
+      <div class="footer"><span>Decision is topology of \(C_{\mathrm{free}}\)</span><span>Shortest path adds geometry and weights</span></div>
+      <aside class="speaker-notes">Frame the chapter as a hierarchy of tasks, not a single problem. The decision question asks only whether two configurations lie in the same free-space component. The path question asks for a witness curve. The shortest-path question adds an optimization layer, which is why visibility graphs and Dijkstra enter.</aside>
+    </section>
+
+    <section class="slide" data-label="Point Robot Graph">
+      <div class="topline"><div class="eyebrow">Point Robot</div><div class="badge">14 nodes / 27 edges / path length 5.8278</div></div>
+      <h2>Point Robot: Infinite Paths To Finite Graph</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Visibility Principle</div><p>A shortest path among polygonal obstacles is polygonal, and every interior turn can be placed at an obstacle vertex.</p></div>
+          <div class="panel teal"><h3>Notebook Witness</h3><p>The checked path uses only visibility edges: \(s \to O0.1 \to O1.1 \to t\).</p></div>
+          <div class="panel blue"><h3>Algorithmic Translation</h3><p>Build visible edges between start, target, and obstacle vertices; weight edges by Euclidean length; run Dijkstra.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Visibility graph shortest path notebook artifact">
+          <img src="../figures/visibility-graph-shortest-path.png" alt="Visibility graph shortest path among polygonal obstacles">
+        </figure>
+      </div>
+      <div class="footer"><span>Artifact: figures/visibility-graph-shortest-path.png</span><span>Check: shortest_path_uses_visible_edges = true</span></div>
+      <aside class="speaker-notes">Use the notebook visual as the first concrete reduction. Infinitely many polygonal routes are possible, but a shortest route only needs to turn at obstacle vertices. Once those visible vertex pairs are turned into graph edges, the geometric problem becomes a weighted graph problem with fourteen nodes and twenty-seven visibility edges in the checked scene.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Visibility Lemma">
+      <div class="topline"><div class="eyebrow">Proof Roadmap</div><div class="badge">straighten until a vertex blocks</div></div>
+      <h2>Visibility Lemma Proof Roadmap</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Visibility proof roadmap">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-vis" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#0f766e"/></marker></defs>
+            <polygon points="380,206 484,126 604,218 536,332 410,314" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <polygon points="180,386 260,294 336,420" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <circle cx="108" cy="510" r="13" fill="#0f766e"/><text x="86" y="550" class="svg-label">s</text>
+            <circle cx="790" cy="98" r="13" fill="#6d28d9"/><text x="810" y="104" class="svg-label">t</text>
+            <path d="M108 510 C210 474,256 406,322 360 C398 306,442 292,510 274 C612 246,698 166,790 98" fill="none" stroke="#94a3b8" stroke-width="7" stroke-dasharray="16 12"/>
+            <polyline points="108,510 336,420 410,314 604,218 790,98" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M322 360 C350 336,374 318,410 314" fill="none" stroke="#0f766e" stroke-width="6" marker-end="url(#arr-vis)"/>
+            <text x="118" y="92" class="svg-label">local straightening</text>
+            <text x="118" y="132" class="svg-small">a bend in open free space can be shortened</text>
+            <text x="458" y="392" class="svg-small">remaining turns are forced by obstacle vertices</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--proof"><div class="math-box-label">Proof Moves</div><ol><li>Replace any curved subpath in free space by the straight segment if visible.</li><li>If a bend is not forced by an obstacle vertex, perturb it to shorten the route.</li><li>Repeat until all turns are start, target, or obstacle vertices.</li></ol></div>
+          <div class="panel amber"><h3>What The Lemma Does Not Say</h3><p>It does not make all visibility edges part of the answer; it only says the optimum is contained in the graph search space.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Reduction: continuum of paths -> finite candidate turns</span><span>The graph is a superset of shortest-path possibilities</span></div>
+      <aside class="speaker-notes">The proof idea should feel physical. If a shortest path bends in empty space, slide or pull the bend until it either disappears or hits an obstacle vertex. Repeating this local straightening leaves only start, target, and obstacle vertices as possible turn points. That is the bridge from continuous paths to a finite graph.</aside>
+    </section>
+
+    <section class="slide" data-label="Dijkstra Paint Spread">
+      <div class="topline"><div class="eyebrow">Shortest Path Search</div><div class="badge">paint front = settled distances</div></div>
+      <h2>Dijkstra As Paint Spread</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Invariant</div><p>When a vertex is settled, the shortest route to it is known; no later frontier can beat that distance.</p></div>
+          <div class="panel teal"><h3>Notebook Path</h3><p>Settled route: \(s\), \(O0.1\), \(O1.1\), \(t\). The direct segment is blocked, so graph weights carry the detour.</p></div>
+          <div class="panel slate"><p class="small">Paint intuition: start at \(s\), expand distance uniformly along visible edges, and freeze each vertex the first time the front reaches it.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Dijkstra paint spread graph">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-dij" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#0f766e"/></marker></defs>
+            <g stroke="#cbd5e1" stroke-width="5">
+              <line x1="132" y1="468" x2="282" y2="354"/><line x1="282" y1="354" x2="462" y2="256"/><line x1="462" y1="256" x2="726" y2="118"/>
+              <line x1="132" y1="468" x2="350" y2="506"/><line x1="282" y1="354" x2="350" y2="506"/><line x1="462" y1="256" x2="608" y2="402"/><line x1="608" y1="402" x2="726" y2="118"/>
+              <line x1="282" y1="354" x2="608" y2="402"/><line x1="132" y1="468" x2="462" y2="256"/>
+            </g>
+            <g fill="none" stroke="#2563eb" opacity=".22"><circle cx="132" cy="468" r="80"/><circle cx="132" cy="468" r="156"/><circle cx="132" cy="468" r="244"/></g>
+            <polyline points="132,468 282,354 462,256 726,118" fill="none" stroke="#0f766e" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arr-dij)"/>
+            <g fill="#fff" stroke="#1e3a8a" stroke-width="5">
+              <circle cx="132" cy="468" r="28"/><circle cx="282" cy="354" r="28"/><circle cx="462" cy="256" r="28"/><circle cx="726" cy="118" r="28"/><circle cx="350" cy="506" r="22"/><circle cx="608" cy="402" r="22"/>
+            </g>
+            <g fill="#111827" font-family="Source Sans 3, Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle"><text x="132" y="468">s</text><text x="282" y="354">1</text><text x="462" y="256">2</text><text x="726" y="118">t</text></g>
+            <text x="120" y="96" class="svg-label">front reaches the next unsettled vertex</text>
+            <text x="120" y="132" class="svg-small">settled order certifies shortest distances</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Graph edges are geometric visibility segments</span><span>Dijkstra supplies the finite optimization step</span></div>
+      <aside class="speaker-notes">Explain Dijkstra with the paint-spread picture because it matches shortest-path geometry. Distances expand from the start like a front. The next settled vertex is the first unsettled vertex reached by the front, so its distance can no longer improve. In the notebook scene, the settled chain recovers s, O0.1, O1.1, and t.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Disk Robot">
+      <div class="topline"><div class="eyebrow">Disk Robot</div><div class="badge">radius r = 0.28 in notebook scene</div></div>
+      <h2>Disk Robot: Grow The Obstacles</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Center Reduction</div><p>The disk is collision-free exactly when its center avoids the obstacle offset by radius \(r\).</p></div>
+          <div class="panel teal"><h3>Checked Conditions</h3><p>Expanded obstacles are larger, and both start and goal centers remain outside the expanded forbidden regions.</p></div>
+          <div class="panel amber"><h3>Boundary Meaning</h3><p>A center on the offset boundary means the disk is tangent to an obstacle, so path conventions must specify whether contact is allowed.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Disk robot expanded obstacles artifact">
+          <img src="../figures/disk-robot-expanded-obstacles.png" alt="Disk robot center path among radius-expanded obstacles">
+        </figure>
+      </div>
+      <div class="footer"><span>Artifact: figures/disk-robot-expanded-obstacles.png</span><span>Check: start_and_goal_outside_expanded_obstacles = true</span></div>
+      <aside class="speaker-notes">Now change the robot, not the algorithm. A disk collides when its center gets within one radius of an obstacle, so the disk center must avoid expanded obstacles. This converts the disk robot back into a point robot problem, provided the start and target centers remain outside the grown forbidden regions.</aside>
+    </section>
+
+    <section class="slide" data-label="Minkowski Sum Language">
+      <div class="topline"><div class="eyebrow">Configuration Obstacles</div><div class="badge">reflection makes collision algebraic</div></div>
+      <h2>Minkowski Sum Language</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Minkowski sum with reflected robot">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-mink" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <polygon points="92,318 208,248 304,314 266,438 126,438" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/><text x="138" y="214" class="svg-label">obstacle P</text>
+            <polygon points="424,272 514,316 432,378" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/><circle cx="424" cy="272" r="8" fill="#0f766e"/><text x="392" y="214" class="svg-label">robot R</text>
+            <polygon points="426,474 336,430 418,368" fill="#fffbeb" stroke="#b45309" stroke-width="5"/><circle cx="426" cy="474" r="8" fill="#b45309"/><text x="330" y="532" class="svg-label">reflected -R</text>
+            <g stroke="#1e3a8a" stroke-width="6" marker-end="url(#arr-mink)"><line x1="304" y1="342" x2="350" y2="342"/><line x1="506" y1="342" x2="558" y2="342"/></g>
+            <polygon points="600,314 704,232 818,304 796,444 680,506 574,426" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <text x="604" y="214" class="svg-label">P + (-R)</text>
+            <text x="604" y="548" class="svg-small">forbidden reference-point locations</text>
+            <text x="94" y="112" class="svg-math">P + (-R) = {p - r : p in P, r in R}</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Minkowski Sum</div><p class="formula">\(A+B=\{a+b : a\in A,\; b\in B\}\)</p></div>
+          <div class="math-box math-box--theorem"><div class="math-box-label">Collision Test</div><p>A translating robot \(R\) with reference point \(q\) collides with obstacle \(P\) exactly when \(q \in P + (-R)\).</p></div>
+          <div class="panel slate"><p class="small">For a disk, \(P + (-R)\) is simply the radius-expanded obstacle. For a polygon robot, the same idea creates polygonal configuration obstacles.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Algebraic growth replaces contact reasoning</span><span>The reference point is now a point robot in \(C\)-space</span></div>
+      <aside class="speaker-notes">Introduce Minkowski addition as the notation that makes obstacle growth precise. The forbidden reference-point region is the obstacle plus the reflected robot. Reflection matters because we ask where the robot's reference point can be placed so that some robot point overlaps an obstacle point.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Convex Polygon Translation">
+      <div class="topline"><div class="eyebrow">Convex Translation</div><div class="badge">15 sums -> 8 hull vertices</div></div>
+      <h2>Convex Polygon Translation</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--proof"><div class="math-box-label">Computation</div><ol><li>Reflect the robot around its reference point.</li><li>Add every obstacle vertex to every reflected robot vertex.</li><li>Take the convex hull of those sums.</li></ol></div>
+          <div class="panel teal"><h3>Notebook Witness</h3><p>Obstacle vertices: 5. Robot vertices: 3. Pairwise sum points: 15. Minkowski hull vertices: 8.</p></div>
+          <div class="panel amber"><h3>Geometric Meaning</h3><p>The hull is not a decorative enlargement; it is exactly the forbidden region for the robot reference point in this convex translation model.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Convex robot Minkowski sum artifact">
+          <img src="../figures/convex-robot-minkowski-sum.png" alt="Convex polygon robot Minkowski sum with reflected robot">
+        </figure>
+      </div>
+      <div class="footer"><span>Artifact: figures/convex-robot-minkowski-sum.png</span><span>Check: minkowski_sum_has_convex_hull = true</span></div>
+      <aside class="speaker-notes">Use the convex robot artifact to make the formula computational. The notebook forms all pairwise sums between obstacle vertices and reflected robot vertices, then takes the convex hull. In the checked example, fifteen pairwise sums collapse to an eight-vertex convex configuration-space obstacle.</aside>
+    </section>
+
+    <section class="slide" data-label="Free Space Components">
+      <div class="topline"><div class="eyebrow">Connectivity</div><div class="badge">decision = same component</div></div>
+      <h2>From Translation To Free-Space Components</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Free-space components after obstacle growth">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-comp" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#0f766e"/></marker></defs>
+            <rect x="72" y="72" width="756" height="456" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <path d="M178 188 C236 128,334 158,344 252 C354 346,258 388,184 330 C138 294,136 232,178 188 Z" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <path d="M530 122 C662 112,742 210,708 326 C674 442,530 468,450 382 C374 300,408 148,530 122 Z" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <path d="M118 470 C190 420,270 420,330 478" fill="none" stroke="#0f766e" stroke-width="8" marker-end="url(#arr-comp)"/>
+            <circle cx="118" cy="470" r="12" fill="#0f766e"/><text x="82" y="514" class="svg-small">q_s</text>
+            <circle cx="330" cy="478" r="12" fill="#6d28d9"/><text x="342" y="516" class="svg-small">q_t</text>
+            <path d="M430 506 C510 540,644 536,754 484" fill="none" stroke="#94a3b8" stroke-width="7" stroke-dasharray="14 10"/>
+            <circle cx="430" cy="506" r="11" fill="#0f766e"/><circle cx="754" cy="484" r="11" fill="#6d28d9"/>
+            <text x="118" y="104" class="svg-label">configuration-space obstacles</text>
+            <text x="486" y="546" class="svg-small">different component: no path under this model</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Decision Version</div><p>Are \(q_s\) and \(q_t\) in the same connected component of \(C_{\mathrm{free}}\)?</p></div>
+          <div class="panel blue"><h3>Roadmap Role</h3><p>Replace each free component by a finite graph spine; graph connectivity answers the decision question.</p></div>
+          <div class="panel teal"><h3>Path Role</h3><p>Once a graph route exists, expand it back into a continuous motion inside the cells or corridors represented by the graph.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Obstacle growth is only step one</span><span>Planning asks how \(C_{\mathrm{free}}\) is connected</span></div>
+      <aside class="speaker-notes">Tie the growth construction to the decision problem. Once every obstacle is replaced by a configuration-space obstacle, the question is whether the start and target reference points occupy the same connected component of free space. A path planner can then search a roadmap, a cell graph, or another finite representation.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Ladder Rotation">
+      <div class="topline"><div class="eyebrow">More Degrees Of Freedom</div><div class="badge">translation plus angle</div></div>
+      <h2>Ladder: Rotation Adds A Dimension</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Ladder Configuration</div><p>A segment of fixed length needs a reference point \((x,y)\) and an orientation angle \(\theta\).</p></div>
+          <div class="panel amber"><h3>Why This Matters</h3><p>A path that is impossible in one angle slice can become possible by changing angle while translating.</p></div>
+          <div class="panel slate"><p class="small">The chapter uses the ladder as a gateway from two-dimensional floor plans to higher-dimensional configuration spaces.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Ladder configuration space slices">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-ladder" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="82" y="82" width="300" height="420" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <path d="M82 252 H244 V82" fill="none" stroke="#1e3a8a" stroke-width="34" stroke-linejoin="round"/>
+            <path d="M136 376 L334 178" stroke="#0f766e" stroke-width="14" stroke-linecap="round"/><circle cx="136" cy="376" r="10" fill="#0f766e"/>
+            <path d="M142 324 L326 324" stroke="#b45309" stroke-width="10" stroke-linecap="round" opacity=".72"/>
+            <text x="122" y="552" class="svg-small">workspace: corridor and ladder</text>
+            <g transform="translate(500,88)">
+              <rect x="0" y="0" width="300" height="92" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="24" y="58" class="svg-label">theta = 0</text>
+              <rect x="0" y="146" width="300" height="92" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="24" y="204" class="svg-label">theta = 45 deg</text>
+              <rect x="0" y="292" width="300" height="92" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="24" y="350" class="svg-label">theta = 90 deg</text>
+              <path d="M320 46 C370 92,370 292,320 338" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arr-ladder)"/>
+              <text x="18" y="444" class="svg-small">slices of a 3D configuration space</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>For a ladder, \(C\) has coordinates \((x,y,\theta)\)</span><span>Rotation changes the connectedness of feasible motion</span></div>
+      <aside class="speaker-notes">The ladder is the warning that translation-only pictures are not enough. A rigid segment has position and angle, so the configuration space has one more dimension than the floor plan. Narrow passages can be reachable only by coordinating translation with rotation, which is why the slide uses slices by angle.</aside>
+    </section>
+
+    <section class="slide" data-label="Cell Decomposition">
+      <div class="topline"><div class="eyebrow">Roadmaps</div><div class="badge">continuous cells -> graph spine</div></div>
+      <h2>Cell Decomposition And Retraction</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Cell decomposition and roadmap retraction">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-cell" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="64" y="84" width="330" height="430" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#cbd5e1" stroke-width="3"><line x1="174" y1="84" x2="174" y2="514"/><line x1="284" y1="84" x2="284" y2="514"/><line x1="64" y1="226" x2="394" y2="226"/><line x1="64" y1="370" x2="394" y2="370"/></g>
+            <polygon points="156,176 244,146 276,228 192,260" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <polygon points="250,388 342,338 362,442 282,472" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <text x="102" y="552" class="svg-small">decompose free space into cells</text>
+            <g stroke="#1e3a8a" stroke-width="6" marker-end="url(#arr-cell)"><line x1="414" y1="300" x2="492" y2="300"/></g>
+            <rect x="516" y="84" width="330" height="430" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#94a3b8" stroke-width="6"><line x1="606" y1="184" x2="694" y2="184"/><line x1="694" y1="184" x2="754" y2="270"/><line x1="694" y1="184" x2="628" y2="320"/><line x1="628" y1="320" x2="724" y2="420"/><line x1="754" y1="270" x2="724" y2="420"/></g>
+            <g fill="#fff" stroke="#2563eb" stroke-width="5"><circle cx="606" cy="184" r="22"/><circle cx="694" cy="184" r="22"/><circle cx="754" cy="270" r="22"/><circle cx="628" cy="320" r="22"/><circle cx="724" cy="420" r="22"/></g>
+            <path d="M606 184 L694 184 L754 270 L724 420" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round"/>
+            <text x="574" y="552" class="svg-small">search a lower-dimensional roadmap</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--proof"><div class="math-box-label">Planner Recipe</div><ol><li>Partition \(C_{\mathrm{free}}\) into simple cells.</li><li>Connect adjacent cells in a graph.</li><li>Retract motion inside cells to a graph route.</li></ol></div>
+          <div class="panel blue"><h3>Why Retraction Helps</h3><p>It preserves component connectivity while replacing an infinite set of positions by vertices and edges.</p></div>
+          <div class="panel teal"><h3>Course Theme</h3><p>This is the same reduction rhythm as visibility graphs: prove the finite structure is rich enough, then search it.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Cell graph answers decision and path questions</span><span>Shortest path may need extra metric structure</span></div>
+      <aside class="speaker-notes">Present cell decomposition as the general recipe behind many planners. Decompose free space into simple cells, connect adjacent cells in a graph, and retract each cell to a lower-dimensional spine. The important idea is not the exact decomposition shown, but the reduction from continuous motion to graph connectivity.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Robot Arm Annulus">
+      <div class="topline"><div class="eyebrow">Robot Arm</div><div class="badge">links 1.6, 1.0, 0.8, 0.7</div></div>
+      <h2>Robot Arm Reachability Annulus</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Reachability Radii</div><p class="formula">\(R_{\max}=\sum_i \ell_i,\quad R_{\min}=\max(0,\ell_{\max}-\sum_{j\ne\max}\ell_j)\)</p></div>
+          <div class="panel teal"><h3>Checked Instance</h3><p>Outer radius \(4.1\), inner radius \(0\), target \((2.35,1.15)\), and endpoint error below \(10^{-15}\).</p></div>
+          <div class="panel amber"><h3>Annulus Meaning</h3><p>The annulus is a reachability test, not yet a full joint-by-joint construction. Circle intersections supply the constructive step.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Robot arm two-kinks artifact with annulus">
+          <img src="../figures/robot-arm-two-kinks.png" alt="Robot arm reachability annulus and two-kinks construction">
+        </figure>
+      </div>
+      <div class="footer"><span>Artifact: figures/robot-arm-two-kinks.png</span><span>Check: target_in_reachability_annulus = true</span></div>
+      <aside class="speaker-notes">Switch from translating bodies to an articulated chain. The endpoint cannot go farther than the sum of link lengths, and if one link dominates all the others it also cannot get too close to the base. The checked notebook instance has outer radius 4.1, inner radius 0, and the target lies inside that annulus.</aside>
+    </section>
+
+    <section class="slide" data-label="Two Kinks">
+      <div class="topline"><div class="eyebrow">Constructive Arm Proof</div><div class="badge">many links, two grouped directions</div></div>
+      <h2>Two-Kinks Construction</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Two-kinks circle intersection construction">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-kink" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#0f766e"/></marker></defs>
+            <circle cx="214" cy="386" r="184" fill="#eff6ff" stroke="#2563eb" stroke-width="4" opacity=".78"/>
+            <circle cx="594" cy="226" r="106" fill="#f0fdfa" stroke="#0f766e" stroke-width="4" opacity=".78"/>
+            <circle cx="214" cy="386" r="10" fill="#1e3a8a"/><text x="176" y="426" class="svg-small">base</text>
+            <circle cx="594" cy="226" r="12" fill="#6d28d9"/><text x="606" y="210" class="svg-small">target</text>
+            <circle cx="388" cy="324" r="12" fill="#b45309"/><text x="396" y="350" class="svg-small">circle intersection</text>
+            <polyline points="214,386 298,356 388,324 490,276 594,226" fill="none" stroke="#0f766e" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arr-kink)"/>
+            <line x1="214" y1="386" x2="388" y2="324" stroke="#2563eb" stroke-width="5" stroke-dasharray="14 10"/>
+            <line x1="388" y1="324" x2="594" y2="226" stroke="#1e3a8a" stroke-width="5" stroke-dasharray="14 10"/>
+            <text x="176" y="124" class="svg-label">group links into two straight subchains</text>
+            <text x="176" y="166" class="svg-small">lengths 2.6 and 1.5 solve a two-circle problem</text>
+            <text x="270" y="544" class="svg-small">unfold the original links along the grouped directions</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Two-Kinks Theorem</div><p>If a target is reachable by a polygonal arm, then there is a reaching configuration with at most two nonzero changes of direction.</p></div>
+          <div class="math-box math-box--proof"><div class="math-box-label">Construction</div><ol><li>Split links into two groups of total lengths \(a\) and \(b\).</li><li>Intersect the circle of radius \(a\) around the base with the circle of radius \(b\) around the target.</li><li>Lay each group straight along its solved direction.</li></ol></div>
+        </div>
+      </div>
+      <div class="footer"><span>Grouped lengths: 2.6 and 1.5</span><span>Check: arm_endpoint_hits_target = true</span></div>
+      <aside class="speaker-notes">The two-kinks theorem compresses many joint angles into two grouped directions. Partition the links into two straight subchains, solve the two-circle intersection problem for the grouped lengths, then unfold each group along the same direction. The notebook witness uses grouped lengths 2.6 and 1.5 and reaches the target to numerical precision.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Separability">
+      <div class="topline"><div class="eyebrow">Separability</div><div class="badge">order D, C, B, A is clear</div></div>
+      <h2>Separability: Easy Order, Hard Variants</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Fixed-Direction Convex Case</div><p>If the pieces are disjoint convex bodies and each moves by translation in one fixed direction, an escape order can be checked by blockers in that direction.</p></div>
+          <table aria-label="Hardness map">
+            <thead><tr><th>Variant</th><th>Message</th></tr></thead>
+            <tbody>
+              <tr><td>fixed-direction convex translation</td><td>easy ordering theorem</td></tr>
+              <tr><td>Partition-style construction</td><td>encodes combinatorial choice</td></tr>
+              <tr><td>Towers-of-Hanoi style construction</td><td>can force exponentially many moves</td></tr>
+              <tr><td>ladder motion</td><td>rotation adds a configuration dimension</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="diagram" aria-label="Translation separability order artifact">
+          <img src="../figures/translation-separability-order.png" alt="Rightward separability order for convex pieces">
+        </figure>
+      </div>
+      <div class="footer"><span>Artifact: figures/translation-separability-order.png</span><span>Check: separation_order_has_no_blocker = true</span></div>
+      <aside class="speaker-notes">The separability section changes the flavor of the chapter. For convex pieces translating in one fixed direction, a clean order can remove one piece at a time. But general variants can encode combinatorial choices, including Partition-style and Towers-of-Hanoi-style behavior, so the easy ordering theorem should not be mistaken for a universal planner.</aside>
+    </section>
+
+    <section class="slide" data-label="Reduction Map Recap">
+      <div class="topline"><div class="eyebrow">Recap</div><div class="badge">same question, many reductions</div></div>
+      <h2>Reduction Map Recap</h2>
+      <div class="content">
+        <div class="stack">
+          <table aria-label="Motion planning reduction recap">
+            <thead><tr><th>Robot / Problem</th><th>Geometric Reduction</th><th>Search Object Or Certificate</th></tr></thead>
+            <tbody>
+              <tr><td>point robot</td><td>shortest turns occur at visible obstacle vertices</td><td>visibility graph + Dijkstra</td></tr>
+              <tr><td>disk robot</td><td>grow obstacles by disk radius</td><td>point robot in offset free space</td></tr>
+              <tr><td>convex translating robot</td><td>obstacle plus reflected robot \(P+(-R)\)</td><td>configuration-space obstacle hulls</td></tr>
+              <tr><td>ladder</td><td>add orientation parameter \(\theta\)</td><td>higher-dimensional free-space components</td></tr>
+              <tr><td>robot arm</td><td>annulus plus circle intersections</td><td>two-kinks witness construction</td></tr>
+              <tr><td>separability</td><td>fixed-direction blocker order, hard general variants</td><td>escape order or hardness context</td></tr>
+            </tbody>
+          </table>
+          <figure class="diagram" aria-label="Reduction map arrows">
+            <svg viewBox="0 0 1700 246" role="img">
+              <defs><marker id="arr-recap" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 Z" fill="#1e3a8a"/></marker></defs>
+              <g font-family="Source Sans 3, Arial, sans-serif">
+                <rect x="36" y="74" width="250" height="96" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="88" y="132" class="svg-label">continuous</text>
+                <rect x="426" y="74" width="250" height="96" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="480" y="132" class="svg-label">C-space</text>
+                <rect x="816" y="74" width="250" height="96" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="864" y="132" class="svg-label">finite graph</text>
+                <rect x="1206" y="74" width="250" height="96" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="1260" y="132" class="svg-label">certificate</text>
+                <g stroke="#1e3a8a" stroke-width="6" marker-end="url(#arr-recap)"><line x1="294" y1="122" x2="414" y2="122"/><line x1="684" y1="122" x2="804" y2="122"/><line x1="1074" y1="122" x2="1194" y2="122"/></g>
+              </g>
+            </svg>
+          </figure>
+        </div>
+      </div>
+      <div class="footer"><span>Printed span preserved: 294-346</span><span>PDF provenance: pages 303-355</span></div>
+      <aside class="speaker-notes">Close by revisiting the chapter goal: each motion-planning family becomes a geometric reduction, and then often a graph or ordering problem. Point robots use visibility graphs, disks use offset obstacles, convex translators use Minkowski sums, ladders use configuration-space dimensions, arms use annuli and circle intersections, and separability exposes both clean orders and hard variants.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

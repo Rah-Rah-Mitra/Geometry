@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convex Hulls In Three Dimensions</title>
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-04-convex-hulls-in-three-dimensions">
+  <meta name="chapter_title" content="Chapter 4 - Convex Hulls in Three Dimensions">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-04-convex-hulls-in-three-dimensions/04-convex-hulls-in-three-dimensions.ipynb">
+  <meta name="source_span" content="printed pages 101-154; PDF pages 110-163">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script id="deck-metadata" type="application/json">
+{
+  "course": "Computational Geometry in C",
+  "chapter_id": "chapter-04-convex-hulls-in-three-dimensions",
+  "chapter_title": "Chapter 4 - Convex Hulls in Three Dimensions",
+  "notebook_path": "Computational-Geometry-in-C/chapter-04-convex-hulls-in-three-dimensions/04-convex-hulls-in-three-dimensions.ipynb",
+  "source_span": "printed pages 101-154; PDF pages 110-163",
+  "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "title": "Convex Hulls In Three Dimensions",
+    "notes": "Open by changing the mental model from a boundary cycle to a mutable surface. The mesh image is not just a picture of the hull; it is the object the implementation must maintain through vertices, edges, faces, orientations, and adjacency."
+  },
+  {
+    "slide": 2,
+    "title": "Learning Arc",
+    "notes": "Use this slide as the map for the lecture. We start with topological validity, turn Euler into a debugging ledger, learn the signed-volume visibility predicate, then ask what data structure survives deletion and stitching. Randomization and higher dimensions appear only after the deterministic surface update is clear."
+  },
+  {
+    "slide": 3,
+    "title": "What Counts As A Polyhedron",
+    "notes": "Slow down on the word polyhedron because implementation bugs often create objects that look plausible but are not valid surfaces. Every edge should have two incident faces, neighborhoods should look locally like disks, and genus zero is the setting where the simple Euler ledger applies."
+  },
+  {
+    "slide": 4,
+    "title": "Convex Polytopes And Euler's Ledger",
+    "notes": "Read the table as both theorem and instrumentation. In a triangulated convex hull, Euler gives V minus E plus F equal to two, and triangular faces force edge and face counts to be linear in the number of hull vertices. The notebook check records V equals eight, E equals eighteen, F equals twelve."
+  },
+  {
+    "slide": 5,
+    "title": "Proof Roadmap For Euler",
+    "notes": "Do not reproduce a full proof here; teach the structure. Stretch the polyhedron to a plane graph, verify the tree case, and remove one cycle edge at a time. The invariant survives because deleting a cycle edge reduces both E and F by one."
+  },
+  {
+    "slide": 6,
+    "title": "Why 3D Hulls Are Harder Than 2D",
+    "notes": "Compare the data maintained by a 2D hull and a 3D hull. In two dimensions the boundary is a cyclic list with tangent edits. In three dimensions a point update deletes a connected patch, finds a horizon cycle, and creates many cone faces while preserving orientation."
+  },
+  {
+    "slide": 7,
+    "title": "Algorithm Families",
+    "notes": "Place the chapter algorithms without drowning students in details. Gift wrapping is output-sensitive but may scan many points per face, divide and conquer reaches the optimal comparison bound but is hard to implement, and incremental beneath-beyond is the implementation centerpiece that randomization later improves."
+  },
+  {
+    "slide": 8,
+    "title": "Signed Volume Predicate",
+    "notes": "Tie the formula to the 2D orientation test students already know. The determinant is six times the oriented tetrahedron volume, so an oriented face can classify a new point by sign. The sign convention depends on face orientation; consistency matters more than the particular choice."
+  },
+  {
+    "slide": 9,
+    "title": "Beneath-Beyond Step",
+    "notes": "Walk through the update in the artifact. One face is visible from the new point; its three boundary edges are the horizon because each has exactly one visible incident face. The new hull removes the visible patch and creates one cone triangle per horizon edge."
+  },
+  {
+    "slide": 10,
+    "title": "Algorithm 4.1 As State Machine",
+    "notes": "Translate the pseudocode into states students can test. Start from a tetrahedron, classify faces by signed volume, discard an interior point if no face is visible, otherwise mark horizon edges, create cone faces, and clean the deleted records. The complexity is quadratic when every insertion scans the current surface."
+  },
+  {
+    "slide": 11,
+    "title": "Implementation Records",
+    "notes": "Make the record fields concrete without copying C code. Vertices, edges, and faces carry flags so the update can mark visible faces, horizon edges, and deletion candidates before physically removing anything. This delayed cleanup is what keeps traversal from invalidating itself mid-walk."
+  },
+  {
+    "slide": 12,
+    "title": "Orientation And Cleanup",
+    "notes": "Use this as an implementation checklist. New cone faces must be oriented consistently with the surviving surface, old visible faces must be deleted, and edges or vertices with no remaining support should be cleaned. Euler and orientation checks catch different classes of mistakes."
+  },
+  {
+    "slide": 13,
+    "title": "Degeneracy And Robustness",
+    "notes": "Stress that the clean determinant story assumes general position. Coplanar or nearly coplanar points, repeated points, and large integer coordinates can make signs ambiguous or overflow. Connect this directly to the notebook lab: moving a point close to a face should make students ask whether the sign is certified, perturbed, or treated as coplanar. Robust implementations need an explicit policy, not hope."
+  },
+  {
+    "slide": 14,
+    "title": "Boundary Representation Comparison",
+    "notes": "Use the half-edge artifact as the anchor for a broader comparison. The chapter names several boundary representations, but the central design question is the same: how quickly can the algorithm move around a face, cross an edge, and repair adjacency after a local edit."
+  },
+  {
+    "slide": 15,
+    "title": "Conflict Graphs For Randomization",
+    "notes": "Explain conflicts as cached visibility. Instead of scanning every face for every outside point, the algorithm records which outside points can see which faces. When visible faces are deleted, only conflicts attached to the affected neighborhood need to be redistributed."
+  },
+  {
+    "slide": 16,
+    "title": "Higher Dimensions And Output Sensitivity",
+    "notes": "Use the growth plot to separate algorithmic overhead from output size. In three dimensions Euler keeps the hull surface linear in the number of vertices, but higher-dimensional polytopes can have many more faces. The output can be the bottleneck before implementation details enter."
+  },
+  {
+    "slide": 17,
+    "title": "Worked Inspection Exercise",
+    "notes": "Run this as a short in-class diagnosis. Students should identify the visible face, list the horizon edges, predict the three cone faces, and name the checks that would fail if a cone face were oriented backwards or if a horizon edge had two visible incident faces."
+  },
+  {
+    "slide": 18,
+    "title": "Recap And Implementation Checks",
+    "notes": "Close by returning to the mutable-surface theme. A correct 3D hull implementation is not just a determinant loop; it is a surface data structure with topological invariants, geometric predicates, cleanup policy, and performance bookkeeping. Ask students to read each check as a promise about one layer of the implementation: topology, visibility, adjacency, or randomized search."
+  }
+]
+  </script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    html, body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    deck-stage > section { width: 1920px; height: 1080px; }
+    .slide {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      display: flex;
+      flex-direction: column;
+      padding: 64px 92px 58px;
+      border-top: 10px solid var(--slide-accent);
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(30, 58, 138, 0.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.03) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 76px 76px, 76px 76px, auto;
+    }
+    .speaker-notes { display: none; }
+    h1, h2, h3, p, ul, ol, figure { margin-top: 0; }
+    h1 { margin: 0 0 16px; font-size: 64px; line-height: 1.05; letter-spacing: 0; }
+    h2 { margin: 0 0 18px; font-size: 50px; line-height: 1.1; letter-spacing: 0; }
+    h3 { margin: 0 0 12px; font-size: 31px; line-height: 1.16; color: var(--slide-accent); }
+    p, li { font-size: 26px; line-height: 1.34; }
+    ul, ol { margin-bottom: 0; padding-left: 32px; }
+    li { margin-bottom: 8px; }
+    svg { max-width: 100%; height: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 24px; line-height: 1.22; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--slide-border-light); text-align: left; }
+    th { color: var(--slide-accent); background: var(--slide-bg-alt); }
+    .eyebrow { margin-bottom: 14px; color: var(--slide-dimmed); font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0; }
+    .rule { width: 112px; height: 6px; margin: 8px 0 26px; border-radius: 4px; background: var(--slide-accent); }
+    .content { flex: 1; min-height: 0; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 38px; flex: 1; min-height: 0; align-items: stretch; }
+    .cols.left-wide { grid-template-columns: 1.16fr 0.84fr; }
+    .cols.right-wide { grid-template-columns: 0.82fr 1.18fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 20px 24px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.indigo { background: var(--math-theorem-bg); border-left: 6px solid var(--slide-accent); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel h3 { font-size: 30px; }
+    .panel p, .panel li { font-size: 25px; }
+    .math-box { margin: 0 0 18px; }
+    .math-box-label { letter-spacing: 0; }
+    .formula {
+      margin: 12px 0;
+      padding: 15px 18px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      font-family: var(--font-math);
+      font-size: 38px;
+      line-height: 1.25;
+      text-align: center;
+    }
+    .formula.large { font-size: 44px; }
+    .tag {
+      display: inline-block;
+      margin: 4px 6px 4px 0;
+      padding: 6px 12px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 6px;
+      background: var(--slide-bg-alt);
+      color: var(--slide-muted);
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .caption { margin: 10px 0 0; color: var(--slide-dimmed); font-size: 23px; line-height: 1.3; }
+    .footer { display: flex; justify-content: space-between; align-items: center; gap: 28px; margin-top: 16px; color: var(--slide-dimmed); font-size: 23px; }
+    .muted { color: var(--slide-muted); }
+    .accent { color: var(--slide-accent); }
+    .blue { color: var(--slide-blue); }
+    .teal { color: var(--slide-teal); }
+    .amber { color: var(--slide-amber); }
+    .violet { color: var(--slide-violet); }
+    .artifact-img { width: 100%; max-height: 610px; object-fit: contain; border: 1px solid var(--slide-border-light); border-radius: 8px; background: #fff; }
+    .artifact-img.tall { max-height: 690px; }
+    .artifact-img.short { max-height: 470px; }
+    .figure-card { border: 1px solid var(--slide-border-light); border-radius: 8px; background: #fff; padding: 18px; display: flex; flex-direction: column; justify-content: center; }
+    .checkline { margin-top: 8px; color: var(--slide-muted); font-size: 23px; line-height: 1.3; }
+    .box-list { display: grid; gap: 16px; }
+    .mini { font-size: 24px; line-height: 1.3; }
+    .tight p, .tight li { font-size: 24px; }
+    .callout { color: var(--slide-accent); font-size: 32px; font-weight: 700; line-height: 1.22; }
+    .svg-label { font-family: var(--font-sans); font-size: 26px; fill: var(--slide-muted); }
+    .svg-title { font-family: var(--font-sans); font-size: 31px; font-weight: 700; fill: var(--slide-accent); }
+    .svg-small { font-family: var(--font-sans); font-size: 22px; fill: var(--slide-muted); }
+    .svg-math { font-family: var(--font-math); font-size: 32px; fill: var(--slide-ink); }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="eyebrow">Computational Geometry in C · Chapter 4</div>
+        <div class="cols left-wide">
+          <div>
+            <h1>Convex Hulls In Three Dimensions</h1>
+            <div class="rule"></div>
+            <p class="callout">A hull is no longer a cyclic list. It is a mutable polyhedral surface.</p>
+            <div class="panel blue" style="margin-top: 34px;">
+              <h3>Lecture Goal</h3>
+              <p>Track the 3D hull as incidence data plus predicates: vertices, edges, faces, orientations, visibility, horizon edges, and cleanup.</p>
+            </div>
+            <p class="caption">Source span: printed pages 101-154; PDF pages 110-163. Notebook artifacts are synthetic and source-generated.</p>
+          </div>
+          <div class="figure-card">
+            <img class="artifact-img tall" src="../figures/convex-hull-3d-mesh.png" alt="Triangulated 3D convex hull mesh">
+            <p class="caption">Notebook check: \(V=8\), \(E=18\), \(F=12\), \(V-E+F=2\).</p>
+          </div>
+        </div>
+        <aside class="speaker-notes">Open by changing the mental model from a boundary cycle to a mutable surface. The mesh image is not just a picture of the hull; it is the object the implementation must maintain through vertices, edges, faces, orientations, and adjacency.</aside>
+      </div>
+    </section>
+
+    <section data-label="Learning Arc">
+      <div class="slide">
+        <div class="eyebrow">Learning Arc</div>
+        <h2>From Topology To A Working Surface Algorithm</h2>
+        <div class="content">
+          <div class="figure-card" style="height: 600px;">
+            <svg viewBox="0 0 1660 560" role="img" aria-label="Lecture learning arc">
+              <defs>
+                <marker id="arc-arrow" markerWidth="14" markerHeight="14" refX="12" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#475569"></path>
+                </marker>
+              </defs>
+              <g transform="translate(50 170)">
+                <path d="M70,100 L1510,100" stroke="#CBD5E1" stroke-width="8" marker-end="url(#arc-arrow)"></path>
+                <g>
+                  <circle cx="70" cy="100" r="48" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+                  <text x="70" y="90" text-anchor="middle" class="svg-title">1</text>
+                  <text x="70" y="140" text-anchor="middle" class="svg-small">polyhedron</text>
+                </g>
+                <g transform="translate(288 0)">
+                  <circle cx="70" cy="100" r="48" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></circle>
+                  <text x="70" y="90" text-anchor="middle" class="svg-title">2</text>
+                  <text x="70" y="140" text-anchor="middle" class="svg-small">Euler ledger</text>
+                </g>
+                <g transform="translate(576 0)">
+                  <circle cx="70" cy="100" r="48" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></circle>
+                  <text x="70" y="90" text-anchor="middle" class="svg-title">3</text>
+                  <text x="70" y="140" text-anchor="middle" class="svg-small">visibility</text>
+                </g>
+                <g transform="translate(864 0)">
+                  <circle cx="70" cy="100" r="48" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></circle>
+                  <text x="70" y="90" text-anchor="middle" class="svg-title">4</text>
+                  <text x="70" y="140" text-anchor="middle" class="svg-small">data structure</text>
+                </g>
+                <g transform="translate(1152 0)">
+                  <circle cx="70" cy="100" r="48" fill="#F5F3FF" stroke="#6D28D9" stroke-width="5"></circle>
+                  <text x="70" y="90" text-anchor="middle" class="svg-title">5</text>
+                  <text x="70" y="140" text-anchor="middle" class="svg-small">randomization</text>
+                </g>
+                <g transform="translate(1440 0)">
+                  <circle cx="70" cy="100" r="48" fill="#FFFFFF" stroke="#64748B" stroke-width="5"></circle>
+                  <text x="70" y="90" text-anchor="middle" class="svg-title">6</text>
+                  <text x="70" y="140" text-anchor="middle" class="svg-small">higher d</text>
+                </g>
+              </g>
+              <text x="830" y="70" text-anchor="middle" class="svg-label">Each stage adds one implementation invariant.</text>
+              <text x="830" y="500" text-anchor="middle" class="svg-math">surface + predicate + adjacency + cleanup</text>
+            </svg>
+          </div>
+          <div class="three" style="margin-top: 22px;">
+            <div class="panel blue"><h3>Mathematics</h3><p>Validity, convexity, Euler characteristic, linear face counts.</p></div>
+            <div class="panel teal"><h3>Algorithm</h3><p>Signed volume, visible patch, horizon, cone faces.</p></div>
+            <div class="panel violet"><h3>Engineering</h3><p>Records, flags, conflict graphs, robustness policies.</p></div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Use this slide as the map for the lecture. We start with topological validity, turn Euler into a debugging ledger, learn the signed-volume visibility predicate, then ask what data structure survives deletion and stitching. Randomization and higher dimensions appear only after the deterministic surface update is clear.</aside>
+      </div>
+    </section>
+
+    <section data-label="Polyhedron">
+      <div class="slide">
+        <div class="eyebrow">Definitions · Surface Validity</div>
+        <h2>What Counts As A Polyhedron</h2>
+        <div class="cols">
+          <div class="box-list">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Working Definition</div>
+              <p>A polyhedron is represented by a finite boundary of planar polygonal faces whose intersections are whole edges, whole vertices, or empty.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Validity Tests</h3>
+              <ul>
+                <li>Every edge has exactly two incident faces.</li>
+                <li>Local neighborhoods on the surface behave like disks.</li>
+                <li>Face orientations can be made globally consistent.</li>
+                <li>For this chapter, genus zero is the default hull topology.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="figure-card">
+            <svg viewBox="0 0 820 610" role="img" aria-label="Valid and invalid polyhedral surface patches">
+              <defs>
+                <marker id="edge-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#475569"></path>
+                </marker>
+              </defs>
+              <g transform="translate(70 60)">
+                <text x="210" y="0" text-anchor="middle" class="svg-title">valid local patch</text>
+                <polygon points="70,70 210,30 350,90 220,160" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+                <polygon points="220,160 350,90 370,240 190,270" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></polygon>
+                <polygon points="70,70 220,160 190,270 40,220" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></polygon>
+                <path d="M220,160 L350,90" stroke="#B45309" stroke-width="8"></path>
+                <text x="430" y="136" class="svg-label">one shared edge</text>
+                <path d="M390,126 L352,102" stroke="#475569" stroke-width="4" marker-end="url(#edge-arrow)"></path>
+              </g>
+              <g transform="translate(70 380)">
+                <text x="210" y="0" text-anchor="middle" class="svg-title">invalid ambiguity</text>
+                <polygon points="60,70 200,30 340,85 210,150" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></polygon>
+                <polygon points="210,150 340,85 365,210 210,238" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></polygon>
+                <polygon points="210,150 365,210 255,300 120,230" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></polygon>
+                <path d="M210,150 L340,85" stroke="#B45309" stroke-width="8"></path>
+                <path d="M210,150 L365,210" stroke="#B45309" stroke-width="8"></path>
+                <text x="430" y="135" class="svg-label">too many local sheets</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Implementation lens: invalid incidence can be created accidentally during deletion.</span><span>Topology comes before predicates.</span></div>
+        <aside class="speaker-notes">Slow down on the word polyhedron because implementation bugs often create objects that look plausible but are not valid surfaces. Every edge should have two incident faces, neighborhoods should look locally like disks, and genus zero is the setting where the simple Euler ledger applies.</aside>
+      </div>
+    </section>
+
+    <section data-label="Euler Ledger">
+      <div class="slide">
+        <div class="eyebrow">Invariant · Convex Polytopes</div>
+        <h2>Convex Polytopes And Euler's Ledger</h2>
+        <div class="cols left-wide">
+          <div>
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Euler Characteristic</div>
+              <p>For a convex polyhedron with genus zero, \(V-E+F=2\).</p>
+            </div>
+            <div class="formula large">\(8-18+12=2\)</div>
+            <table>
+              <thead><tr><th>Quantity</th><th>Notebook Value</th><th>Use In Implementation</th></tr></thead>
+              <tbody>
+                <tr><td>\(V\)</td><td>8</td><td>hull vertices after filtering interior points</td></tr>
+                <tr><td>\(E\)</td><td>18</td><td>unique undirected surface edges</td></tr>
+                <tr><td>\(F\)</td><td>12</td><td>triangular facets from the hull surface</td></tr>
+                <tr><td>\(V-E+F\)</td><td>2</td><td>topological sanity check</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="figure-card">
+            <img class="artifact-img tall" src="../figures/convex-hull-3d-mesh.png" alt="3D convex hull with triangular faces">
+            <p class="caption">Triangulated hulls satisfy \(3F=2E\), so Euler gives linear edge and face counts.</p>
+          </div>
+        </div>
+        <aside class="speaker-notes">Read the table as both theorem and instrumentation. In a triangulated convex hull, Euler gives V minus E plus F equal to two, and triangular faces force edge and face counts to be linear in the number of hull vertices. The notebook check records V equals eight, E equals eighteen, F equals twelve.</aside>
+      </div>
+    </section>
+
+    <section data-label="Euler Proof">
+      <div class="slide">
+        <div class="eyebrow">Proof Roadmap</div>
+        <h2>Proof Roadmap For Euler</h2>
+        <div class="cols right-wide">
+          <div class="box-list">
+            <div class="panel blue"><h3>1. Stretch</h3><p>Remove one face and flatten the boundary to a connected plane graph.</p></div>
+            <div class="panel teal"><h3>2. Trees</h3><p>For a tree, \(E=V-1\) and there is one exterior face, so \(V-E+F=2\).</p></div>
+            <div class="panel amber"><h3>3. Cycles</h3><p>Deleting a non-bridge edge lowers both \(E\) and \(F\) by one, preserving the ledger.</p></div>
+          </div>
+          <div class="figure-card">
+            <svg viewBox="0 0 980 610" role="img" aria-label="Euler proof roadmap from polyhedron to plane graph to tree">
+              <defs>
+                <marker id="proof-arrow" markerWidth="13" markerHeight="13" refX="11" refY="5" orient="auto">
+                  <path d="M0,0 L11,5 L0,10 Z" fill="#475569"></path>
+                </marker>
+              </defs>
+              <g transform="translate(45 70)">
+                <polygon points="90,80 190,30 310,90 290,220 130,250 40,170" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+                <path d="M90,80 L290,220 M190,30 L130,250 M310,90 L40,170" stroke="#94A3B8" stroke-width="3"></path>
+                <text x="174" y="310" text-anchor="middle" class="svg-label">surface</text>
+                <path d="M355,145 L480,145" stroke="#475569" stroke-width="5" marker-end="url(#proof-arrow)"></path>
+                <g transform="translate(510 12)">
+                  <circle cx="60" cy="60" r="12" fill="#2563EB"></circle>
+                  <circle cx="200" cy="50" r="12" fill="#2563EB"></circle>
+                  <circle cx="300" cy="140" r="12" fill="#2563EB"></circle>
+                  <circle cx="190" cy="250" r="12" fill="#2563EB"></circle>
+                  <circle cx="50" cy="220" r="12" fill="#2563EB"></circle>
+                  <path d="M60,60 L200,50 L300,140 L190,250 L50,220 Z M60,60 L190,250 M200,50 L50,220" fill="none" stroke="#1E3A8A" stroke-width="5"></path>
+                  <text x="170" y="310" text-anchor="middle" class="svg-label">plane graph</text>
+                </g>
+                <path d="M690,350 L690,430" stroke="#475569" stroke-width="5" marker-end="url(#proof-arrow)"></path>
+                <g transform="translate(520 430)">
+                  <circle cx="40" cy="30" r="12" fill="#0F766E"></circle>
+                  <circle cx="170" cy="30" r="12" fill="#0F766E"></circle>
+                  <circle cx="300" cy="30" r="12" fill="#0F766E"></circle>
+                  <circle cx="170" cy="110" r="12" fill="#0F766E"></circle>
+                  <path d="M40,30 L170,30 L300,30 M170,30 L170,110" stroke="#0F766E" stroke-width="5" fill="none"></path>
+                  <text x="170" y="170" text-anchor="middle" class="svg-label">tree endpoint</text>
+                </g>
+              </g>
+              <text x="490" y="560" text-anchor="middle" class="svg-math">delete cycle edge: \(\Delta E=-1,\ \Delta F=-1\)</text>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Do not reproduce a full proof here; teach the structure. Stretch the polyhedron to a plane graph, verify the tree case, and remove one cycle edge at a time. The invariant survives because deleting a cycle edge reduces both E and F by one.</aside>
+      </div>
+    </section>
+
+    <section data-label="3D Harder">
+      <div class="slide">
+        <div class="eyebrow">Algorithmic Shift</div>
+        <h2>Why 3D Hulls Are Harder Than 2D</h2>
+        <div class="cols">
+          <div class="panel blue">
+            <h3>2D Hull Boundary</h3>
+            <svg viewBox="0 0 720 360" role="img" aria-label="2D hull cyclic boundary">
+              <polygon points="115,220 170,90 360,55 560,140 615,260 390,310 210,285" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="6"></polygon>
+              <path d="M170,90 C250,35 430,40 560,140" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></path>
+              <text x="360" y="345" text-anchor="middle" class="svg-label">one cyclic order</text>
+            </svg>
+            <ul>
+              <li>Maintain a polygonal cycle.</li>
+              <li>Insertion finds two tangents.</li>
+              <li>Local replacement is an interval on the cycle.</li>
+            </ul>
+          </div>
+          <div class="panel amber">
+            <h3>3D Hull Boundary</h3>
+            <svg viewBox="0 0 720 360" role="img" aria-label="3D hull surface update">
+              <polygon points="185,70 470,95 555,250 280,305 110,210" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+              <path d="M185,70 L280,305 M470,95 L110,210 M555,250 L185,70 M280,305 L470,95" stroke="#94A3B8" stroke-width="3"></path>
+              <circle cx="360" cy="30" r="16" fill="#B45309"></circle>
+              <path d="M360,30 L185,70 M360,30 L470,95 M360,30 L555,250" stroke="#B45309" stroke-width="5"></path>
+              <path d="M185,70 L470,95 L555,250" fill="none" stroke="#0F766E" stroke-width="8"></path>
+              <text x="360" y="345" text-anchor="middle" class="svg-label">visible patch plus horizon cycle</text>
+            </svg>
+            <ul>
+              <li>Maintain a 2D cell complex.</li>
+              <li>Insertion may delete many faces.</li>
+              <li>Replacement is a cone over horizon edges.</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="speaker-notes">Compare the data maintained by a 2D hull and a 3D hull. In two dimensions the boundary is a cyclic list with tangent edits. In three dimensions a point update deletes a connected patch, finds a horizon cycle, and creates many cone faces while preserving orientation.</aside>
+      </div>
+    </section>
+
+    <section data-label="Algorithm Families">
+      <div class="slide">
+        <div class="eyebrow">Survey · 3D Hull Algorithms</div>
+        <h2>Algorithm Families</h2>
+        <div class="content">
+          <table>
+            <thead><tr><th>Family</th><th>Core Move</th><th>Strength</th><th>Implementation Cost</th></tr></thead>
+            <tbody>
+              <tr><td>Gift wrapping</td><td>Grow face by face across edges.</td><td>Output-sensitive \(O(nF)\).</td><td>Many orientation searches.</td></tr>
+              <tr><td>Divide and conquer</td><td>Sort, split, hull each side, merge surfaces.</td><td>Optimal \(O(n\log n)\) exists in 3D.</td><td>Merge is subtle and adjacency-heavy.</td></tr>
+              <tr><td>Incremental</td><td>Add one point; replace visible patch by cone.</td><td>Conceptually direct; implementable.</td><td>Naive scan gives \(O(n^2)\).</td></tr>
+              <tr><td>Randomized incremental</td><td>Use random order plus conflict graph.</td><td>Expected efficient updates.</td><td>More bookkeeping around deleted faces.</td></tr>
+            </tbody>
+          </table>
+          <div class="three" style="margin-top: 28px;">
+            <div class="panel blue"><h3>Wrapping</h3><p>Ask which point supports the next face.</p></div>
+            <div class="panel indigo"><h3>Merging</h3><p>Find bridges between two hull surfaces.</p></div>
+            <div class="panel teal"><h3>Beneath-Beyond</h3><p>Classify visible faces, then stitch a cone.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Chapter focus: deterministic incremental implementation, then randomized conflict graphs.</span><span>Algorithm 4.1 is the hinge.</span></div>
+        <aside class="speaker-notes">Place the chapter algorithms without drowning students in details. Gift wrapping is output-sensitive but may scan many points per face, divide and conquer reaches the optimal comparison bound but is hard to implement, and incremental beneath-beyond is the implementation centerpiece that randomization later improves.</aside>
+      </div>
+    </section>
+
+    <section data-label="Signed Volume">
+      <div class="slide">
+        <div class="eyebrow">Predicate · Oriented Tetrahedron</div>
+        <h2>Signed Volume Predicate</h2>
+        <div class="cols right-wide">
+          <div class="box-list">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Visibility Test</div>
+              <p>For oriented face \((a,b,c)\), classify point \(p\) by the sign of</p>
+              <div class="formula">\(6\,\mathrm{Vol}(a,b,c,p)=\det(b-a,\ c-a,\ p-a)\)</div>
+            </div>
+            <div class="panel amber tight">
+              <h3>Sign Discipline</h3>
+              <p>Visible means the new point lies on the outside side of the oriented face. The exact positive or negative convention depends on orientation, so every face must agree.</p>
+            </div>
+          </div>
+          <div class="figure-card">
+            <svg viewBox="0 0 980 600" role="img" aria-label="Signed tetrahedron volume">
+              <defs>
+                <marker id="vol-arrow" markerWidth="13" markerHeight="13" refX="11" refY="5" orient="auto">
+                  <path d="M0,0 L11,5 L0,10 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <polygon points="210,380 500,250 760,385" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="6"></polygon>
+              <circle cx="210" cy="380" r="12" fill="#1E3A8A"></circle>
+              <circle cx="500" cy="250" r="12" fill="#1E3A8A"></circle>
+              <circle cx="760" cy="385" r="12" fill="#1E3A8A"></circle>
+              <circle cx="500" cy="110" r="14" fill="#B45309"></circle>
+              <circle cx="505" cy="505" r="14" fill="#0F766E"></circle>
+              <path d="M500,110 L210,380 M500,110 L500,250 M500,110 L760,385" stroke="#B45309" stroke-width="4" fill="none"></path>
+              <path d="M505,505 L210,380 M505,505 L500,250 M505,505 L760,385" stroke="#0F766E" stroke-width="4" stroke-dasharray="10 8" fill="none"></path>
+              <path d="M380,330 C420,290 495,285 560,322" stroke="#B45309" stroke-width="5" fill="none" marker-end="url(#vol-arrow)"></path>
+              <text x="185" y="420" class="svg-math">a</text>
+              <text x="495" y="238" class="svg-math">b</text>
+              <text x="766" y="424" class="svg-math">c</text>
+              <text x="520" y="105" class="svg-math">p outside</text>
+              <text x="530" y="528" class="svg-math">p inside side</text>
+              <text x="490" y="570" text-anchor="middle" class="svg-label">same face, opposite determinant signs</text>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Tie the formula to the 2D orientation test students already know. The determinant is six times the oriented tetrahedron volume, so an oriented face can classify a new point by sign. The sign convention depends on face orientation; consistency matters more than the particular choice.</aside>
+      </div>
+    </section>
+
+    <section data-label="Beneath-Beyond">
+      <div class="slide">
+        <div class="eyebrow">Incremental Update</div>
+        <h2>Beneath-Beyond Step</h2>
+        <div class="cols left-wide">
+          <div class="figure-card">
+            <img class="artifact-img tall" src="../figures/beneath-beyond-visible-faces.png" alt="Beneath-beyond visible face and horizon edges">
+          </div>
+          <div class="box-list">
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Notebook Update</div>
+              <p>Visible face: \((1,2,3)\).</p>
+              <p>Horizon edges: \((1,2)\), \((1,3)\), \((2,3)\).</p>
+              <p>Cone faces with new point \(4\): \((1,2,4)\), \((1,3,4)\), \((2,3,4)\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Check</h3>
+              <p>Each horizon edge has exactly one visible incident face, and the number of cone faces equals the number of horizon edges.</p>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Walk through the update in the artifact. One face is visible from the new point; its three boundary edges are the horizon because each has exactly one visible incident face. The new hull removes the visible patch and creates one cone triangle per horizon edge.</aside>
+      </div>
+    </section>
+
+    <section data-label="State Machine">
+      <div class="slide">
+        <div class="eyebrow">Algorithm 4.1</div>
+        <h2>Algorithm 4.1 As State Machine</h2>
+        <div class="figure-card" style="height: 690px;">
+          <svg viewBox="0 0 1660 650" role="img" aria-label="Incremental 3D hull algorithm state machine">
+            <defs>
+              <marker id="state-arrow" markerWidth="13" markerHeight="13" refX="11" refY="5" orient="auto">
+                <path d="M0,0 L11,5 L0,10 Z" fill="#475569"></path>
+              </marker>
+            </defs>
+            <g transform="translate(55 90)">
+              <rect x="0" y="80" width="230" height="110" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+              <text x="115" y="128" text-anchor="middle" class="svg-title">initialize</text>
+              <text x="115" y="166" text-anchor="middle" class="svg-small">tetrahedron</text>
+              <path d="M230,135 L330,135" stroke="#475569" stroke-width="5" marker-end="url(#state-arrow)"></path>
+              <rect x="330" y="80" width="250" height="110" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></rect>
+              <text x="455" y="128" text-anchor="middle" class="svg-title">scan faces</text>
+              <text x="455" y="166" text-anchor="middle" class="svg-small">signed volumes</text>
+              <path d="M580,135 L680,135" stroke="#475569" stroke-width="5" marker-end="url(#state-arrow)"></path>
+              <polygon points="800,50 930,135 800,220 670,135" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></polygon>
+              <text x="800" y="128" text-anchor="middle" class="svg-title">visible?</text>
+              <text x="800" y="166" text-anchor="middle" class="svg-small">any face outside</text>
+              <path d="M930,135 L1040,135" stroke="#475569" stroke-width="5" marker-end="url(#state-arrow)"></path>
+              <rect x="1040" y="80" width="250" height="110" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></rect>
+              <text x="1165" y="128" text-anchor="middle" class="svg-title">horizon</text>
+              <text x="1165" y="166" text-anchor="middle" class="svg-small">one visible side</text>
+              <path d="M1290,135 L1390,135" stroke="#475569" stroke-width="5" marker-end="url(#state-arrow)"></path>
+              <rect x="1390" y="80" width="250" height="110" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="5"></rect>
+              <text x="1515" y="128" text-anchor="middle" class="svg-title">stitch</text>
+              <text x="1515" y="166" text-anchor="middle" class="svg-small">cone and cleanup</text>
+              <path d="M800,220 L800,360 L520,360 L520,205" stroke="#94A3B8" stroke-width="5" fill="none" marker-end="url(#state-arrow)"></path>
+              <text x="650" y="392" text-anchor="middle" class="svg-label">no visible faces: discard interior point</text>
+            </g>
+            <text x="830" y="570" text-anchor="middle" class="svg-math">naive insertion: scan current faces, repeated for \(n\) points</text>
+          </svg>
+        </div>
+        <div class="footer"><span>State labels are original paraphrases of the source algorithm.</span><span>Complexity driver: repeated face scans.</span></div>
+        <aside class="speaker-notes">Translate the pseudocode into states students can test. Start from a tetrahedron, classify faces by signed volume, discard an interior point if no face is visible, otherwise mark horizon edges, create cone faces, and clean the deleted records. The complexity is quadratic when every insertion scans the current surface.</aside>
+      </div>
+    </section>
+
+    <section data-label="Records">
+      <div class="slide">
+        <div class="eyebrow">Implementation Records</div>
+        <h2>Vertex, Edge, Face Records And Flags</h2>
+        <div class="cols">
+          <div>
+            <table>
+              <thead><tr><th>Record</th><th>Must Remember</th><th>Typical Temporary Flags</th></tr></thead>
+              <tbody>
+                <tr><td>Vertex</td><td>coordinates, incident edge</td><td>processed, on hull, delete</td></tr>
+                <tr><td>Edge</td><td>endpoints, adjacent faces</td><td>horizon, new, delete</td></tr>
+                <tr><td>Face</td><td>three vertices, three edges</td><td>visible, lower, delete</td></tr>
+              </tbody>
+            </table>
+            <div class="panel amber" style="margin-top: 26px;">
+              <h3>Why Flags?</h3>
+              <p>Visibility, horizon detection, and cleanup are coupled. Mark first, traverse while references still exist, then remove deleted records in a controlled pass.</p>
+            </div>
+          </div>
+          <div class="figure-card">
+            <svg viewBox="0 0 820 600" role="img" aria-label="Implementation records for vertex edge face">
+              <defs>
+                <marker id="rec-arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+                  <path d="M0,0 L10,4 L0,8 Z" fill="#475569"></path>
+                </marker>
+              </defs>
+              <g transform="translate(70 70)">
+                <rect x="0" y="0" width="220" height="150" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <text x="110" y="45" text-anchor="middle" class="svg-title">Vertex</text>
+                <text x="110" y="90" text-anchor="middle" class="svg-small">point, incident edge</text>
+                <rect x="300" y="0" width="220" height="150" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+                <text x="410" y="45" text-anchor="middle" class="svg-title">Edge</text>
+                <text x="410" y="90" text-anchor="middle" class="svg-small">endpoints, faces</text>
+                <rect x="600" y="0" width="220" height="150" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+                <text x="710" y="45" text-anchor="middle" class="svg-title">Face</text>
+                <text x="710" y="90" text-anchor="middle" class="svg-small">vertices, edges</text>
+                <path d="M220,75 L300,75" stroke="#475569" stroke-width="4" marker-end="url(#rec-arrow)"></path>
+                <path d="M520,75 L600,75" stroke="#475569" stroke-width="4" marker-end="url(#rec-arrow)"></path>
+                <path d="M710,150 C700,270 520,270 410,150" fill="none" stroke="#94A3B8" stroke-width="4" marker-end="url(#rec-arrow)"></path>
+              </g>
+              <g transform="translate(145 350)">
+                <rect x="0" y="0" width="530" height="126" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+                <text x="265" y="45" text-anchor="middle" class="svg-title">marked but not yet deleted</text>
+                <text x="265" y="88" text-anchor="middle" class="svg-label">visible face -> horizon edge -> cone face</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Make the record fields concrete without copying C code. Vertices, edges, and faces carry flags so the update can mark visible faces, horizon edges, and deletion candidates before physically removing anything. This delayed cleanup is what keeps traversal from invalidating itself mid-walk.</aside>
+      </div>
+    </section>
+
+    <section data-label="Orientation Cleanup">
+      <div class="slide">
+        <div class="eyebrow">Implementation Audit</div>
+        <h2>Orientation And Cleanup</h2>
+        <div class="cols right-wide">
+          <div class="box-list">
+            <div class="panel blue"><h3>Orient</h3><p>Each new cone face must point consistently with the surviving hull surface.</p></div>
+            <div class="panel teal"><h3>Delete</h3><p>Visible faces are removed after horizon edges and new cone faces are recorded.</p></div>
+            <div class="panel amber"><h3>Purge</h3><p>Edges and vertices unsupported by remaining faces should not survive as stale records.</p></div>
+          </div>
+          <div class="figure-card">
+            <svg viewBox="0 0 980 610" role="img" aria-label="Orientation cleanup checklist">
+              <defs>
+                <marker id="cleanup-arrow" markerWidth="13" markerHeight="13" refX="11" refY="5" orient="auto">
+                  <path d="M0,0 L11,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(85 65)">
+                <polygon points="180,315 455,180 735,320 460,460" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+                <polygon points="455,180 540,55 735,320" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></polygon>
+                <polygon points="180,315 540,55 455,180" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></polygon>
+                <polygon points="180,315 735,320 540,55" fill="rgba(180,83,9,0.10)" stroke="#B45309" stroke-width="5" stroke-dasharray="12 9"></polygon>
+                <circle cx="540" cy="55" r="14" fill="#B45309"></circle>
+                <text x="562" y="52" class="svg-label">new point</text>
+                <path d="M310,295 C345,250 420,230 470,252" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#cleanup-arrow)"></path>
+                <text x="465" y="535" text-anchor="middle" class="svg-math">new faces inherit a coherent cyclic order</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Checks: Euler characteristic, orientation signs, horizon count.</span><span>Different checks catch different failures.</span></div>
+        <aside class="speaker-notes">Use this as an implementation checklist. New cone faces must be oriented consistently with the surviving surface, old visible faces must be deleted, and edges or vertices with no remaining support should be cleaned. Euler and orientation checks catch different classes of mistakes.</aside>
+      </div>
+    </section>
+
+    <section data-label="Robustness">
+      <div class="slide">
+        <div class="eyebrow">Robustness</div>
+        <h2>Degeneracy And Robustness</h2>
+        <div class="cols">
+          <div class="panel amber">
+            <h3>Failure Modes</h3>
+            <ul>
+              <li>Four or more points can be coplanar.</li>
+              <li>A new point can lie nearly on an existing face.</li>
+              <li>Duplicate or interior points should not create surface records.</li>
+              <li>Integer determinants can overflow under large coordinates.</li>
+            </ul>
+          </div>
+          <div class="figure-card">
+            <svg viewBox="0 0 820 600" role="img" aria-label="Degenerate and nearly coplanar points">
+              <g transform="translate(80 80)">
+                <polygon points="80,330 330,210 600,330 350,455" fill="rgba(37,99,235,0.08)" stroke="#2563EB" stroke-width="5"></polygon>
+                <circle cx="165" cy="290" r="11" fill="#1E3A8A"></circle>
+                <circle cx="330" cy="210" r="11" fill="#1E3A8A"></circle>
+                <circle cx="505" cy="285" r="11" fill="#1E3A8A"></circle>
+                <circle cx="345" cy="340" r="11" fill="#B45309"></circle>
+                <circle cx="360" cy="118" r="12" fill="#0F766E"></circle>
+                <path d="M360,118 L360,300" stroke="#0F766E" stroke-width="4" stroke-dasharray="10 8"></path>
+                <text x="388" y="124" class="svg-label">clear sign</text>
+                <text x="370" y="348" class="svg-label">near zero sign</text>
+                <text x="340" y="535" text-anchor="middle" class="svg-math">\(\det \approx 0\) demands a policy</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="three" style="margin-top: 26px;">
+          <div class="panel blue"><h3>Symbolic</h3><p>Declare a deterministic perturbation or tie-breaking rule.</p></div>
+          <div class="panel teal"><h3>Exact</h3><p>Use arithmetic that preserves determinant signs when inputs are integral.</p></div>
+          <div class="panel violet"><h3>Filtered</h3><p>Compute fast approximate signs, then certify near-zero cases.</p></div>
+        </div>
+        <aside class="speaker-notes">Stress that the clean determinant story assumes general position. Coplanar or nearly coplanar points, repeated points, and large integer coordinates can make signs ambiguous or overflow. Connect this directly to the notebook lab: moving a point close to a face should make students ask whether the sign is certified, perturbed, or treated as coplanar. Robust implementations need an explicit policy, not hope.</aside>
+      </div>
+    </section>
+
+    <section data-label="Boundary Representations">
+      <div class="slide">
+        <div class="eyebrow">Data Structures</div>
+        <h2>Boundary Representation Comparison</h2>
+        <div class="cols left-wide">
+          <div class="figure-card">
+            <img class="artifact-img tall" src="../figures/half-edge-boundary-representation.png" alt="Half-edge boundary representation diagram">
+            <p class="caption">Table check: every directed half-edge has a twin.</p>
+          </div>
+          <div>
+            <table>
+              <thead><tr><th>Representation</th><th>Local Move It Makes Cheap</th></tr></thead>
+              <tbody>
+                <tr><td>Face list</td><td>Enumerate facets; poor adjacency repair.</td></tr>
+                <tr><td>Winged-edge</td><td>Traverse both faces around an edge.</td></tr>
+                <tr><td>Half-edge / twin-edge</td><td>Follow next around a face and twin across an edge.</td></tr>
+                <tr><td>Quad-edge</td><td>Unify primal and dual traversal patterns.</td></tr>
+              </tbody>
+            </table>
+            <div class="math-box math-box--remark" style="margin-top: 24px;">
+              <div class="math-box-label">Design Question</div>
+              <p>Can the update walk around the horizon, cross adjacent faces, and repair twins without global reconstruction?</p>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Use the half-edge artifact as the anchor for a broader comparison. The chapter names several boundary representations, but the central design question is the same: how quickly can the algorithm move around a face, cross an edge, and repair adjacency after a local edit.</aside>
+      </div>
+    </section>
+
+    <section data-label="Conflict Graphs">
+      <div class="slide">
+        <div class="eyebrow">Randomized Incremental Hulls</div>
+        <h2>Conflict Graphs For Randomization</h2>
+        <div class="cols left-wide">
+          <div class="figure-card">
+            <img class="artifact-img tall" src="../figures/randomized-conflict-graph.png" alt="Conflict graph between outside points and visible faces">
+          </div>
+          <div class="box-list">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Conflict Edge</div>
+              <p>An outside point conflicts with a face when that point can see the face.</p>
+            </div>
+            <table>
+              <thead><tr><th>Outside Point</th><th>Visible Face</th></tr></thead>
+              <tbody>
+                <tr><td>p0</td><td>F2</td></tr>
+                <tr><td>p1</td><td>F3</td></tr>
+                <tr><td>p2</td><td>F1</td></tr>
+              </tbody>
+            </table>
+            <div class="panel teal"><h3>Check</h3><p>The conflict graph is bipartite: outside points on one side, hull faces on the other.</p></div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Explain conflicts as cached visibility. Instead of scanning every face for every outside point, the algorithm records which outside points can see which faces. When visible faces are deleted, only conflicts attached to the affected neighborhood need to be redistributed.</aside>
+      </div>
+    </section>
+
+    <section data-label="Higher Dimensions">
+      <div class="slide">
+        <div class="eyebrow">Beyond 3D</div>
+        <h2>Higher Dimensions And Output Sensitivity</h2>
+        <div class="cols left-wide">
+          <div class="figure-card">
+            <img class="artifact-img tall" src="../figures/higher-dimensional-hull-growth.png" alt="Higher-dimensional hull growth comparison">
+          </div>
+          <div class="box-list">
+            <div class="panel blue"><h3>3D Comfort</h3><p>Euler ties \(V\), \(E\), and \(F\) linearly for triangulated genus-zero hulls.</p></div>
+            <div class="panel amber"><h3>Higher-D Warning</h3><p>Facet counts can grow much faster than the number of vertices.</p></div>
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Output Sensitivity</div>
+              <p>Runtime statements must mention output size, because writing all faces may dominate the computation.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Notebook proxy: cyclic-style growth outpaces the 3D linear proxy.</span><span>Check: cyclic_style_growth_exceeds_simplex_growth.</span></div>
+        <aside class="speaker-notes">Use the growth plot to separate algorithmic overhead from output size. In three dimensions Euler keeps the hull surface linear in the number of vertices, but higher-dimensional polytopes can have many more faces. The output can be the bottleneck before implementation details enter.</aside>
+      </div>
+    </section>
+
+    <section data-label="Inspection Exercise">
+      <div class="slide">
+        <div class="eyebrow">Worked Inspection Exercise</div>
+        <h2>Diagnose One Beneath-Beyond Update</h2>
+        <div class="cols right-wide">
+          <div class="box-list">
+            <div class="math-box math-box--exercise">
+              <div class="math-box-label">Prompt</div>
+              <p>Given visible face \((1,2,3)\) and new point \(4\), identify the horizon, list the new cone faces, and name two checks that should pass after cleanup.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Expected Inspection</h3>
+              <ul>
+                <li>Horizon: \((1,2)\), \((1,3)\), \((2,3)\).</li>
+                <li>Cone faces: \((1,2,4)\), \((1,3,4)\), \((2,3,4)\).</li>
+                <li>Checks: one visible incident face per horizon edge; Euler remains two after the full hull update.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="figure-card">
+            <svg viewBox="0 0 980 610" role="img" aria-label="Inspection exercise cone over horizon">
+              <polygon points="225,410 500,250 750,405" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="6"></polygon>
+              <circle cx="225" cy="410" r="13" fill="#1E3A8A"></circle>
+              <circle cx="500" cy="250" r="13" fill="#1E3A8A"></circle>
+              <circle cx="750" cy="405" r="13" fill="#1E3A8A"></circle>
+              <circle cx="505" cy="105" r="16" fill="#B45309"></circle>
+              <path d="M505,105 L225,410 M505,105 L500,250 M505,105 L750,405" stroke="#B45309" stroke-width="5"></path>
+              <path d="M225,410 L500,250 L750,405 L225,410" fill="none" stroke="#0F766E" stroke-width="9"></path>
+              <text x="205" y="455" class="svg-math">1</text>
+              <text x="490" y="235" class="svg-math">2</text>
+              <text x="760" y="450" class="svg-math">3</text>
+              <text x="530" y="103" class="svg-math">4</text>
+              <text x="490" y="545" text-anchor="middle" class="svg-label">The horizon is the base cycle of the cone.</text>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Run this as a short in-class diagnosis. Students should identify the visible face, list the horizon edges, predict the three cone faces, and name the checks that would fail if a cone face were oriented backwards or if a horizon edge had two visible incident faces.</aside>
+      </div>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide">
+        <div class="eyebrow">Recap</div>
+        <h2>Recap And Implementation Checks</h2>
+        <div class="content">
+          <div class="four">
+            <div class="panel blue"><h3>Topology</h3><p>Valid genus-zero surface, two faces per edge, \(V-E+F=2\).</p></div>
+            <div class="panel teal"><h3>Predicate</h3><p>Signed volume classifies points against oriented faces.</p></div>
+            <div class="panel amber"><h3>Update</h3><p>Visible patch is deleted; cone faces attach to horizon edges.</p></div>
+            <div class="panel violet"><h3>Bookkeeping</h3><p>Records, twins, flags, conflicts, and cleanup make the surface mutable.</p></div>
+          </div>
+          <div class="cols" style="margin-top: 30px;">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Core Thesis</div>
+              <p>3D hull construction is a surface-maintenance problem guided by determinant signs.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Chapter Checks</h3>
+              <ul>
+                <li>euler_characteristic_is_two</li>
+                <li>horizon_edges_have_one_visible_face</li>
+                <li>each_half_edge_has_twin</li>
+                <li>conflict_graph_is_bipartite</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Next step: implement one update with explicit marks before deletion.</span><span>End of Chapter 4 deck.</span></div>
+        <aside class="speaker-notes">Close by returning to the mutable-surface theme. A correct 3D hull implementation is not just a determinant loop; it is a surface data structure with topological invariants, geometric predicates, cleanup policy, and performance bookkeeping. Ask students to read each check as a promise about one layer of the implementation: topology, visibility, adjacency, or randomized search.</aside>
+      </div>
+    </section>
+  </deck-stage>
+</body>
+</html>

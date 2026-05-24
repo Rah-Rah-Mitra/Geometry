@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="99">
+  <meta name="course_root" content="Computational-Geometry-in-C">
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-07-search-and-intersection">
+  <meta name="chapter_title" content="Chapter 7 - Search and Intersection">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-07-search-and-intersection/07-search-and-intersection.ipynb">
+  <meta name="source_span" content="printed pages 220-293.">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 7 - Search and Intersection</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 99,
+  "course_root": "Computational-Geometry-in-C",
+  "course": "Computational Geometry in C",
+  "chapter_id": "chapter-07-search-and-intersection",
+  "chapter_title": "Chapter 7 - Search and Intersection",
+  "notebook_path": "Computational-Geometry-in-C/chapter-07-search-and-intersection/07-search-and-intersection.ipynb",
+  "source_span": "printed pages 220-293.",
+  "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23",
+  "source_provenance": "Printed pages 220-293 map to PDF pages 229-302; PDF page 228 is prior chapter and PDF page 303 begins chapter 8."
+}
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 60px 92px 46px;
+      gap: 16px;
+      border-top: 10px solid var(--slide-accent);
+      overflow: clip;
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, .04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, .035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 65px; line-height: 1.03; font-weight: 700; max-width: 1420px; }
+    h2 { font-size: 50px; line-height: 1.07; font-weight: 700; }
+    h3 { font-size: 28px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 7px; }
+    p, li { font-size: 25px; line-height: 1.28; }
+    ul, ol { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 7px; }
+    img { max-width: 100%; max-height: 100%; display: block; object-fit: contain; }
+    table { width: 100%; border-collapse: collapse; font-size: 23px; line-height: 1.2; }
+    th { text-align: left; color: var(--slide-accent); background: #f8fafc; border-bottom: 2px solid var(--slide-border); padding: 10px 13px; }
+    td { border-bottom: 1px solid var(--slide-border-light); padding: 9px 13px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 21px; }
+    .eyebrow { color: var(--slide-teal); font-size: 21px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 30px; line-height: 1.24; color: var(--slide-muted); max-width: 1380px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 24px; align-items: stretch; }
+    .cols { grid-template-columns: .95fr 1.05fr; }
+    .wide-left { grid-template-columns: 1.14fr .86fr; }
+    .wide-right { grid-template-columns: .86fr 1.14fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 15px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 18px 20px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .math-box { padding: 18px 20px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 20px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); letter-spacing: 0; }
+    .formula { font-family: var(--font-math); font-size: 32px; line-height: 1.28; }
+    .code { font-family: var(--font-mono); font-size: 23px; line-height: 1.3; white-space: pre-line; }
+    .small { font-size: 21px; line-height: 1.24; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .figure-pad { padding: 14px; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 22px; border-top: 1px solid var(--slide-border-light); padding-top: 12px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .route { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .route div { border: 2px solid var(--slide-border); border-radius: 8px; padding: 11px; min-height: 76px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 21px; font-weight: 700; background: #fff; }
+    .route .hot { border-color: var(--slide-amber); color: var(--slide-amber); background: #fffbeb; }
+    .check-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .check-list div { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 11px 12px; background: #fff; font-size: 20px; font-weight: 700; color: var(--slide-accent); }
+    .svg-label { font: 700 25px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 26px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-title { font: 700 32px 'Source Sans 3', Arial, sans-serif; fill: #1e3a8a; }
+    .katex { font-size: 1em !important; }
+    .katex-display { margin: 8px 0 !important; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Search And Intersection">
+      <div class="topline"><div class="eyebrow">Computational Geometry in C</div><div class="badge">printed pp. 220-293 / PDF pp. 229-302 provenance</div></div>
+      <h1>Search And Intersection</h1>
+      <p class="lead">A bridge from local geometric classification to global search structures: segment codes, containment, polygon intersection, sweep status, support queries, hierarchy shrinkage, and point-location search.</p>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Chapter Goal</div><p>Turn predicates into classified events, then organize many events with search structures that answer geometric queries quickly and reproducibly.</p></div>
+          <div class="route"><div>segments</div><div>triangles</div><div class="hot">events</div><div>support</div><div>location</div></div>
+          <div class="panel teal"><h3>Checked Notebook Signals</h3><p>Segment cases classified, barycentric coordinates validated, ray parity verified, convex intersection nonempty, supports maximal, and point-location DAG routes to a leaf.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Search and intersection lecture map">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="title-arr" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="78" y="70" width="744" height="480" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#1e3a8a" stroke-width="5" marker-end="url(#title-arr)">
+              <line x1="182" y1="180" x2="350" y2="180"/><line x1="462" y1="180" x2="628" y2="180"/>
+              <line x1="182" y1="392" x2="350" y2="392"/><line x1="462" y1="392" x2="628" y2="392"/>
+              <line x1="406" y1="222" x2="406" y2="340"/>
+            </g>
+            <g>
+              <rect x="96" y="132" width="178" height="96" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="126" y="190" class="svg-label">predicate</text>
+              <rect x="360" y="132" width="178" height="96" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="388" y="190" class="svg-label">event code</text>
+              <rect x="626" y="132" width="178" height="96" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="664" y="190" class="svg-label">boundary</text>
+              <rect x="96" y="344" width="178" height="96" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="124" y="402" class="svg-label">many inputs</text>
+              <rect x="360" y="344" width="178" height="96" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="384" y="402" class="svg-label">structure</text>
+              <rect x="626" y="344" width="178" height="96" rx="10" fill="#fff" stroke="#94a3b8" stroke-width="4"/><text x="664" y="402" class="svg-label">query answer</text>
+            </g>
+            <text x="204" y="522" class="svg-small">local signs become global search decisions</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Notebook: Computational-Geometry-in-C/chapter-07-search-and-intersection/07-search-and-intersection.ipynb</span><span>Manifest row 99</span></div>
+      <aside class="speaker-notes">Open by naming the chapter's shift in scale. Earlier chapters used local predicates to classify one turn, one edge, or one cell; this lecture asks what those predicates return when many objects, special cases, and search structures are present. Keep the manifest source span visible as printed pages 220-293, with PDF provenance recorded separately.</aside>
+    </section>
+
+    <section class="slide" data-label="Source Map And Learning Arc">
+      <div class="topline"><div class="eyebrow">Roadmap</div><div class="badge">printed 220-293 maps to PDF 229-302</div></div>
+      <h2>Source Map And Learning Arc</h2>
+      <div class="content">
+        <figure class="diagram" aria-label="Source map and learning arc">
+          <svg viewBox="0 0 1700 620" role="img">
+            <defs><marker id="arc-arr" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 Z" fill="#1e3a8a"/></marker></defs>
+            <g>
+              <rect x="40" y="218" width="210" height="140" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="80" y="276" class="svg-label">segments</text><text x="77" y="318" class="svg-small">codes, s, t</text>
+              <rect x="306" y="218" width="210" height="140" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="348" y="276" class="svg-label">triangles</text><text x="350" y="318" class="svg-small">plane + bary</text>
+              <rect x="572" y="218" width="210" height="140" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="610" y="276" class="svg-label">parity</text><text x="598" y="318" class="svg-small">inside / outside</text>
+              <rect x="838" y="218" width="210" height="140" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="868" y="276" class="svg-label">many</text><text x="872" y="318" class="svg-small">sweep status</text>
+              <rect x="1104" y="218" width="210" height="140" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="1138" y="276" class="svg-label">support</text><text x="1130" y="318" class="svg-small">extreme query</text>
+              <rect x="1370" y="218" width="250" height="140" rx="10" fill="#fff" stroke="#94a3b8" stroke-width="4"/><text x="1418" y="276" class="svg-label">point location</text><text x="1426" y="318" class="svg-small">trapezoids + DAG</text>
+            </g>
+            <g stroke="#1e3a8a" stroke-width="6" marker-end="url(#arc-arr)">
+              <line x1="252" y1="288" x2="294" y2="288"/><line x1="518" y1="288" x2="560" y2="288"/><line x1="784" y1="288" x2="826" y2="288"/><line x1="1050" y1="288" x2="1092" y2="288"/><line x1="1316" y1="288" x2="1358" y2="288"/>
+            </g>
+            <path d="M82 432 C330 514, 580 514, 828 432" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="14 10"/>
+            <path d="M898 432 C1104 514, 1324 514, 1510 432" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="14 10"/>
+            <text x="270" y="548" class="svg-small">intersection and containment</text>
+            <text x="1080" y="548" class="svg-small">search structures</text>
+            <text x="42" y="96" class="svg-title">Provenance</text>
+            <text x="42" y="136" class="svg-small">PDF page = printed page + 9; page 228 is prior chapter, page 303 starts chapter 8.</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Manifest source span preserved: printed pages 220-293.</span><span>Notebook source coverage records PDF pages 229-302.</span></div>
+      <aside class="speaker-notes">Use the map as the lecture contract. The chapter begins with pairwise intersection, then lifts the same classification habit to triangles, polygons, segment sets, extremal queries, and planar point location. Emphasize that the PDF provenance is printed page plus nine: pages 220-293 correspond to PDF pages 229-302.</aside>
+    </section>
+
+    <section class="slide alt" data-label="From Boolean Predicate To Classified Event">
+      <div class="topline"><div class="eyebrow">Predicate Output</div><div class="badge">not just true or false</div></div>
+      <h2>From Boolean Predicate To Classified Event</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Event Contract</div><p>An intersection routine should return the event type, the witness point or interval, and the parameters that certify where the event occurs.</p></div>
+          <div class="panel blue"><h3>Boolean Layer</h3><p>Enough for collision rejection: "do these objects meet?"</p></div>
+          <div class="panel teal"><h3>Classified Layer</h3><p>Needed for clipping, containment, arrangements, and boundary conventions: "how do they meet?"</p></div>
+          <div class="panel amber"><h3>Consequence</h3><p>Endpoint touches and overlaps are not numerical annoyances; they are topological events that later algorithms consume.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Boolean predicate refined to event codes">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="bool-arr" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="80" y="82" width="300" height="456" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <text x="132" y="148" class="svg-title">Boolean</text>
+            <line x1="128" y1="338" x2="320" y2="218" stroke="#2563eb" stroke-width="8"/><line x1="128" y1="218" x2="320" y2="338" stroke="#b45309" stroke-width="8"/>
+            <circle cx="224" cy="278" r="16" fill="#0f766e"/>
+            <text x="154" y="448" class="svg-label">intersects?</text><text x="206" y="490" class="svg-title">yes</text>
+            <line x1="396" y1="310" x2="498" y2="310" stroke="#1e3a8a" stroke-width="7" marker-end="url(#bool-arr)"/>
+            <rect x="520" y="82" width="300" height="456" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="570" y="148" class="svg-title">Classified</text>
+            <g font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700">
+              <text x="574" y="228" fill="#2563eb">1: proper crossing</text>
+              <text x="574" y="286" fill="#0f766e">v: endpoint touch</text>
+              <text x="574" y="344" fill="#b45309">e: overlap interval</text>
+              <text x="574" y="402" fill="#64748b">0: miss</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Predicate signs are the raw material</span><span>Classified events are the reusable API</span></div>
+      <aside class="speaker-notes">Pause on the distinction between yes-or-no and useful output. For downstream geometry, an intersection routine should explain what happened: proper crossing, endpoint contact, overlapping edge, or miss. That richer event vocabulary is what lets polygon containment, clipping, and search structures agree about boundary cases.</aside>
+    </section>
+
+    <section class="slide" data-label="Parametric Segment Intersection">
+      <div class="topline"><div class="eyebrow">Segment Pair</div><div class="badge">solve for parameters s and t</div></div>
+      <h2>Parametric Segment Intersection</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Parametric Test</div><p class="formula">\(a+s(b-a)=c+t(d-c),\quad 0\le s,t\le1\)</p></div>
+          <div class="panel teal"><h3>Unit Square View</h3><p>The algebra finds one point in \((s,t)\)-space. It is a segment intersection only when that point lies inside the unit square.</p></div>
+          <div class="panel amber"><h3>Parallel Warning</h3><p>A small cross-product denominator makes the solve unstable; the branch should switch to parallel or collinear interval logic.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Parameter square for two segment parameters">
+          <svg viewBox="0 0 980 620" role="img">
+            <rect x="78" y="78" width="410" height="410" fill="#fff" stroke="#cbd5e1" stroke-width="5"/>
+            <g stroke="#e2e8f0" stroke-width="2"><line x1="78" y1="180" x2="488" y2="180"/><line x1="78" y1="282" x2="488" y2="282"/><line x1="78" y1="384" x2="488" y2="384"/><line x1="180" y1="78" x2="180" y2="488"/><line x1="282" y1="78" x2="282" y2="488"/><line x1="384" y1="78" x2="384" y2="488"/></g>
+            <circle cx="293" cy="301" r="18" fill="#0f766e"/><text x="318" y="308" class="svg-label">(s,t)</text>
+            <text x="58" y="540" class="svg-small">inside square: both parameters on their segments</text>
+            <text x="84" y="62" class="svg-small">t = 1</text><text x="468" y="522" class="svg-small">s = 1</text><text x="62" y="512" class="svg-small">0</text>
+            <g transform="translate(590,116)">
+              <line x1="20" y1="320" x2="330" y2="110" stroke="#2563eb" stroke-width="8"/>
+              <line x1="30" y1="100" x2="350" y2="360" stroke="#b45309" stroke-width="8"/>
+              <circle cx="174" cy="216" r="16" fill="#0f766e"/>
+              <text x="52" y="382" class="svg-small">same event in the input plane</text>
+              <text x="142" y="72" class="svg-title">proper case</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Proper case check: s = 0.524, t = 0.457</span><span>Both are inside the closed unit interval</span></div>
+      <aside class="speaker-notes">Introduce the parameter square before discussing code. Each segment contributes one parameter, and the intersection is valid exactly when both parameters land in the closed unit interval. This turns geometry into a constrained solve, while parallel and nearly parallel directions become visible as denominator warnings.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Return Codes In Four Cases">
+      <div class="topline"><div class="eyebrow">Checked Artifact</div><div class="badge">segment-intersection-codes.png/json/csv</div></div>
+      <h2>Return Codes In Four Cases</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Four segment intersection return-code cases">
+          <img src="../figures/segment-intersection-codes.png" alt="Four segment intersection cases: proper crossing, endpoint touch, collinear overlap, and disjoint">
+        </figure>
+        <div class="stack">
+          <table aria-label="Segment intersection return codes">
+            <thead><tr><th>Code</th><th>Meaning</th><th>Witness</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>proper crossing</td><td>\(s,t\) both interior</td></tr>
+              <tr><td>v</td><td>endpoint touch</td><td>shared vertex</td></tr>
+              <tr><td>e</td><td>collinear overlap</td><td>interval endpoint</td></tr>
+              <tr><td>0</td><td>miss</td><td>parameters outside</td></tr>
+            </tbody>
+          </table>
+          <div class="panel teal"><h3>Notebook Check</h3><p>all_segment_cases_classified = true; proper_case_has_parameters_inside_unit_square = true.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Observed codes match expected codes: 1, v, e, 0</span><span>Classification feeds later boundary conventions</span></div>
+      <aside class="speaker-notes">Use the checked artifact as a compact test board. The four cases deliberately include a proper crossing, endpoint touch, collinear overlap, and a miss. Point out that all four are correct outcomes, and collapsing them into one Boolean would lose information needed later by polygon and boundary logic.</aside>
+    </section>
+
+    <section class="slide" data-label="Degeneracy And Numeric Caution">
+      <div class="topline"><div class="eyebrow">Robustness</div><div class="badge">branch policy is part of the algorithm</div></div>
+      <h2>Degeneracy And Numeric Caution</h2>
+      <div class="content four">
+        <div class="panel amber"><h3>Small Denominator</h3><p>When \(\det(b-a,d-c)\) is near zero, the parameter solve should not decide the event alone.</p></div>
+        <div class="panel blue"><h3>Collinear Interval</h3><p>Overlap is a one-dimensional interval problem after the supporting line has been identified.</p></div>
+        <div class="panel teal"><h3>Endpoint Policy</h3><p>A closed segment includes endpoints, but a polygon crossing count often treats vertices with special half-open conventions.</p></div>
+        <div class="panel violet"><h3>Arithmetic Choice</h3><p>Integer predicates avoid roundoff but can overflow; floating predicates need documented tolerances.</p></div>
+      </div>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Degenerate segment situations">
+          <svg viewBox="0 0 900 360" role="img">
+            <rect x="56" y="52" width="788" height="240" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <line x1="100" y1="116" x2="380" y2="130" stroke="#2563eb" stroke-width="7"/><line x1="110" y1="154" x2="392" y2="168" stroke="#b45309" stroke-width="7"/><text x="116" y="238" class="svg-small">nearly parallel: denominator dominates the decision</text>
+            <line x1="496" y1="146" x2="780" y2="146" stroke="#2563eb" stroke-width="9"/><line x1="620" y1="146" x2="820" y2="146" stroke="#b45309" stroke-width="5"/><circle cx="620" cy="146" r="12" fill="#0f766e"/><text x="536" y="238" class="svg-small">collinear overlap: reduce to interval ordering</text>
+          </svg>
+        </figure>
+        <div class="math-box math-box--warning"><div class="math-box-label">Implementation Warning</div><p>The mathematical predicate is exact; the implementation branch is not unless the arithmetic and degeneracy conventions are explicit.</p></div>
+      </div>
+      <div class="footer"><span>Degenerate cases change the returned event, not the geometric vocabulary</span><span>Robustness belongs in the API contract</span></div>
+      <aside class="speaker-notes">Treat robustness as part of the specification, not an implementation afterthought. The determinant and parameter formulas are simple, but zero denominators, collinear intervals, and roundoff near zero decide which branch is taken. Students should leave with the habit of documenting an epsilon or exact-arithmetic policy.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Segment-Plane Then Triangle">
+      <div class="topline"><div class="eyebrow">3D Intersection</div><div class="badge">segment-triangle-intersection.png/json</div></div>
+      <h2>Segment-Plane Then Triangle</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Segment triangle intersection visual">
+          <img src="../figures/segment-triangle-intersection.png" alt="A segment meeting a triangle with the intersection point inside the triangular region">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Two-Stage Test</div><p>Intersect segment \(q+r(t-q)\) with the supporting plane, then classify the point against the triangle.</p></div>
+          <div class="panel blue"><h3>Checked Intersection</h3><p>Plane parameter \(t=0.6225\); point \((0.85,0.95,0.1325)\).</p></div>
+          <div class="panel teal"><h3>Inside Certificate</h3><p>Barycentric weights \((0.290,0.261,0.449)\) are nonnegative and sum to one.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Checks: segment_meets_triangle, barycentric_coordinates_inside</span><span>Plane hit first; triangle classification second</span></div>
+      <aside class="speaker-notes">Frame segment-triangle intersection as two nested tests. First intersect the segment with the triangle's supporting plane; only after that do we ask whether the point lies inside the triangular region. The notebook check provides the plane parameter and a concrete intersection point for the class to inspect.</aside>
+    </section>
+
+    <section class="slide" data-label="Barycentric Classification">
+      <div class="topline"><div class="eyebrow">Triangle Events</div><div class="badge">inside, edge, vertex, outside</div></div>
+      <h2>Barycentric Classification</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Barycentric Coordinates</div><p class="formula">\(p=\alpha a+\beta b+\gamma c,\quad \alpha+\beta+\gamma=1\)</p></div>
+          <div class="panel teal"><h3>Inside</h3><p>All three weights are positive.</p></div>
+          <div class="panel blue"><h3>Boundary</h3><p>One zero weight gives an edge; two zero weights give a vertex.</p></div>
+          <div class="panel amber"><h3>Outside</h3><p>At least one weight is negative, so the point lies across the opposite edge.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Barycentric triangle classification">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="160,500 720,470 420,92" fill="#eff6ff" stroke="#1e3a8a" stroke-width="7"/>
+            <g stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 8">
+              <line x1="420" y1="92" x2="440" y2="486"/><line x1="160" y1="500" x2="570" y2="281"/><line x1="720" y1="470" x2="294" y2="296"/>
+            </g>
+            <circle cx="438" cy="286" r="17" fill="#0f766e"/><text x="462" y="294" class="svg-label">inside</text>
+            <circle cx="300" cy="492" r="15" fill="#2563eb"/><text x="232" y="560" class="svg-small">edge hit: one zero weight</text>
+            <circle cx="720" cy="470" r="16" fill="#b45309"/><text x="612" y="534" class="svg-small">vertex hit: two zero weights</text>
+            <circle cx="704" cy="172" r="15" fill="#6d28d9"/><text x="596" y="148" class="svg-small">outside: negative weight</text>
+            <text x="132" y="516" class="svg-label">a</text><text x="738" y="484" class="svg-label">b</text><text x="420" y="70" class="svg-label">c</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Triangle classification mirrors segment return codes</span><span>Weights are both coordinates and certificates</span></div>
+      <aside class="speaker-notes">Use the barycentric diagram to make classification visual. Inside means all three weights are nonnegative and sum to one; an edge hit has one zero weight; a vertex hit has two zero weights. This is the triangle analogue of returning a classified segment event instead of a bare Boolean.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Containment By Ray Parity">
+      <div class="topline"><div class="eyebrow">Containment</div><div class="badge">point-containment-rays.png/json</div></div>
+      <h2>Containment By Ray Parity</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Point containment ray parity visual">
+          <img src="../figures/point-containment-rays.png" alt="Ray-crossing containment examples with inside and outside query rays">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Parity Rule</div><p>A generic ray from a point crosses the boundary an odd number of times for an inside point and an even number for an outside point.</p></div>
+          <div class="panel teal"><h3>Checked Query</h3><p>Inside ray has three hits, so parity is odd.</p></div>
+          <div class="panel blue"><h3>3D Analogue</h3><p>The cube test uses ray hits with faces; inside has one unique crossing and outside has none.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Checks: ray_parity_matches_expected = true</span><span>Boundary vertices require a consistent crossing convention</span></div>
+      <aside class="speaker-notes">Explain ray parity as a crossing-count certificate. A query is inside a polygon when a generic ray crosses the boundary an odd number of times, and outside when the count is even. The checked inside query has three hits, while the outside query has none; degeneracies again require a convention.</aside>
+    </section>
+
+    <section class="slide" data-label="Convex Polygon Intersection">
+      <div class="topline"><div class="eyebrow">Polygon Output</div><div class="badge">convex-polygon-intersection.png/json</div></div>
+      <h2>Convex Polygon Intersection</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Convex polygon intersection visual">
+          <img src="../figures/convex-polygon-intersection.png" alt="Two convex polygons with their clipped intersection polygon">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Convex Closure</div><p>Intersecting a convex polygon with one supporting half-plane preserves convexity, so repeated clipping preserves convexity.</p></div>
+          <div class="panel teal"><h3>Checked Output</h3><p>The intersection is nonempty and convex with 7 vertices.</p></div>
+          <div class="panel blue"><h3>Area Sanity</h3><p>Intersection area is \(3.2319\), and it is not larger than either input polygon.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Local edge classifications assemble a global polygon</span><span>Every output vertex is either an input vertex or an edge intersection</span></div>
+      <aside class="speaker-notes">Present convex polygon intersection as a maintained candidate region. Each clipping line removes a half-plane, so the result remains convex, and the notebook check reports a nonempty seven-vertex intersection with area about 3.232. This slide links local edge tests to an actual output polygon.</aside>
+    </section>
+
+    <section class="slide alt" data-label="When There Are Many Segments">
+      <div class="topline"><div class="eyebrow">Set Intersection</div><div class="badge">sweep line status</div></div>
+      <h2>When There Are Many Segments</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Sweep Principle</div><p>Move a vertical line through event points; maintain the active segments ordered by their intersection height with the sweep line.</p></div>
+          <div class="panel blue"><h3>Local Neighbor Tests</h3><p>New intersections can be found by checking adjacent active segments after insertions, deletions, and swaps.</p></div>
+          <div class="panel amber"><h3>Degenerate Events</h3><p>Shared endpoints, overlapping segments, and equal x-coordinates must be ordered before the data structure can behave predictably.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Sweep line status for many segment intersections">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="sweep-arr" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="78" y="70" width="740" height="486" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke-width="7" stroke-linecap="round">
+              <line x1="110" y1="480" x2="740" y2="160" stroke="#2563eb"/>
+              <line x1="126" y1="150" x2="760" y2="458" stroke="#b45309"/>
+              <line x1="210" y1="330" x2="812" y2="278" stroke="#0f766e"/>
+              <line x1="350" y1="514" x2="640" y2="96" stroke="#6d28d9"/>
+            </g>
+            <line x1="468" y1="70" x2="468" y2="556" stroke="#111827" stroke-width="5" stroke-dasharray="14 10"/>
+            <path d="M468 58 C508 58, 540 58, 582 58" stroke="#1e3a8a" stroke-width="5" marker-end="url(#sweep-arr)"/>
+            <rect x="602" y="116" width="176" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="632" y="158" class="svg-label">status</text>
+            <text x="642" y="204" class="svg-small">s4</text><text x="642" y="248" class="svg-small">s2</text><text x="642" y="292" class="svg-small">s3</text><text x="642" y="336" class="svg-small">s1</text>
+            <circle cx="424" cy="320" r="14" fill="#111827"/><circle cx="520" cy="270" r="14" fill="#111827"/>
+            <text x="120" y="596" class="svg-small">global problem -> ordered local changes along the sweep</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Data structure: balanced order of active segments</span><span>Events: endpoints and discovered crossings</span></div>
+      <aside class="speaker-notes">Shift from one pair of segments to a set of segments. A sweep line keeps a status order of active segments, because possible intersections are discovered locally among neighbors as the sweep advances. The key teaching point is that global intersection search becomes a sequence of ordered local updates.</aside>
+    </section>
+
+    <section class="slide" data-label="Support Queries In A Convex Polygon">
+      <div class="topline"><div class="eyebrow">Extremal Query</div><div class="badge">extreme-query-supports.png/json</div></div>
+      <h2>Support Queries In A Convex Polygon</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Convex polygon support directions">
+          <img src="../figures/extreme-query-supports.png" alt="Support points of a convex polygon for several direction vectors">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Support Function</div><p class="formula">\(h_P(u)=\max_{p\in P}\langle u,p\rangle\)</p></div>
+          <table aria-label="Support query checked rows">
+            <thead><tr><th>Direction</th><th>Support index</th><th>Value</th></tr></thead>
+            <tbody><tr><td>(1, 0.2)</td><td>3</td><td>3.18</td></tr><tr><td>(0.3, 1)</td><td>4</td><td>2.75</td></tr><tr><td>(-0.7, 0.6)</td><td>6</td><td>0.96</td></tr><tr><td>(0.2, -1)</td><td>1</td><td>0.66</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="footer"><span>Check: support_points_maximize_dot_product = true</span><span>A query direction exposes a supporting line</span></div>
+      <aside class="speaker-notes">Define support as an optimization query over vertices. Given a direction vector, the answer is the vertex maximizing the dot product with that direction. The notebook artifact checks four directions and confirms that the highlighted support values are maxima, which prepares students for hierarchical extremal search.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Hierarchy Shrinkage">
+      <div class="topline"><div class="eyebrow">Hierarchy</div><div class="badge">extreme-query-hierarchy.csv</div></div>
+      <h2>Hierarchy Shrinkage</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Hierarchy levels shrinking geometrically">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="80" y="70" width="720" height="490" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g font-family="Source Sans 3, Arial, sans-serif" font-weight="700" text-anchor="middle">
+              <circle cx="180" cy="470" r="72" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/><text x="180" y="480" font-size="28" fill="#1e3a8a">72</text>
+              <circle cx="320" cy="420" r="58" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/><text x="320" y="430" font-size="28" fill="#0f766e">48</text>
+              <circle cx="444" cy="372" r="48" fill="#fffbeb" stroke="#b45309" stroke-width="5"/><text x="444" y="382" font-size="28" fill="#b45309">32</text>
+              <circle cx="548" cy="326" r="38" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/><text x="548" y="336" font-size="28" fill="#1e3a8a">22</text>
+              <circle cx="638" cy="282" r="30" fill="#f5f3ff" stroke="#6d28d9" stroke-width="5"/><text x="638" y="292" font-size="25" fill="#6d28d9">15</text>
+              <circle cx="710" cy="236" r="24" fill="#f8fafc" stroke="#94a3b8" stroke-width="5"/><text x="710" y="246" font-size="22" fill="#64748b">10</text>
+              <circle cx="762" cy="192" r="20" fill="#fff" stroke="#64748b" stroke-width="5"/><text x="762" y="200" font-size="20" fill="#64748b">7</text>
+              <circle cx="792" cy="148" r="17" fill="#fff" stroke="#111827" stroke-width="5"/><text x="792" y="156" font-size="18" fill="#111827">5</text>
+            </g>
+            <text x="118" y="122" class="svg-title">vertices remaining by level</text>
+            <text x="118" y="160" class="svg-small">delete independent low-degree set and retriangulate</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Shrink Invariant</div><p>Each level is smaller but still preserves enough adjacency to route an extremal query toward the original polytope.</p></div>
+          <div class="check-list"><div>72 -> 48</div><div>48 -> 32</div><div>32 -> 22</div><div>22 -> 15</div><div>15 -> 10</div><div>10 -> 7 -> 5</div></div>
+          <div class="panel teal"><h3>Notebook Check</h3><p>hierarchy_shrinks_geometrically = true.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Constant-size base case at 5 vertices</span><span>Search descends small-to-large certificates</span></div>
+      <aside class="speaker-notes">Make the hierarchy quantitative. The stored levels shrink from 72 vertices to 5 through repeated deletion of independent low-degree sets and retriangulation. The exact constants are less important than the invariant: each level is a smaller proxy that can route the query toward the full-resolution answer.</aside>
+    </section>
+
+    <section class="slide" data-label="Extremal Polytope Query Roadmap">
+      <div class="topline"><div class="eyebrow">Proof Roadmap</div><div class="badge">support query -> hierarchy query</div></div>
+      <h2>Extremal Polytope Query Roadmap</h2>
+      <div class="content">
+        <figure class="diagram" aria-label="Proof DAG for extremal polytope query">
+          <svg viewBox="0 0 1700 620" role="img">
+            <defs><marker id="dag-arr" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <g stroke="#1e3a8a" stroke-width="5" marker-end="url(#dag-arr)">
+              <line x1="258" y1="300" x2="408" y2="210"/><line x1="258" y1="300" x2="408" y2="390"/>
+              <line x1="628" y1="210" x2="778" y2="300"/><line x1="628" y1="390" x2="778" y2="300"/>
+              <line x1="1010" y1="300" x2="1160" y2="210"/><line x1="1010" y1="300" x2="1160" y2="390"/>
+              <line x1="1380" y1="210" x2="1515" y2="300"/><line x1="1380" y1="390" x2="1515" y2="300"/>
+            </g>
+            <g>
+              <rect x="58" y="232" width="210" height="136" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="98" y="292" class="svg-label">direction u</text><text x="88" y="332" class="svg-small">linear objective</text>
+              <rect x="420" y="142" width="220" height="136" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="458" y="202" class="svg-label">coarse level</text><text x="466" y="242" class="svg-small">small proxy</text>
+              <rect x="420" y="322" width="220" height="136" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="462" y="382" class="svg-label">conflict info</text><text x="452" y="422" class="svg-small">which region?</text>
+              <rect x="790" y="232" width="220" height="136" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="840" y="292" class="svg-label">descend</text><text x="838" y="332" class="svg-small">refine candidate</text>
+              <rect x="1172" y="142" width="220" height="136" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="1206" y="202" class="svg-label">local search</text><text x="1208" y="242" class="svg-small">neighbors only</text>
+              <rect x="1172" y="322" width="220" height="136" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/><text x="1218" y="382" class="svg-label">certificate</text><text x="1216" y="422" class="svg-small">support plane</text>
+              <rect x="1526" y="232" width="140" height="136" rx="10" fill="#fff" stroke="#111827" stroke-width="4"/><text x="1550" y="292" class="svg-label">answer</text><text x="1546" y="332" class="svg-small">vertex</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Roadmap: logarithmic descent when shrinkage and local certificates are maintained</span><span>Support plane proves optimality</span></div>
+      <aside class="speaker-notes">Use this proof DAG as a roadmap rather than a full proof. The query descends through a small hierarchy, maintains a conflict or containing simplex, and returns to the original polytope with a support certificate. This is the conceptual bridge from convex polygon support to higher-dimensional polytope queries.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Planar Point Location">
+      <div class="topline"><div class="eyebrow">Search DAG</div><div class="badge">point-location-search-dag.png and path csv</div></div>
+      <h2>Planar Point Location</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Point location search DAG">
+          <img src="../figures/point-location-search-dag.png" alt="Decision DAG for a point-location query">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Query Goal</div><p>Given a planar subdivision and a query point \(q\), return the face, cell, or trapezoid containing \(q\).</p></div>
+          <table aria-label="Point location search path">
+            <thead><tr><th>Node</th><th>Result</th><th>Next</th></tr></thead>
+            <tbody><tr><td>x &lt; 1.0?</td><td>false</td><td>x &lt; 3.2?</td></tr><tr><td>x &lt; 3.2?</td><td>true</td><td>above s2?</td></tr><tr><td>above s2?</td><td>false</td><td>leaf T5</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="footer"><span>Query point: (2.7, 1.35)</span><span>Check: search_path_uses_three_tests = true</span></div>
+      <aside class="speaker-notes">Now the search target is not an extreme vertex but the cell containing a query point. The point-location DAG stores simple decisions, and the checked path uses three tests before reaching leaf T5. Connect this to the earlier predicate story: every node is still a geometric classification.</aside>
+    </section>
+
+    <section class="slide" data-label="Randomized Trapezoidal Decomposition">
+      <div class="topline"><div class="eyebrow">Trapezoidal Search</div><div class="badge">trapezoidal-point-location.png/json</div></div>
+      <h2>Randomized Trapezoidal Decomposition</h2>
+      <div class="content wide-left">
+        <figure class="diagram figure-pad" aria-label="Trapezoidal decomposition point location visual">
+          <img src="../figures/trapezoidal-point-location.png" alt="Trapezoidal decomposition over segments with a query point routed to a cell">
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Search Structure</div><p>Randomized insertion builds trapezoids plus a decision DAG whose internal nodes test endpoints or whether a point lies above a segment.</p></div>
+          <div class="panel teal"><h3>Neighbor Bound</h3><p>Each trapezoid has at most two neighbors above and below in the source description, keeping local navigation controlled.</p></div>
+          <div class="panel blue"><h3>Checked Route</h3><p>The query is routed to leaf \(T5\) by the stored decision path.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Check: search_structure_routes_query_to_leaf = true</span><span>Randomization controls expected search complexity</span></div>
+      <aside class="speaker-notes">Present trapezoidal decomposition as a search-friendly refinement of a segment arrangement. Random insertion creates trapezoids and a decision structure using endpoint and segment-above tests. The notebook note that each trapezoid has bounded above and below neighbors is the geometric reason the structure stays navigable.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Recap And Lab Prompts">
+      <div class="topline"><div class="eyebrow">Recap</div><div class="badge">classification -> convention -> search</div></div>
+      <h2>Recap And Lab Prompts</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="panel blue"><h3>Core Pattern</h3><p>Local predicate signs become classified events; classified events become reliable components in larger search and intersection algorithms.</p></div>
+          <div class="panel teal"><h3>Verified Artifacts</h3><p>Segment cases, segment-triangle barycentrics, ray parity, convex clipping, support maxima, hierarchy shrinkage, and point-location routing.</p></div>
+          <div class="math-box math-box--exercise"><div class="math-box-label">Lab Prompt</div><p>Change one degeneracy convention or query direction, rerun the notebook, and identify which check changes first.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Recap board of chapter checks">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="70" y="70" width="760" height="480" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g font-family="Source Sans 3, Arial, sans-serif" font-weight="700">
+              <rect x="118" y="118" width="280" height="82" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/><text x="148" y="168" font-size="25" fill="#1e3a8a">segment events</text>
+              <rect x="500" y="118" width="280" height="82" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/><text x="526" y="168" font-size="25" fill="#0f766e">barycentric hit</text>
+              <rect x="118" y="238" width="280" height="82" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="3"/><text x="150" y="288" font-size="25" fill="#b45309">ray parity</text>
+              <rect x="500" y="238" width="280" height="82" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="3"/><text x="526" y="288" font-size="25" fill="#1e3a8a">convex clipping</text>
+              <rect x="118" y="358" width="280" height="82" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"/><text x="146" y="408" font-size="25" fill="#6d28d9">support query</text>
+              <rect x="500" y="358" width="280" height="82" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/><text x="532" y="408" font-size="25" fill="#64748b">point location</text>
+            </g>
+            <text x="156" y="506" class="svg-small">Ask: what does the routine return, and who consumes that return value?</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>HTML deck is the source of record; no PDF/PPTX generated</span><span>Next: motion planning uses these search tools in configuration spaces</span></div>
+      <aside class="speaker-notes">Close by asking students to connect the chapter's repeated pattern. First classify a local event; then state the boundary convention; then use those events in a global structure. The lab prompts invite them to vary degeneracies, segment counts, support directions, and point-location queries while watching the checks fail or pass.</aside>
+    </section>
+  </deck-stage>
+
+  <script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "title": "Search And Intersection",
+    "notes": "Open by naming the chapter's shift in scale. Earlier chapters used local predicates to classify one turn, one edge, or one cell; this lecture asks what those predicates return when many objects, special cases, and search structures are present. Keep the manifest source span visible as printed pages 220-293, with PDF provenance recorded separately."
+  },
+  {
+    "slide": 2,
+    "title": "Source Map And Learning Arc",
+    "notes": "Use the map as the lecture contract. The chapter begins with pairwise intersection, then lifts the same classification habit to triangles, polygons, segment sets, extremal queries, and planar point location. Emphasize that the PDF provenance is printed page plus nine: pages 220-293 correspond to PDF pages 229-302."
+  },
+  {
+    "slide": 3,
+    "title": "From Boolean Predicate To Classified Event",
+    "notes": "Pause on the distinction between yes-or-no and useful output. For downstream geometry, an intersection routine should explain what happened: proper crossing, endpoint contact, overlapping edge, or miss. That richer event vocabulary is what lets polygon containment, clipping, and search structures agree about boundary cases."
+  },
+  {
+    "slide": 4,
+    "title": "Parametric Segment Intersection",
+    "notes": "Introduce the parameter square before discussing code. Each segment contributes one parameter, and the intersection is valid exactly when both parameters land in the closed unit interval. This turns geometry into a constrained solve, while parallel and nearly parallel directions become visible as denominator warnings."
+  },
+  {
+    "slide": 5,
+    "title": "Return Codes In Four Cases",
+    "notes": "Use the checked artifact as a compact test board. The four cases deliberately include a proper crossing, endpoint touch, collinear overlap, and a miss. Point out that all four are correct outcomes, and collapsing them into one Boolean would lose information needed later by polygon and boundary logic."
+  },
+  {
+    "slide": 6,
+    "title": "Degeneracy And Numeric Caution",
+    "notes": "Treat robustness as part of the specification, not an implementation afterthought. The determinant and parameter formulas are simple, but zero denominators, collinear intervals, and roundoff near zero decide which branch is taken. Students should leave with the habit of documenting an epsilon or exact-arithmetic policy."
+  },
+  {
+    "slide": 7,
+    "title": "Segment-Plane Then Triangle",
+    "notes": "Frame segment-triangle intersection as two nested tests. First intersect the segment with the triangle's supporting plane; only after that do we ask whether the point lies inside the triangular region. The notebook check provides the plane parameter and a concrete intersection point for the class to inspect."
+  },
+  {
+    "slide": 8,
+    "title": "Barycentric Classification",
+    "notes": "Use the barycentric diagram to make classification visual. Inside means all three weights are nonnegative and sum to one; an edge hit has one zero weight; a vertex hit has two zero weights. This is the triangle analogue of returning a classified segment event instead of a bare Boolean."
+  },
+  {
+    "slide": 9,
+    "title": "Containment By Ray Parity",
+    "notes": "Explain ray parity as a crossing-count certificate. A query is inside a polygon when a generic ray crosses the boundary an odd number of times, and outside when the count is even. The checked inside query has three hits, while the outside query has none; degeneracies again require a convention."
+  },
+  {
+    "slide": 10,
+    "title": "Convex Polygon Intersection",
+    "notes": "Present convex polygon intersection as a maintained candidate region. Each clipping line removes a half-plane, so the result remains convex, and the notebook check reports a nonempty seven-vertex intersection with area about 3.232. This slide links local edge tests to an actual output polygon."
+  },
+  {
+    "slide": 11,
+    "title": "When There Are Many Segments",
+    "notes": "Shift from one pair of segments to a set of segments. A sweep line keeps a status order of active segments, because possible intersections are discovered locally among neighbors as the sweep advances. The key teaching point is that global intersection search becomes a sequence of ordered local updates."
+  },
+  {
+    "slide": 12,
+    "title": "Support Queries In A Convex Polygon",
+    "notes": "Define support as an optimization query over vertices. Given a direction vector, the answer is the vertex maximizing the dot product with that direction. The notebook artifact checks four directions and confirms that the highlighted support values are maxima, which prepares students for hierarchical extremal search."
+  },
+  {
+    "slide": 13,
+    "title": "Hierarchy Shrinkage",
+    "notes": "Make the hierarchy quantitative. The stored levels shrink from 72 vertices to 5 through repeated deletion of independent low-degree sets and retriangulation. The exact constants are less important than the invariant: each level is a smaller proxy that can route the query toward the full-resolution answer."
+  },
+  {
+    "slide": 14,
+    "title": "Extremal Polytope Query Roadmap",
+    "notes": "Use this proof DAG as a roadmap rather than a full proof. The query descends through a small hierarchy, maintains a conflict or containing simplex, and returns to the original polytope with a support certificate. This is the conceptual bridge from convex polygon support to higher-dimensional polytope queries."
+  },
+  {
+    "slide": 15,
+    "title": "Planar Point Location",
+    "notes": "Now the search target is not an extreme vertex but the cell containing a query point. The point-location DAG stores simple decisions, and the checked path uses three tests before reaching leaf T5. Connect this to the earlier predicate story: every node is still a geometric classification."
+  },
+  {
+    "slide": 16,
+    "title": "Randomized Trapezoidal Decomposition",
+    "notes": "Present trapezoidal decomposition as a search-friendly refinement of a segment arrangement. Random insertion creates trapezoids and a decision structure using endpoint and segment-above tests. The notebook note that each trapezoid has bounded above and below neighbors is the geometric reason the structure stays navigable."
+  },
+  {
+    "slide": 17,
+    "title": "Recap And Lab Prompts",
+    "notes": "Close by asking students to connect the chapter's repeated pattern. First classify a local event; then state the boundary convention; then use those events in a global structure. The lab prompts invite them to vary degeneracies, segment counts, support directions, and point-location queries while watching the checks fail or pass."
+  }
+]
+  </script>
+</body>
+</html>

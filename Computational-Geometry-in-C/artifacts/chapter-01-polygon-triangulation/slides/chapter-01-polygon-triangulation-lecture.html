@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Computational Geometry in C">
+  <meta name="chapter_id" content="chapter-01-polygon-triangulation">
+  <meta name="chapter_title" content="Chapter 1 - Polygon Triangulation">
+  <meta name="notebook_path" content="Computational-Geometry-in-C/chapter-01-polygon-triangulation/01-polygon-triangulation.ipynb">
+  <meta name="source_span" content="printed pages 1-43.">
+  <meta name="source_pdf" content="Computational-Geometry-in-C/Computational Geometry in C.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 1 - Polygon Triangulation</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Computational Geometry in C",
+  "chapter_id": "chapter-01-polygon-triangulation",
+  "chapter_title": "Chapter 1 - Polygon Triangulation",
+  "notebook_path": "Computational-Geometry-in-C/chapter-01-polygon-triangulation/01-polygon-triangulation.ipynb",
+  "source_span": "printed pages 1-43.",
+  "source_pdf": "Computational-Geometry-in-C/Computational Geometry in C.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23",
+  "source_provenance": "Existing source-coverage maps printed pages 1-43 to PDF pages 10-52; PDF page 10 begins printed page 1 and PDF page 52 ends printed page 43."
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "title": "Polygon Triangulation",
+    "notes": "Open the lecture by presenting triangulation as the chapter's central translation: a simple polygon becomes a finite set of triangles, and that decomposition supports both the art gallery theorem and a concrete C-style algorithm. The source span should remain visible as printed pages 1-43, with the provenance note that the repository coverage maps those printed pages to PDF pages 10-52."
+  },
+  {
+    "slide": 2,
+    "title": "Chapter Map",
+    "notes": "Use the chain across the slide as the lecture route. First we agree on what a polygon is and what its inside means. Then visibility gives diagonals, diagonals give triangulations, triangulations give proof structures, and the final third of the chapter turns all of that into orientation, intersection, InCone, and ear clipping code."
+  },
+  {
+    "slide": 3,
+    "title": "What Counts As A Polygon",
+    "notes": "Slow down here because many later tests silently assume this contract. A simple polygon is a closed cyclic boundary that does not cross itself, so every edge has a previous and next edge and the curve separates inside from outside. The self-intersecting example is not a different input style; it violates the object the triangulation theorem is about."
+  },
+  {
+    "slide": 4,
+    "title": "Visibility And Guarding",
+    "notes": "Introduce visibility as a segment-inside-polygon question. Two points see each other when the open segment between them stays in the polygon's interior, with boundary endpoint conventions handled separately. The guard formulation is then natural: choose vertices or points whose visibility regions cover the polygon, and triangulation will soon make that coverage finite."
+  },
+  {
+    "slide": 5,
+    "title": "Why floor(n/3) Appears",
+    "notes": "The art gallery bound should feel surprising before it becomes formal. The comb picture suggests why every third notch can force a new guard, while the small n cases remind students that the formula is a worst-case ceiling, not a claim that every polygon needs that many guards. This prepares the class for Fisk's coloring proof."
+  },
+  {
+    "slide": 6,
+    "title": "Fisk's Proof In Four Moves",
+    "notes": "Present Fisk's proof as a compressed algorithmic certificate. Triangulate the polygon, 3-color the triangulation graph, choose the smallest color class, and observe that every triangle has all three colors. Since the triangles cover the polygon, the chosen color class sees the whole polygon, and pigeonhole gives the floor n over 3 bound."
+  },
+  {
+    "slide": 7,
+    "title": "Diagonals And Triangulations",
+    "notes": "Define a legal diagonal with both global and local responsibilities. It connects nonadjacent vertices, avoids crossing boundary edges, and lies inside the polygon near both endpoints. The contrast between the blue diagonal and the amber crossing segment sets up why a triangulation is a maximal noncrossing collection, not merely several attractive chords."
+  },
+  {
+    "slide": 8,
+    "title": "Existence Of A Diagonal",
+    "notes": "Sketch the proof move rather than treating existence as magic. Pick a convex vertex and test the chord between its neighbors. If that chord is clear, it is a diagonal. If it is blocked, the blocking vertex inside the candidate triangle gives a smaller local choice that yields a diagonal. This is the proof's constructive heartbeat."
+  },
+  {
+    "slide": 9,
+    "title": "Counting Triangles And Diagonals",
+    "notes": "Make the two counting formulas feel inevitable from a split. One diagonal divides an n-gon into two smaller polygons whose sizes overlap at the diagonal endpoints. Induction then gives T(n)=n-2 triangles and D(n)=n-3 internal diagonals. The notebook's checked eight-vertex polygon produces six triangles and five diagonals, matching the formulas."
+  },
+  {
+    "slide": 10,
+    "title": "Dual Tree And Two Ears",
+    "notes": "Translate the triangulation into graph language. Each triangle becomes a node, and shared diagonals become edges of the weak dual. Because the dual is a tree, it has leaves; leaf triangles touch the rest of the triangulation along one diagonal and therefore are ears. The notebook example has six dual nodes, five dual edges, and four leaf ears."
+  },
+  {
+    "slide": 11,
+    "title": "Three-Coloring And Fisk Guards",
+    "notes": "Show the coloring as a maintained invariant on the triangulation graph. Every triangle receives one vertex of each color, so placing guards on any one color class covers every triangle. The checked notebook polygon selects color 2 with vertices 1 and 5, which is within floor of eight over three and makes the guard theorem concrete."
+  },
+  {
+    "slide": 12,
+    "title": "Signed Area Is The Predicate Engine",
+    "notes": "Connect area, orientation, and implementation in one formula. The shoelace sum gives the polygon's signed area and confirms counterclockwise orientation when positive. The same determinant, restricted to three points, drives left-turn tests. The notebook check reports area 5.44 and equal triangle-fan area, making area conservation a testable invariant."
+  },
+  {
+    "slide": 13,
+    "title": "From Slopes To Orientation Predicates",
+    "notes": "Warn students away from slope comparisons without making the point only numerical. Slopes need special vertical cases and become fragile near parallel lines, while the determinant gives one sign convention for left, right, and collinear triples. This is why the C vocabulary in the chapter is built around area2, left, left_on, collinear, and between."
+  },
+  {
+    "slide": 14,
+    "title": "Segment Intersection Test Board",
+    "notes": "Use the four cases as a diagnostic board for the predicate layer. Proper crossing, endpoint touch, collinear overlap, and disjoint segments should not be collapsed if a downstream routine cares about boundary conventions. Diagonal testing usually wants to reject boundary crossings while still allowing the proposed diagonal to meet the polygon at its own endpoints."
+  },
+  {
+    "slide": 15,
+    "title": "Diagonal Testing",
+    "notes": "Separate the diagonal test into the two questions the implementation asks. Globally, the candidate segment must avoid all unrelated polygon edges. Locally, the InCone test checks that the chord leaves each endpoint through the interior wedge, with reflex vertices reversing the intuitive picture. Both parts are needed before an ear is safe to clip."
+  },
+  {
+    "slide": 16,
+    "title": "Ear Clipping As Algorithmic Proof",
+    "notes": "Close by making the algorithm look like the proof running in a loop. Find a convex empty ear, record its diagonal or final triangle, remove the ear tip, and repeat. A straightforward implementation scans candidates at each removal, giving O(n^2) time. The chapter's theorem-level checks then become program checks: n-2 triangles, n-3 diagonals, and conserved area."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 62px 92px 48px;
+      gap: 18px;
+      border-top: 10px solid var(--slide-accent);
+      overflow: clip;
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, .04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, .035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 66px; line-height: 1.04; font-weight: 700; max-width: 1320px; }
+    h2 { font-size: 52px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 30px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 26px; line-height: 1.28; }
+    ul, ol { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    table { border-collapse: collapse; width: 100%; font-size: 24px; line-height: 1.22; }
+    th { text-align: left; background: #f8fafc; color: var(--slide-accent); border-bottom: 2px solid var(--slide-border); padding: 12px 14px; }
+    td { border-bottom: 1px solid var(--slide-border-light); padding: 10px 14px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 0; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 21px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1260px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 26px; align-items: stretch; }
+    .cols { grid-template-columns: .95fr 1.05fr; }
+    .cols-wide { grid-template-columns: 1.12fr .88fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 17px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 21px 23px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .math-box { padding: 21px 23px; border-radius: 8px; margin: 0; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); letter-spacing: 0; }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.3; }
+    .code { font-family: var(--font-mono); font-size: 24px; line-height: 1.32; white-space: pre-line; }
+    .small { font-size: 22px; line-height: 1.24; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 21px; font-weight: 600; }
+    .svg-label { font: 700 26px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 21px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 26px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .pill-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .pill { border: 1px solid var(--slide-border); background: #fff; color: var(--slide-accent); border-radius: 6px; padding: 7px 12px; font-size: 22px; font-weight: 700; }
+    .katex { font-size: 1em !important; }
+    .katex-display { margin: 8px 0 !important; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Polygon Triangulation">
+      <div class="topline"><div class="eyebrow">Computational Geometry in C</div><div class="badge">printed pp. 1-43 / PDF pp. 10-52 provenance</div></div>
+      <h1>Polygon Triangulation</h1>
+      <p class="lead">The theorem-to-code path: simple polygons, visible diagonals, triangulations, art-gallery guards, determinant predicates, and ear clipping.</p>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Chapter Goal</div><p>Turn the statement "every simple polygon can be triangulated" into a data structure, a proof certificate, and an \(O(n^2)\) triangulation pipeline.</p></div>
+          <div class="panel teal"><h3>Checked Notebook Signals</h3><p>Area \(5.44\), \(8\) vertices, \(6\) triangles, \(5\) diagonals, dual tree, and Fisk guard set of size \(2\).</p></div>
+          <div class="panel slate"><p class="small">Metadata preserves the manifest source span: printed pages 1-43. Existing coverage maps that span to PDF pages 10-52.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Triangulated simple polygon">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="120,440 278,430 362,334 574,386 754,286 686,110 500,172 382,82 234,196 92,162" fill="#eff6ff" stroke="#1e3a8a" stroke-width="7" stroke-linejoin="round"/>
+            <g stroke="#2563eb" stroke-width="5" opacity=".95">
+              <line x1="120" y1="440" x2="362" y2="334"/><line x1="120" y1="440" x2="574" y2="386"/><line x1="120" y1="440" x2="754" y2="286"/>
+              <line x1="120" y1="440" x2="686" y2="110"/><line x1="120" y1="440" x2="500" y2="172"/><line x1="120" y1="440" x2="382" y2="82"/><line x1="120" y1="440" x2="234" y2="196"/>
+            </g>
+            <g fill="#0f766e"><circle cx="120" cy="440" r="11"/><circle cx="278" cy="430" r="11"/><circle cx="362" cy="334" r="11"/><circle cx="574" cy="386" r="11"/><circle cx="754" cy="286" r="11"/><circle cx="686" cy="110" r="11"/><circle cx="500" cy="172" r="11"/><circle cx="382" cy="82" r="11"/><circle cx="234" cy="196" r="11"/><circle cx="92" cy="162" r="11"/></g>
+            <text x="206" y="532" class="svg-label">polygon boundary + noncrossing diagonals</text>
+            <text x="284" y="574" class="svg-small">the decomposition is the proof object the algorithm will construct</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Notebook: Computational-Geometry-in-C/chapter-01-polygon-triangulation/01-polygon-triangulation.ipynb</span><span>Manifest row 93</span></div>
+      <aside class="speaker-notes">Open the lecture by presenting triangulation as the chapter's central translation: a simple polygon becomes a finite set of triangles, and that decomposition supports both the art gallery theorem and a concrete C-style algorithm. The source span should remain visible as printed pages 1-43, with the provenance note that the repository coverage maps those printed pages to PDF pages 10-52.</aside>
+    </section>
+
+    <section class="slide" data-label="Chapter Map">
+      <div class="topline"><div class="eyebrow">Roadmap</div><div class="badge">polygon -> visibility -> code</div></div>
+      <h2>Chapter Map</h2>
+      <div class="content">
+        <figure class="diagram" aria-label="Six step chapter map">
+          <svg viewBox="0 0 1700 620" role="img">
+            <defs><marker id="arrow-map" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 Z" fill="#1e3a8a"/></marker></defs>
+            <g font-family="Source Sans 3, Arial, sans-serif">
+              <rect x="40" y="220" width="218" height="142" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="82" y="278" class="svg-label">Polygon</text><text x="78" y="318" class="svg-small">simple boundary</text>
+              <rect x="318" y="220" width="218" height="142" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="360" y="278" class="svg-label">Visibility</text><text x="344" y="318" class="svg-small">segments inside</text>
+              <rect x="596" y="220" width="218" height="142" rx="12" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="638" y="278" class="svg-label">Diagonals</text><text x="626" y="318" class="svg-small">noncrossing chords</text>
+              <rect x="874" y="220" width="218" height="142" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="898" y="278" class="svg-label">Triangulate</text><text x="910" y="318" class="svg-small">n-2 triangles</text>
+              <rect x="1152" y="220" width="218" height="142" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="1190" y="278" class="svg-label">Predicates</text><text x="1182" y="318" class="svg-small">determinant signs</text>
+              <rect x="1430" y="220" width="218" height="142" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/><text x="1474" y="278" class="svg-label">Ear Clip</text><text x="1464" y="318" class="svg-small">proof as loop</text>
+              <g stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-map)">
+                <line x1="260" y1="291" x2="306" y2="291"/><line x1="538" y1="291" x2="584" y2="291"/><line x1="816" y1="291" x2="862" y2="291"/>
+                <line x1="1094" y1="291" x2="1140" y2="291"/><line x1="1372" y1="291" x2="1418" y2="291"/>
+              </g>
+            </g>
+            <path d="M164 430 C360 526, 560 526, 754 430" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 10"/>
+            <path d="M986 430 C1168 526, 1360 526, 1530 430" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <text x="314" y="568" class="svg-small">proof language</text><text x="1184" y="568" class="svg-small">implementation language</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>First half: structure theorems</span><span>Second half: predicates and ear-clipping control flow</span></div>
+      <aside class="speaker-notes">Use the chain across the slide as the lecture route. First we agree on what a polygon is and what its inside means. Then visibility gives diagonals, diagonals give triangulations, triangulations give proof structures, and the final third of the chapter turns all of that into orientation, intersection, InCone, and ear clipping code.</aside>
+    </section>
+
+    <section class="slide" data-label="What Counts As A Polygon">
+      <div class="topline"><div class="eyebrow">Definition Contract</div><div class="badge">simple closed chain</div></div>
+      <h2>What Counts As A Polygon</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Valid simple polygon contrasted with self-intersection">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="50" y="70" width="350" height="430" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <polygon points="116,386 198,198 326,164 344,340 248,438" fill="#ccfbf1" stroke="#0f766e" stroke-width="7" stroke-linejoin="round"/>
+            <text x="116" y="548" class="svg-label">valid simple polygon</text>
+            <rect x="500" y="70" width="350" height="430" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <polygon points="560,406 766,176 586,170 786,406 662,286" fill="#fef3c7" stroke="#b45309" stroke-width="7" stroke-linejoin="round"/>
+            <circle cx="674" cy="304" r="28" fill="none" stroke="#b45309" stroke-width="6"/>
+            <text x="566" y="548" class="svg-label">invalid self-intersection</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Simple Polygon</div><p>A cyclic list of vertices joined by boundary segments, where nonadjacent boundary segments do not cross.</p></div>
+          <div class="panel blue"><h3>Boundary Convention</h3><p>The boundary is part of the polygonal region. Algorithmic tests still distinguish interior, boundary, and exterior events.</p></div>
+          <div class="panel amber"><h3>Why It Matters</h3><p>Triangulation counts, visibility, ears, parity, and guard coverage all assume a well-defined inside.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Representation: cyclic previous and next vertices</span><span>Topology: inside/outside is meaningful only for simple input</span></div>
+      <aside class="speaker-notes">Slow down here because many later tests silently assume this contract. A simple polygon is a closed cyclic boundary that does not cross itself, so every edge has a previous and next edge and the curve separates inside from outside. The self-intersecting example is not a different input style; it violates the object the triangulation theorem is about.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Visibility And Guarding">
+      <div class="topline"><div class="eyebrow">Visibility</div><div class="badge">segment-inside-polygon question</div></div>
+      <h2>Visibility And Guarding</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Visibility</div><p>Points \(p\) and \(q\) are visible when the open segment \(pq\) stays inside the polygonal region.</p></div>
+          <div class="panel teal"><h3>Guard Problem</h3><p>Choose a set of guard points whose visibility regions cover the entire polygon.</p></div>
+          <div class="panel slate"><p class="small">Triangulation makes the problem finite: if each triangle is guarded, the polygon is guarded.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Visible and blocked line segments in a polygon">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="110,430 260,450 342,320 522,380 760,278 680,114 520,176 390,88 254,202 92,164" fill="#eff6ff" stroke="#1e3a8a" stroke-width="7" stroke-linejoin="round"/>
+            <circle cx="260" cy="450" r="14" fill="#0f766e"/><text x="282" y="466" class="svg-label">g</text>
+            <path d="M260 450 L342 320" stroke="#0f766e" stroke-width="7"/><path d="M260 450 L522 380" stroke="#0f766e" stroke-width="7"/><path d="M260 450 L110 430" stroke="#0f766e" stroke-width="7"/>
+            <path d="M260 450 L680 114" stroke="#b45309" stroke-width="7" stroke-dasharray="16 12"/>
+            <circle cx="496" cy="264" r="30" fill="none" stroke="#b45309" stroke-width="6"/><text x="524" y="258" class="svg-small">blocked by boundary</text>
+            <path d="M208 392 C270 338, 346 330, 452 350 C402 420, 326 470, 208 392 Z" fill="#0f766e" opacity=".12" stroke="#0f766e" stroke-width="4"/>
+            <text x="126" y="560" class="svg-small">visible region sketch: enough for intuition, not a full visibility polygon computation</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Visibility is a predicate, not merely a drawing</span><span>Blocked sight lines motivate segment intersection tests</span></div>
+      <aside class="speaker-notes">Introduce visibility as a segment-inside-polygon question. Two points see each other when the open segment between them stays in the polygon's interior, with boundary endpoint conventions handled separately. The guard formulation is then natural: choose vertices or points whose visibility regions cover the polygon, and triangulation will soon make that coverage finite.</aside>
+    </section>
+
+    <section class="slide" data-label="Why floor n over 3 Appears">
+      <div class="topline"><div class="eyebrow">Art Gallery Intuition</div><div class="badge">worst-case ceiling</div></div>
+      <h2>Why \(\lfloor n/3 \rfloor\) Appears</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Comb polygon intuition for floor n over three guards">
+          <svg viewBox="0 0 900 620" role="img">
+            <path d="M90 450 L90 230 L178 230 L178 150 L246 150 L246 230 L336 230 L336 150 L404 150 L404 230 L494 230 L494 150 L562 150 L562 230 L738 230 L738 450 Z" fill="#eff6ff" stroke="#1e3a8a" stroke-width="7" stroke-linejoin="round"/>
+            <g fill="#6d28d9"><circle cx="212" cy="190" r="15"/><circle cx="370" cy="190" r="15"/><circle cx="528" cy="190" r="15"/></g>
+            <g stroke="#6d28d9" stroke-width="4" opacity=".5"><path d="M212 190 L120 420 L308 420 Z" fill="#6d28d9" opacity=".08"/><path d="M370 190 L282 420 L466 420 Z" fill="#6d28d9" opacity=".08"/><path d="M528 190 L438 420 L690 420 Z" fill="#6d28d9" opacity=".08"/></g>
+            <text x="154" y="532" class="svg-label">comb notches can force separated visibility tasks</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Art Gallery Bound</div><p>Every simple polygon with \(n\) vertices can be guarded by at most \(\lfloor n/3 \rfloor\) vertex guards.</p></div>
+          <div class="panel blue"><h3>Small Cases</h3><p>Triangles and quadrilaterals need one guard; the formula gives \(1\).</p></div>
+          <div class="panel amber"><h3>Comb Intuition</h3><p>Each deep notch can hide from guards placed too far away, so the bound cannot be improved in general.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The theorem is an upper bound for every simple polygon</span><span>Some families make the bound tight</span></div>
+      <aside class="speaker-notes">The art gallery bound should feel surprising before it becomes formal. The comb picture suggests why every third notch can force a new guard, while the small n cases remind students that the formula is a worst-case ceiling, not a claim that every polygon needs that many guards. This prepares the class for Fisk's coloring proof.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Fisk Proof Four Moves">
+      <div class="topline"><div class="eyebrow">Proof Roadmap</div><div class="badge">triangulate, color, choose, cover</div></div>
+      <h2>Fisk's Proof In Four Moves</h2>
+      <div class="content four">
+        <div class="panel blue"><h3>1. Triangulate</h3><p>Decompose the polygon into \(n-2\) triangles using noncrossing diagonals.</p><figure class="diagram" aria-label="Triangulation mini diagram"><svg viewBox="0 0 360 260"><polygon points="44,206 116,52 220,78 318,178 176,220" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/><line x1="44" y1="206" x2="220" y2="78" stroke="#2563eb" stroke-width="4"/><line x1="44" y1="206" x2="318" y2="178" stroke="#2563eb" stroke-width="4"/></svg></figure></div>
+        <div class="panel teal"><h3>2. 3-Color</h3><p>Color the triangulation graph so every triangle has three different colors.</p><figure class="diagram" aria-label="Three color mini diagram"><svg viewBox="0 0 360 260"><polygon points="50,206 118,54 226,82 314,180 176,222" fill="#fff" stroke="#94a3b8" stroke-width="5"/><g><circle cx="50" cy="206" r="16" fill="#2563eb"/><circle cx="118" cy="54" r="16" fill="#0f766e"/><circle cx="226" cy="82" r="16" fill="#6d28d9"/><circle cx="314" cy="180" r="16" fill="#2563eb"/><circle cx="176" cy="222" r="16" fill="#0f766e"/></g></svg></figure></div>
+        <div class="panel violet"><h3>3. Choose Smallest</h3><p>At least one color class has size at most \(\lfloor n/3 \rfloor\).</p><figure class="diagram" aria-label="Color class counts"><svg viewBox="0 0 360 260"><rect x="54" y="64" width="64" height="140" fill="#2563eb"/><rect x="148" y="92" width="64" height="112" fill="#0f766e"/><rect x="242" y="126" width="64" height="78" fill="#6d28d9"/><text x="226" y="236" class="svg-small">smallest</text></svg></figure></div>
+        <div class="panel amber"><h3>4. Guard Triangles</h3><p>Every triangle contains one selected-color vertex, so every triangle is seen.</p><figure class="diagram" aria-label="Guard coverage mini diagram"><svg viewBox="0 0 360 260"><polygon points="58,206 128,54 226,84 306,188 174,220" fill="#fef3c7" stroke="#b45309" stroke-width="5"/><circle cx="226" cy="84" r="18" fill="#6d28d9"/><path d="M226 84 L58 206 L306 188 Z" fill="#6d28d9" opacity=".12"/></svg></figure></div>
+      </div>
+      <div class="footer"><span>The proof uses triangulation as a cover by certified triangles</span><span>Pigeonhole principle supplies the guard count</span></div>
+      <aside class="speaker-notes">Present Fisk's proof as a compressed algorithmic certificate. Triangulate the polygon, 3-color the triangulation graph, choose the smallest color class, and observe that every triangle has all three colors. Since the triangles cover the polygon, the chosen color class sees the whole polygon, and pigeonhole gives the floor n over 3 bound.</aside>
+    </section>
+
+    <section class="slide" data-label="Diagonals And Triangulations">
+      <div class="topline"><div class="eyebrow">Diagonals</div><div class="badge">legal versus crossing</div></div>
+      <h2>Diagonals And Triangulations</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Diagonal</div><p>A segment between nonadjacent polygon vertices that lies in the polygon and does not cross the boundary.</p></div>
+          <div class="panel teal"><h3>Triangulation</h3><p>A maximal set of noncrossing diagonals that decomposes the polygon into triangles.</p></div>
+          <div class="panel amber"><h3>Invalid Candidate</h3><p>A segment can connect two vertices and still fail by exiting the polygon or crossing an edge.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Legal noncrossing diagonal and invalid crossing segment">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="114,434 292,448 350,314 538,390 756,282 686,114 520,176 390,88 250,204 96,160" fill="#fff" stroke="#1e3a8a" stroke-width="7" stroke-linejoin="round"/>
+            <line x1="292" y1="448" x2="538" y2="390" stroke="#0f766e" stroke-width="8"/><text x="332" y="514" class="svg-label">legal diagonal</text>
+            <line x1="114" y1="434" x2="686" y2="114" stroke="#b45309" stroke-width="8" stroke-dasharray="18 12"/><circle cx="410" cy="270" r="30" fill="none" stroke="#b45309" stroke-width="6"/>
+            <text x="486" y="302" class="svg-label">invalid crossing</text>
+            <g fill="#111827"><circle cx="114" cy="434" r="10"/><circle cx="292" cy="448" r="10"/><circle cx="350" cy="314" r="10"/><circle cx="538" cy="390" r="10"/><circle cx="756" cy="282" r="10"/><circle cx="686" cy="114" r="10"/><circle cx="520" cy="176" r="10"/><circle cx="390" cy="88" r="10"/><circle cx="250" cy="204" r="10"/><circle cx="96" cy="160" r="10"/></g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>A diagonal is certified by visibility plus endpoint locality</span><span>A triangulation is a noncrossing certificate</span></div>
+      <aside class="speaker-notes">Define a legal diagonal with both global and local responsibilities. It connects nonadjacent vertices, avoids crossing boundary edges, and lies inside the polygon near both endpoints. The contrast between the blue diagonal and the amber crossing segment sets up why a triangulation is a maximal noncrossing collection, not merely several attractive chords.</aside>
+    </section>
+
+    <section class="slide" data-label="Existence Of A Diagonal">
+      <div class="topline"><div class="eyebrow">Existence Lemma</div><div class="badge">convex vertex and blocked chord</div></div>
+      <h2>Existence Of A Diagonal</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Convex vertex blocked chord proof move">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="100,440 250,448 360,310 548,392 754,284 688,112 516,178 390,88 254,204 92,160" fill="#eff6ff" stroke="#1e3a8a" stroke-width="7" stroke-linejoin="round"/>
+            <polygon points="254,204 390,88 516,178" fill="#2563eb" opacity=".10" stroke="#2563eb" stroke-width="5"/>
+            <line x1="254" y1="204" x2="516" y2="178" stroke="#0f766e" stroke-width="7"/>
+            <circle cx="390" cy="88" r="16" fill="#2563eb"/><text x="406" y="76" class="svg-label">v</text>
+            <circle cx="420" cy="168" r="16" fill="#b45309"/><text x="440" y="178" class="svg-label">blocking vertex</text>
+            <path d="M420 168 L254 204" stroke="#b45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <text x="176" y="540" class="svg-small">If neighbor chord is blocked, a vertex inside the triangle gives a smaller diagonal search.</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--proof"><div class="math-box-label">Proof Move</div><p>Choose a convex vertex \(v\). Test the segment between its two neighbors.</p></div>
+          <div class="panel teal"><h3>If Clear</h3><p>The neighbor chord is a diagonal and splits the polygon.</p></div>
+          <div class="panel amber"><h3>If Blocked</h3><p>A polygon vertex inside the candidate triangle provides a smaller local configuration that yields a diagonal.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The triangulation theorem starts with one certified split</span><span>Existence is constructive enough to guide algorithms</span></div>
+      <aside class="speaker-notes">Sketch the proof move rather than treating existence as magic. Pick a convex vertex and test the chord between its neighbors. If that chord is clear, it is a diagonal. If it is blocked, the blocking vertex inside the candidate triangle gives a smaller local choice that yields a diagonal. This is the proof's constructive heartbeat.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Counting Triangles And Diagonals">
+      <div class="topline"><div class="eyebrow">Counting</div><div class="badge">split recurrence</div></div>
+      <h2>Counting Triangles And Diagonals</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Triangulation Counts</div><p>Every triangulation of a simple \(n\)-gon has \(T(n)=n-2\) triangles and \(D(n)=n-3\) internal diagonals.</p></div>
+          <div class="panel blue"><h3>Split Accounting</h3><p>A diagonal creates subpolygons with sizes \(a\) and \(b\), where \(a+b=n+2\) because the diagonal endpoints are counted twice.</p></div>
+          <div class="panel teal"><h3>Notebook Check</h3><p>For \(n=8\): \(T=6\), \(D=5\), and triangle areas sum to \(5.44\).</p></div>
+        </div>
+        <figure class="diagram" aria-label="Polygon split into two subpolygons with counting formulas">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="110,438 278,448 366,318 550,390 756,282 684,114 512,178 388,88 250,204 94,160" fill="#fff" stroke="#1e3a8a" stroke-width="7" stroke-linejoin="round"/>
+            <polygon points="110,438 278,448 366,318 550,390" fill="#2563eb" opacity=".12"/>
+            <polygon points="550,390 756,282 684,114 512,178 388,88 250,204 94,160 110,438" fill="#0f766e" opacity=".10"/>
+            <line x1="110" y1="438" x2="550" y2="390" stroke="#b45309" stroke-width="8"/>
+            <text x="190" y="526" class="svg-math">a + b = n + 2</text>
+            <text x="192" y="252" class="svg-label">a-gon</text><text x="586" y="232" class="svg-label">b-gon</text>
+            <text x="302" y="576" class="svg-label">T(n) = n - 2,   D(n) = n - 3</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Counts are independent of which triangulation is chosen</span><span>They become executable sanity checks</span></div>
+      <aside class="speaker-notes">Make the two counting formulas feel inevitable from a split. One diagonal divides an n-gon into two smaller polygons whose sizes overlap at the diagonal endpoints. Induction then gives T(n)=n-2 triangles and D(n)=n-3 internal diagonals. The notebook's checked eight-vertex polygon produces six triangles and five diagonals, matching the formulas.</aside>
+    </section>
+
+    <section class="slide" data-label="Dual Tree And Two Ears">
+      <div class="topline"><div class="eyebrow">Structure</div><div class="badge">weak dual tree</div></div>
+      <h2>Dual Tree And Two Ears</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Triangulation dual tree and ear leaves">
+          <svg viewBox="0 0 900 620" role="img">
+            <g transform="translate(20,0)">
+              <polygon points="90,430 228,442 320,320 500,386 680,282 610,126 456,184 340,96 224,204 76,164" fill="#eff6ff" stroke="#1e3a8a" stroke-width="6"/>
+              <g stroke="#2563eb" stroke-width="4"><line x1="90" y1="430" x2="320" y2="320"/><line x1="90" y1="430" x2="500" y2="386"/><line x1="90" y1="430" x2="680" y2="282"/><line x1="90" y1="430" x2="610" y2="126"/></g>
+              <circle cx="228" cy="442" r="20" fill="none" stroke="#b45309" stroke-width="5"/><circle cx="456" cy="184" r="20" fill="none" stroke="#b45309" stroke-width="5"/>
+            </g>
+            <g transform="translate(590,116)">
+              <g stroke="#94a3b8" stroke-width="6"><line x1="80" y1="80" x2="150" y2="154"/><line x1="150" y1="154" x2="88" y2="250"/><line x1="150" y1="154" x2="244" y2="120"/><line x1="244" y1="120" x2="296" y2="224"/><line x1="244" y1="120" x2="312" y2="48"/></g>
+              <g fill="#fff" stroke="#1e3a8a" stroke-width="5"><circle cx="80" cy="80" r="28"/><circle cx="150" cy="154" r="28"/><circle cx="88" cy="250" r="28"/><circle cx="244" cy="120" r="28"/><circle cx="296" cy="224" r="28"/><circle cx="312" cy="48" r="28"/></g>
+              <g fill="#b45309"><circle cx="80" cy="80" r="10"/><circle cx="88" cy="250" r="10"/><circle cx="296" cy="224" r="10"/><circle cx="312" cy="48" r="10"/></g>
+              <text x="64" y="332" class="svg-label">dual leaves = ears</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Weak Dual</div><p>Make one node per triangle; connect two nodes when the triangles share an internal diagonal.</p></div>
+          <div class="panel teal"><h3>Tree Consequence</h3><p>The weak dual of a polygon triangulation is a tree, so it has leaves.</p></div>
+          <div class="panel amber"><h3>Two-Ears Theorem</h3><p>Leaf triangles correspond to ears. The checked example has 6 dual nodes, 5 dual edges, and 4 ear leaves.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Graph leaves identify removable triangles</span><span>Ear clipping follows the dual-tree intuition</span></div>
+      <aside class="speaker-notes">Translate the triangulation into graph language. Each triangle becomes a node, and shared diagonals become edges of the weak dual. Because the dual is a tree, it has leaves; leaf triangles touch the rest of the triangulation along one diagonal and therefore are ears. The notebook example has six dual nodes, five dual edges, and four leaf ears.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Three Coloring And Fisk Guards">
+      <div class="topline"><div class="eyebrow">Fisk Coloring</div><div class="badge">guards from smallest color class</div></div>
+      <h2>Three-Coloring And Fisk Guards</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--proof"><div class="math-box-label">Invariant</div><p>Every triangle in the triangulation graph has one vertex of each color.</p></div>
+          <div class="panel violet"><h3>Guard Choice</h3><p>Choose the smallest color class. It has size at most \(\lfloor n/3 \rfloor\).</p></div>
+          <div class="panel teal"><h3>Checked Example</h3><p>For \(n=8\), selected guards are vertices \(1\) and \(5\); \(2 \le \lfloor 8/3 \rfloor\).</p></div>
+        </div>
+        <figure class="diagram" aria-label="Three colored triangulation with selected guard color">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="108,436 280,448 356,318 544,388 756,284 684,114 518,176 390,88 250,204 94,160" fill="#fff" stroke="#1e3a8a" stroke-width="7" stroke-linejoin="round"/>
+            <g stroke="#94a3b8" stroke-width="4"><line x1="108" y1="436" x2="356" y2="318"/><line x1="108" y1="436" x2="544" y2="388"/><line x1="108" y1="436" x2="756" y2="284"/><line x1="108" y1="436" x2="684" y2="114"/></g>
+            <g><circle cx="108" cy="436" r="18" fill="#2563eb"/><circle cx="280" cy="448" r="23" fill="#6d28d9"/><circle cx="356" cy="318" r="18" fill="#0f766e"/><circle cx="544" cy="388" r="18" fill="#2563eb"/><circle cx="756" cy="284" r="18" fill="#0f766e"/><circle cx="684" cy="114" r="23" fill="#6d28d9"/><circle cx="518" cy="176" r="18" fill="#2563eb"/><circle cx="390" cy="88" r="18" fill="#0f766e"/><circle cx="250" cy="204" r="18" fill="#2563eb"/><circle cx="94" cy="160" r="18" fill="#0f766e"/></g>
+            <g fill="#fff" font-family="Source Sans 3, Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle" dominant-baseline="middle"><text x="280" y="448">1</text><text x="684" y="114">5</text></g>
+            <path d="M280 448 L108 436 L356 318 Z" fill="#6d28d9" opacity=".10"/><path d="M684 114 L518 176 L756 284 Z" fill="#6d28d9" opacity=".10"/>
+            <text x="166" y="552" class="svg-label">selected violet class covers the triangulated polygon</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Coloring is possible because triangulation graphs are maximal outerplanar</span><span>Coverage follows triangle by triangle</span></div>
+      <aside class="speaker-notes">Show the coloring as a maintained invariant on the triangulation graph. Every triangle receives one vertex of each color, so placing guards on any one color class covers every triangle. The checked notebook polygon selects color 2 with vertices 1 and 5, which is within floor of eight over three and makes the guard theorem concrete.</aside>
+    </section>
+
+    <section class="slide" data-label="Signed Area Predicate Engine">
+      <div class="topline"><div class="eyebrow">Determinants</div><div class="badge">area and left turns share a sign</div></div>
+      <h2>Signed Area Is The Predicate Engine</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Shoelace area and triangle fan">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="150,430 340,438 410,318 610,384 748,230 606,134 440,186 316,100 224,232 96,190" fill="#eff6ff" stroke="#1e3a8a" stroke-width="7"/>
+            <circle cx="394" cy="282" r="13" fill="#b45309"/><text x="410" y="286" class="svg-label">c</text>
+            <g stroke="#2563eb" stroke-width="4" opacity=".75"><line x1="394" y1="282" x2="150" y2="430"/><line x1="394" y1="282" x2="340" y2="438"/><line x1="394" y1="282" x2="410" y2="318"/><line x1="394" y1="282" x2="610" y2="384"/><line x1="394" y1="282" x2="748" y2="230"/><line x1="394" y1="282" x2="606" y2="134"/><line x1="394" y1="282" x2="440" y2="186"/><line x1="394" y1="282" x2="316" y2="100"/><line x1="394" y1="282" x2="224" y2="232"/><line x1="394" y1="282" x2="96" y2="190"/></g>
+            <path d="M826 212 L826 442" stroke="#0f766e" stroke-width="5"/><circle cx="826" cy="326" r="12" fill="#0f766e"/><text x="744" y="490" class="svg-small">ray parity: 3 hits to the right</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Shoelace</div><p class="formula">\(2A(P)=\sum_i (x_i y_{i+1}-x_{i+1}y_i)\)</p></div>
+          <div class="math-box math-box--example"><div class="math-box-label">Orientation Predicate</div><p class="formula">\(\operatorname{area2}(a,b,c)=\det(b-a,\;c-a)\)</p></div>
+          <div class="panel teal"><h3>Checked Invariant</h3><p>CCW orientation, shoelace area \(5.44\), triangle-fan area \(5.44\), and odd ray parity for the inside query.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Positive signed area fixes the counterclockwise convention</span><span>The same determinant powers local branch decisions</span></div>
+      <aside class="speaker-notes">Connect area, orientation, and implementation in one formula. The shoelace sum gives the polygon's signed area and confirms counterclockwise orientation when positive. The same determinant, restricted to three points, drives left-turn tests. The notebook check reports area 5.44 and equal triangle-fan area, making area conservation a testable invariant.</aside>
+    </section>
+
+    <section class="slide" data-label="From Slopes To Orientation">
+      <div class="topline"><div class="eyebrow">Predicate Design</div><div class="badge">avoid slope special cases</div></div>
+      <h2>From Slopes To Orientation Predicates</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="panel amber"><h3>Slope Trap</h3><p>Vertical and nearly parallel segments force special cases before the algorithm has even reached geometry.</p></div>
+          <div class="math-box math-box--definition"><div class="math-box-label">One Sign Test</div><p class="formula">\(\operatorname{sign}\big((b_x-a_x)(c_y-a_y)-(b_y-a_y)(c_x-a_x)\big)\)</p></div>
+          <div class="panel teal"><h3>C Vocabulary</h3><p><span class="code">area2, left, left_on, collinear, between</span> turn determinant signs into named decisions.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Slope comparison versus orientation determinant">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="70" y="84" width="330" height="440" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="124" y="138" class="svg-label">slope comparisons</text>
+            <line x1="154" y1="438" x2="154" y2="180" stroke="#b45309" stroke-width="7"/><line x1="206" y1="438" x2="354" y2="190" stroke="#b45309" stroke-width="7"/><text x="116" y="486" class="svg-small">vertical case, division, tolerance</text>
+            <rect x="500" y="84" width="330" height="440" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="566" y="138" class="svg-label">orientation sign</text>
+            <polyline points="580,430 668,214 760,334" fill="none" stroke="#0f766e" stroke-width="8"/>
+            <path d="M668 214 C704 238,730 274,760 334" fill="none" stroke="#2563eb" stroke-width="5" marker-end="url(#orient-arr)"/>
+            <defs><marker id="orient-arr" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <text x="562" y="486" class="svg-small">left, right, or collinear from one determinant</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Predicates make geometric intent explicit</span><span>Robust code branches on signs, not pictures</span></div>
+      <aside class="speaker-notes">Warn students away from slope comparisons without making the point only numerical. Slopes need special vertical cases and become fragile near parallel lines, while the determinant gives one sign convention for left, right, and collinear triples. This is why the C vocabulary in the chapter is built around area2, left, left_on, collinear, and between.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Segment Intersection Test Board">
+      <div class="topline"><div class="eyebrow">Intersection Predicates</div><div class="badge">proper and improper cases</div></div>
+      <h2>Segment Intersection Test Board</h2>
+      <div class="content cols">
+        <div class="stack">
+          <table aria-label="Segment predicate cases">
+            <thead><tr><th>Case</th><th>Observed Classification</th></tr></thead>
+            <tbody><tr><td>Crossing interiors</td><td>proper</td></tr><tr><td>Shared endpoint</td><td>endpoint-touch</td></tr><tr><td>Collinear overlap</td><td>collinear-overlap</td></tr><tr><td>Separated segments</td><td>disjoint</td></tr></tbody>
+          </table>
+          <div class="panel amber"><h3>Implementation Warning</h3><p>Diagonal tests need more than a single Boolean when endpoint and boundary conventions matter.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Four segment intersection cases">
+          <svg viewBox="0 0 900 620" role="img">
+            <g transform="translate(50,50)">
+              <rect x="0" y="0" width="360" height="220" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="3"/><line x1="64" y1="174" x2="296" y2="46" stroke="#2563eb" stroke-width="7"/><line x1="64" y1="46" x2="296" y2="174" stroke="#b45309" stroke-width="7"/><text x="96" y="202" class="svg-small">proper crossing</text>
+              <rect x="430" y="0" width="360" height="220" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="3"/><line x1="494" y1="120" x2="642" y2="120" stroke="#2563eb" stroke-width="7"/><line x1="642" y1="120" x2="744" y2="52" stroke="#b45309" stroke-width="7"/><circle cx="642" cy="120" r="12" fill="#0f766e"/><text x="520" y="202" class="svg-small">endpoint touch</text>
+              <rect x="0" y="290" width="360" height="220" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="3"/><line x1="64" y1="402" x2="296" y2="402" stroke="#2563eb" stroke-width="9"/><line x1="152" y1="402" x2="330" y2="402" stroke="#b45309" stroke-width="5"/><text x="92" y="492" class="svg-small">collinear overlap</text>
+              <rect x="430" y="290" width="360" height="220" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="3"/><line x1="494" y1="440" x2="610" y2="390" stroke="#2563eb" stroke-width="7"/><line x1="660" y1="370" x2="754" y2="330" stroke="#b45309" stroke-width="7"/><text x="558" y="492" class="svg-small">disjoint</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Test-board data: segment-predicate-cases.csv</span><span>Proper crossing is only one of the relevant outcomes</span></div>
+      <aside class="speaker-notes">Use the four cases as a diagnostic board for the predicate layer. Proper crossing, endpoint touch, collinear overlap, and disjoint segments should not be collapsed if a downstream routine cares about boundary conventions. Diagonal testing usually wants to reject boundary crossings while still allowing the proposed diagonal to meet the polygon at its own endpoints.</aside>
+    </section>
+
+    <section class="slide" data-label="Diagonal Testing">
+      <div class="topline"><div class="eyebrow">Diagonal Predicate</div><div class="badge">edge scan plus InCone</div></div>
+      <h2>Diagonal Testing: Global Edge Tests Plus Local InCone</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Global Test</div><p>The candidate \(v_i v_j\) must not properly intersect any polygon edge except those incident to its endpoints.</p></div>
+          <div class="math-box math-box--definition"><div class="math-box-label">Local Test</div><p>\(\operatorname{InCone}(i,j)\) checks whether \(v_j\) lies inside the interior wedge at \(v_i\).</p></div>
+          <div class="panel amber"><h3>Reflex Vertex</h3><p>At a reflex vertex, the acceptable cone is the complement of the visually smaller exterior wedge.</p></div>
+        </div>
+        <figure class="diagram" aria-label="InCone and global edge intersection testing">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="110,436 280,448 356,318 544,388 756,284 684,114 518,176 390,88 250,204 94,160" fill="#eff6ff" stroke="#1e3a8a" stroke-width="7"/>
+            <line x1="280" y1="448" x2="544" y2="388" stroke="#0f766e" stroke-width="8"/><text x="322" y="506" class="svg-label">candidate diagonal</text>
+            <path d="M280 448 L110 436 L356 318 Z" fill="#0f766e" opacity=".10" stroke="#0f766e" stroke-width="4"/><text x="126" y="364" class="svg-small">local cone</text>
+            <path d="M544 388 L356 318 L756 284 Z" fill="#2563eb" opacity=".09" stroke="#2563eb" stroke-width="4"/><text x="596" y="340" class="svg-small">endpoint cone</text>
+            <line x1="110" y1="436" x2="684" y2="114" stroke="#b45309" stroke-width="6" stroke-dasharray="16 10"/><circle cx="432" cy="256" r="28" fill="none" stroke="#b45309" stroke-width="6"/><text x="458" y="242" class="svg-small">global edge hit</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Local interior wedge is necessary but not sufficient</span><span>Global edge scan is necessary but not sufficient</span></div>
+      <aside class="speaker-notes">Separate the diagonal test into the two questions the implementation asks. Globally, the candidate segment must avoid all unrelated polygon edges. Locally, the InCone test checks that the chord leaves each endpoint through the interior wedge, with reflex vertices reversing the intuitive picture. Both parts are needed before an ear is safe to clip.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Ear Clipping As Algorithmic Proof">
+      <div class="topline"><div class="eyebrow">Algorithm</div><div class="badge">O(n^2) transparent triangulation</div></div>
+      <h2>Ear Clipping As Algorithmic Proof</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--proof"><div class="math-box-label">Loop</div><p class="code">while more than 3 vertices:
+  find convex empty ear (prev, tip, next)
+  record diagonal prev-next
+  delete tip from the boundary
+record final triangle</p></div>
+          <div class="panel teal"><h3>Theorem-Level Checks</h3><p>\(n-2\) triangles, \(n-3\) diagonals, conserved area, and a tree-shaped dual.</p></div>
+          <div class="panel amber"><h3>Cost</h3><p>A straightforward scan may test \(O(n)\) candidate ears across \(O(n)\) removals, giving \(O(n^2)\).</p></div>
+        </div>
+        <figure class="diagram" aria-label="Ear clipping removal order">
+          <svg viewBox="0 0 900 620" role="img">
+            <polygon points="112,438 286,448 360,318 548,388 754,284 684,114 520,176 390,88 250,204 94,160" fill="#fff" stroke="#1e3a8a" stroke-width="7"/>
+            <g stroke="#2563eb" stroke-width="5"><line x1="94" y1="160" x2="286" y2="448"/><line x1="286" y1="448" x2="548" y2="388"/><line x1="94" y1="160" x2="548" y2="388"/><line x1="548" y1="388" x2="520" y2="176"/><line x1="94" y1="160" x2="520" y2="176"/></g>
+            <g fill="#b45309" font-family="Source Sans 3, Arial, sans-serif" font-weight="700" font-size="24" text-anchor="middle"><circle cx="112" cy="438" r="22" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="112" y="446">1</text><circle cx="360" cy="318" r="22" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="360" y="326">2</text><circle cx="286" cy="448" r="22" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="286" y="456">3</text><circle cx="754" cy="284" r="22" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="754" y="292">4</text><circle cx="548" cy="388" r="22" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="548" y="396">5</text></g>
+            <text x="164" y="552" class="svg-label">removal order: tips 0, 2, 1, 4, 3; final triangle remains</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Table source: ear-clipping-removal-order.csv</span><span>The proof becomes a terminating mutation of the boundary list</span></div>
+      <aside class="speaker-notes">Close by making the algorithm look like the proof running in a loop. Find a convex empty ear, record its diagonal or final triangle, remove the ear tip, and repeat. A straightforward implementation scans candidates at each removal, giving O(n^2) time. The chapter's theorem-level checks then become program checks: n-2 triangles, n-3 diagonals, and conserved area.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

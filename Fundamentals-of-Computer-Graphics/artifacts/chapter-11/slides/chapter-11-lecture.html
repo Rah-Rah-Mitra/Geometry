@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 11: Texture Mapping</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-11">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-11-texture-mapping/11-texture-mapping.ipynb">
+  <meta name="source_span" content="printed pages 255-290; PDF pages 272-307.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="geometry-lecture-design-system-1">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    deck-stage:not(:defined) { visibility: hidden; }
+    body { margin: 0; background: #0f172a; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      overflow: clip;
+      display: flex;
+      flex-direction: column;
+    }
+    .pad {
+      padding: 76px 96px 52px;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: stretch; }
+    .split-wide { display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 44px; align-items: stretch; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .kicker {
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-dimmed);
+    }
+    h1, h2, h3, p { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 68px; line-height: 1.04; font-weight: 700; max-width: 1100px; }
+    h2 { font-size: 50px; line-height: 1.12; font-weight: 700; }
+    h3 { font-size: 30px; line-height: 1.24; font-weight: 700; }
+    p, li { font-size: 27px; line-height: 1.36; }
+    ul { margin: 0; padding-left: 30px; display: grid; gap: 13px; }
+    .rule { width: 78px; height: 5px; border-radius: 5px; background: var(--slide-accent); }
+    .subtitle { font-size: 31px; line-height: 1.42; color: var(--slide-muted); max-width: 960px; }
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 26px;
+      box-sizing: border-box;
+    }
+    .panel.alt { background: var(--slide-bg-alt); }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .label {
+      font-size: 21px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-accent);
+      margin-bottom: 12px;
+    }
+    .muted { color: var(--slide-muted); }
+    .dim { color: var(--slide-dimmed); }
+    .math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 38px;
+      line-height: 1.35;
+      text-align: center;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px 24px;
+    }
+    .code {
+      font-family: var(--font-mono);
+      font-size: 23px;
+      line-height: 1.4;
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      white-space: pre-line;
+    }
+    .footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      color: var(--slide-dimmed);
+      font-size: 20px;
+    }
+    .visual {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+    .notes-source { font-size: 23px; color: var(--slide-muted); }
+    .chip {
+      display: inline-block;
+      font-size: 21px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--slide-bg-alt);
+      color: var(--slide-accent);
+      border: 1px solid var(--slide-border-light);
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .speaker-notes { display: none; }
+    .small { font-size: 23px; line-height: 1.32; }
+    .caption { font-size: 21px; line-height: 1.3; color: var(--slide-dimmed); }
+    .texture-grid line { stroke: #cbd5e1; stroke-width: 1.5; }
+    .texture-grid rect { stroke: #94a3b8; stroke-width: 2; }
+    .arrow { stroke: var(--slide-accent); stroke-width: 5; fill: none; marker-end: url(#arrow); }
+    .arrow-teal { stroke: var(--slide-teal); stroke-width: 5; fill: none; marker-end: url(#arrowTeal); }
+    .arrow-amber { stroke: var(--slide-amber); stroke-width: 5; fill: none; marker-end: url(#arrowAmber); }
+    .axis { stroke: #64748b; stroke-width: 3; }
+    .thin { stroke-width: 2; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section data-label="Texture Mapping as Lookup">
+    <div class="slide">
+      <div class="pad">
+        <div class="split-wide" style="align-items:center; flex:1;">
+          <div>
+            <div class="kicker">Fundamentals of Computer Graphics</div>
+            <h1>Chapter 11: Texture Mapping</h1>
+            <div class="rule" style="margin:24px 0 28px;"></div>
+            <p class="subtitle">Texture mapping is a coordinate-and-filtering problem: a shaded surface point asks where it lives in texture space, samples a signal there, and then uses that value as color, depth, normal, displacement, illumination, or procedural material data.</p>
+            <div style="margin-top:30px;">
+              <span class="chip">printed pages 255-290</span>
+              <span class="chip">PDF pages 272-307</span>
+              <span class="chip">17 slides</span>
+            </div>
+            <p class="notes-source">Notebook: Fundamentals-of-Computer-Graphics/chapter-11-texture-mapping/11-texture-mapping.ipynb</p>
+          </div>
+          <svg class="visual" viewBox="0 0 820 620" role="img" aria-label="Surface point, texture space, and image sample connected by arrows">
+            <defs>
+              <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/></marker>
+              <pattern id="check" width="52" height="52" patternUnits="userSpaceOnUse">
+                <rect width="52" height="52" fill="#eff6ff"/>
+                <rect width="26" height="26" fill="#dbeafe"/>
+                <rect x="26" y="26" width="26" height="26" fill="#dbeafe"/>
+              </pattern>
+            </defs>
+            <rect x="44" y="70" width="230" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <path d="M80 202 C130 136 184 126 238 184" fill="none" stroke="#2563eb" stroke-width="6"/>
+            <circle cx="170" cy="160" r="11" fill="#b45309"/>
+            <text x="72" y="52" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#111827">surface point</text>
+            <text x="134" y="286" font-size="32" font-family="STIX Two Text" fill="#1e3a8a">&phi;: S &rarr; T</text>
+            <rect x="500" y="64" width="250" height="250" rx="8" fill="url(#check)" stroke="#94a3b8" stroke-width="3"/>
+            <line x1="500" y1="189" x2="750" y2="189" stroke="#64748b" stroke-width="2"/>
+            <line x1="625" y1="64" x2="625" y2="314" stroke="#64748b" stroke-width="2"/>
+            <circle cx="642" cy="151" r="12" fill="#b45309"/>
+            <text x="548" y="45" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#111827">texture space</text>
+            <path class="arrow" d="M278 156 C358 118 420 110 492 140"/>
+            <rect x="282" y="430" width="250" height="120" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+            <rect x="307" y="458" width="46" height="46" fill="#2563eb"/>
+            <rect x="365" y="458" width="46" height="46" fill="#0f766e"/>
+            <rect x="423" y="458" width="46" height="46" fill="#b45309"/>
+            <text x="316" y="590" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#111827">filtered sample</text>
+            <path class="arrow" d="M626 322 C608 382 566 420 534 456"/>
+            <path class="arrow" d="M284 216 C330 288 355 362 378 428"/>
+          </svg>
+        </div>
+        <div class="footer"><span>Chapter 11</span><span>Texture Mapping</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Open the lecture by separating the informal phrase put the image on the object from the computation that actually happens. The renderer starts at a visible surface point, evaluates a texture coordinate function, filters the texture signal, and only then uses that value in shading or geometry.</aside>
+  </section>
+
+  <section data-label="The Two Fundamental Problems">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Chapter map</div>
+          <h2>The Two Problems Behind Every Texture</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split" style="flex:1;">
+          <div class="panel blue">
+            <div class="label">Problem 1</div>
+            <h3>Choose a coordinate function</h3>
+            <p class="muted" style="margin-top:14px;">A surface point must map to a location in texture space. The map should control distortion, avoid accidental many-to-one behavior, and place seams where they are least visible.</p>
+            <svg viewBox="0 0 760 360" class="visual" style="height:360px; margin-top:22px;">
+              <defs><marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"/></marker></defs>
+              <path d="M82 210 C164 88 294 100 372 198 C455 304 572 274 680 158" fill="none" stroke="#2563eb" stroke-width="8"/>
+              <circle cx="324" cy="164" r="12" fill="#b45309"/>
+              <rect x="488" y="54" width="184" height="184" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+              <path d="M488 100 H672 M488 146 H672 M488 192 H672 M534 54 V238 M580 54 V238 M626 54 V238" stroke="#cbd5e1" stroke-width="2"/>
+              <circle cx="590" cy="120" r="11" fill="#b45309"/>
+              <path d="M340 158 C408 112 452 104 536 116" fill="none" stroke="#2563eb" stroke-width="5" marker-end="url(#arrowBlue)"/>
+              <text x="88" y="318" font-size="30" font-family="Source Sans 3" fill="#475569">surface S</text>
+              <text x="534" y="288" font-size="30" font-family="Source Sans 3" fill="#475569">texture T</text>
+            </svg>
+          </div>
+          <div class="panel teal">
+            <div class="label">Problem 2</div>
+            <h3>Sample without aliasing</h3>
+            <p class="muted" style="margin-top:14px;">A pixel covers an area in texture space, not an infinitesimal point. The lookup must interpolate when magnifying and average when minifying.</p>
+            <svg viewBox="0 0 760 360" class="visual" style="height:360px; margin-top:22px;">
+              <rect x="70" y="52" width="250" height="250" fill="#eff6ff" stroke="#94a3b8" stroke-width="3"/>
+              <path d="M70 94 H320 M70 136 H320 M70 178 H320 M70 220 H320 M70 262 H320 M112 52 V302 M154 52 V302 M196 52 V302 M238 52 V302 M280 52 V302" stroke="#cbd5e1" stroke-width="2"/>
+              <polygon points="500,105 670,152 610,278 438,220" fill="#fef3c7" stroke="#b45309" stroke-width="5"/>
+              <path d="M442 218 C520 192 598 176 674 152" fill="none" stroke="#0f766e" stroke-width="5"/>
+              <path d="M505 106 C530 164 565 218 610 278" fill="none" stroke="#0f766e" stroke-width="5"/>
+              <text x="88" y="338" font-size="28" font-family="Source Sans 3" fill="#475569">texels</text>
+              <text x="446" y="338" font-size="28" font-family="Source Sans 3" fill="#475569">pixel footprint</text>
+            </svg>
+          </div>
+        </div>
+        <div class="panel alt">
+          <p>Everything else in the chapter is an application of these two mechanisms: texture coordinates plus filtered texture lookup.</p>
+        </div>
+        <div class="footer"><span>Source span: 255-290 / 272-307</span><span>Coordinate choice + filtering choice</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Frame the whole chapter as a compact decision tree. First ask how a point on the surface gets coordinates in the texture domain. Then ask what part of the texture a pixel covers and how the renderer should average it. Later applications reuse exactly these answers.</aside>
+  </section>
+
+  <section data-label="Lookup Direction">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Looking up texture values</div>
+          <h2>The Map Points Backward from the Rendered Point</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split-wide" style="flex:1;">
+          <svg class="visual" viewBox="0 0 940 620" role="img" aria-label="Shader lookup pipeline from hit record to UV to texel and shading">
+            <defs>
+              <marker id="arrowTeal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"/></marker>
+              <pattern id="diag" width="60" height="60" patternUnits="userSpaceOnUse">
+                <rect width="60" height="60" fill="#eff6ff"/>
+                <path d="M0 60 L60 0" stroke="#2563eb" stroke-width="4"/>
+              </pattern>
+            </defs>
+            <rect x="52" y="88" width="210" height="360" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="86" y="144" font-size="29" font-family="Source Sans 3" font-weight="700">hit record</text>
+            <text x="82" y="206" font-size="25" font-family="JetBrains Mono" fill="#475569">point p</text>
+            <text x="82" y="258" font-size="25" font-family="JetBrains Mono" fill="#475569">normal n</text>
+            <text x="82" y="310" font-size="25" font-family="JetBrains Mono" fill="#475569">material id</text>
+            <text x="82" y="362" font-size="25" font-family="JetBrains Mono" fill="#475569">mesh face</text>
+            <rect x="380" y="72" width="250" height="250" rx="8" fill="url(#diag)" stroke="#94a3b8" stroke-width="3"/>
+            <circle cx="512" cy="176" r="12" fill="#b45309"/>
+            <text x="392" y="362" font-size="30" font-family="Source Sans 3" font-weight="700">texture lookup</text>
+            <text x="430" y="410" font-size="34" font-family="STIX Two Text" fill="#1e3a8a">(u, v)</text>
+            <rect x="704" y="162" width="160" height="160" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <circle cx="784" cy="242" r="50" fill="#0f766e" opacity="0.22"/>
+            <circle cx="784" cy="242" r="18" fill="#0f766e"/>
+            <text x="690" y="374" font-size="30" font-family="Source Sans 3" font-weight="700">filtered value</text>
+            <path d="M262 248 C318 218 336 192 378 178" class="arrow-teal"/>
+            <path d="M632 196 C668 202 692 218 704 236" class="arrow-teal"/>
+            <rect x="308" y="490" width="332" height="74" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="3"/>
+            <text x="334" y="538" font-size="31" font-family="STIX Two Text" fill="#1e3a8a">color = texture(&phi;(p))</text>
+          </svg>
+          <div class="panel">
+            <div class="label">Shader routine</div>
+            <div class="code">p = visible_surface_point
+uv = surface.texture_coordinates(p)
+sample = filter(texture, uv, footprint)
+shade(material, sample, normal, light)</div>
+            <div class="panel amber" style="margin-top:22px;">
+              <h3>Common mistake</h3>
+              <p class="small muted" style="margin-top:10px;">Thinking in the forward direction, as if texels push themselves onto the object, hides the real dependency. The shader pulls texture data from the location requested by the surface point.</p>
+            </div>
+            <div class="formula" style="margin-top:22px;">&phi;: S &rarr; T, &nbsp; p = (x,y,z) &mapsto; (u,v)</div>
+          </div>
+        </div>
+        <div class="footer"><span>Texture lookup</span><span>Surface point to texture coordinate</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Emphasize the direction of dependency in a shader. The visible point is already known from ray tracing or rasterization, so texture mapping asks the surface where to sample. This mental model helps students debug wrong wrap modes, wrong transforms, and inverted coordinate conventions.</aside>
+  </section>
+
+  <section data-label="Coordinate Functions">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Texture coordinate functions</div>
+          <h2>Parameterization Is a Geometric Compromise</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="four">
+          <div class="panel blue"><div class="label">Bijectivity</div><p class="small">Avoid accidental reuse of one texture point on unrelated surface points.</p></div>
+          <div class="panel teal"><div class="label">Area scale</div><p class="small">Keep texel density roughly constant where the material should look uniform.</p></div>
+          <div class="panel violet"><div class="label">Shape scale</div><p class="small">Keep small circles from becoming extreme ellipses in texture space.</p></div>
+          <div class="panel amber"><div class="label">Continuity</div><p class="small">Minimize seams, then place unavoidable seams where artifacts are least costly.</p></div>
+        </div>
+        <div class="split" style="flex:1;">
+          <svg class="visual" viewBox="0 0 820 470" role="img" aria-label="Planar, spherical, and cube coordinate mappings">
+            <defs><marker id="arrowAmber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#B45309"/></marker></defs>
+            <rect x="70" y="72" width="160" height="160" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <path d="M70 112 H230 M70 152 H230 M70 192 H230 M110 72 V232 M150 72 V232 M190 72 V232" stroke="#93c5fd" stroke-width="2"/>
+            <path d="M270 48 C350 122 340 250 250 318" fill="none" stroke="#2563eb" stroke-width="7"/>
+            <path d="M230 152 C258 150 276 146 308 134" class="arrow"/>
+            <text x="70" y="270" font-size="26" font-family="Source Sans 3" font-weight="700">planar projection</text>
+            <circle cx="455" cy="154" r="86" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <ellipse cx="455" cy="154" rx="86" ry="28" fill="none" stroke="#64748b" stroke-width="3"/>
+            <path d="M455 68 C480 108 480 198 455 240" fill="none" stroke="#64748b" stroke-width="3"/>
+            <path d="M454 68 C430 110 430 198 454 240" fill="none" stroke="#64748b" stroke-width="3"/>
+            <path d="M390 154 L520 154" stroke="#b45309" stroke-width="5"/>
+            <text x="362" y="270" font-size="26" font-family="Source Sans 3" font-weight="700">lat-long sphere</text>
+            <g transform="translate(620 72)">
+              <polygon points="60,0 150,40 150,145 60,105" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+              <polygon points="0,45 60,0 60,105 0,150" fill="#ccfbf1" stroke="#0f766e" stroke-width="4"/>
+              <polygon points="0,150 60,105 150,145 85,195" fill="#99f6e4" stroke="#0f766e" stroke-width="4"/>
+              <path d="M60 0 V105 M0 45 L150 40 M0 150 L150 145" stroke="#0f766e" stroke-width="3"/>
+            </g>
+            <text x="626" y="270" font-size="26" font-family="Source Sans 3" font-weight="700">cubemap charts</text>
+            <rect x="142" y="350" width="540" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+            <text x="172" y="391" font-size="28" font-family="Source Sans 3" fill="#475569">No single chart keeps every good property on every surface.</text>
+          </svg>
+          <div class="panel">
+            <h3>Coordinate families in the chapter</h3>
+            <ul>
+              <li>Planar maps are cheap and natural for mostly flat patches, but they collapse front and back on closed surfaces.</li>
+              <li>Spherical and cylindrical maps use angles, making seams and pole behavior visible.</li>
+              <li>Cubemaps trade six seams for lower angular distortion and cheaper directional lookup.</li>
+              <li>Mesh UVs store the coordinate function at vertices and interpolate it across triangles.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer"><span>Coordinate design</span><span>Distortion, scale, shape, continuity</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide to connect texture mapping to cartography. The renderer needs a practical coordinate function, but the map is never free: injectivity, area scale, local shape, and continuity compete. The examples are deliberately schematic so students focus on tradeoffs rather than on a specific asset.</aside>
+  </section>
+
+  <section data-label="Mesh Atlases">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Interpolated texture coordinates</div>
+          <h2>Triangles Carry UV Values at Their Vertices</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split-wide" style="flex:1;">
+          <svg class="visual" viewBox="0 0 920 620" role="img" aria-label="A triangle mesh and its atlas with barycentric UV interpolation">
+            <defs><marker id="arrowMesh" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/></marker></defs>
+            <g transform="translate(60 80)">
+              <polygon points="80,320 220,80 380,330" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+              <line x1="220" y1="80" x2="225" y2="330" stroke="#2563eb" stroke-width="4"/>
+              <line x1="80" y1="320" x2="225" y2="330" stroke="#2563eb" stroke-width="4"/>
+              <line x1="380" y1="330" x2="225" y2="330" stroke="#2563eb" stroke-width="4"/>
+              <circle cx="80" cy="320" r="10" fill="#b45309"/>
+              <circle cx="220" cy="80" r="10" fill="#b45309"/>
+              <circle cx="380" cy="330" r="10" fill="#b45309"/>
+              <circle cx="225" cy="252" r="12" fill="#0f766e"/>
+              <text x="76" y="366" font-size="25" font-family="STIX Two Text">A</text>
+              <text x="204" y="62" font-size="25" font-family="STIX Two Text">B</text>
+              <text x="382" y="366" font-size="25" font-family="STIX Two Text">C</text>
+              <text x="112" y="32" font-size="29" font-family="Source Sans 3" font-weight="700">surface triangle</text>
+            </g>
+            <path d="M430 260 C500 238 538 226 592 214" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrowMesh)"/>
+            <g transform="translate(600 80)">
+              <rect x="0" y="0" width="260" height="260" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+              <path d="M0 52 H260 M0 104 H260 M0 156 H260 M0 208 H260 M52 0 V260 M104 0 V260 M156 0 V260 M208 0 V260" stroke="#cbd5e1" stroke-width="2"/>
+              <polygon points="58,210 210,72 222,220" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+              <circle cx="58" cy="210" r="10" fill="#b45309"/>
+              <circle cx="210" cy="72" r="10" fill="#b45309"/>
+              <circle cx="222" cy="220" r="10" fill="#b45309"/>
+              <circle cx="168" cy="178" r="12" fill="#0f766e"/>
+              <text x="24" y="314" font-size="29" font-family="Source Sans 3" font-weight="700">UV atlas triangle</text>
+            </g>
+            <rect x="178" y="488" width="580" height="76" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="3"/>
+            <text x="213" y="537" font-size="34" font-family="STIX Two Text">&nbsp;uv(p) = &lambda;A uv(A) + &lambda;B uv(B) + &lambda;C uv(C)</text>
+          </svg>
+          <div class="panel">
+            <h3>What the atlas view reveals</h3>
+            <ul>
+              <li>Each triangle in the surface has a partner triangle in texture space.</li>
+              <li>Shared mesh vertices force neighboring triangles to agree along their common edge.</li>
+              <li>Overlapping atlas triangles intentionally or accidentally reuse the same texture region.</li>
+              <li>Large differences between surface area and atlas area become visible texture density changes.</li>
+            </ul>
+            <div class="panel teal" style="margin-top:24px;">
+              <p class="small">A UV atlas is not just a storage format. It is a visualization of the function that the shader will evaluate for every fragment.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Barycentric interpolation</span><span>Mesh UVs define the surface-to-texture map</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Explain that mesh UVs turn a global mapping problem into many small affine maps. Each triangle can be simple, while the atlas layout decides where seams, overlaps, and density changes occur. Barycentric interpolation is familiar from rasterization, but here it interpolates coordinates used to fetch another signal.</aside>
+  </section>
+
+  <section data-label="Seams and Wrapping">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Seams, wrapping modes, and transforms</div>
+          <h2>Continuity in 3D Can Be Discontinuity in UV Space</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split" style="flex:1;">
+          <svg class="visual" viewBox="0 0 820 600" role="img" aria-label="Seam interpolation comparing the long path and duplicated vertex path">
+            <rect x="86" y="70" width="640" height="250" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+            <path d="M86 120 H726 M86 170 H726 M86 220 H726 M86 270 H726" stroke="#cbd5e1" stroke-width="2"/>
+            <path d="M150 196 C258 120 350 96 470 154 C570 202 630 192 690 122" fill="none" stroke="#2563eb" stroke-width="5"/>
+            <circle cx="132" cy="206" r="13" fill="#b45309"/>
+            <circle cx="690" cy="122" r="13" fill="#b45309"/>
+            <text x="104" y="358" font-size="28" font-family="STIX Two Text">u = 0.04</text>
+            <text x="626" y="358" font-size="28" font-family="STIX Two Text">u = 0.96</text>
+            <path d="M690 418 C532 500 292 502 132 430" fill="none" stroke="#b45309" stroke-width="7"/>
+            <text x="278" y="536" font-size="28" font-family="Source Sans 3" fill="#b45309" font-weight="700">wrong: interpolate across the whole atlas</text>
+            <path d="M690 390 C725 380 740 372 762 360" fill="none" stroke="#0f766e" stroke-width="7"/>
+            <path d="M58 360 C82 374 104 386 132 394" fill="none" stroke="#0f766e" stroke-width="7"/>
+            <text x="206" y="414" font-size="28" font-family="Source Sans 3" fill="#0f766e" font-weight="700">right: duplicate seam vertices</text>
+          </svg>
+          <div class="panel">
+            <h3>Three extension tools</h3>
+            <div class="three" style="margin-top:18px;">
+              <div class="panel alt"><div class="label">Repeat</div><p class="small">Use the fractional part of u and v so the texture tiles.</p></div>
+              <div class="panel alt"><div class="label">Clamp</div><p class="small">Extend boundary values when the lookup leaves the unit square.</p></div>
+              <div class="panel alt"><div class="label">Constant</div><p class="small">Return a background value outside the intended patch.</p></div>
+            </div>
+            <div class="formula" style="margin-top:28px;">[u', v', 1]<sup>T</sup> = M<sub>T</sub> [u, v, 1]<sup>T</sup></div>
+            <p class="muted" style="margin-top:22px;">A texture transform moves, scales, or rotates the lookup domain without changing the mesh.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Seam handling</span><span>Repeat, clamp, constant, and UV transforms</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Walk through the seam example slowly. The two end points are close on the model but far apart in the atlas if the coordinates are interpreted literally. Duplicating vertices lets neighboring triangles choose equivalent coordinates, while wrapping modes define what texture values mean outside the unit square.</aside>
+  </section>
+
+  <section data-label="Perspective Correct Interpolation">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Projected triangles</div>
+          <h2>Screen-Linear UVs Are Wrong When Depth Varies</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split-wide" style="flex:1;">
+          <div class="panel">
+            <h3>The rasterizer interpolates after projection</h3>
+            <p class="muted" style="margin-top:14px;">Attributes that are linear on a 3D triangle are not generally linear in screen coordinates after the homogeneous divide. Correct texture interpolation carries reciprocal depth along with the UVs.</p>
+            <div class="formula" style="margin-top:26px;">
+              u = (sum &lambda;<sub>i</sub> u<sub>i</sub> / w<sub>i</sub>) / (sum &lambda;<sub>i</sub> / w<sub>i</sub>)
+            </div>
+            <div class="formula" style="margin-top:18px;">
+              v = (sum &lambda;<sub>i</sub> v<sub>i</sub> / w<sub>i</sub>) / (sum &lambda;<sub>i</sub> / w<sub>i</sub>)
+            </div>
+            <div class="panel amber" style="margin-top:26px;">
+              <p class="small">Naive affine interpolation makes checkerboards swim or bend on receding surfaces because it ignores projective depth.</p>
+            </div>
+          </div>
+          <svg class="visual" viewBox="0 0 900 620" role="img" aria-label="Receding textured quad comparing affine and perspective-correct interpolation">
+            <defs>
+              <pattern id="checkerA" width="38" height="38" patternUnits="userSpaceOnUse">
+                <rect width="38" height="38" fill="#f8fafc"/>
+                <rect width="19" height="19" fill="#bfdbfe"/>
+                <rect x="19" y="19" width="19" height="19" fill="#bfdbfe"/>
+              </pattern>
+              <pattern id="checkerB" width="38" height="24" patternUnits="userSpaceOnUse">
+                <rect width="38" height="24" fill="#f8fafc"/>
+                <rect width="19" height="12" fill="#99f6e4"/>
+                <rect x="19" y="12" width="19" height="12" fill="#99f6e4"/>
+              </pattern>
+            </defs>
+            <polygon points="80,500 392,500 300,170 154,170" fill="url(#checkerA)" stroke="#b45309" stroke-width="5"/>
+            <polygon points="504,500 816,500 724,170 578,170" fill="url(#checkerB)" stroke="#0f766e" stroke-width="5"/>
+            <path d="M154 170 L392 500 M300 170 L80 500" stroke="#b45309" stroke-width="3" opacity="0.65"/>
+            <path d="M578 170 C644 270 732 396 816 500 M724 170 C652 274 570 398 504 500" stroke="#0f766e" stroke-width="3" opacity="0.65"/>
+            <text x="116" y="92" font-size="31" font-family="Source Sans 3" font-weight="700" fill="#b45309">affine screen UV</text>
+            <text x="552" y="92" font-size="31" font-family="Source Sans 3" font-weight="700" fill="#0f766e">perspective-correct</text>
+            <text x="106" y="566" font-size="24" font-family="Source Sans 3" fill="#475569">straight in screen, distorted in depth</text>
+            <text x="536" y="566" font-size="24" font-family="Source Sans 3" fill="#475569">divide by interpolated reciprocal w</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Perspective-correct interpolation</span><span>Interpolate u/w, v/w, and 1/w</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Tie this formula back to the graphics pipeline chapter. Barycentric weights are computed in screen space, but the original triangle lived in homogeneous coordinates. Interpolating u over w, v over w, and one over w is the repair that makes texture features track the projected 3D surface.</aside>
+  </section>
+
+  <section data-label="Pixel Footprints">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Antialiasing texture lookups</div>
+          <h2>A Pixel Becomes a Footprint in Texture Space</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split" style="flex:1;">
+          <svg class="visual" viewBox="0 0 820 600" role="img" aria-label="Image pixel footprint mapped to parallelogram in texture space by Jacobian columns">
+            <rect x="84" y="120" width="220" height="220" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+            <path d="M84 175 H304 M84 230 H304 M84 285 H304 M139 120 V340 M194 120 V340 M249 120 V340" stroke="#cbd5e1" stroke-width="2"/>
+            <rect x="177" y="214" width="55" height="55" fill="#fef3c7" stroke="#b45309" stroke-width="5"/>
+            <text x="110" y="392" font-size="29" font-family="Source Sans 3" font-weight="700">image pixel</text>
+            <path d="M328 238 C408 192 462 182 520 190" class="arrow"/>
+            <rect x="548" y="88" width="220" height="220" fill="#eff6ff" stroke="#94a3b8" stroke-width="3"/>
+            <path d="M548 143 H768 M548 198 H768 M548 253 H768 M603 88 V308 M658 88 V308 M713 88 V308" stroke="#cbd5e1" stroke-width="2"/>
+            <polygon points="612,174 734,210 694,306 568,262" fill="#fef3c7" stroke="#b45309" stroke-width="5"/>
+            <path d="M612 174 L734 210" stroke="#2563eb" stroke-width="6"/>
+            <path d="M612 174 L568 262" stroke="#0f766e" stroke-width="6"/>
+            <text x="552" y="366" font-size="29" font-family="Source Sans 3" font-weight="700">texture footprint</text>
+            <text x="602" y="430" font-size="28" font-family="STIX Two Text" fill="#2563eb">J<sub>x</sub> = &part;(u,v)/&part;x</text>
+            <text x="602" y="478" font-size="28" font-family="STIX Two Text" fill="#0f766e">J<sub>y</sub> = &part;(u,v)/&part;y</text>
+          </svg>
+          <div class="panel">
+            <h3>Filtering regimes</h3>
+            <div class="panel blue" style="margin-top:18px;"><p class="small"><strong>Magnification:</strong> footprint is smaller than a texel. Reconstruct between texels, usually with bilinear interpolation.</p></div>
+            <div class="panel teal" style="margin-top:18px;"><p class="small"><strong>Minification:</strong> footprint covers many texels. Average over an area before sampling to avoid aliasing.</p></div>
+            <div class="panel violet" style="margin-top:18px;"><p class="small"><strong>Shape:</strong> the Jacobian columns set footprint size and anisotropy. Oblique views produce long, thin regions.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Pixel footprint</span><span>&psi; = &phi; composed with inverse projection</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make the key shift from point samples to areas. The local derivative of the image-to-texture mapping tells the renderer what texture region contributes to one image sample. Small footprints call for reconstruction; large footprints call for prefiltered averages; elongated footprints explain why simple mipmaps blur at grazing angles.</aside>
+  </section>
+
+  <section data-label="Mipmaps">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Mipmapping</div>
+          <h2>Precompute Averages, Then Choose a Level</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split-wide" style="flex:1;">
+          <svg class="visual" viewBox="0 0 920 620" role="img" aria-label="Mipmap pyramid and level selection">
+            <defs>
+              <pattern id="fine" width="24" height="24" patternUnits="userSpaceOnUse">
+                <rect width="24" height="24" fill="#eff6ff"/>
+                <rect width="12" height="12" fill="#bfdbfe"/>
+                <rect x="12" y="12" width="12" height="12" fill="#bfdbfe"/>
+              </pattern>
+            </defs>
+            <rect x="84" y="116" width="256" height="256" fill="url(#fine)" stroke="#2563eb" stroke-width="5"/>
+            <rect x="388" y="164" width="160" height="160" fill="#dbeafe" stroke="#2563eb" stroke-width="5"/>
+            <path d="M388 204 H548 M388 244 H548 M388 284 H548 M428 164 V324 M468 164 V324 M508 164 V324" stroke="#93c5fd" stroke-width="2"/>
+            <rect x="596" y="202" width="96" height="96" fill="#bfdbfe" stroke="#2563eb" stroke-width="5"/>
+            <path d="M596 250 H692 M644 202 V298" stroke="#93c5fd" stroke-width="2"/>
+            <rect x="732" y="226" width="50" height="50" fill="#93c5fd" stroke="#2563eb" stroke-width="5"/>
+            <path d="M340 246 H382 M548 246 H590 M692 250 H726" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow)"/>
+            <text x="114" y="424" font-size="28" font-family="Source Sans 3" font-weight="700">level 0</text>
+            <text x="408" y="424" font-size="28" font-family="Source Sans 3" font-weight="700">level 1</text>
+            <text x="596" y="424" font-size="28" font-family="Source Sans 3" font-weight="700">level 2</text>
+            <text x="720" y="424" font-size="28" font-family="Source Sans 3" font-weight="700">level 3</text>
+            <rect x="176" y="486" width="570" height="70" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="3"/>
+            <text x="222" y="532" font-size="34" font-family="STIX Two Text">D = max(||J<sub>x</sub>||, ||J<sub>y</sub>||), &nbsp; k = log<sub>2</sub>(D)</text>
+          </svg>
+          <div class="panel">
+            <h3>What mipmaps buy</h3>
+            <ul>
+              <li>A pyramid stores successively larger square averages.</li>
+              <li>Trilinear sampling blends between two adjacent levels to reduce popping.</li>
+              <li>The level choice is usually driven by a footprint width estimate.</li>
+              <li>Square averages are fast and stable, but not ideal for long, thin footprints.</li>
+            </ul>
+            <div class="panel teal" style="margin-top:24px;">
+              <p class="small">The chapter notebook checks that the pyramid preserves mean color and reduces high-frequency energy in far-field views.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Mipmap pyramid</span><span>Fast minification by prefiltering</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Present mipmaps as a memory-for-time tradeoff. Instead of averaging thousands of texels during a lookup, the renderer stores averages at powers of two and samples an appropriate level. The approximation is excellent for roughly square footprints and visibly over-blurry for strongly elongated ones.</aside>
+  </section>
+
+  <section data-label="Anisotropic Filtering">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Beyond square footprints</div>
+          <h2>Anisotropic Filtering Samples Along the Long Axis</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split" style="flex:1;">
+          <svg class="visual" viewBox="0 0 820 600" role="img" aria-label="Mipmap square footprint compared with anisotropic long-axis samples">
+            <rect x="88" y="80" width="640" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <path d="M88 130 H728 M88 180 H728 M88 230 H728 M88 280 H728 M88 330 H728 M88 380 H728 M88 430 H728 M138 80 V480 M188 80 V480 M238 80 V480 M288 80 V480 M338 80 V480 M388 80 V480 M438 80 V480 M488 80 V480 M538 80 V480 M588 80 V480 M638 80 V480 M688 80 V480" stroke="#e2e8f0" stroke-width="2"/>
+            <ellipse cx="410" cy="280" rx="248" ry="48" transform="rotate(-16 410 280)" fill="#fef3c7" stroke="#b45309" stroke-width="5"/>
+            <rect x="200" y="134" width="420" height="292" fill="none" stroke="#2563eb" stroke-width="6" stroke-dasharray="16 14"/>
+            <g fill="#0f766e" stroke="#ffffff" stroke-width="3">
+              <circle cx="224" cy="332" r="15"/>
+              <circle cx="306" cy="308" r="15"/>
+              <circle cx="388" cy="284" r="15"/>
+              <circle cx="470" cy="260" r="15"/>
+              <circle cx="552" cy="236" r="15"/>
+              <circle cx="634" cy="212" r="15"/>
+            </g>
+            <text x="136" y="538" font-size="27" font-family="Source Sans 3" fill="#2563eb" font-weight="700">single square mip lookup blurs sideways</text>
+            <text x="420" y="570" font-size="27" font-family="Source Sans 3" fill="#0f766e" font-weight="700">several shorter-footprint samples preserve detail</text>
+          </svg>
+          <div class="panel">
+            <h3>Why the floor still matters</h3>
+            <p class="muted" style="margin-top:14px;">A receding floor often maps one pixel to a long strip in texture space. A square mip lookup must cover the strip's longest width, so it includes many texels that do not belong to the footprint.</p>
+            <div class="panel teal" style="margin-top:24px;">
+              <p class="small">Anisotropic filtering chooses a level based on the short axis, then averages multiple samples placed along the long axis.</p>
+            </div>
+            <div class="panel amber" style="margin-top:20px;">
+              <p class="small">The cost is more texture lookups; the gain is less directional blur and fewer shimmering artifacts during motion.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Anisotropy</span><span>Long footprints need directional averaging</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use the diagram to contrast what the mipmap approximation does with what the footprint actually asks for. The dashed square is easy to sample but includes too much irrelevant texture. Multiple samples along the long axis approximate the same area with better directional selectivity.</aside>
+  </section>
+
+  <section data-label="Material Parameter Maps">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Applications of texture mapping</div>
+          <h2>A Texture Can Store Any Shading Parameter</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split-wide" style="flex:1;">
+          <div class="panel">
+            <h3>Color is only the first use case</h3>
+            <p class="muted" style="margin-top:14px;">Once a filtered lookup is available, the sample can feed almost any material input. The important design question becomes what the numbers mean, not whether the storage is an image.</p>
+            <div class="three" style="margin-top:28px;">
+              <div class="panel blue"><div class="label">Diffuse</div><p class="small">Base color or albedo used by the shading model.</p></div>
+              <div class="panel teal"><div class="label">Roughness</div><p class="small">Surface microstructure controls highlight width.</p></div>
+              <div class="panel violet"><div class="label">Opacity</div><p class="small">Alpha masks cut or blend surface visibility.</p></div>
+            </div>
+            <div class="formula" style="margin-top:28px;">material(p) = decode(filter(texture, &phi;(p)))</div>
+          </div>
+          <svg class="visual" viewBox="0 0 900 620" role="img" aria-label="Texture channels routed to material shader parameters">
+            <rect x="78" y="108" width="230" height="230" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+            <rect x="98" y="128" width="84" height="84" fill="#2563eb" opacity="0.72"/>
+            <rect x="204" y="128" width="84" height="84" fill="#0f766e" opacity="0.72"/>
+            <rect x="98" y="234" width="84" height="84" fill="#b45309" opacity="0.72"/>
+            <rect x="204" y="234" width="84" height="84" fill="#6d28d9" opacity="0.72"/>
+            <text x="98" y="382" font-size="30" font-family="Source Sans 3" font-weight="700">packed texture</text>
+            <rect x="576" y="86" width="230" height="108" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+            <rect x="576" y="238" width="230" height="108" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+            <rect x="576" y="390" width="230" height="108" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"/>
+            <text x="620" y="152" font-size="29" font-family="Source Sans 3" font-weight="700">base color</text>
+            <text x="620" y="304" font-size="29" font-family="Source Sans 3" font-weight="700">roughness</text>
+            <text x="620" y="456" font-size="29" font-family="Source Sans 3" font-weight="700">alpha mask</text>
+            <path d="M310 164 C420 132 486 126 570 132" class="arrow"/>
+            <path d="M310 224 C420 236 488 260 570 286" class="arrow-teal"/>
+            <path d="M310 286 C418 342 492 402 570 438" fill="none" stroke="#6d28d9" stroke-width="5" marker-end="url(#arrow)"/>
+            <circle cx="442" cy="310" r="58" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="408" y="321" font-size="28" font-family="STIX Two Text" fill="#1e3a8a">shader</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Material maps</span><span>Textures as parameter fields</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">After students understand lookup and filtering, broaden the meaning of texture. A texture may store colors, scalar coefficients, masks, or packed channels. The shader must decode the sampled values consistently, and the same filtering issues still apply because the texture is still a sampled signal.</aside>
+  </section>
+
+  <section data-label="Normal Bump Displacement">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Shape detail</div>
+          <h2>Normals Change Lighting; Displacement Changes Geometry</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="three" style="flex:1;">
+          <div class="panel blue">
+            <div class="label">Normal map</div>
+            <svg viewBox="0 0 480 310" class="visual" style="height:310px;">
+              <rect x="72" y="72" width="340" height="170" fill="#eff6ff" stroke="#94a3b8" stroke-width="3"/>
+              <g stroke="#2563eb" stroke-width="5" marker-end="url(#arrow)">
+                <path d="M130 216 L156 130"/>
+                <path d="M210 216 L230 110"/>
+                <path d="M290 216 L308 134"/>
+                <path d="M364 216 L386 122"/>
+              </g>
+              <text x="88" y="286" font-size="25" font-family="Source Sans 3" fill="#475569">sampled tangent-frame vectors</text>
+            </svg>
+            <p class="small muted">Stores normals directly, often relative to the local tangent frame. Great for high-frequency shading detail.</p>
+          </div>
+          <div class="panel teal">
+            <div class="label">Bump map</div>
+            <svg viewBox="0 0 480 310" class="visual" style="height:310px;">
+              <path d="M54 206 C98 138 148 258 196 178 C244 98 292 248 340 166 C378 104 416 160 440 132" fill="none" stroke="#0f766e" stroke-width="8"/>
+              <path d="M92 210 L112 150 M186 198 L222 126 M294 192 L318 120 M390 152 L418 96" stroke="#2563eb" stroke-width="5" marker-end="url(#arrow)"/>
+              <text x="80" y="276" font-size="25" font-family="Source Sans 3" fill="#475569">height derivatives perturb normals</text>
+            </svg>
+            <p class="small muted">Stores scalar height. The shader differentiates the height field to perturb the shading normal.</p>
+          </div>
+          <div class="panel amber">
+            <div class="label">Displacement map</div>
+            <svg viewBox="0 0 480 310" class="visual" style="height:310px;">
+              <path d="M52 228 L432 228" stroke="#94a3b8" stroke-width="5"/>
+              <path d="M52 228 C94 190 132 118 176 150 C232 190 250 76 304 106 C354 134 384 208 432 168" fill="none" stroke="#b45309" stroke-width="9"/>
+              <circle cx="176" cy="150" r="9" fill="#b45309"/>
+              <circle cx="304" cy="106" r="9" fill="#b45309"/>
+              <text x="70" y="276" font-size="25" font-family="Source Sans 3" fill="#475569">vertices move, silhouette can change</text>
+            </svg>
+            <p class="small muted">Moves tessellated geometry. Silhouettes, parallax, and intersections can change because the surface itself changes.</p>
+          </div>
+        </div>
+        <div class="panel alt">
+          <p>The same height signal can support a shading trick or a geometric operation; the renderer must choose which consequence is intended.</p>
+        </div>
+        <div class="footer"><span>Normal, bump, displacement</span><span>Shading detail versus actual surface detail</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Separate the three techniques by their observable consequences. Normal and bump maps alter lighting normals while the underlying surface remains smooth, so silhouettes stay unchanged. Displacement maps move geometry after tessellation, which is more expensive but changes shape, parallax, and intersections in a way shading tricks cannot.</aside>
+  </section>
+
+  <section data-label="Shadow Maps">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Depth textures from the light</div>
+          <h2>A Shadow Map Stores the Closest Light-Space Depth</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split-wide" style="flex:1;">
+          <svg class="visual" viewBox="0 0 920 620" role="img" aria-label="Shadow map lookup from light projection to receiver depth test">
+            <circle cx="132" cy="116" r="34" fill="#fde68a" stroke="#b45309" stroke-width="4"/>
+            <path d="M168 138 L410 292 M150 154 L374 444 M162 94 L568 174" stroke="#f59e0b" stroke-width="4" opacity="0.6"/>
+            <rect x="344" y="242" width="106" height="180" fill="#94a3b8" stroke="#475569" stroke-width="4"/>
+            <path d="M96 500 C260 466 436 452 824 498" fill="none" stroke="#0f766e" stroke-width="8"/>
+            <path d="M450 424 C560 440 654 456 766 492" fill="none" stroke="#111827" stroke-width="10" opacity="0.22"/>
+            <rect x="614" y="82" width="210" height="210" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+            <path d="M614 132 H824 M614 182 H824 M614 232 H824 M664 82 V292 M714 82 V292 M764 82 V292" stroke="#cbd5e1" stroke-width="2"/>
+            <path d="M614 232 C662 220 696 160 736 152 C774 144 800 188 824 206" fill="none" stroke="#1e3a8a" stroke-width="6"/>
+            <text x="612" y="340" font-size="29" font-family="Source Sans 3" font-weight="700">depth texture</text>
+            <rect x="158" y="536" width="612" height="54" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+            <text x="192" y="572" font-size="29" font-family="STIX Two Text">lit if d - d<sub>map</sub> &lt; bias; PCF averages binary tests</text>
+          </svg>
+          <div class="panel">
+            <h3>Shadow-map pipeline</h3>
+            <ul>
+              <li>Render from the light and record nearest depth in a texture.</li>
+              <li>Project the camera fragment into the light's texture coordinates.</li>
+              <li>Compare its light-space depth with the stored depth.</li>
+              <li>Use bias to avoid self-shadowing and PCF to soften jagged boundaries.</li>
+            </ul>
+            <div class="panel amber" style="margin-top:24px;">
+              <p class="small">Bias is a tolerance, not a lighting model. Too little creates acne; too much detaches contact shadows.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Shadow maps</span><span>Texture lookup returns visibility information</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Describe the shadow map as a visibility cache from the light. The main render projects each fragment into that cache and compares depths. Bias addresses numerical disagreement between the two passes, while percentage-closer filtering averages nearby pass-fail comparisons rather than interpolating the stored depths themselves.</aside>
+  </section>
+
+  <section data-label="Environment Maps">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Direction-domain textures</div>
+          <h2>Environment Maps Lookup Radiance by Direction</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split" style="flex:1;">
+          <div class="panel">
+            <h3>Different input, same machinery</h3>
+            <p class="muted" style="margin-top:14px;">The lookup coordinate comes from a unit direction rather than a surface location. A ray that misses the scene, or a mirror reflection ray from a shiny surface, asks the environment for radiance.</p>
+            <div class="formula" style="margin-top:26px;">direction r &rarr; environment coordinates &rarr; filtered radiance</div>
+            <div class="three" style="margin-top:26px;">
+              <div class="panel blue"><div class="label">Lat-long</div><p class="small">Simple formula, pole compression.</p></div>
+              <div class="panel teal"><div class="label">Cubemap</div><p class="small">Six charts, lower distortion.</p></div>
+              <div class="panel violet"><div class="label">Lighting</div><p class="small">Samples become illumination, not surface color.</p></div>
+            </div>
+          </div>
+          <svg class="visual" viewBox="0 0 820 600" role="img" aria-label="Reflective sphere sampling a lat-long environment and cubemap faces">
+            <defs>
+              <radialGradient id="sphere" cx="35%" cy="32%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="45%" stop-color="#dbeafe"/>
+                <stop offset="100%" stop-color="#1e3a8a"/>
+              </radialGradient>
+            </defs>
+            <rect x="72" y="78" width="320" height="180" rx="8" fill="#e0f2fe" stroke="#94a3b8" stroke-width="3"/>
+            <path d="M72 168 H392" stroke="#f59e0b" stroke-width="16" opacity="0.35"/>
+            <circle cx="294" cy="122" r="28" fill="#f59e0b" opacity="0.8"/>
+            <path d="M72 122 H392 M72 214 H392 M152 78 V258 M232 78 V258 M312 78 V258" stroke="#cbd5e1" stroke-width="2"/>
+            <circle cx="248" cy="410" r="112" fill="url(#sphere)" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M248 410 L520 190" stroke="#0f766e" stroke-width="6" marker-end="url(#arrowTeal)"/>
+            <path d="M128 466 C244 528 420 508 548 430" fill="none" stroke="#64748b" stroke-width="5"/>
+            <g transform="translate(562 322)">
+              <rect x="88" y="0" width="64" height="64" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+              <rect x="24" y="64" width="64" height="64" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+              <rect x="88" y="64" width="64" height="64" fill="#bfdbfe" stroke="#2563eb" stroke-width="3"/>
+              <rect x="152" y="64" width="64" height="64" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+              <rect x="216" y="64" width="64" height="64" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+              <rect x="88" y="128" width="64" height="64" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+            </g>
+            <text x="118" y="306" font-size="28" font-family="Source Sans 3" font-weight="700">lat-long map</text>
+            <text x="592" y="554" font-size="28" font-family="Source Sans 3" font-weight="700">cubemap layout</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Environment maps</span><span>Texture domain is the sphere of directions</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make clear that environment maps are still texture maps, but the domain is directions. The reflected ray direction determines the lookup. Latitude-longitude storage is easy to derive and easy to visualize, while cubemaps reduce pole distortion and are common in interactive rendering systems.</aside>
+  </section>
+
+  <section data-label="Procedural Textures">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Procedural 3D textures</div>
+          <h2>Some Materials Are Better as Functions Than Images</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split-wide" style="flex:1;">
+          <svg class="visual" viewBox="0 0 920 620" role="img" aria-label="Procedural stripes, noise lattice, and turbulence octaves">
+            <rect x="70" y="78" width="240" height="430" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+            <path d="M72 124 C132 84 222 162 308 114 M72 190 C132 150 222 228 308 180 M72 256 C132 216 222 294 308 246 M72 322 C132 282 222 360 308 312 M72 388 C132 348 222 426 308 378 M72 454 C132 414 222 492 308 444" stroke="#b45309" stroke-width="12" fill="none"/>
+            <text x="98" y="558" font-size="29" font-family="Source Sans 3" font-weight="700">3D stripes</text>
+            <g transform="translate(386 88)">
+              <rect x="0" y="0" width="210" height="210" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+              <path d="M0 52 H210 M0 104 H210 M0 156 H210 M52 0 V210 M104 0 V210 M156 0 V210" stroke="#cbd5e1" stroke-width="2"/>
+              <g stroke="#2563eb" stroke-width="4">
+                <path d="M52 52 l24 -18"/>
+                <path d="M104 52 l-18 24"/>
+                <path d="M156 52 l22 18"/>
+                <path d="M52 104 l-26 10"/>
+                <path d="M104 104 l25 -6"/>
+                <path d="M156 104 l-15 -24"/>
+                <path d="M52 156 l28 16"/>
+                <path d="M104 156 l-20 -18"/>
+                <path d="M156 156 l14 26"/>
+              </g>
+              <text x="4" y="260" font-size="29" font-family="Source Sans 3" font-weight="700">gradient lattice</text>
+            </g>
+            <g transform="translate(664 88)">
+              <rect x="0" y="0" width="190" height="62" fill="#dbeafe" stroke="#1e3a8a" stroke-width="3"/>
+              <rect x="0" y="86" width="150" height="48" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="3"/>
+              <rect x="0" y="158" width="110" height="38" fill="#93c5fd" stroke="#1e3a8a" stroke-width="3"/>
+              <rect x="0" y="220" width="74" height="30" fill="#60a5fa" stroke="#1e3a8a" stroke-width="3"/>
+              <text x="0" y="300" font-size="29" font-family="Source Sans 3" font-weight="700">octave sum</text>
+            </g>
+            <rect x="368" y="436" width="456" height="66" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="3"/>
+            <text x="398" y="480" font-size="32" font-family="STIX Two Text">color = f(x, y, z), not image[u, v]</text>
+          </svg>
+          <div class="panel">
+            <h3>Why procedural solid textures matter</h3>
+            <ul>
+              <li>They avoid a 2D parameterization when the material is naturally volumetric.</li>
+              <li>They define values everywhere in space, so cuts through the object still look coherent.</li>
+              <li>Noise and turbulence add natural variation across several feature scales.</li>
+              <li>They trade storage and UV labor for computation and careful function design.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer"><span>Procedural textures</span><span>Solid functions, stripe fields, noise, turbulence</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use procedural textures as the endpoint of the chapter: the machinery is still about sampling a signal, but the signal need not be a stored 2D image. Solid textures are useful when the material should behave like it fills a volume, and turbulence provides multiscale irregularity without hand-painted data.</aside>
+  </section>
+
+  <section data-label="Debugging Texture Mappings">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Texture-mapping debugger</div>
+          <h2>Read Artifacts by Asking What Changed</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <div class="split" style="flex:1;">
+          <div class="panel">
+            <h3>Inspection checklist</h3>
+            <ul>
+              <li>Do colored corners land on the intended surface corners?</li>
+              <li>Do grid cells keep stable size away from intentional distortion?</li>
+              <li>Does a seam triangle interpolate locally or across the atlas?</li>
+              <li>Does the far field shimmer, alias, or blur directionally?</li>
+              <li>Does changing bias fix acne without separating shadows?</li>
+              <li>Do procedural changes alter both numeric checks and visible variation?</li>
+            </ul>
+          </div>
+          <svg class="visual" viewBox="0 0 820 600" role="img" aria-label="Diagnostic texture and failure signatures">
+            <rect x="78" y="72" width="270" height="270" fill="#eff6ff" stroke="#94a3b8" stroke-width="4"/>
+            <path d="M78 126 H348 M78 180 H348 M78 234 H348 M78 288 H348 M132 72 V342 M186 72 V342 M240 72 V342 M294 72 V342" stroke="#cbd5e1" stroke-width="2"/>
+            <path d="M78 342 L348 72" stroke="#b45309" stroke-width="8"/>
+            <circle cx="96" cy="90" r="17" fill="#2563eb"/>
+            <circle cx="330" cy="90" r="17" fill="#0f766e"/>
+            <circle cx="96" cy="324" r="17" fill="#b45309"/>
+            <circle cx="330" cy="324" r="17" fill="#6d28d9"/>
+            <text x="86" y="394" font-size="28" font-family="Source Sans 3" font-weight="700">diagnostic texture</text>
+            <g transform="translate(456 84)">
+              <rect x="0" y="0" width="260" height="118" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+              <path d="M24 88 C80 20 140 128 230 42" stroke="#b45309" stroke-width="6" fill="none"/>
+              <text x="24" y="158" font-size="25" font-family="Source Sans 3" fill="#475569">fold or seam jump</text>
+              <rect x="0" y="194" width="260" height="118" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+              <path d="M24 230 H236 M24 250 H236 M24 270 H236" stroke="#2563eb" stroke-width="4"/>
+              <text x="24" y="352" font-size="25" font-family="Source Sans 3" fill="#475569">aliasing or blur</text>
+              <rect x="0" y="388" width="260" height="118" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+              <circle cx="90" cy="446" r="42" fill="#0f766e" opacity="0.25"/>
+              <circle cx="146" cy="446" r="42" fill="#0f766e" opacity="0.25"/>
+              <text x="24" y="546" font-size="25" font-family="Source Sans 3" fill="#475569">overlap or reuse</text>
+            </g>
+          </svg>
+        </div>
+        <div class="panel violet">
+          <p class="small">Applied lab: change one parameter, predict which failure signature should move, then compare the visual artifact with the recorded numeric check.</p>
+        </div>
+        <div class="footer"><span>Debugging workflow</span><span>Visual artifact plus numeric invariant</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Turn the notebook into a practical debugging routine. Diagnostic textures should reveal orientation, scale, and seam errors immediately. The strongest lab answers pair a visual observation with a numeric invariant, because texture bugs often look plausible until a check exposes the wrong mapping or filtering assumption.</aside>
+  </section>
+
+  <section data-label="Texture Mapping Recap">
+    <div class="slide">
+      <div class="pad">
+        <div>
+          <div class="kicker">Recap</div>
+          <h2>The Chapter in One Rendering Pass</h2>
+          <div class="rule" style="margin-top:18px;"></div>
+        </div>
+        <svg class="visual" viewBox="0 0 1600 500" role="img" aria-label="End-to-end texture mapping pipeline">
+          <rect x="70" y="110" width="210" height="130" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+          <text x="106" y="166" font-size="28" font-family="Source Sans 3" font-weight="700">surface point</text>
+          <text x="126" y="206" font-size="24" font-family="STIX Two Text">p in S</text>
+          <rect x="382" y="110" width="210" height="130" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+          <text x="430" y="166" font-size="28" font-family="Source Sans 3" font-weight="700">UV map</text>
+          <text x="420" y="206" font-size="24" font-family="STIX Two Text">&phi;(p) = (u,v)</text>
+          <rect x="694" y="110" width="210" height="130" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+          <text x="740" y="166" font-size="28" font-family="Source Sans 3" font-weight="700">footprint</text>
+          <text x="742" y="206" font-size="24" font-family="STIX Two Text">J columns</text>
+          <rect x="1006" y="110" width="210" height="130" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+          <text x="1056" y="166" font-size="28" font-family="Source Sans 3" font-weight="700">filter</text>
+          <text x="1034" y="206" font-size="24" font-family="Source Sans 3">bilinear, mip, anisotropic</text>
+          <rect x="1318" y="110" width="210" height="130" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/>
+          <text x="1368" y="166" font-size="28" font-family="Source Sans 3" font-weight="700">meaning</text>
+          <text x="1342" y="206" font-size="24" font-family="Source Sans 3">color, normal, depth, light</text>
+          <path d="M282 176 H374 M594 176 H686 M906 176 H998 M1218 176 H1310" class="arrow"/>
+          <rect x="230" y="330" width="1140" height="92" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+          <text x="278" y="388" font-size="33" font-family="Source Sans 3" fill="#475569">Texture mapping is geometry plus signal processing, reused across many rendering effects.</text>
+        </svg>
+        <div class="three">
+          <div class="panel blue"><div class="label">Coordinate lesson</div><p class="small">Charts, UVs, seams, and transforms decide where to sample.</p></div>
+          <div class="panel teal"><div class="label">Filtering lesson</div><p class="small">Footprints, mipmaps, and anisotropy decide how to sample.</p></div>
+          <div class="panel violet"><div class="label">Application lesson</div><p class="small">The sampled value can stand for material, shape, visibility, direction, or procedural structure.</p></div>
+        </div>
+        <div class="footer"><span>End of Chapter 11</span><span>Texture mapping is a reusable rendering primitive</span></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close by returning to the two foundational mechanisms from the beginning. The coordinate function decides location; the footprint and filter decide the average; the shader decides interpretation. That framing makes diffuse textures, normal maps, shadow maps, environment maps, and procedural textures feel like one coherent rendering idea.</aside>
+  </section>
+</deck-stage>
+<script id="deck-metadata" type="application/json">
+{
+  "course": "Fundamentals of Computer Graphics",
+  "chapter_id": "chapter-11",
+  "notebook_path": "Fundamentals-of-Computer-Graphics/chapter-11-texture-mapping/11-texture-mapping.ipynb",
+  "source_span": "printed pages 255-290; PDF pages 272-307.",
+  "source_pdf": "Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf",
+  "design_system_version": "geometry-lecture-design-system-1"
+}
+</script>
+<script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Texture Mapping as Lookup",
+      "notes": "Open the lecture by separating the informal phrase put the image on the object from the computation that actually happens. The renderer starts at a visible surface point, evaluates a texture coordinate function, filters the texture signal, and only then uses that value in shading or geometry."
+    },
+    {
+      "slide": 2,
+      "title": "The Two Fundamental Problems",
+      "notes": "Frame the whole chapter as a compact decision tree. First ask how a point on the surface gets coordinates in the texture domain. Then ask what part of the texture a pixel covers and how the renderer should average it. Later applications reuse exactly these answers."
+    },
+    {
+      "slide": 3,
+      "title": "Lookup Direction",
+      "notes": "Emphasize the direction of dependency in a shader. The visible point is already known from ray tracing or rasterization, so texture mapping asks the surface where to sample. This mental model helps students debug wrong wrap modes, wrong transforms, and inverted coordinate conventions."
+    },
+    {
+      "slide": 4,
+      "title": "Coordinate Functions",
+      "notes": "Use this slide to connect texture mapping to cartography. The renderer needs a practical coordinate function, but the map is never free: injectivity, area scale, local shape, and continuity compete. The examples are deliberately schematic so students focus on tradeoffs rather than on a specific asset."
+    },
+    {
+      "slide": 5,
+      "title": "Mesh Atlases",
+      "notes": "Explain that mesh UVs turn a global mapping problem into many small affine maps. Each triangle can be simple, while the atlas layout decides where seams, overlaps, and density changes occur. Barycentric interpolation is familiar from rasterization, but here it interpolates coordinates used to fetch another signal."
+    },
+    {
+      "slide": 6,
+      "title": "Seams and Wrapping",
+      "notes": "Walk through the seam example slowly. The two end points are close on the model but far apart in the atlas if the coordinates are interpreted literally. Duplicating vertices lets neighboring triangles choose equivalent coordinates, while wrapping modes define what texture values mean outside the unit square."
+    },
+    {
+      "slide": 7,
+      "title": "Perspective Correct Interpolation",
+      "notes": "Tie this formula back to the graphics pipeline chapter. Barycentric weights are computed in screen space, but the original triangle lived in homogeneous coordinates. Interpolating u over w, v over w, and one over w is the repair that makes texture features track the projected 3D surface."
+    },
+    {
+      "slide": 8,
+      "title": "Pixel Footprints",
+      "notes": "Make the key shift from point samples to areas. The local derivative of the image-to-texture mapping tells the renderer what texture region contributes to one image sample. Small footprints call for reconstruction; large footprints call for prefiltered averages; elongated footprints explain why simple mipmaps blur at grazing angles."
+    },
+    {
+      "slide": 9,
+      "title": "Mipmaps",
+      "notes": "Present mipmaps as a memory-for-time tradeoff. Instead of averaging thousands of texels during a lookup, the renderer stores averages at powers of two and samples an appropriate level. The approximation is excellent for roughly square footprints and visibly over-blurry for strongly elongated ones."
+    },
+    {
+      "slide": 10,
+      "title": "Anisotropic Filtering",
+      "notes": "Use the diagram to contrast what the mipmap approximation does with what the footprint actually asks for. The dashed square is easy to sample but includes too much irrelevant texture. Multiple samples along the long axis approximate the same area with better directional selectivity."
+    },
+    {
+      "slide": 11,
+      "title": "Material Parameter Maps",
+      "notes": "After students understand lookup and filtering, broaden the meaning of texture. A texture may store colors, scalar coefficients, masks, or packed channels. The shader must decode the sampled values consistently, and the same filtering issues still apply because the texture is still a sampled signal."
+    },
+    {
+      "slide": 12,
+      "title": "Normal Bump Displacement",
+      "notes": "Separate the three techniques by their observable consequences. Normal and bump maps alter lighting normals while the underlying surface remains smooth, so silhouettes stay unchanged. Displacement maps move geometry after tessellation, which is more expensive but changes shape, parallax, and intersections in a way shading tricks cannot."
+    },
+    {
+      "slide": 13,
+      "title": "Shadow Maps",
+      "notes": "Describe the shadow map as a visibility cache from the light. The main render projects each fragment into that cache and compares depths. Bias addresses numerical disagreement between the two passes, while percentage-closer filtering averages nearby pass-fail comparisons rather than interpolating the stored depths themselves."
+    },
+    {
+      "slide": 14,
+      "title": "Environment Maps",
+      "notes": "Make clear that environment maps are still texture maps, but the domain is directions. The reflected ray direction determines the lookup. Latitude-longitude storage is easy to derive and easy to visualize, while cubemaps reduce pole distortion and are common in interactive rendering systems."
+    },
+    {
+      "slide": 15,
+      "title": "Procedural Textures",
+      "notes": "Use procedural textures as the endpoint of the chapter: the machinery is still about sampling a signal, but the signal need not be a stored 2D image. Solid textures are useful when the material should behave like it fills a volume, and turbulence provides multiscale irregularity without hand-painted data."
+    },
+    {
+      "slide": 16,
+      "title": "Debugging Texture Mappings",
+      "notes": "Turn the notebook into a practical debugging routine. Diagnostic textures should reveal orientation, scale, and seam errors immediately. The strongest lab answers pair a visual observation with a numeric invariant, because texture bugs often look plausible until a check exposes the wrong mapping or filtering assumption."
+    },
+    {
+      "slide": 17,
+      "title": "Texture Mapping Recap",
+      "notes": "Close by returning to the two foundational mechanisms from the beginning. The coordinate function decides location; the footprint and filter decide the average; the shader decides interpretation. That framing makes diffuse textures, normal maps, shadow maps, environment maps, and procedural textures feel like one coherent rendering idea."
+    }
+  ]
+}
+</script>
+</body>
+</html>

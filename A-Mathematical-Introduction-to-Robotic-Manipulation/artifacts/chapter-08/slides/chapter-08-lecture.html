@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="A Mathematical Introduction to Robotic Manipulation">
+  <meta name="chapter_id" content="chapter-08">
+  <meta name="chapter_title" content="Chapter 08: Nonholonomic Motion Planning">
+  <meta name="notebook_path" content="A-Mathematical-Introduction-to-Robotic-Manipulation/part-03-nonholonomic-systems/chapter-08-nonholonomic-motion-planning/08-nonholonomic-motion-planning.ipynb">
+  <meta name="source_span" content="printed pages 355-394; PDF pages 373-412">
+  <meta name="source_pdf" content="A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 08: Nonholonomic Motion Planning</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    deck-stage:not(:defined) { visibility: hidden; }
+    html, body { margin: 0; background: #000; color: var(--slide-ink); font-family: var(--font-sans); }
+    section { width: 1920px; height: 1080px; box-sizing: border-box; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 54px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(30,58,138,0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30,58,138,0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 66px; line-height: 1.04; font-weight: 700; max-width: 1280px; }
+    h2 { font-size: 50px; line-height: 1.1; font-weight: 700; color: var(--slide-ink); }
+    h3 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--slide-accent); margin-bottom: 12px; }
+    p, li { font-size: 27px; line-height: 1.3; }
+    ul, ol { margin: 0; padding-left: 31px; }
+    li + li { margin-top: 10px; }
+    a { color: var(--slide-blue); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 16px;
+    }
+    .sub { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1280px; }
+    .rule { width: 96px; height: 6px; background: var(--slide-accent); border-radius: 6px; margin: 22px 0 26px; }
+    .rule.teal { background: var(--slide-teal); }
+    .rule.amber { background: var(--slide-amber); }
+    .title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+    .tag {
+      display: inline-block;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #EEF2FF;
+      border: 1px solid #DBEAFE;
+      border-radius: 6px;
+      padding: 7px 12px;
+      white-space: nowrap;
+    }
+    .content { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: stretch; flex: 1; min-height: 0; }
+    .grid2.left { grid-template-columns: 1.1fr 0.9fr; }
+    .grid2.right { grid-template-columns: 0.92fr 1.08fr; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
+    .stack { display: flex; flex-direction: column; gap: 18px; }
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel.slate { background: var(--slide-bg-alt); border-left: 6px solid #94A3B8; }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.28;
+      text-align: center;
+      padding: 18px 20px;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: var(--slide-bg-alt);
+    }
+    .formula.compact { font-size: 29px; line-height: 1.24; padding: 14px 16px; }
+    .formula.large { font-size: 40px; line-height: 1.22; }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .mini { font-size: 23px; line-height: 1.28; color: var(--slide-muted); }
+    .caption { font-size: 22px; color: var(--slide-dimmed); line-height: 1.24; margin-top: 10px; }
+    .source { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--slide-border); color: var(--slide-dimmed); font-size: 20px; line-height: 1.22; }
+    .asset {
+      width: 100%;
+      max-height: 620px;
+      object-fit: contain;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .asset.tall { max-height: 650px; }
+    .diagram {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: linear-gradient(0deg, #fff, #F8FAFC);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 420px;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .mini-label {
+      font-size: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slide-dimmed);
+      margin-bottom: 9px;
+    }
+    .route { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .route .node {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 13px 15px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+    .route .arrow { font-size: 25px; color: var(--slide-muted); font-weight: 700; }
+    svg { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <script id="deck-metadata" type="application/json">
+    {
+      "course": "A Mathematical Introduction to Robotic Manipulation",
+      "chapter_id": "chapter-08",
+      "chapter_title": "Chapter 08: Nonholonomic Motion Planning",
+      "notebook_path": "A-Mathematical-Introduction-to-Robotic-Manipulation/part-03-nonholonomic-systems/chapter-08-nonholonomic-motion-planning/08-nonholonomic-motion-planning.ipynb",
+      "source_span": "printed pages 355-394; PDF pages 373-412",
+      "source_pdf": "A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf",
+      "design_system_version": "lecture-design-system-2026-05-23"
+    }
+  </script>
+  <script id="speaker-notes" type="application/json">
+[
+  {"slide":1,"title":"Nonholonomic Motion Planning","notes":"Open by separating ordinary obstacle-avoidance planning from planning under velocity constraints. In this chapter the planner cannot draw an arbitrary curve in configuration space and then ask the robot to follow it. The constructive question is sharper: given a bracket-generating distribution, what input history actually realizes the hidden displacement? Point to the source span and notebook path as the grounded reading route."},
+  {"slide":2,"title":"Three Planning Strategies","notes":"Use the three columns as a taxonomy of methods, not as mutually exclusive camps. Optimal control gives principled costs but can be hard to solve. Piecewise-constant words expose Lie brackets and are especially clean for nilpotent systems. Canonical paths package known maneuvers into reusable primitives. The rest of the lecture moves among these strategies as the system class changes."},
+  {"slide":3,"title":"Brockett System As The First Test Case","notes":"Brockett's three-state system is the smallest serious demonstration of constructive nonholonomy. The first two states follow the inputs directly, but the third state records the signed area swept by those direct coordinates. Ask students to inspect the figure as a control-space loop: returning to the origin in q1 and q2 is compatible with a nonzero endpoint in q3."},
+  {"slide":4,"title":"Why The Optimal Input Is A Sinusoid","notes":"The variational calculation should be read as a geometry generator. The multiplier for the bracket constraint is constant, so the input derivative is obtained by multiplying by a fixed skew matrix. A fixed skew matrix rotates vectors without changing their norm, which is why the optimal input is sinusoidal. The frequency is then selected by the endpoint closure condition."},
+  {"slide":5,"title":"First-Order Canonical Systems","notes":"Move from the three-state example to the m-input canonical system by naming the state split. The q_i coordinates are directly actuated, while the q_ij coordinates are first bracket coordinates. The steering algorithm is deliberately staged: first place the directly controlled coordinates, then use closed sinusoidal loops to write the desired skew matrix without disturbing the direct coordinates."},
+  {"slide":6,"title":"Second-Order Bracket Directions","notes":"This slide explains why the first-order recipe does not simply scale up. At second order, Jacobi relations and bracket nesting matter, and optimal inputs can leave the elementary sinusoid class. The constructive workaround is staged rectification: steer direct coordinates, correct first brackets, then choose frequencies whose products leave a zero-frequency term only in the desired second-order coordinate."},
+  {"slide":7,"title":"One-Chain Systems","notes":"Present the one-chain form as the chapter's clean higher-order model. The vector field g1 shifts information down the chain while g2 injects the second coordinate. Repeated brackets ad_g1^k g2 pick off successive coordinates, so the proof of controllability is nearly a basis count. The diagram is meant to make that bracket ladder visible."},
+  {"slide":8,"title":"Chained-Form Harmonics","notes":"The harmonic artifact is the operational memory for Algorithm 3. The input u1 oscillates at the base frequency while u2 is chosen at the kth harmonic. As products are integrated down the chain, all nonmatching harmonics average away and a constant term remains in q_{k+2}. That is why the endpoint formula contains a factorial and powers of the amplitude."},
+  {"slide":9,"title":"Fourier Corrections In Real Systems","notes":"Emphasize that real models rarely arrive already in chained form. The chapter's hopping-robot and car examples use coordinate changes and then treat nonlinear leftovers by Fourier coefficients. The pedagogical point is not that nonlinear terms vanish, but that the target displacement can be tied to a specific harmonic coefficient. Students should see the Fourier coefficient as a correction, not a decorative analysis step."},
+  {"slide":10,"title":"Conversion To Chained Form","notes":"This is the coordinate-hygiene slide. A nonlinear system can be steered with chained-form tools only after a legitimate state diffeomorphism and input transformation have been found. The sufficient conditions use constant-rank involutive distributions and functions h1 and h2 supplied by Frobenius-style reasoning. The car example is useful because the abstract conditions become a concrete change of variables."},
+  {"slide":11,"title":"Optimal Steering Beyond Model Systems","notes":"For a general driftless nonholonomic system, the closed-form sinusoid story becomes a necessary-condition story. The Hamiltonian calculation says the optimal controls equal minus the costate paired with each input vector field. Differentiating produces a skew-symmetric Omega matrix built from Lie brackets, so the control norm remains constant even when the actual time dependence is no longer a simple fixed-frequency sinusoid."},
+  {"slide":12,"title":"Philip Hall Coordinates","notes":"Philip Hall coordinates are a way to make bracket bookkeeping finite and ordered for nilpotent systems. The Hall basis records only independent Lie words after skew-symmetry and Jacobi identities have been handled. In those coordinates every flow can be represented as a product of exponentials along Hall basis elements, while fictitious bracket inputs are introduced temporarily and later synthesized from real controls."},
+  {"slide":13,"title":"BCH Words Generate Brackets","notes":"The Campbell-Baker-Hausdorff formula is the algebraic reason a word of flows can generate a bracket direction. The simple commutator loop cancels the first-order motion and leaves a second-order bracket term. Higher-order words work similarly, but nilpotency is the feature that keeps the expansion finite. Without nilpotency the same idea becomes an approximation scheme rather than an exact finite recipe."},
+  {"slide":14,"title":"Dynamic Finger Repositioning","notes":"Return to manipulation by interpreting rolling contact as a nonholonomic planning problem. The grasp constraint relates finger velocities and object velocity. If there is a null space in the hand Jacobian, internal motions can move contacts while keeping the object fixed. This gives a clean reason to study a single rolling fingertip: the redundant degrees decouple when object motion is held at zero."},
+  {"slide":15,"title":"Geometric Phase From Rolling Loops","notes":"The geometric-phase figure connects the chapter's area idea back to rolling contact. A closed path of the spherical fingertip can return the contact coordinates while changing the contact angle. The Gauss-Bonnet relation says that this phase is the negative area enclosed on the sphere. Stress that the accumulated phase is history-dependent; the loop is not wasted motion."},
+  {"slide":16,"title":"Constructive Controllability Checklist","notes":"Close with the audit habit that the notebook encourages. A steering construction should declare its chart, identify the bracket or phase coordinate being targeted, use a loop or word whose lower-order terms cancel, and compare the endpoint with a scalar invariant. The linked final sanity and lab JSON files turn those claims into inspectable artifacts rather than purely verbal assurances."}
+]
+  </script>
+
+  <deck-stage width="1920" height="1080">
+    <section data-label="Nonholonomic Motion Planning">
+      <div class="slide alt">
+        <div class="eyebrow">A Mathematical Introduction to Robotic Manipulation | Chapter 08</div>
+        <h1>Nonholonomic Motion Planning</h1>
+        <div class="rule"></div>
+        <p class="sub">How can Lie-bracket controllability be converted into actual steering commands?</p>
+        <div class="content">
+          <div class="grid3">
+            <div class="panel blue"><h3>Constraint Form</h3><p>Admissible velocities satisfy \( \omega_i(q)\dot q = 0 \), so not every visible path is executable.</p></div>
+            <div class="panel teal"><h3>Constructive Goal</h3><p>Use loops, harmonics, or words so allowed directions generate hidden endpoint motion.</p></div>
+            <div class="panel violet"><h3>Chapter Artifacts</h3><p>Brockett steering, chained-form harmonics, and rolling-contact geometric phase.</p></div>
+          </div>
+        </div>
+        <p class="source">Source span: printed pages 355-394; PDF pages 373-412. Notebook: A-Mathematical-Introduction-to-Robotic-Manipulation/part-03-nonholonomic-systems/chapter-08-nonholonomic-motion-planning/08-nonholonomic-motion-planning.ipynb</p>
+      </div>
+      <aside class="speaker-notes">Open by separating ordinary obstacle-avoidance planning from planning under velocity constraints. In this chapter the planner cannot draw an arbitrary curve in configuration space and then ask the robot to follow it. The constructive question is sharper: given a bracket-generating distribution, what input history actually realizes the hidden displacement? Point to the source span and notebook path as the grounded reading route.</aside>
+    </section>
+
+    <section data-label="Three Planning Strategies">
+      <div class="slide">
+        <div class="title-row"><h2>Three Planning Strategies</h2><span class="tag">Chapter roadmap</span></div>
+        <div class="content">
+          <div class="grid3">
+            <div class="panel blue stack">
+              <div class="mini-label">1. Optimal control</div>
+              <p>Attach a cost to each admissible trajectory and solve for inputs minimizing time, path length, or control effort.</p>
+              <p class="formula compact">\( \min \int_0^1 \|u(t)\|^2\,dt \)</p>
+            </div>
+            <div class="panel teal stack">
+              <div class="mini-label">2. Constant-input words</div>
+              <p>Concatenate flows so the first-order motion cancels while bracket terms survive.</p>
+              <p class="formula compact">\( e^{\epsilon g_1}e^{\epsilon g_2}e^{-\epsilon g_1}e^{-\epsilon g_2} \)</p>
+            </div>
+            <div class="panel violet stack">
+              <div class="mini-label">3. Canonical paths</div>
+              <p>Choose a reusable family of maneuvers tailored to a mechanism, such as car turns or rolling-contact loops.</p>
+              <p class="formula compact">maneuver library \( \Rightarrow \) desired displacement</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 1180 260" width="1180" height="260" role="img" aria-label="Three planning approaches routed to constructive steering">
+              <defs>
+                <marker id="arrow02" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"/></marker>
+              </defs>
+              <rect x="45" y="78" width="230" height="95" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <rect x="365" y="78" width="230" height="95" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <rect x="685" y="78" width="230" height="95" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <rect x="1000" y="78" width="135" height="95" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <text x="160" y="118" text-anchor="middle" font-size="28" font-weight="700" fill="#1E3A8A">cost</text>
+              <text x="160" y="151" text-anchor="middle" font-size="24" fill="#475569">select input</text>
+              <text x="480" y="118" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">word</text>
+              <text x="480" y="151" text-anchor="middle" font-size="24" fill="#475569">expose bracket</text>
+              <text x="800" y="118" text-anchor="middle" font-size="28" font-weight="700" fill="#6D28D9">path</text>
+              <text x="800" y="151" text-anchor="middle" font-size="24" fill="#475569">reuse motion</text>
+              <text x="1068" y="119" text-anchor="middle" font-size="27" font-weight="700" fill="#1E3A8A">steer</text>
+              <text x="1068" y="151" text-anchor="middle" font-size="23" fill="#475569">endpoint</text>
+              <line x1="275" y1="126" x2="350" y2="126" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow02)"/>
+              <line x1="595" y1="126" x2="670" y2="126" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow02)"/>
+              <line x1="915" y1="126" x2="985" y2="126" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow02)"/>
+              <path d="M160 78 C300 15, 920 15, 1068 78" fill="none" stroke="#94A3B8" stroke-width="3" stroke-dasharray="10 10"/>
+              <text x="620" y="42" text-anchor="middle" font-size="23" fill="#64748B">all routes must respect the velocity distribution</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: Chapter introduction, printed pp. 355-357; PDF pp. 373-375.</p>
+      </div>
+      <aside class="speaker-notes">Use the three columns as a taxonomy of methods, not as mutually exclusive camps. Optimal control gives principled costs but can be hard to solve. Piecewise-constant words expose Lie brackets and are especially clean for nilpotent systems. Canonical paths package known maneuvers into reusable primitives. The rest of the lecture moves among these strategies as the system class changes.</aside>
+    </section>
+
+    <section data-label="Brockett System As The First Test Case">
+      <div class="slide">
+        <div class="title-row"><h2>Brockett System As The First Test Case</h2><span class="tag">Growth vector (2, 3)</span></div>
+        <div class="grid2 right">
+          <figure>
+            <img class="asset tall" src="../figures/brockett-sinusoidal-steering.png" alt="Brockett sinusoidal steering control loop">
+            <figcaption class="caption">Generated artifact: signed area in the direct coordinates creates the bracket coordinate.</figcaption>
+          </figure>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Model System</h3>
+              <p class="formula compact">\( \dot q_1=u_1,\quad \dot q_2=u_2,\quad \dot q_3=q_1u_2-q_2u_1 \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Bracket Direction</h3>
+              <p>The fields \(g_1=(1,0,-q_2)^T\), \(g_2=(0,1,q_1)^T\) have a bracket in the missing vertical direction.</p>
+              <p class="formula compact">\( [g_1,g_2]=(0,0,2)^T \)</p>
+            </div>
+            <div class="panel amber">
+              <h3>Notebook Check</h3>
+              <p class="mini">Endpoint \( (0,0,1.005303) \) agrees with the saved control-loop line integral to numerical precision.</p>
+            </div>
+          </div>
+        </div>
+        <p class="source">Grounding: Brockett first-order system, printed pp. 358-360; PDF pp. 376-378. Artifact: ../figures/brockett-sinusoidal-steering.png. Check: ../checks/final-sanity.json.</p>
+      </div>
+      <aside class="speaker-notes">Brockett's three-state system is the smallest serious demonstration of constructive nonholonomy. The first two states follow the inputs directly, but the third state records the signed area swept by those direct coordinates. Ask students to inspect the figure as a control-space loop: returning to the origin in q1 and q2 is compatible with a nonzero endpoint in q3.</aside>
+    </section>
+
+    <section data-label="Why The Optimal Input Is A Sinusoid">
+      <div class="slide">
+        <div class="title-row"><h2>Why The Optimal Input Is A Sinusoid</h2><span class="tag">Skew matrix</span></div>
+        <div class="grid2 left">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Variational Endpoint Problem</h3>
+              <p>Minimize control effort while enforcing the bracket-coordinate constraint.</p>
+              <p class="formula compact">\( L=(\dot q_1^2+\dot q_2^2)+\lambda(\dot q_3-q_1\dot q_2+q_2\dot q_1) \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Euler-Lagrange Consequence</h3>
+              <p class="formula">\( \dot u=\Lambda u,\quad \Lambda=\begin{bmatrix}0&-\lambda\\ \lambda&0\end{bmatrix},\quad \dot\lambda=0 \)</p>
+            </div>
+            <div class="panel violet">
+              <h3>Closure Selects Frequency</h3>
+              <p>For steering \( (0,0,0) \) to \( (0,0,a) \) over one unit of time, the least-cost closed loop uses frequency \(2\pi\).</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 560" width="760" height="560" role="img" aria-label="Skew matrix rotates input vector into a sinusoid">
+              <defs>
+                <marker id="arrow04" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#2563EB"/></marker>
+              </defs>
+              <circle cx="370" cy="280" r="190" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="370" y1="280" x2="610" y2="280" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="370" y1="280" x2="370" y2="40" stroke="#CBD5E1" stroke-width="3"/>
+              <path d="M520 166 A190 190 0 0 1 558 332" fill="none" stroke="#2563EB" stroke-width="8" marker-end="url(#arrow04)"/>
+              <line x1="370" y1="280" x2="520" y2="166" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow04)"/>
+              <line x1="370" y1="280" x2="252" y2="132" stroke="#0F766E" stroke-width="7" marker-end="url(#arrow04)"/>
+              <text x="540" y="164" font-size="30" fill="#2563EB" font-weight="700">u(t)</text>
+              <text x="188" y="122" font-size="28" fill="#0F766E" font-weight="700">rotated input</text>
+              <text x="370" y="525" text-anchor="middle" font-size="30" fill="#1E3A8A" font-weight="700">constant norm, rotating phase</text>
+              <text x="370" y="71" text-anchor="middle" font-size="26" fill="#64748B">skew generator Lambda</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: Brockett optimal input derivation, printed pp. 358-360; PDF pp. 376-378.</p>
+      </div>
+      <aside class="speaker-notes">The variational calculation should be read as a geometry generator. The multiplier for the bracket constraint is constant, so the input derivative is obtained by multiplying by a fixed skew matrix. A fixed skew matrix rotates vectors without changing their norm, which is why the optimal input is sinusoidal. The frequency is then selected by the endpoint closure condition.</aside>
+    </section>
+
+    <section data-label="First-Order Canonical Systems">
+      <div class="slide">
+        <div class="title-row"><h2>First-Order Canonical Systems</h2><span class="tag">Direct then bracket</span></div>
+        <div class="grid2">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>m-Input Model</h3>
+              <p class="formula compact">\( \dot q_i=u_i,\qquad \dot q_{ij}=q_i u_j-q_j u_i,\quad i&lt;j \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Matrix Reading</h3>
+              <p class="formula compact">\( \dot q=u,\qquad \dot Y=q u^T-u q^T,\quad Y\in\mathfrak{so}(m) \)</p>
+            </div>
+            <div class="panel amber">
+              <h3>Algorithm 1</h3>
+              <ol>
+                <li>Move the directly controlled \(q_i\) coordinates.</li>
+                <li>Use integrally related sinusoids to set \(q_{ij}\) while \(q_i\) closes.</li>
+              </ol>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Canonical first-order state split">
+              <defs>
+                <marker id="arrow05" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"/></marker>
+              </defs>
+              <rect x="70" y="70" width="270" height="150" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <text x="205" y="130" text-anchor="middle" font-size="32" font-weight="700" fill="#1E3A8A">direct layer</text>
+              <text x="205" y="172" text-anchor="middle" font-size="28" fill="#475569">q1, ..., qm</text>
+              <rect x="480" y="70" width="270" height="150" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <text x="615" y="130" text-anchor="middle" font-size="32" font-weight="700" fill="#0F766E">bracket layer</text>
+              <text x="615" y="172" text-anchor="middle" font-size="28" fill="#475569">qij</text>
+              <line x1="340" y1="145" x2="465" y2="145" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow05)"/>
+              <text x="404" y="118" text-anchor="middle" font-size="23" fill="#64748B">area loop</text>
+              <path d="M205 270 C265 225, 315 225, 375 270 S485 315, 545 270 S655 225, 705 270" fill="none" stroke="#2563EB" stroke-width="5"/>
+              <path d="M205 355 C270 415, 340 415, 405 355 S535 295, 600 355" fill="none" stroke="#0F766E" stroke-width="5"/>
+              <text x="410" y="465" text-anchor="middle" font-size="28" fill="#1E3A8A" font-weight="700">sinusoids close direct coordinates, write skew coordinates</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: first-order canonical systems and Algorithm 1, printed pp. 360-361; PDF pp. 378-379.</p>
+      </div>
+      <aside class="speaker-notes">Move from the three-state example to the m-input canonical system by naming the state split. The q_i coordinates are directly actuated, while the q_ij coordinates are first bracket coordinates. The steering algorithm is deliberately staged: first place the directly controlled coordinates, then use closed sinusoidal loops to write the desired skew matrix without disturbing the direct coordinates.</aside>
+    </section>
+
+    <section data-label="Second-Order Bracket Directions">
+      <div class="slide">
+        <div class="title-row"><h2>Second-Order Bracket Directions</h2><span class="tag">Nested brackets</span></div>
+        <div class="grid2 left">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Model Coordinates</h3>
+              <p class="formula compact">\( \dot q_i=u_i,\quad \dot q_{ij}=q_i u_j,\quad \dot q_{ijk}=q_{ij}u_k \quad \text{mod Jacobi} \)</p>
+            </div>
+            <div class="panel amber">
+              <h3>Frequency Isolation</h3>
+              <p>Choose frequencies so low-order coordinates close, while exactly one product chain contains a zero-frequency term.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Two-Input Pattern</h3>
+              <p class="formula compact">\( u_1=a\sin 2\pi t,\quad u_2=b\cos 4\pi t \Rightarrow q_{121} \text{ changes} \)</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Second-order bracket direction route">
+              <defs>
+                <marker id="arrow06" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"/></marker>
+              </defs>
+              <circle cx="170" cy="116" r="55" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <circle cx="410" cy="116" r="55" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <circle cx="650" cy="116" r="55" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <text x="170" y="126" text-anchor="middle" font-size="32" font-weight="700" fill="#2563EB">q_i</text>
+              <text x="410" y="126" text-anchor="middle" font-size="32" font-weight="700" fill="#0F766E">q_ij</text>
+              <text x="650" y="126" text-anchor="middle" font-size="32" font-weight="700" fill="#B45309">q_ijk</text>
+              <line x1="226" y1="116" x2="342" y2="116" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow06)"/>
+              <line x1="466" y1="116" x2="582" y2="116" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow06)"/>
+              <path d="M120 330 C190 260, 260 260, 330 330 S470 400, 540 330 S680 260, 750 330" fill="none" stroke="#2563EB" stroke-width="5"/>
+              <path d="M120 385 C210 455, 330 455, 420 385 S610 315, 730 385" fill="none" stroke="#0F766E" stroke-width="5"/>
+              <path d="M190 470 H640" stroke="#B45309" stroke-width="6" stroke-linecap="round"/>
+              <text x="410" y="522" text-anchor="middle" font-size="27" fill="#1E3A8A" font-weight="700">periodic factors average out until the target nested bracket</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: second-order model systems and Algorithm 2, printed pp. 361-363; PDF pp. 379-381.</p>
+      </div>
+      <aside class="speaker-notes">This slide explains why the first-order recipe does not simply scale up. At second order, Jacobi relations and bracket nesting matter, and optimal inputs can leave the elementary sinusoid class. The constructive workaround is staged rectification: steer direct coordinates, correct first brackets, then choose frequencies whose products leave a zero-frequency term only in the desired second-order coordinate.</aside>
+    </section>
+
+    <section data-label="One-Chain Systems">
+      <div class="slide">
+        <div class="title-row"><h2>One-Chain Systems</h2><span class="tag">Goursat-style model</span></div>
+        <div class="grid2">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Definition</h3>
+              <p class="formula compact">\( \dot q_1=u_1,\quad \dot q_2=u_2,\quad \dot q_3=q_2u_1,\quad \dot q_4=q_3u_1,\ldots,\dot q_n=q_{n-1}u_1 \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Bracket Ladder</h3>
+              <p>The iterated brackets \(g_1, g_2, \operatorname{ad}_{g_1}^k g_2\) hit independent coordinate directions.</p>
+              <p class="formula compact">\( \operatorname{ad}_{g_1}^k g_2=[g_1,\operatorname{ad}_{g_1}^{k-1}g_2] \)</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Bracket ladder for the one-chain system">
+              <defs>
+                <marker id="arrow07" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"/></marker>
+              </defs>
+              <line x1="120" y1="110" x2="120" y2="450" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="300" y1="110" x2="300" y2="450" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="480" y1="110" x2="480" y2="450" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="660" y1="110" x2="660" y2="450" stroke="#CBD5E1" stroke-width="4"/>
+              <circle cx="120" cy="150" r="38" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <circle cx="300" cy="230" r="38" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <circle cx="480" cy="310" r="38" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <circle cx="660" cy="390" r="38" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <text x="120" y="159" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">g2</text>
+              <text x="300" y="239" text-anchor="middle" font-size="26" font-weight="700" fill="#0F766E">[g1,g2]</text>
+              <text x="480" y="319" text-anchor="middle" font-size="23" font-weight="700" fill="#0F766E">ad^2</text>
+              <text x="660" y="399" text-anchor="middle" font-size="23" font-weight="700" fill="#0F766E">ad^k</text>
+              <path d="M158 155 C220 170, 235 205, 263 224" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow07)"/>
+              <path d="M338 235 C400 250, 415 285, 443 304" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow07)"/>
+              <path d="M518 315 C580 330, 595 365, 623 384" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow07)"/>
+              <text x="390" y="96" text-anchor="middle" font-size="29" fill="#1E3A8A" font-weight="700">each bracket opens the next coordinate</text>
+              <text x="390" y="504" text-anchor="middle" font-size="25" fill="#64748B">basis count gives complete nonholonomy</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: one-chain system and Proposition 8.2, printed pp. 363-365; PDF pp. 381-383.</p>
+      </div>
+      <aside class="speaker-notes">Present the one-chain form as the chapter's clean higher-order model. The vector field g1 shifts information down the chain while g2 injects the second coordinate. Repeated brackets ad_g1^k g2 pick off successive coordinates, so the proof of controllability is nearly a basis count. The diagram is meant to make that bracket ladder visible.</aside>
+    </section>
+
+    <section data-label="Chained-Form Harmonics">
+      <div class="slide">
+        <div class="title-row"><h2>Chained-Form Harmonics</h2><span class="tag">Algorithm 3</span></div>
+        <div class="grid2 right">
+          <figure>
+            <img class="asset" src="../figures/chained-form-harmonics.png" alt="Chained form harmonic inputs">
+            <figcaption class="caption">Generated artifact: base and higher harmonic inputs that rectify a chained coordinate.</figcaption>
+          </figure>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Target Coordinate</h3>
+              <p>For \(k\ge 1\), steer \(q_{k+2}\) using the kth harmonic.</p>
+              <p class="formula compact">\( u_1=a\sin 2\pi t,\qquad u_2=b\cos 2\pi kt \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Endpoint Increment</h3>
+              <p class="formula compact">\( q_{k+2}(1)-q_{k+2}(0)=\left(\frac{a}{4\pi}\right)^k\frac{b}{k!} \)</p>
+            </div>
+            <div class="panel amber">
+              <h3>Why It Works</h3>
+              <p>Earlier coordinates are periodic after one cycle. The desired coordinate inherits one constant term after repeated products.</p>
+            </div>
+          </div>
+        </div>
+        <p class="source">Artifact: ../figures/chained-form-harmonics.png. Grounding: Proposition 8.3, printed pp. 365-366; PDF pp. 383-384.</p>
+      </div>
+      <aside class="speaker-notes">The harmonic artifact is the operational memory for Algorithm 3. The input u1 oscillates at the base frequency while u2 is chosen at the kth harmonic. As products are integrated down the chain, all nonmatching harmonics average away and a constant term remains in q_{k+2}. That is why the endpoint formula contains a factorial and powers of the amplitude.</aside>
+    </section>
+
+    <section data-label="Fourier Corrections In Real Systems">
+      <div class="slide">
+        <div class="title-row"><h2>Fourier Corrections In Real Systems</h2><span class="tag">Model plus remainder</span></div>
+        <div class="grid2">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Local Model</h3>
+              <p>A coordinate change can reveal a chained-form leading term, with nonlinear terms kept as a correction.</p>
+              <p class="formula compact">\( \dot \alpha = f(l)u_1,\qquad f(l)=c_1 l+O(l^2) \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Fourier Selection</h3>
+              <p class="formula compact">\( f\!\left(\frac{a_2}{2\pi}\sin 2\pi t\right)=\beta_1\sin 2\pi t+\beta_2\sin 4\pi t+\cdots \)</p>
+              <p class="mini">Only harmonics paired with the input survive integration over a period.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 560" width="860" height="560" role="img" aria-label="Fourier correction route from real system to endpoint">
+              <defs>
+                <marker id="arrow09" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"/></marker>
+              </defs>
+              <rect x="60" y="80" width="180" height="95" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="340" y="80" width="180" height="95" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="620" y="80" width="180" height="95" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <text x="150" y="120" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">real model</text>
+              <text x="150" y="151" text-anchor="middle" font-size="22" fill="#475569">car, hopper</text>
+              <text x="430" y="120" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">chart</text>
+              <text x="430" y="151" text-anchor="middle" font-size="22" fill="#475569">near chain</text>
+              <text x="710" y="120" text-anchor="middle" font-size="27" font-weight="700" fill="#B45309">coefficient</text>
+              <text x="710" y="151" text-anchor="middle" font-size="22" fill="#475569">solve amplitudes</text>
+              <line x1="240" y1="128" x2="325" y2="128" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow09)"/>
+              <line x1="520" y1="128" x2="605" y2="128" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow09)"/>
+              <path d="M90 350 C150 260, 240 260, 300 350 S450 440, 510 350 S660 260, 760 350" fill="none" stroke="#2563EB" stroke-width="5"/>
+              <path d="M90 408 C170 460, 270 460, 350 408 S530 356, 650 408" fill="none" stroke="#0F766E" stroke-width="5"/>
+              <line x1="170" y1="500" x2="700" y2="500" stroke="#CBD5E1" stroke-width="4"/>
+              <circle cx="430" cy="500" r="11" fill="#B45309"/>
+              <text x="430" y="535" text-anchor="middle" font-size="25" fill="#64748B">integral keeps the matching frequency</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: Fourier techniques for hopping robot and kinematic car, printed pp. 366-369; PDF pp. 384-387.</p>
+      </div>
+      <aside class="speaker-notes">Emphasize that real models rarely arrive already in chained form. The chapter's hopping-robot and car examples use coordinate changes and then treat nonlinear leftovers by Fourier coefficients. The pedagogical point is not that nonlinear terms vanish, but that the target displacement can be tied to a specific harmonic coefficient. Students should see the Fourier coefficient as a correction, not a decorative analysis step.</aside>
+    </section>
+
+    <section data-label="Conversion To Chained Form">
+      <div class="slide">
+        <div class="title-row"><h2>Conversion To Chained Form</h2><span class="tag">Chart and input transform</span></div>
+        <div class="grid2 left">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Question</h3>
+              <p class="formula compact">\( \dot q=g_1(q)u_1+\cdots+g_m(q)u_m,\qquad v=\beta(q)u,\quad z=\phi(q) \)</p>
+              <p>Can the transformed system be written as a one-chain?</p>
+            </div>
+            <div class="panel teal">
+              <h3>Sufficient Two-Input Tests</h3>
+              <ul>
+                <li>Relevant distributions have constant rank.</li>
+                <li>The nested distributions are involutive.</li>
+                <li>Functions \(h_1,h_2\) satisfy the differential constraints.</li>
+              </ul>
+            </div>
+            <div class="panel amber">
+              <h3>Car Example</h3>
+              <p class="formula compact">\( z_1=x,\quad z_2=\ell^{-1}\sec^2\theta\tan\phi,\quad z_3=\tan\theta,\quad z_4=y \)</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Conversion from original coordinates to chained coordinates">
+              <defs>
+                <marker id="arrow10" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"/></marker>
+              </defs>
+              <rect x="55" y="90" width="260" height="150" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <text x="185" y="146" text-anchor="middle" font-size="30" font-weight="700" fill="#2563EB">original q</text>
+              <text x="185" y="184" text-anchor="middle" font-size="24" fill="#475569">physical coordinates</text>
+              <rect x="505" y="90" width="260" height="150" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <text x="635" y="146" text-anchor="middle" font-size="30" font-weight="700" fill="#0F766E">chain z</text>
+              <text x="635" y="184" text-anchor="middle" font-size="24" fill="#475569">model coordinates</text>
+              <path d="M315 165 C385 115, 440 115, 505 165" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow10)"/>
+              <text x="410" y="110" text-anchor="middle" font-size="25" fill="#1E3A8A">z = phi(q)</text>
+              <path d="M315 205 C390 285, 440 285, 505 205" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow10)"/>
+              <text x="410" y="302" text-anchor="middle" font-size="25" fill="#B45309">v = beta(q)u</text>
+              <rect x="250" y="380" width="320" height="86" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <text x="410" y="416" text-anchor="middle" font-size="26" font-weight="700" fill="#1E3A8A">involutive distributions</text>
+              <text x="410" y="447" text-anchor="middle" font-size="22" fill="#64748B">Frobenius supplies compatible level functions</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: conversion to chained form and kinematic car example, printed pp. 369-371; PDF pp. 387-389.</p>
+      </div>
+      <aside class="speaker-notes">This is the coordinate-hygiene slide. A nonlinear system can be steered with chained-form tools only after a legitimate state diffeomorphism and input transformation have been found. The sufficient conditions use constant-rank involutive distributions and functions h1 and h2 supplied by Frobenius-style reasoning. The car example is useful because the abstract conditions become a concrete change of variables.</aside>
+    </section>
+
+    <section data-label="Optimal Steering Beyond Model Systems">
+      <div class="slide">
+        <div class="title-row"><h2>Optimal Steering Beyond Model Systems</h2><span class="tag">Necessary conditions</span></div>
+        <div class="grid2">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Driftless System</h3>
+              <p class="formula compact">\( \dot q=\sum_{i=1}^m g_i(q)u_i,\qquad \min \frac12\int_0^1\|u(t)\|^2\,dt \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Optimal Control Law</h3>
+              <p class="formula compact">\( u_i=-p^Tg_i(q),\qquad \dot u=\Omega(q,p)u \)</p>
+              <p class="mini">The entries of \(\Omega\) are bracket pairings such as \(p^T[g_i,g_j]\).</p>
+            </div>
+            <div class="panel amber">
+              <h3>Invariant</h3>
+              <p class="formula compact">\( \Omega^T=-\Omega \Rightarrow \|u(t)\|=\|u(0)\| \)</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Optimal controls rotate with time varying skew matrix">
+              <defs>
+                <marker id="arrow11" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#2563EB"/></marker>
+              </defs>
+              <circle cx="410" cy="245" r="170" fill="#EFF6FF" stroke="#CBD5E1" stroke-width="4"/>
+              <path d="M240 245 C275 150, 350 100, 455 95" fill="none" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow11)"/>
+              <path d="M455 95 C560 110, 635 185, 650 292" fill="none" stroke="#0F766E" stroke-width="7" marker-end="url(#arrow11)"/>
+              <path d="M650 292 C600 388, 500 430, 390 415" fill="none" stroke="#B45309" stroke-width="7" marker-end="url(#arrow11)"/>
+              <line x1="410" y1="245" x2="540" y2="136" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow11)"/>
+              <text x="565" y="133" font-size="29" fill="#1E3A8A" font-weight="700">u(t)</text>
+              <text x="410" y="475" text-anchor="middle" font-size="28" fill="#1E3A8A" font-weight="700">constant norm does not imply simple frequency</text>
+              <text x="410" y="512" text-anchor="middle" font-size="23" fill="#64748B">Ritz approximation turns the search into coefficients in an L2 basis</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: optimal steering and Ritz approximation, printed pp. 371-375; PDF pp. 389-393.</p>
+      </div>
+      <aside class="speaker-notes">For a general driftless nonholonomic system, the closed-form sinusoid story becomes a necessary-condition story. The Hamiltonian calculation says the optimal controls equal minus the costate paired with each input vector field. Differentiating produces a skew-symmetric Omega matrix built from Lie brackets, so the control norm remains constant even when the actual time dependence is no longer a simple fixed-frequency sinusoid.</aside>
+    </section>
+
+    <section data-label="Philip Hall Coordinates">
+      <div class="slide">
+        <div class="title-row"><h2>Philip Hall Coordinates</h2><span class="tag">Nilpotent bookkeeping</span></div>
+        <div class="grid2 left">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Basis For Independent Words</h3>
+              <p>For a nilpotent controllability Lie algebra, choose a Philip Hall basis \(B_1,\ldots,B_s\) of bracket words up to finite order.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Flow Coordinates</h3>
+              <p class="formula compact">\( S_t(q)=e^{h_s(t)B_s}\cdots e^{h_2(t)B_2}e^{h_1(t)B_1}(q) \)</p>
+            </div>
+            <div class="panel violet">
+              <h3>Canonical Equation</h3>
+              <p class="formula compact">\( \dot h=Q(h)v,\qquad h(0)=0 \)</p>
+              <p class="mini">Only the first \(m\) inputs are physical; bracket inputs are synthesized by words.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Philip Hall basis tree">
+              <defs>
+                <marker id="arrow12" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"/></marker>
+              </defs>
+              <circle cx="270" cy="90" r="42" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <circle cx="550" cy="90" r="42" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <text x="270" y="100" text-anchor="middle" font-size="26" font-weight="700" fill="#2563EB">B1</text>
+              <text x="550" y="100" text-anchor="middle" font-size="26" font-weight="700" fill="#2563EB">B2</text>
+              <circle cx="410" cy="240" r="48" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <text x="410" y="250" text-anchor="middle" font-size="26" font-weight="700" fill="#0F766E">B3</text>
+              <text x="410" y="305" text-anchor="middle" font-size="22" fill="#64748B">[g1,g2]</text>
+              <circle cx="300" cy="405" r="48" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <circle cx="520" cy="405" r="48" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <text x="300" y="415" text-anchor="middle" font-size="26" font-weight="700" fill="#6D28D9">B4</text>
+              <text x="520" y="415" text-anchor="middle" font-size="26" font-weight="700" fill="#6D28D9">B5</text>
+              <text x="300" y="470" text-anchor="middle" font-size="20" fill="#64748B">[g1,[g1,g2]]</text>
+              <text x="520" y="470" text-anchor="middle" font-size="20" fill="#64748B">[g2,[g1,g2]]</text>
+              <line x1="300" y1="122" x2="378" y2="205" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow12)"/>
+              <line x1="520" y1="122" x2="442" y2="205" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow12)"/>
+              <line x1="386" y1="284" x2="326" y2="363" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow12)"/>
+              <line x1="434" y1="284" x2="494" y2="363" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow12)"/>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: Philip Hall coordinates and Chen-Fliess-Sussmann equation, printed pp. 375-379; PDF pp. 393-397.</p>
+      </div>
+      <aside class="speaker-notes">Philip Hall coordinates are a way to make bracket bookkeeping finite and ordered for nilpotent systems. The Hall basis records only independent Lie words after skew-symmetry and Jacobi identities have been handled. In those coordinates every flow can be represented as a product of exponentials along Hall basis elements, while fictitious bracket inputs are introduced temporarily and later synthesized from real controls.</aside>
+    </section>
+
+    <section data-label="BCH Words Generate Brackets">
+      <div class="slide">
+        <div class="title-row"><h2>BCH Words Generate Brackets</h2><span class="tag">Words to motion</span></div>
+        <div class="grid2">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Composition Formula</h3>
+              <p class="formula compact">\( \exp X\,\exp Y=\exp\!\left(X+Y+\frac12[X,Y]+\frac1{12}([X,[X,Y]]-[Y,[X,Y]])+\cdots\right) \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Bracket Word</h3>
+              <p class="formula compact">\( \exp(\epsilon X)\exp(\epsilon Y)\exp(-\epsilon X)\exp(-\epsilon Y)=\exp(\epsilon^2[X,Y]+O(\epsilon^3)) \)</p>
+            </div>
+            <div class="panel amber">
+              <h3>Nilpotent Advantage</h3>
+              <p>If the Lie algebra terminates after finite order, the word calculus terminates too.</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Flow word cancels first-order motion and leaves bracket">
+              <defs>
+                <marker id="arrow13a" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#2563EB"/></marker>
+                <marker id="arrow13b" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#0F766E"/></marker>
+              </defs>
+              <path d="M225 340 H445" stroke="#2563EB" stroke-width="8" marker-end="url(#arrow13a)"/>
+              <path d="M445 340 V140" stroke="#0F766E" stroke-width="8" marker-end="url(#arrow13b)"/>
+              <path d="M445 140 H225" stroke="#2563EB" stroke-width="8" marker-end="url(#arrow13a)"/>
+              <path d="M225 140 V340" stroke="#0F766E" stroke-width="8" marker-end="url(#arrow13b)"/>
+              <circle cx="225" cy="340" r="12" fill="#1E3A8A"/>
+              <circle cx="456" cy="129" r="12" fill="#B45309"/>
+              <path d="M225 340 C305 250, 370 200, 456 129" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10" marker-end="url(#arrow13a)"/>
+              <text x="335" y="385" text-anchor="middle" font-size="26" fill="#2563EB" font-weight="700">+X</text>
+              <text x="478" y="245" font-size="26" fill="#0F766E" font-weight="700">+Y</text>
+              <text x="335" y="121" text-anchor="middle" font-size="26" fill="#2563EB" font-weight="700">-X</text>
+              <text x="178" y="245" font-size="26" fill="#0F766E" font-weight="700">-Y</text>
+              <text x="560" y="230" font-size="31" fill="#B45309" font-weight="700">net bracket</text>
+              <text x="560" y="265" font-size="26" fill="#64748B">lower-order terms cancel</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: Campbell-Baker-Hausdorff formula and piecewise-constant inputs, printed pp. 379-381; PDF pp. 397-399.</p>
+      </div>
+      <aside class="speaker-notes">The Campbell-Baker-Hausdorff formula is the algebraic reason a word of flows can generate a bracket direction. The simple commutator loop cancels the first-order motion and leaves a second-order bracket term. Higher-order words work similarly, but nilpotency is the feature that keeps the expansion finite. Without nilpotency the same idea becomes an approximation scheme rather than an exact finite recipe.</aside>
+    </section>
+
+    <section data-label="Dynamic Finger Repositioning">
+      <div class="slide">
+        <div class="title-row"><h2>Dynamic Finger Repositioning</h2><span class="tag">Rolling contact</span></div>
+        <div class="grid2 left">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Grasp Kinematic Constraint</h3>
+              <p class="formula compact">\( J_h(\theta,x)\dot\theta=G^T(\theta,x)\dot x \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Control Form</h3>
+              <p class="formula compact">\( \dot x=u_1,\qquad \dot\theta=J_h^+G^T u_1+Ku_2 \)</p>
+              <p class="mini">Columns of \(K\) span the null space of the hand Jacobian.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Two Cases</h3>
+              <ul>
+                <li>No redundancy: contact changes require closed object loops.</li>
+                <li>Redundancy: internal motions reposition contacts with \( \dot x=0 \).</li>
+              </ul>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 560" width="820" height="560" role="img" aria-label="Three fingers contacting a grasped object">
+              <defs>
+                <marker id="arrow14" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="#0F766E"/></marker>
+              </defs>
+              <rect x="300" y="190" width="220" height="170" rx="8" fill="#F8FAFC" stroke="#1E3A8A" stroke-width="5"/>
+              <text x="410" y="285" text-anchor="middle" font-size="32" font-weight="700" fill="#1E3A8A">object</text>
+              <path d="M205 105 C245 170, 260 215, 310 225" fill="none" stroke="#2563EB" stroke-width="18" stroke-linecap="round"/>
+              <path d="M410 70 C410 145, 410 180, 410 196" fill="none" stroke="#2563EB" stroke-width="18" stroke-linecap="round"/>
+              <path d="M615 105 C575 170, 560 215, 510 225" fill="none" stroke="#2563EB" stroke-width="18" stroke-linecap="round"/>
+              <circle cx="310" cy="225" r="16" fill="#0F766E"/>
+              <circle cx="410" cy="196" r="16" fill="#0F766E"/>
+              <circle cx="510" cy="225" r="16" fill="#0F766E"/>
+              <path d="M310 225 C285 272, 285 322, 322 360" fill="none" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow14)"/>
+              <path d="M410 196 C450 230, 455 285, 420 330" fill="none" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow14)"/>
+              <path d="M510 225 C555 270, 555 335, 505 372" fill="none" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow14)"/>
+              <text x="410" y="455" text-anchor="middle" font-size="28" fill="#1E3A8A" font-weight="700">internal contact motions can be planned as nonholonomic steering</text>
+            </svg>
+          </div>
+        </div>
+        <p class="source">Grounding: dynamic finger repositioning problem, printed pp. 381-384; PDF pp. 399-402.</p>
+      </div>
+      <aside class="speaker-notes">Return to manipulation by interpreting rolling contact as a nonholonomic planning problem. The grasp constraint relates finger velocities and object velocity. If there is a null space in the hand Jacobian, internal motions can move contacts while keeping the object fixed. This gives a clean reason to study a single rolling fingertip: the redundant degrees decouple when object motion is held at zero.</aside>
+    </section>
+
+    <section data-label="Geometric Phase From Rolling Loops">
+      <div class="slide">
+        <div class="title-row"><h2>Geometric Phase From Rolling Loops</h2><span class="tag">Area becomes angle</span></div>
+        <div class="grid2 right">
+          <figure>
+            <img class="asset tall" src="../figures/geometric-phase-fingertip.png" alt="Geometric phase fingertip loop">
+            <figcaption class="caption">Generated artifact: a rolling loop accumulates orientation change proportional to signed enclosed area.</figcaption>
+          </figure>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Rolling Lift</h3>
+              <p class="formula compact">\( \dot\alpha_f=u,\quad \dot\alpha_o=M_o^{-1}R_\psi M_f u,\quad \dot\psi=(T_f+T_oR_\psi)M_f u \)</p>
+            </div>
+            <div class="panel teal">
+              <h3>Spherical Finger On Plane</h3>
+              <p class="formula compact">\( \dot\psi=-\sin u_f\,\dot v_f \)</p>
+            </div>
+            <div class="panel amber">
+              <h3>Gauss-Bonnet Phase</h3>
+              <p class="formula large">\( \Delta\psi=-\operatorname{Area}(\Omega) \)</p>
+            </div>
+          </div>
+        </div>
+        <p class="source">Artifact: ../figures/geometric-phase-fingertip.png. Grounding: geometric phase algorithm, printed pp. 384-387; PDF pp. 402-405.</p>
+      </div>
+      <aside class="speaker-notes">The geometric-phase figure connects the chapter's area idea back to rolling contact. A closed path of the spherical fingertip can return the contact coordinates while changing the contact angle. The Gauss-Bonnet relation says that this phase is the negative area enclosed on the sphere. Stress that the accumulated phase is history-dependent; the loop is not wasted motion.</aside>
+    </section>
+
+    <section data-label="Constructive Controllability Checklist">
+      <div class="slide alt">
+        <div class="title-row"><h2>Constructive Controllability Checklist</h2><span class="tag">Notebook audit</span></div>
+        <div class="content">
+          <div class="grid4">
+            <div class="panel blue"><h3>1. Declare chart</h3><p>Which coordinates and input transformation make the construction legible?</p></div>
+            <div class="panel teal"><h3>2. Name direction</h3><p>Is the target direct, first bracket, nested bracket, or phase coordinate?</p></div>
+            <div class="panel amber"><h3>3. Cancel lower order</h3><p>Does the loop, harmonic, or word return previously steered coordinates?</p></div>
+            <div class="panel violet"><h3>4. Check invariant</h3><p>Compare endpoint, area, coefficient, rank, or phase with a scalar test.</p></div>
+          </div>
+          <div class="panel slate">
+            <div class="route">
+              <span class="node">Brockett loop</span><span class="arrow">-&gt;</span>
+              <span class="node">chained harmonic</span><span class="arrow">-&gt;</span>
+              <span class="node">Hall word</span><span class="arrow">-&gt;</span>
+              <span class="node">rolling phase</span>
+            </div>
+            <p class="mini" style="margin-top: 18px;">Inspection links: <a href="../checks/final-sanity.json">final-sanity.json</a> records endpoint and artifact checks; <a href="../labs/applied-lab.json">applied-lab.json</a> asks for a parameter change and invariant explanation.</p>
+          </div>
+          <div class="panel teal">
+            <p class="formula compact">Notebook check: endpoint \( (0,0,1.005303) \), line-integral error \(4.44\cdot 10^{-16}\), visual artifact count \(3\).</p>
+          </div>
+        </div>
+        <p class="source">Grounding: notebook final sanity check and applied lab for chapter-08.</p>
+      </div>
+      <aside class="speaker-notes">Close with the audit habit that the notebook encourages. A steering construction should declare its chart, identify the bracket or phase coordinate being targeted, use a loop or word whose lower-order terms cancel, and compare the endpoint with a scalar invariant. The linked final sanity and lab JSON files turn those claims into inspectable artifacts rather than purely verbal assurances.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

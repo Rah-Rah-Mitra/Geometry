@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 03 Triangulations Lecture</title>
+  <meta name="course" content="Discrete and Computational Geometry">
+  <meta name="chapter_id" content="chapter-03-triangulations">
+  <meta name="notebook_path" content="Discrete-and-Computational-Geometry/chapter-03-triangulations/03-triangulations.ipynb">
+  <meta name="source_span" content="printed pages 65-106">
+  <meta name="source_pdf" content="Discrete-and-Computational-Geometry/Discrete and Computational Geometry, 2nd Edition.pdf">
+  <meta name="design_system_version" content="geometry-lecture-design-2026-05">
+  <style>
+    :root {
+      --slide-bg: #ffffff;
+      --slide-bg-alt: #f8fafc;
+      --slide-ink: #111827;
+      --slide-muted: #475569;
+      --slide-dimmed: #64748b;
+      --slide-accent: #1e3a8a;
+      --slide-blue: #2563eb;
+      --slide-teal: #0f766e;
+      --slide-amber: #b45309;
+      --slide-violet: #6d28d9;
+      --slide-border: #cbd5e1;
+      --slide-border-light: #e2e8f0;
+      --font-sans: Source\ Sans\ 3, Arial, sans-serif;
+      --font-math: STIX\ Two\ Text, Georgia, serif;
+      --font-code: JetBrains\ Mono, Consolas, monospace;
+    }
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      padding: 70px 96px 62px;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+    .mesh-bg {
+      background-image:
+        linear-gradient(28deg, transparent 0 48%, rgba(30,58,138,.055) 49% 51%, transparent 52%),
+        linear-gradient(152deg, transparent 0 48%, rgba(15,118,110,.055) 49% 51%, transparent 52%),
+        linear-gradient(90deg, transparent 0 49%, rgba(148,163,184,.055) 50%, transparent 51%);
+      background-size: 190px 150px, 210px 160px, 140px 140px;
+      background-blend-mode: normal;
+    }
+    .content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; gap: 28px; }
+    .title-slide { justify-content: center; text-align: left; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 68px; line-height: 1.05; font-weight: 700; letter-spacing: 0; max-width: 1180px; }
+    h2 { font-size: 50px; line-height: 1.1; font-weight: 700; color: var(--slide-ink); }
+    h3 { font-size: 29px; line-height: 1.2; font-weight: 700; color: var(--slide-accent); }
+    .eyebrow { font-size: 24px; font-weight: 700; color: var(--slide-accent); text-transform: uppercase; letter-spacing: .08em; }
+    .subtitle { font-size: 31px; color: var(--slide-muted); line-height: 1.35; max-width: 1080px; }
+    .meta-line { font-size: 23px; color: var(--slide-dimmed); }
+    .rule { width: 160px; height: 5px; background: var(--slide-teal); border-radius: 3px; margin: 24px 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; flex: 1; min-height: 0; align-items: stretch; }
+    .grid-55 { display: grid; grid-template-columns: 55% 1fr; gap: 46px; flex: 1; min-height: 0; align-items: center; }
+    .grid-60 { display: grid; grid-template-columns: 60% 1fr; gap: 42px; flex: 1; min-height: 0; align-items: center; }
+    .stack { display: flex; flex-direction: column; gap: 20px; }
+    .bullets { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+    .bullets li { position: relative; padding-left: 30px; font-size: 28px; line-height: 1.36; }
+    .bullets li::before { content: ""; position: absolute; left: 0; top: .58em; width: 10px; height: 10px; border-radius: 50%; background: var(--slide-blue); }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .formula { font-family: var(--font-math); font-size: 40px; line-height: 1.25; text-align: center; color: var(--slide-accent); }
+    .box { border-left: 5px solid var(--slide-blue); background: #eff6ff; padding: 22px 26px; border-radius: 8px; font-size: 27px; line-height: 1.36; }
+    .box.theorem { border-color: var(--slide-accent); background: #eef2ff; }
+    .box.example { border-color: var(--slide-teal); background: #f0fdfa; }
+    .box.warning { border-color: var(--slide-amber); background: #fffbeb; }
+    .box.exercise { border-color: var(--slide-violet); background: #f5f3ff; }
+    .box strong { color: var(--slide-accent); }
+    .card { background: var(--slide-bg-alt); border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 24px; }
+    .caption { font-size: 22px; color: var(--slide-dimmed); line-height: 1.3; }
+    .tag { display: inline-flex; align-items: center; border: 1px solid var(--slide-border); border-radius: 6px; padding: 5px 10px; font-family: var(--font-code); font-size: 20px; color: var(--slide-muted); background: #fff; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .two-rows { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    table { border-collapse: collapse; width: 100%; font-size: 25px; }
+    th { text-align: left; color: var(--slide-accent); border-bottom: 2px solid var(--slide-border); padding: 10px 14px; }
+    td { border-bottom: 1px solid var(--slide-border-light); padding: 10px 14px; vertical-align: top; }
+    aside.speaker-notes { display: none; }
+    svg { max-width: 100%; height: auto; }
+    .label { font-family: var(--font-sans); font-size: 24px; font-weight: 700; fill: var(--slide-muted); }
+    .small-label { font-family: var(--font-sans); font-size: 20px; font-weight: 600; fill: var(--slide-dimmed); }
+    .pt { fill: var(--slide-ink); }
+    .blue { stroke: var(--slide-blue); }
+    .teal { stroke: var(--slide-teal); }
+    .amber { stroke: var(--slide-amber); }
+    .violet { stroke: var(--slide-violet); }
+    .edge { stroke: #334155; stroke-width: 4; fill: none; stroke-linecap: round; }
+    .aux { stroke: #94a3b8; stroke-width: 3; fill: none; stroke-dasharray: 10 8; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section data-label="Title">
+    <div class="slide mesh-bg">
+      <div class="content title-slide">
+        <div class="eyebrow">Discrete and Computational Geometry</div>
+        <h1>Triangulations</h1>
+        <div class="rule"></div>
+        <p class="subtitle">Finite points and polygons become planar graphs, flip systems, Delaunay certificates, and mesh-quality decisions.</p>
+        <p class="meta-line">Chapter 03 · printed pages 65-106 · notebook 03-triangulations.ipynb</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Open by framing triangulation as a translation device: it turns continuous geometric input into finite cells, edges, counts, and local moves. The lecture will keep returning to a single question: what certificate tells us this triangulation is the right one for the task?</aside>
+  </section>
+
+  <section data-label="Lecture Map">
+    <div class="slide">
+      <div class="content">
+        <h2>One Chapter, Four Certificates</h2>
+        <div class="grid-2">
+          <div class="stack">
+            <div class="box"><strong>Counting certificate.</strong> Euler controls the number of triangles and edges once the hull size is known.</div>
+            <div class="box theorem"><strong>Move certificate.</strong> Flips connect triangulations and expose a navigable state space.</div>
+            <div class="box example"><strong>Metric certificate.</strong> Empty circumcircles choose Delaunay triangles for nearest-neighbor structure.</div>
+            <div class="box warning"><strong>Model certificate.</strong> Pseudotriangles and 3D tetrahedra change the invariant being checked.</div>
+          </div>
+          <svg viewBox="0 0 760 620" role="img" aria-label="Concept map from points to triangulations, flips, Delaunay and special structures">
+            <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <rect x="40" y="40" width="220" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/>
+            <text x="78" y="102" class="label">input points</text>
+            <rect x="500" y="40" width="220" height="110" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"/>
+            <text x="536" y="102" class="label">planar graph</text>
+            <rect x="40" y="430" width="220" height="110" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="3"/>
+            <text x="91" y="492" class="label">flip graph</text>
+            <rect x="500" y="430" width="220" height="110" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+            <text x="548" y="492" class="label">Delaunay</text>
+            <path d="M260 95 C340 90 420 90 500 95" class="aux" marker-end="url(#arrow)"/>
+            <path d="M150 150 C110 250 110 330 150 430" class="aux" marker-end="url(#arrow)"/>
+            <path d="M610 150 C650 250 650 330 610 430" class="aux" marker-end="url(#arrow)"/>
+            <path d="M260 485 C340 520 420 520 500 485" class="aux" marker-end="url(#arrow)"/>
+            <g transform="translate(285 210)">
+              <polygon points="30,160 115,20 235,65 270,190 140,245" fill="rgba(37,99,235,.06)" stroke="#2563eb" stroke-width="4"/>
+              <path d="M30 160 L115 20 L140 245 L30 160 M115 20 L235 65 L140 245 M235 65 L270 190 L140 245" class="edge"/>
+              <circle cx="30" cy="160" r="8" class="pt"/><circle cx="115" cy="20" r="8" class="pt"/><circle cx="235" cy="65" r="8" class="pt"/><circle cx="270" cy="190" r="8" class="pt"/><circle cx="140" cy="245" r="8" class="pt"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide as the route map. Counting, flipping, empty circles, and special structures are not disconnected topics; each is a different kind of evidence about a triangulation. The audience should listen for which certificate is being invoked on each slide.</aside>
+  </section>
+
+  <section data-label="What Is Triangulated">
+    <div class="slide mesh-bg">
+      <div class="content">
+        <h2>What Is Being Triangulated?</h2>
+        <div class="grid-55">
+          <svg viewBox="0 0 900 640" role="img" aria-label="Polygon triangulation and point-set triangulation">
+            <g transform="translate(30 40)">
+              <text x="220" y="30" class="label" text-anchor="middle">polygon</text>
+              <polygon points="40,250 120,80 310,45 455,145 410,355 215,410" fill="#f8fafc" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M40 250 L310 45 M40 250 L455 145 M40 250 L410 355" class="edge blue"/>
+              <circle cx="40" cy="250" r="7"/><circle cx="120" cy="80" r="7"/><circle cx="310" cy="45" r="7"/><circle cx="455" cy="145" r="7"/><circle cx="410" cy="355" r="7"/><circle cx="215" cy="410" r="7"/>
+            </g>
+            <g transform="translate(520 40)">
+              <text x="170" y="30" class="label" text-anchor="middle">point set</text>
+              <path d="M40 260 L95 110 L220 65 L330 160 L300 335 L155 405 Z" fill="rgba(15,118,110,.05)" stroke="#0f766e" stroke-width="5"/>
+              <path d="M40 260 L95 110 L165 205 L40 260 M95 110 L220 65 L165 205 M220 65 L330 160 L165 205 M330 160 L300 335 L165 205 M300 335 L155 405 L165 205 M155 405 L40 260 L165 205 M95 110 L300 335" class="edge"/>
+              <circle cx="40" cy="260" r="7"/><circle cx="95" cy="110" r="7"/><circle cx="220" cy="65" r="7"/><circle cx="330" cy="160" r="7"/><circle cx="300" cy="335" r="7"/><circle cx="155" cy="405" r="7"/><circle cx="165" cy="205" r="7" fill="#b45309"/>
+            </g>
+          </svg>
+          <div class="stack">
+            <div class="box"><strong>Polygon triangulation.</strong> Add noncrossing diagonals until every bounded face is a triangle.</div>
+            <div class="box example"><strong>Point-set triangulation.</strong> Use all sample points as vertices and triangulate the convex hull without crossing edges.</div>
+            <p class="caption">The same word hides two inputs. Later formulas depend on whether the boundary is prescribed or discovered as the convex hull.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Pause on the distinction between polygon input and point-set input. A polygon gives the boundary first; a point set asks the hull to emerge from the data. Both become embedded planar graphs, but the bookkeeping variables have slightly different meanings.</aside>
+  </section>
+
+  <section data-label="Euler Ledger">
+    <div class="slide">
+      <div class="content">
+        <h2>Euler Ledger For A Point Set</h2>
+        <div class="grid-2">
+          <div class="stack">
+            <div class="formula">T = 2n - 2 - h<br>E = 3n - 3 - h</div>
+            <div class="box theorem"><strong>Ledger.</strong> If a planar point-set triangulation has <span class="math">n</span> vertices and <span class="math">h</span> hull vertices, then it has <span class="math">T</span> bounded triangular faces and <span class="math">E</span> edges as shown.</div>
+            <p class="caption">The outside face is the quiet accounting partner. Including it turns the disk relation into the usual sphere-style Euler count.</p>
+          </div>
+          <svg viewBox="0 0 760 620" role="img" aria-label="Triangulation count ledger">
+            <polygon points="90,360 170,130 390,75 600,210 545,460 260,525" fill="rgba(37,99,235,.05)" stroke="#2563eb" stroke-width="5"/>
+            <path d="M90 360 L170 130 L300 285 L90 360 M170 130 L390 75 L300 285 M390 75 L600 210 L300 285 M600 210 L545 460 L300 285 M545 460 L260 525 L300 285 M260 525 L90 360 L300 285 M170 130 L545 460 M390 75 L260 525" class="edge"/>
+            <circle cx="90" cy="360" r="8"/><circle cx="170" cy="130" r="8"/><circle cx="390" cy="75" r="8"/><circle cx="600" cy="210" r="8"/><circle cx="545" cy="460" r="8"/><circle cx="260" cy="525" r="8"/><circle cx="300" cy="285" r="8" fill="#b45309"/>
+            <rect x="470" y="42" width="230" height="118" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+            <text x="495" y="83" class="small-label">n = 7, h = 6</text>
+            <text x="495" y="120" class="small-label">T = 6, E = 12</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Derive the formulas verbally from Euler rather than presenting them as magic. Each bounded triangular face contributes three incidences, hull edges appear once in the boundary correction, and the outside face is what keeps the accounting honest.</aside>
+  </section>
+
+  <section data-label="Algorithms">
+    <div class="slide">
+      <div class="content">
+        <h2>Algorithmic View: Build, Then Certify</h2>
+        <div class="three">
+          <div class="card stack">
+            <h3>1. Choose a structure</h3>
+            <p class="subtitle" style="font-size:27px">Sweep, incremental insertion, divide-and-conquer, or a library reference triangulation.</p>
+            <span class="tag">combinatorial graph</span>
+          </div>
+          <div class="card stack">
+            <h3>2. Extract faces and edges</h3>
+            <p class="subtitle" style="font-size:27px">A drawing is not enough; the output is an adjacency structure with faces.</p>
+            <span class="tag">simplices, edges</span>
+          </div>
+          <div class="card stack">
+            <h3>3. Check invariants</h3>
+            <p class="subtitle" style="font-size:27px">Counts, crossings, hull coverage, and local metric predicates reveal errors.</p>
+            <span class="tag">Euler + predicates</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 1600 330" role="img" aria-label="Pipeline from points to triangulation to checks">
+          <defs><marker id="arrow2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+          <g transform="translate(80 40)">
+            <circle cx="35" cy="160" r="8"/><circle cx="95" cy="80" r="8"/><circle cx="160" cy="205" r="8"/><circle cx="230" cy="120" r="8"/><circle cx="280" cy="230" r="8"/>
+            <text x="100" y="290" class="label">points</text>
+          </g>
+          <path d="M430 185 L610 185" class="aux" marker-end="url(#arrow2)"/>
+          <g transform="translate(650 40)">
+            <polygon points="35,160 95,80 230,120 280,230 160,205" fill="rgba(15,118,110,.05)" stroke="#0f766e" stroke-width="4"/>
+            <path d="M35 160 L95 80 L160 205 L35 160 M95 80 L230 120 L160 205 M230 120 L280 230 L160 205" class="edge"/>
+            <text x="75" y="290" class="label">triangulation</text>
+          </g>
+          <path d="M990 185 L1170 185" class="aux" marker-end="url(#arrow2)"/>
+          <g transform="translate(1220 50)">
+            <rect x="0" y="0" width="260" height="210" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="26" y="55" class="small-label">no crossings</text>
+            <text x="26" y="100" class="small-label">Euler count</text>
+            <text x="26" y="145" class="small-label">hull covered</text>
+            <text x="26" y="190" class="small-label">local tests</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Emphasize that the computational object is not the plotted picture. The plot is a witness for humans, while the edge set, face list, and invariant checks are the reproducible mathematical output. Ask students where each possible bug would appear: a crossing violates geometry, a wrong face count violates Euler, and a missing hull edge violates coverage.</aside>
+  </section>
+
+  <section data-label="A Flip">
+    <div class="slide mesh-bg">
+      <div class="content">
+        <h2>A Flip Is A Local Rewrite</h2>
+        <div class="grid-2">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Quadrilateral flip from one diagonal to another">
+            <polygon points="130,410 230,115 575,155 630,410" fill="#f8fafc" stroke="#1e3a8a" stroke-width="5"/>
+            <path d="M130 410 L575 155" stroke="#2563eb" stroke-width="8"/>
+            <path d="M230 115 L630 410" stroke="#b45309" stroke-width="8" stroke-dasharray="14 12"/>
+            <circle cx="130" cy="410" r="9"/><circle cx="230" cy="115" r="9"/><circle cx="575" cy="155" r="9"/><circle cx="630" cy="410" r="9"/>
+            <text x="250" y="292" class="label" fill="#2563eb">remove</text>
+            <text x="420" y="322" class="label" fill="#b45309">insert</text>
+          </svg>
+          <div class="stack">
+            <div class="box theorem"><strong>Flip move.</strong> In a convex quadrilateral formed by two adjacent triangles, replace one diagonal by the other.</div>
+            <ul class="bullets">
+              <li>The vertex set does not change.</li>
+              <li>Only two triangles are replaced.</li>
+              <li>Repeated flips connect the triangulation space for a convex polygon.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Describe a flip as the smallest possible edit that still changes a triangulation. This is the move that lets algorithms improve a mesh locally and lets the theory discuss connectivity among all triangulations. Point out that all four vertices of the quadrilateral remain fixed, so the operation changes incidence data without changing the input set.</aside>
+  </section>
+
+  <section data-label="Pentagon Flip Graph">
+    <div class="slide">
+      <div class="content">
+        <h2>The Pentagon Already Contains The Associahedron</h2>
+        <div class="grid-60">
+          <svg viewBox="0 0 980 650" role="img" aria-label="Five triangulations of a pentagon arranged as a flip cycle">
+            <g transform="translate(410 300)">
+              <circle cx="0" cy="0" r="210" fill="none" stroke="#cbd5e1" stroke-width="4"/>
+              <g id="nodeA"><circle cx="0" cy="-210" r="54" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/></g>
+              <circle cx="200" cy="-65" r="54" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+              <circle cx="124" cy="170" r="54" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+              <circle cx="-124" cy="170" r="54" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+              <circle cx="-200" cy="-65" r="54" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+              <text x="-14" y="-202" class="label">1</text><text x="188" y="-57" class="label">2</text><text x="112" y="178" class="label">3</text><text x="-136" y="178" class="label">4</text><text x="-212" y="-57" class="label">5</text>
+            </g>
+            <g transform="translate(710 210) scale(1.45)">
+              <polygon points="40,120 75,35 160,30 205,105 125,170" fill="#fff" stroke="#1e3a8a" stroke-width="3"/>
+              <path d="M40 120 L160 30 M40 120 L205 105" stroke="#0f766e" stroke-width="3"/>
+              <circle cx="40" cy="120" r="4"/><circle cx="75" cy="35" r="4"/><circle cx="160" cy="30" r="4"/><circle cx="205" cy="105" r="4"/><circle cx="125" cy="170" r="4"/>
+            </g>
+          </svg>
+          <div class="stack">
+            <div class="box example"><strong>Convex pentagon.</strong> There are five triangulations, and a single flip moves from each one to two neighbors.</div>
+            <div class="formula">C_3 = 5</div>
+            <p class="caption">For larger convex polygons, the flip graph grows into the 1-skeleton of an associahedron.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use the pentagon as the smallest nontrivial state space. Students can see every triangulation at once, every edge in the graph is a flip, and the cycle foreshadows the associahedron without requiring a high-dimensional picture.</aside>
+  </section>
+
+  <section data-label="Why Delaunay">
+    <div class="slide">
+      <div class="content">
+        <h2>Why Prefer One Triangulation?</h2>
+        <div class="grid-2">
+          <div class="stack">
+            <div class="box warning"><strong>Not all triangulations are equally useful.</strong> Some contain long, skinny triangles that behave poorly for interpolation, mesh quality, and numerical work.</div>
+            <ul class="bullets">
+              <li>Delaunay triangulations are selected by local circle tests.</li>
+              <li>The same structure is dual to Voronoi diagrams.</li>
+              <li>The criterion is metric, not just combinatorial.</li>
+            </ul>
+          </div>
+          <svg viewBox="0 0 760 590" role="img" aria-label="Comparison of skinny and better triangle choices">
+            <g transform="translate(40 70)">
+              <text x="170" y="0" class="label" text-anchor="middle">skinny choice</text>
+              <polygon points="35,360 120,80 330,330" fill="rgba(180,83,9,.08)" stroke="#b45309" stroke-width="5"/>
+              <circle cx="35" cy="360" r="8"/><circle cx="120" cy="80" r="8"/><circle cx="330" cy="330" r="8"/>
+              <path d="M35 360 L330 330" stroke="#b45309" stroke-width="6"/>
+            </g>
+            <g transform="translate(405 70)">
+              <text x="170" y="0" class="label" text-anchor="middle">circle-tested choice</text>
+              <polygon points="45,330 150,105 330,345" fill="rgba(15,118,110,.08)" stroke="#0f766e" stroke-width="5"/>
+              <circle cx="175" cy="273" r="190" fill="none" stroke="#0f766e" stroke-width="4" stroke-dasharray="12 10"/>
+              <circle cx="45" cy="330" r="8"/><circle cx="150" cy="105" r="8"/><circle cx="330" cy="345" r="8"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">This is the transition from counting all triangulations to choosing a useful one. The Delaunay criterion is introduced as a local geometric preference that tends to avoid poor angles and supports nearest-neighbor structure. Contrast the two drawings by asking which triangle would be more stable for interpolation, then connect that visual discomfort to a formal circle predicate.</aside>
+  </section>
+
+  <section data-label="Empty Circle">
+    <div class="slide mesh-bg">
+      <div class="content">
+        <h2>The Empty-Circle Certificate</h2>
+        <div class="grid-55">
+          <svg viewBox="0 0 920 650" role="img" aria-label="Delaunay triangle with empty circumcircle">
+            <circle cx="450" cy="335" r="230" fill="rgba(180,83,9,.04)" stroke="#b45309" stroke-width="5" stroke-dasharray="14 10"/>
+            <polygon points="290,500 388,125 642,415" fill="rgba(37,99,235,.09)" stroke="#2563eb" stroke-width="6"/>
+            <circle cx="290" cy="500" r="10"/><circle cx="388" cy="125" r="10"/><circle cx="642" cy="415" r="10"/>
+            <circle cx="170" cy="310" r="8" fill="#64748b"/><circle cx="710" cy="180" r="8" fill="#64748b"/><circle cx="760" cy="520" r="8" fill="#64748b"/><circle cx="220" cy="105" r="8" fill="#64748b"/>
+            <text x="495" y="100" class="label" fill="#b45309">circumcircle</text>
+            <path d="M520 110 C500 160 480 205 470 250" class="aux amber"/>
+          </svg>
+          <div class="stack">
+            <div class="box theorem"><strong>Delaunay condition.</strong> A triangle is locally certified when no other input point lies strictly inside its circumcircle.</div>
+            <div class="formula">p \notin \operatorname{int} C(abc)</div>
+            <p class="caption">Points on the circle create degeneracy; tiny perturbations may change which diagonal is selected.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Define the certificate in words before pointing at the formula. The circle is not decorative: it is the local predicate that a triangulation algorithm can check and repair with flips. Make the strict interior condition explicit, because points exactly on the circle indicate degeneracy and may allow more than one valid Delaunay triangulation.</aside>
+  </section>
+
+  <section data-label="Illegal Edge Flip">
+    <div class="slide">
+      <div class="content">
+        <h2>Illegal Edges Are Fixed By Flips</h2>
+        <div class="grid-2">
+          <svg viewBox="0 0 780 590" role="img" aria-label="Illegal diagonal before and legal diagonal after a Delaunay flip">
+            <g transform="translate(20 70)">
+              <text x="180" y="0" class="label" text-anchor="middle">before</text>
+              <polygon points="60,350 150,90 340,150 290,410" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M60 350 L340 150" stroke="#b45309" stroke-width="8"/>
+              <circle cx="205" cy="247" r="190" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="12 10"/>
+              <circle cx="290" cy="410" r="10" fill="#b45309"/>
+              <circle cx="60" cy="350" r="8"/><circle cx="150" cy="90" r="8"/><circle cx="340" cy="150" r="8"/><circle cx="290" cy="410" r="8"/>
+            </g>
+            <g transform="translate(410 70)">
+              <text x="180" y="0" class="label" text-anchor="middle">after</text>
+              <polygon points="60,350 150,90 340,150 290,410" fill="#fff" stroke="#1e3a8a" stroke-width="5"/>
+              <path d="M150 90 L290 410" stroke="#0f766e" stroke-width="8"/>
+              <circle cx="60" cy="350" r="8"/><circle cx="150" cy="90" r="8"/><circle cx="340" cy="150" r="8"/><circle cx="290" cy="410" r="8"/>
+            </g>
+          </svg>
+          <div class="stack">
+            <div class="box warning"><strong>Illegal diagonal.</strong> If the opposite point enters the circumcircle of a triangle, the shared diagonal fails the Delaunay test.</div>
+            <div class="box example"><strong>Repair.</strong> Flip the diagonal of the quadrilateral. The operation is local, so the algorithm can march through certificates.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make the before-and-after interpretation explicit. A Delaunay algorithm does not need to rebuild the whole triangulation after every local failure; it can flip the offending diagonal and then recheck nearby certificates. The important teaching point is locality: only triangles adjacent to the changed edge need immediate attention after the repair.</aside>
+  </section>
+
+  <section data-label="Voronoi Shadow">
+    <div class="slide">
+      <div class="content">
+        <h2>Delaunay Has A Voronoi Shadow</h2>
+        <div class="grid-55">
+          <svg viewBox="0 0 920 650" role="img" aria-label="Delaunay edges crossing Voronoi edges">
+            <rect x="60" y="60" width="760" height="520" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
+            <path d="M80 330 H820 M350 70 L260 580 M560 80 L650 580 M80 170 L820 485 M120 545 L785 105" stroke="#94a3b8" stroke-width="4" stroke-dasharray="12 10"/>
+            <path d="M185 185 L390 250 L585 180 L710 390 L435 470 L250 405 L185 185 M390 250 L435 470 M390 250 L710 390 M585 180 L435 470 M250 405 L390 250" class="edge" stroke="#2563eb"/>
+            <circle cx="185" cy="185" r="10"/><circle cx="390" cy="250" r="10"/><circle cx="585" cy="180" r="10"/><circle cx="710" cy="390" r="10"/><circle cx="435" cy="470" r="10"/><circle cx="250" cy="405" r="10"/>
+            <text x="100" y="625" class="small-label">blue: Delaunay graph</text>
+            <text x="435" y="625" class="small-label">dashed: Voronoi edges</text>
+          </svg>
+          <div class="stack">
+            <div class="box theorem"><strong>Dual intuition.</strong> Nearby sites share a Delaunay edge when their Voronoi cells touch.</div>
+            <ul class="bullets">
+              <li>Voronoi asks: which site is nearest?</li>
+              <li>Delaunay asks: which sites should be connected?</li>
+              <li>The chapter prepares the next unit by making this duality visible.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Do not prove the duality here; use it as orientation for why Delaunay structures matter beyond mesh aesthetics. The next chapter will make the Voronoi side primary. For now, highlight the reciprocal questions: Voronoi cells record nearest-site regions, while Delaunay edges record which sites become neighbors through shared cell boundaries.</aside>
+  </section>
+
+  <section data-label="MST Inclusion">
+    <div class="slide mesh-bg">
+      <div class="content">
+        <h2>The MST Hides Inside Delaunay</h2>
+        <div class="grid-2">
+          <svg viewBox="0 0 820 620" role="img" aria-label="Minimum spanning tree edges overlaid on a Delaunay graph">
+            <path d="M115 420 L185 145 L390 110 L625 205 L690 445 L410 520 L230 470 Z" fill="rgba(37,99,235,.04)" stroke="#2563eb" stroke-width="4"/>
+            <path d="M115 420 L185 145 L300 320 L115 420 M185 145 L390 110 L300 320 M390 110 L625 205 L300 320 M625 205 L690 445 L300 320 M690 445 L410 520 L300 320 M410 520 L230 470 L300 320 M230 470 L115 420 L300 320 M185 145 L410 520 M390 110 L230 470" stroke="#cbd5e1" stroke-width="5" fill="none"/>
+            <path d="M185 145 L390 110 L625 205 L690 445 M115 420 L230 470 L410 520 M230 470 L300 320 L390 110" stroke="#0f766e" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <circle cx="115" cy="420" r="9"/><circle cx="185" cy="145" r="9"/><circle cx="390" cy="110" r="9"/><circle cx="625" cy="205" r="9"/><circle cx="690" cy="445" r="9"/><circle cx="410" cy="520" r="9"/><circle cx="230" cy="470" r="9"/><circle cx="300" cy="320" r="9"/>
+          </svg>
+          <div class="stack">
+            <div class="box theorem"><strong>Theorem orientation.</strong> Every Euclidean minimum spanning tree edge is a Delaunay edge.</div>
+            <div class="box example"><strong>Reason.</strong> If an edge has a closer separator point, the cut property can replace it with a shorter connection.</div>
+            <p class="caption">The Delaunay graph is sparse, but rich enough to contain a global optimum from the complete graph.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Stress the surprise: a global object computed from all pairwise distances is contained in a sparse geometric graph. This is a useful algorithmic theme, because Delaunay preprocessing can reduce the search space. Sketch the cut-property intuition: if an MST edge had an intervening closer point in the relevant lens, a shorter replacement would contradict minimality.</aside>
+  </section>
+
+  <section data-label="Pseudotriangles">
+    <div class="slide">
+      <div class="content">
+        <h2>Pseudotriangulations Change The Cell Type</h2>
+        <div class="grid-55">
+          <svg viewBox="0 0 920 650" role="img" aria-label="Pseudotriangle with three convex corners and reflex chains">
+            <path d="M130 440 C210 300 180 150 340 125 C475 100 530 205 650 170 C760 140 800 310 710 430 C610 560 450 520 330 555 C225 585 110 540 130 440 Z" fill="rgba(109,40,217,.06)" stroke="#6d28d9" stroke-width="6"/>
+            <circle cx="130" cy="440" r="10" fill="#6d28d9"/><circle cx="340" cy="125" r="10" fill="#6d28d9"/><circle cx="710" cy="430" r="10" fill="#6d28d9"/>
+            <text x="90" y="420" class="label">corner</text><text x="300" y="96" class="label">corner</text><text x="725" y="438" class="label">corner</text>
+            <path d="M250 330 C325 390 455 385 545 330" class="aux amber"/>
+            <text x="340" y="360" class="small-label">reflex chain</text>
+          </svg>
+          <div class="stack">
+            <div class="box exercise"><strong>Pseudotriangle.</strong> A face may have curved-looking polygonal chains, but only three convex corners.</div>
+            <div class="box"><strong>Pointedness.</strong> A vertex is pointed when some incident angle is larger than <span class="math">\pi</span>.</div>
+            <p class="caption">The chapter’s point is not that every triangulation must be Delaunay; different tasks ask for different cells and ledgers.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide to broaden the word triangulation. Pseudotriangulations keep a triangle-like combinatorial role while allowing faces whose boundaries are chains, which is useful in motion and rigidity contexts. Name the three convex corners and the reflex chains separately so students see why the object is not an ordinary triangle drawn badly.</aside>
+  </section>
+
+  <section data-label="Compatible Triangulations">
+    <div class="slide">
+      <div class="content">
+        <h2>Compatibility Is A Shared Combinatorial Promise</h2>
+        <div class="grid-2">
+          <svg viewBox="0 0 820 580" role="img" aria-label="Two compatible triangulated polygons with matching diagonal pattern">
+            <g transform="translate(60 60)">
+              <polygon points="30,330 90,95 255,40 390,150 345,385 165,430" fill="#fff" stroke="#2563eb" stroke-width="5"/>
+              <path d="M30 330 L255 40 M30 330 L390 150 M30 330 L345 385" class="edge blue"/>
+              <text x="155" y="485" class="label">shape A</text>
+            </g>
+            <g transform="translate(430 60)">
+              <polygon points="45,345 120,60 290,90 385,250 310,420 130,390" fill="#fff" stroke="#0f766e" stroke-width="5"/>
+              <path d="M45 345 L290 90 M45 345 L385 250 M45 345 L310 420" class="edge teal"/>
+              <text x="155" y="485" class="label">shape B</text>
+            </g>
+          </svg>
+          <div class="stack">
+            <div class="box example"><strong>Same diagonal pattern.</strong> Two different geometries can carry the same triangulation graph.</div>
+            <ul class="bullets">
+              <li>Compatibility supports morphing and interpolation.</li>
+              <li>The coordinates change; the incidence data is preserved.</li>
+              <li>The right invariant is combinatorial rather than metric.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Explain compatibility as a promise that corresponding vertices and diagonals match. This is a useful counterweight to Delaunay: sometimes the desired property is not an empty circle, but preservation of a shared combinatorial skeleton. The two shapes can have very different coordinates, yet the same diagonal pattern lets one compare, morph, or interpolate them consistently.</aside>
+  </section>
+
+  <section data-label="3D Warning">
+    <div class="slide mesh-bg">
+      <div class="content">
+        <h2>The 2D Ledger Does Not Transfer Naively To 3D</h2>
+        <div class="grid-2">
+          <div class="stack">
+            <div class="box warning"><strong>Warning.</strong> Tetrahedralizations are not controlled by a single formula depending only on vertices and hull vertices.</div>
+            <table>
+              <thead><tr><th>Dimension</th><th>Cell</th><th>Stable count?</th></tr></thead>
+              <tbody>
+                <tr><td>2D</td><td>triangle</td><td><span class="math">T = 2n - 2 - h</span></td></tr>
+                <tr><td>3D</td><td>tetrahedron</td><td>depends on interior choices, slivers, and compatibility</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <svg viewBox="0 0 760 620" role="img" aria-label="Tetrahedralization warning">
+            <polygon points="145,455 360,105 615,455" fill="rgba(37,99,235,.08)" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="145,455 445,350 615,455 360,105" fill="rgba(15,118,110,.08)" stroke="#0f766e" stroke-width="4"/>
+            <path d="M145 455 L445 350 L360 105 M445 350 L615 455" class="edge"/>
+            <path d="M145 455 L615 455" class="edge"/>
+            <circle cx="145" cy="455" r="9"/><circle cx="360" cy="105" r="9"/><circle cx="615" cy="455" r="9"/><circle cx="445" cy="350" r="9" fill="#b45309"/>
+            <text x="270" y="560" class="label">one tetrahedral choice among many</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">This is a conceptual guardrail. Students often want the planar formula to have a simple spatial sibling, but tetrahedra introduce choices and degeneracies that Euler alone does not tame. Use the diagram to separate topology from geometry: Euler still exists, but it no longer determines the number or quality of tetrahedral cells from vertex and hull counts alone.</aside>
+  </section>
+
+  <section data-label="Worked Micro Lab">
+    <div class="slide">
+      <div class="content">
+        <h2>Worked Micro Lab: What To Check</h2>
+        <div class="two-rows">
+          <div class="card stack"><h3>Euler</h3><p class="subtitle" style="font-size:26px">Compute <span class="math">n, h, E, T</span> and verify the planar formulas.</p></div>
+          <div class="card stack"><h3>Flips</h3><p class="subtitle" style="font-size:26px">Encode triangulations by diagonals and connect states that differ in one quadrilateral.</p></div>
+          <div class="card stack"><h3>Delaunay</h3><p class="subtitle" style="font-size:26px">For each triangle, test whether other points lie inside its circumcircle.</p></div>
+          <div class="card stack"><h3>Special Structures</h3><p class="subtitle" style="font-size:26px">Overlay MST edges or record pointed vertices in a pseudotriangulation ledger.</p></div>
+        </div>
+        <div class="box example"><strong>Notebook alignment.</strong> The lecture mirrors the chapter notebook artifacts: triangulation counts, pentagon flip graph, empty-circle checks, MST inclusion, and a 2D/3D contrast table.</div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Connect the slides to the computational notebook without making the lecture depend on opening it. The same certificates appear there as reproducibility witnesses: counts tables, flip graphs, circle overlays, Delaunay checks, and MST inclusion records.</aside>
+  </section>
+
+  <section data-label="Takeaways">
+    <div class="slide mesh-bg">
+      <div class="content">
+        <h2>Takeaways</h2>
+        <div class="grid-2">
+          <div class="stack">
+            <ul class="bullets">
+              <li>Triangulations convert geometry into finite graph data.</li>
+              <li>Euler counts certify size in planar point-set triangulations.</li>
+              <li>Flips turn triangulations into a connected state space.</li>
+              <li>Delaunay triangulations are certified by empty circumcircles.</li>
+              <li>Special triangulations remind us to choose the invariant for the task.</li>
+            </ul>
+          </div>
+          <svg viewBox="0 0 760 610" role="img" aria-label="Summary icons for triangulation concepts">
+            <g transform="translate(90 75)">
+              <polygon points="20,170 90,40 190,80 220,200 100,250" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+              <path d="M20 170 L90 40 L100 250 L20 170 M90 40 L190 80 L100 250 M190 80 L220 200 L100 250" class="edge"/>
+              <text x="58" y="310" class="label">graph</text>
+            </g>
+            <g transform="translate(420 65)">
+              <polygon points="40,210 120,40 250,80 285,230" fill="#fff" stroke="#1e3a8a" stroke-width="4"/>
+              <path d="M40 210 L250 80" stroke="#2563eb" stroke-width="7"/>
+              <path d="M120 40 L285 230" stroke="#b45309" stroke-width="7" stroke-dasharray="12 8"/>
+              <text x="98" y="320" class="label">flip</text>
+            </g>
+            <g transform="translate(260 330)">
+              <circle cx="160" cy="125" r="115" fill="rgba(15,118,110,.04)" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 8"/>
+              <polygon points="60,180 135,25 260,160" fill="rgba(15,118,110,.08)" stroke="#0f766e" stroke-width="5"/>
+              <text x="54" y="292" class="label">circle test</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close by asking students to name the certificate before naming the object. If they can say whether they are checking counts, flips, empty circles, compatibility, pointedness, or a dimension warning, they have the chapter’s logic.</aside>
+  </section>
+</deck-stage>
+
+<script id="deck-metadata" type="application/json">
+{
+  "course": "Discrete and Computational Geometry",
+  "chapter_id": "chapter-03-triangulations",
+  "notebook_path": "Discrete-and-Computational-Geometry/chapter-03-triangulations/03-triangulations.ipynb",
+  "source_span": "printed pages 65-106",
+  "source_pdf": "Discrete-and-Computational-Geometry/Discrete and Computational Geometry, 2nd Edition.pdf",
+  "design_system_version": "geometry-lecture-design-2026-05"
+}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+  {"slide":1,"label":"Title","notes":"Open by framing triangulation as a translation device: it turns continuous geometric input into finite cells, edges, counts, and local moves. The lecture will keep returning to a single question: what certificate tells us this triangulation is the right one for the task?"},
+  {"slide":2,"label":"Lecture Map","notes":"Use this slide as the route map. Counting, flipping, empty circles, and special structures are not disconnected topics; each is a different kind of evidence about a triangulation. The audience should listen for which certificate is being invoked on each slide."},
+  {"slide":3,"label":"What Is Triangulated","notes":"Pause on the distinction between polygon input and point-set input. A polygon gives the boundary first; a point set asks the hull to emerge from the data. Both become embedded planar graphs, but the bookkeeping variables have slightly different meanings."},
+  {"slide":4,"label":"Euler Ledger","notes":"Derive the formulas verbally from Euler rather than presenting them as magic. Each bounded triangular face contributes three incidences, hull edges appear once in the boundary correction, and the outside face is what keeps the accounting honest."},
+  {"slide":5,"label":"Algorithms","notes":"Emphasize that the computational object is not the plotted picture. The plot is a witness for humans, while the edge set, face list, and invariant checks are the reproducible mathematical output. Ask students where each possible bug would appear: a crossing violates geometry, a wrong face count violates Euler, and a missing hull edge violates coverage."},
+  {"slide":6,"label":"A Flip","notes":"Describe a flip as the smallest possible edit that still changes a triangulation. This is the move that lets algorithms improve a mesh locally and lets the theory discuss connectivity among all triangulations. Point out that all four vertices of the quadrilateral remain fixed, so the operation changes incidence data without changing the input set."},
+  {"slide":7,"label":"Pentagon Flip Graph","notes":"Use the pentagon as the smallest nontrivial state space. Students can see every triangulation at once, every edge in the graph is a flip, and the cycle foreshadows the associahedron without requiring a high-dimensional picture."},
+  {"slide":8,"label":"Why Delaunay","notes":"This is the transition from counting all triangulations to choosing a useful one. The Delaunay criterion is introduced as a local geometric preference that tends to avoid poor angles and supports nearest-neighbor structure. Contrast the two drawings by asking which triangle would be more stable for interpolation, then connect that visual discomfort to a formal circle predicate."},
+  {"slide":9,"label":"Empty Circle","notes":"Define the certificate in words before pointing at the formula. The circle is not decorative: it is the local predicate that a triangulation algorithm can check and repair with flips. Make the strict interior condition explicit, because points exactly on the circle indicate degeneracy and may allow more than one valid Delaunay triangulation."},
+  {"slide":10,"label":"Illegal Edge Flip","notes":"Make the before-and-after interpretation explicit. A Delaunay algorithm does not need to rebuild the whole triangulation after every local failure; it can flip the offending diagonal and then recheck nearby certificates. The important teaching point is locality: only triangles adjacent to the changed edge need immediate attention after the repair."},
+  {"slide":11,"label":"Voronoi Shadow","notes":"Do not prove the duality here; use it as orientation for why Delaunay structures matter beyond mesh aesthetics. The next chapter will make the Voronoi side primary. For now, highlight the reciprocal questions: Voronoi cells record nearest-site regions, while Delaunay edges record which sites become neighbors through shared cell boundaries."},
+  {"slide":12,"label":"MST Inclusion","notes":"Stress the surprise: a global object computed from all pairwise distances is contained in a sparse geometric graph. This is a useful algorithmic theme, because Delaunay preprocessing can reduce the search space. Sketch the cut-property intuition: if an MST edge had an intervening closer point in the relevant lens, a shorter replacement would contradict minimality."},
+  {"slide":13,"label":"Pseudotriangles","notes":"Use this slide to broaden the word triangulation. Pseudotriangulations keep a triangle-like combinatorial role while allowing faces whose boundaries are chains, which is useful in motion and rigidity contexts. Name the three convex corners and the reflex chains separately so students see why the object is not an ordinary triangle drawn badly."},
+  {"slide":14,"label":"Compatible Triangulations","notes":"Explain compatibility as a promise that corresponding vertices and diagonals match. This is a useful counterweight to Delaunay: sometimes the desired property is not an empty circle, but preservation of a shared combinatorial skeleton. The two shapes can have very different coordinates, yet the same diagonal pattern lets one compare, morph, or interpolate them consistently."},
+  {"slide":15,"label":"3D Warning","notes":"This is a conceptual guardrail. Students often want the planar formula to have a simple spatial sibling, but tetrahedra introduce choices and degeneracies that Euler alone does not tame. Use the diagram to separate topology from geometry: Euler still exists, but it no longer determines the number or quality of tetrahedral cells from vertex and hull counts alone."},
+  {"slide":16,"label":"Worked Micro Lab","notes":"Connect the slides to the computational notebook without making the lecture depend on opening it. The same certificates appear there as reproducibility witnesses: counts tables, flip graphs, circle overlays, Delaunay checks, and MST inclusion records."},
+  {"slide":17,"label":"Takeaways","notes":"Close by asking students to name the certificate before naming the object. If they can say whether they are checking counts, flips, empty circles, compatibility, pointedness, or a dimension warning, they have the chapter’s logic."}
+]
+</script>
+<script src="deck-stage.js"></script>
+</body>
+</html>

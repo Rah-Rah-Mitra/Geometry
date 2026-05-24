@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 16: Simplex Range Searching</title>
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-16">
+  <meta name="chapter_title" content="16 - Simplex Range Searching">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-16-simplex-range-searching/16-simplex-range-searching.ipynb">
+  <meta name="source_span" content="printed pages 335-356; PDF pages 346-367.">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px; height: 1080px; box-sizing: border-box; overflow: clip;
+      background: var(--slide-bg); color: var(--slide-ink); font-family: var(--font-sans);
+      padding: 64px 92px 54px; border-top: 10px solid var(--slide-accent);
+      display: flex; flex-direction: column;
+    }
+    .alt {
+      background:
+        linear-gradient(90deg, rgba(30,58,138,0.04) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15,118,110,0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 80px 80px, 80px 80px, auto;
+    }
+    .speaker-notes { display: none; }
+    h1, h2, h3, p, ul, figure { margin-top: 0; }
+    h1 { font-size: 64px; line-height: 1.05; letter-spacing: 0; margin-bottom: 18px; }
+    h2 { font-size: 50px; line-height: 1.08; letter-spacing: 0; margin-bottom: 16px; }
+    h3 { font-size: 30px; line-height: 1.14; letter-spacing: 0; color: var(--slide-accent); margin-bottom: 10px; }
+    p, li { font-size: 26px; line-height: 1.28; }
+    ul { margin-bottom: 0; padding-left: 30px; }
+    li { margin-bottom: 8px; }
+    svg { max-width: 100%; height: auto; }
+    .eyebrow { font-size: 23px; font-weight: 700; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0; margin-bottom: 10px; }
+    .rule { width: 118px; height: 6px; border-radius: 4px; background: var(--slide-accent); margin: 6px 0 22px; }
+    .content { flex: 1; min-height: 0; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; flex: 1; min-height: 0; align-items: stretch; }
+    .left-wide { grid-template-columns: 1.14fr 0.86fr; }
+    .right-wide { grid-template-columns: 0.86fr 1.14fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .stack { display: flex; flex-direction: column; gap: 16px; }
+    .panel { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 18px 22px; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.04); }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.indigo { background: var(--math-theorem-bg); border-left: 6px solid var(--slide-accent); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel h3 { font-size: 28px; }
+    .panel p, .panel li { font-size: 24px; }
+    .compact p, .compact li { font-size: 23px; line-height: 1.22; }
+    .visual-card { border: 1px solid var(--slide-border-light); border-radius: 8px; background: #fff; padding: 14px; display: flex; align-items: center; justify-content: center; min-height: 0; }
+    .visual-card svg { width: 100%; max-height: 650px; }
+    .formula { font-family: var(--font-math); font-size: 38px; line-height: 1.2; text-align: center; padding: 15px 18px; border-radius: 8px; background: #fff; border: 1px solid var(--slide-border-light); margin: 10px 0; }
+    .formula.small { font-size: 32px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .tag { border: 1px solid var(--slide-border); border-radius: 6px; padding: 7px 11px; background: #fff; color: var(--slide-accent); font-size: 22px; font-weight: 700; }
+    .mini { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 16px 18px; background: #fff; min-height: 126px; }
+    .mini strong { display: block; color: var(--slide-accent); font-size: 25px; margin-bottom: 6px; }
+    .mini p { margin: 0; font-size: 22px; line-height: 1.22; }
+    .caption { font-size: 21px; line-height: 1.22; color: var(--slide-dimmed); margin: 9px 0 0; }
+    .small-note { font-size: 21px; color: var(--slide-dimmed); line-height: 1.22; }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .svg-label { font-family: "Source Sans 3", Arial, sans-serif; font-weight: 700; fill: #475569; }
+    .svg-math { font-family: "STIX Two Text", Georgia, serif; font-style: italic; fill: #111827; }
+    .ledger { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .ledger div { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 14px; background: #fff; }
+    .ledger strong { color: var(--slide-accent); display: block; font-size: 24px; }
+    .ledger span { font-size: 24px; }
+    .table { width: 100%; border-collapse: collapse; font-size: 24px; }
+    .table th { text-align: left; color: var(--slide-accent); background: var(--slide-bg-alt); border-bottom: 2px solid var(--slide-border); padding: 12px 14px; }
+    .table td { border-bottom: 1px solid var(--slide-border-light); padding: 11px 14px; }
+    .table tr:last-child td { border-bottom: none; }
+    .footer { font-size: 20px; color: var(--slide-dimmed); display: flex; justify-content: space-between; padding-top: 12px; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+  <section class="slide alt" data-label="Simplex Range Searching">
+    <div class="eyebrow">Computational Geometry Algorithms and Applications · Chapter 16</div>
+    <h1>Simplex Range Searching</h1>
+    <div class="rule"></div>
+    <div class="cols left-wide">
+      <div>
+        <h2>Windows Beyond Rectangles</h2>
+        <p>Map layers often ask for points in an affected region, not an axis-parallel box. The chapter turns that region into triangles and asks how much preprocessing is needed to count fast.</p>
+        <div class="tag-row">
+          <span class="tag">triangular ranges</span><span class="tag">canonical subsets</span><span class="tag">partition trees</span><span class="tag">cutting trees</span>
+        </div>
+        <p class="small-note">Manifest source span: printed pages 335-356; PDF pages 346-367. Local extraction was grounded in printed pages 335-355 because printed page 356 is absent or blank.</p>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 760 520" role="img" aria-label="Synthetic map layer point cloud with affected polygon triangulated">
+          <rect x="54" y="52" width="650" height="410" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+          <g stroke="#CBD5E1" stroke-width="2" opacity="0.75">
+            <path d="M80 170 C180 116 240 210 340 150 S520 88 675 168" fill="none"/>
+            <path d="M88 340 C180 282 252 372 352 310 S560 245 686 330" fill="none"/>
+            <path d="M145 70 C118 168 202 245 155 452" fill="none"/>
+            <path d="M575 62 C528 180 625 266 584 455" fill="none"/>
+          </g>
+          <g fill="#111827" opacity="0.8">
+            <circle cx="118" cy="120" r="5"/><circle cx="162" cy="195" r="5"/><circle cx="210" cy="105" r="5"/><circle cx="254" cy="260" r="5"/><circle cx="294" cy="145" r="5"/>
+            <circle cx="338" cy="224" r="5"/><circle cx="382" cy="118" r="5"/><circle cx="430" cy="205" r="5"/><circle cx="478" cy="315" r="5"/><circle cx="530" cy="155" r="5"/>
+            <circle cx="580" cy="255" r="5"/><circle cx="630" cy="350" r="5"/><circle cx="150" cy="390" r="5"/><circle cx="235" cy="405" r="5"/><circle cx="332" cy="365" r="5"/>
+            <circle cx="406" cy="420" r="5"/><circle cx="522" cy="405" r="5"/><circle cx="648" cy="120" r="5"/><circle cx="610" cy="88" r="5"/><circle cx="92" cy="275" r="5"/>
+          </g>
+          <polygon points="198,126 585,156 650,330 430,425 210,360 132,230" fill="#B45309" opacity="0.12" stroke="#B45309" stroke-width="5"/>
+          <g stroke="#B45309" stroke-width="3" opacity="0.8">
+            <line x1="132" y1="230" x2="585" y2="156"/><line x1="132" y1="230" x2="650" y2="330"/><line x1="132" y1="230" x2="430" y2="425"/>
+          </g>
+          <g fill="#0F766E">
+            <circle cx="254" cy="260" r="8"/><circle cx="338" cy="224" r="8"/><circle cx="478" cy="315" r="8"/><circle cx="580" cy="255" r="8"/><circle cx="332" cy="365" r="8"/>
+          </g>
+          <text x="96" y="494" class="svg-label" font-size="25">affected polygon -> triangles -> point counts</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Goal: trade storage for the number of canonical subsets touched by a query</span><span>1 / 16</span></div>
+    <aside class="speaker-notes">Open with the GIS windowing motivation. The old rectangular window structures are not the right primitive once the affected region follows wind or terrain, so the chapter triangulates the region and studies one triangle at a time. Frame the lecture as a storage versus query-time story.</aside>
+  </section>
+
+  <section class="slide" data-label="From Region To Simplex">
+    <h2>From Region To Simplex</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Triangle query as intersection of three half-planes over a point cloud">
+          <rect x="60" y="50" width="650" height="410" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <polygon points="190,360 372,108 610,345" fill="#2563EB" opacity="0.12" stroke="#2563EB" stroke-width="5"/>
+          <g stroke="#1E3A8A" stroke-width="4" stroke-dasharray="12 9">
+            <line x1="95" y1="480" x2="405" y2="50"/>
+            <line x1="282" y1="18" x2="715" y2="448"/>
+            <line x1="88" y1="348" x2="705" y2="309"/>
+          </g>
+          <g fill="#111827" opacity="0.75">
+            <circle cx="118" cy="130" r="6"/><circle cx="177" cy="213" r="6"/><circle cx="225" cy="331" r="6"/><circle cx="272" cy="255" r="6"/><circle cx="330" cy="185" r="6"/>
+            <circle cx="365" cy="300" r="6"/><circle cx="422" cy="220" r="6"/><circle cx="475" cy="332" r="6"/><circle cx="542" cy="278" r="6"/><circle cx="637" cy="390" r="6"/>
+            <circle cx="655" cy="188" r="6"/><circle cx="505" cy="110" r="6"/>
+          </g>
+          <g fill="#0F766E">
+            <circle cx="272" cy="255" r="9"/><circle cx="330" cy="185" r="9"/><circle cx="365" cy="300" r="9"/><circle cx="422" cy="220" r="9"/><circle cx="475" cy="332" r="9"/><circle cx="542" cy="278" r="9"/>
+          </g>
+          <text x="122" y="88" class="svg-label" font-size="24" fill="#1E3A8A">H1</text>
+          <text x="638" y="126" class="svg-label" font-size="24" fill="#1E3A8A">H2</text>
+          <text x="604" y="304" class="svg-label" font-size="24" fill="#1E3A8A">H3</text>
+          <text x="128" y="492" class="svg-label" font-size="24">inside triangle iff inside all three half-planes</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel blue"><h3>Definition</h3><p>A planar simplex is a triangle. A triangular query asks for \(S \cap \Delta\), where \(\Delta = H_1 \cap H_2 \cap H_3\).</p></div>
+        <div class="panel teal"><h3>Computational Check</h3><p>For the displayed sample, membership by three oriented half-plane tests agrees with a barycentric-coordinate brute-force test.</p></div>
+        <div class="panel amber"><h3>Misconception</h3><p>Triangle queries do not require a new recursive idea. They reuse half-plane logic; three boundary lines only change the crossing count by a constant factor.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>A triangle is three half-plane decisions with shared output accounting</span><span>2 / 16</span></div>
+    <aside class="speaker-notes">Translate the polygon problem into the smallest non-orthogonal query. A point is in the triangle exactly when it passes three side tests. This matters because the partition tree algorithm will be described for a half-plane first, and the triangle version is the same recursion with three possible boundary crossings.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Canonical Subsets Start In 1D">
+    <h2>Canonical Subsets Start In 1D</h2>
+    <div class="cols right-wide">
+      <div class="stack">
+        <div class="panel indigo"><h3>Warm-Up</h3><p>A balanced search tree stores subtree sizes. A half-line query selects entire subtrees on one side and recurses only where the split point is ambiguous.</p></div>
+        <div class="formula small">answer = disjoint union of selected subtree point sets</div>
+        <div class="panel teal"><h3>Invariant</h3><p>Selected canonical subsets are disjoint because tree subtrees partition the input points.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 860 520" role="img" aria-label="One-dimensional half-line query over a balanced binary tree">
+          <rect x="65" y="335" width="705" height="66" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+          <line x1="65" y1="368" x2="770" y2="368" stroke="#CBD5E1" stroke-width="4"/>
+          <rect x="70" y="350" width="422" height="36" fill="#B45309" opacity="0.14"/>
+          <line x1="492" y1="330" x2="492" y2="405" stroke="#B45309" stroke-width="5"/>
+          <text x="465" y="424" class="svg-label" font-size="23" fill="#B45309">query x = q</text>
+          <g fill="#111827">
+            <circle cx="112" cy="368" r="7"/><circle cx="168" cy="368" r="7"/><circle cx="236" cy="368" r="7"/><circle cx="318" cy="368" r="7"/><circle cx="430" cy="368" r="7"/>
+            <circle cx="556" cy="368" r="7"/><circle cx="644" cy="368" r="7"/><circle cx="716" cy="368" r="7"/>
+          </g>
+          <g stroke="#475569" stroke-width="4" fill="#fff">
+            <circle cx="420" cy="70" r="32"/><circle cx="260" cy="160" r="30"/><circle cx="580" cy="160" r="30"/><circle cx="170" cy="250" r="28"/><circle cx="350" cy="250" r="28"/><circle cx="500" cy="250" r="28"/><circle cx="680" cy="250" r="28"/>
+            <line x1="397" y1="92" x2="282" y2="140"/><line x1="443" y1="92" x2="558" y2="140"/><line x1="238" y1="180" x2="190" y2="230"/><line x1="282" y1="180" x2="330" y2="230"/><line x1="558" y1="180" x2="520" y2="230"/><line x1="602" y1="180" x2="660" y2="230"/>
+          </g>
+          <g fill="#0F766E" stroke="#0F766E" stroke-width="5">
+            <circle cx="170" cy="250" r="28" fill="#F0FDFA"/><circle cx="350" cy="250" r="28" fill="#F0FDFA"/>
+          </g>
+          <g class="svg-label" font-size="22" text-anchor="middle">
+            <text x="420" y="78">root</text><text x="260" y="168">left</text><text x="580" y="168">right</text>
+            <text x="170" y="258" fill="#0F766E">select</text><text x="350" y="258" fill="#0F766E">select</text><text x="500" y="258">visit</text><text x="680" y="258">reject</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>The range-searching habit: precompute canonical subsets and express queries as unions</span><span>3 / 16</span></div>
+    <aside class="speaker-notes">Use the one-dimensional tree to introduce canonical subsets before the geometry gets heavy. Each subtree is a precomputed subset with a stored count. The query never enumerates all points if it can select a whole subtree, and the selected subtrees are disjoint by construction.</aside>
+  </section>
+
+  <section class="slide" data-label="Simplicial Partitions">
+    <h2>Simplicial Partitions</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Point classes with enclosing triangles for a simplicial partition">
+          <rect x="60" y="50" width="650" height="410" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <polygon points="95,338 190,95 330,305" fill="#2563EB" opacity="0.10" stroke="#2563EB" stroke-width="4"/>
+          <polygon points="260,420 360,125 535,405" fill="#0F766E" opacity="0.10" stroke="#0F766E" stroke-width="4"/>
+          <polygon points="445,260 600,85 690,380" fill="#B45309" opacity="0.12" stroke="#B45309" stroke-width="4"/>
+          <polygon points="90,120 245,82 245,255" fill="#6D28D9" opacity="0.10" stroke="#6D28D9" stroke-width="4"/>
+          <polygon points="355,90 520,60 470,240" fill="#1E3A8A" opacity="0.08" stroke="#1E3A8A" stroke-width="4"/>
+          <g fill="#2563EB"><circle cx="170" cy="260" r="7"/><circle cx="210" cy="300" r="7"/><circle cx="152" cy="190" r="7"/></g>
+          <g fill="#0F766E"><circle cx="370" cy="300" r="7"/><circle cx="410" cy="360" r="7"/><circle cx="455" cy="322" r="7"/></g>
+          <g fill="#B45309"><circle cx="566" cy="212" r="7"/><circle cx="612" cy="292" r="7"/><circle cx="548" cy="335" r="7"/></g>
+          <g fill="#6D28D9"><circle cx="156" cy="134" r="7"/><circle cx="210" cy="168" r="7"/></g>
+          <g fill="#1E3A8A"><circle cx="410" cy="116" r="7"/><circle cx="456" cy="154" r="7"/></g>
+          <text x="104" y="492" class="svg-label" font-size="24">triangles may overlap; classes are disjoint subsets of S</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel blue"><h3>Definition</h3><p>A simplicial partition is \(\Psi(S)=\{(S_i,t_i)\}_{i=1}^r\), where the \(S_i\) are disjoint, cover \(S\), and triangle \(t_i\) contains class \(S_i\).</p></div>
+        <div class="panel teal"><h3>Fine Balance</h3><p>Fine means no class is too large: \(|S_i| \leq 2n/r\). Balance is what keeps recursive depth and storage under control.</p></div>
+        <div class="panel amber"><h3>Careful</h3><p>The triangles need not be disjoint. Counting still works because the point classes, not their enclosing triangles, form the disjoint partition.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Geometry encloses the classes; accounting belongs to the disjoint point subsets</span><span>4 / 16</span></div>
+    <aside class="speaker-notes">Define the object that replaces binary splits in the plane. The triangles are covers for classes, not cells of a planar subdivision, so they may overlap. The key accounting property is that each point belongs to exactly one class, while the fine condition prevents one child from carrying too much of the input.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Crossing Number Is The Lever">
+    <h2>Crossing Number Is The Lever</h2>
+    <div class="cols right-wide">
+      <div class="stack">
+        <div class="panel indigo"><h3>Theorem 16.1</h3><p>For any \(1 \leq r \leq n\), a fine simplicial partition of size \(r\) exists with crossing number \(O(\sqrt r)\).</p></div>
+        <div class="panel teal"><h3>Query Consequence</h3><p>A half-plane boundary line only forces recursion into classes whose enclosing triangles it crosses.</p></div>
+        <div class="panel violet"><h3>Displayed Check</h3><p>The query line crosses 3 of the 9 displayed triangles; all other classes are selected or rejected at this level.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 860 520" role="img" aria-label="Moving query line crossing a small number of triangular partition cells">
+          <rect x="60" y="52" width="720" height="410" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3">
+            <polygon points="95,130 210,72 246,205"/><polygon points="270,88 392,70 355,210"/><polygon points="455,84 610,100 520,220"/>
+            <polygon points="112,280 250,225 275,365"/><polygon points="322,250 450,210 470,365"/><polygon points="540,255 690,220 660,382"/>
+            <polygon points="100,420 240,380 310,462"/><polygon points="350,410 485,365 570,455"/><polygon points="600,418 720,355 742,462"/>
+          </g>
+          <g fill="#0F766E" opacity="0.16" stroke="#0F766E" stroke-width="4">
+            <polygon points="112,280 250,225 275,365"/><polygon points="322,250 450,210 470,365"/><polygon points="540,255 690,220 660,382"/>
+          </g>
+          <line x1="72" y1="372" x2="760" y2="185" stroke="#B45309" stroke-width="6"/>
+          <polygon points="72,372 760,185 780,462 60,462" fill="#B45309" opacity="0.10"/>
+          <text x="590" y="178" class="svg-label" font-size="25" fill="#B45309">boundary line</text>
+          <text x="102" y="490" class="svg-label" font-size="24">crossed cells are exactly the recursive children</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Low crossing number is the geometric reason the recursion is sublinear</span><span>5 / 16</span></div>
+    <aside class="speaker-notes">Now isolate the parameter that drives query time. If the boundary line misses a triangle, that whole class is either inside or outside the half-plane. Only crossed triangles need recursion, so Matousek's low-crossing partition theorem is the hinge between geometry and the later recurrence.</aside>
+  </section>
+
+  <section class="slide" data-label="Partition Tree Structure">
+    <h2>Partition Tree Structure</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Recursive simplicial cells aligned with a rooted partition tree">
+          <rect x="55" y="50" width="350" height="390" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g fill="#F8FAFC" stroke="#1E3A8A" stroke-width="4">
+            <polygon points="85,100 215,70 185,220"/><polygon points="220,88 370,120 285,245"/><polygon points="96,270 230,215 250,395"/><polygon points="272,265 380,230 365,405"/>
+          </g>
+          <g fill="none" stroke="#0F766E" stroke-width="3" stroke-dasharray="8 7">
+            <polygon points="126,290 170,248 203,330"/><polygon points="178,247 224,235 210,342"/><polygon points="130,340 205,338 230,382"/>
+          </g>
+          <g transform="translate(470,58)" stroke="#475569" stroke-width="4" fill="#fff">
+            <circle cx="160" cy="35" r="32"/><circle cx="50" cy="135" r="28"/><circle cx="160" cy="135" r="28"/><circle cx="270" cy="135" r="28"/><circle cx="105" cy="238" r="25"/><circle cx="160" cy="238" r="25"/><circle cx="215" cy="238" r="25"/>
+            <line x1="140" y1="60" x2="70" y2="114"/><line x1="160" y1="67" x2="160" y2="107"/><line x1="180" y1="60" x2="250" y2="114"/>
+            <line x1="145" y1="160" x2="116" y2="216"/><line x1="160" y1="164" x2="160" y2="213"/><line x1="177" y1="160" x2="204" y2="216"/>
+          </g>
+          <g class="svg-label" font-size="22" text-anchor="middle">
+            <text x="630" y="100">S</text><text x="520" y="200">S1</text><text x="630" y="200">S2</text><text x="740" y="200">S3</text>
+            <text x="630" y="340" fill="#0F766E">recursive partition of one class</text>
+          </g>
+          <text x="72" y="488" class="svg-label" font-size="24">each child stores its triangle and the count of its canonical subset</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel blue"><h3>Node Record</h3><p>Each child \(\nu\) stores an enclosing triangle \(t(\nu)\), a canonical subset \(S(\nu)\), and the value needed for the query, such as \(|S(\nu)|\).</p></div>
+        <div class="panel indigo"><h3>Recursive Shape</h3><p>The root has \(r\) children for a fine simplicial partition. Each child roots the partition tree on its class.</p></div>
+        <div class="panel teal"><h3>Storage Idea</h3><p>Because the classes are disjoint and fine, the total number of nodes satisfies a linear-size recurrence for fixed \(r\).</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>The tree stores a repertoire of canonical subsets, not all possible answers</span><span>6 / 16</span></div>
+    <aside class="speaker-notes">Connect the partition to a data structure. Every child is both a geometric triangle and an accounting record for a subset of points. Recursion is only on the class, so the tree stores many canonical subsets that can later be selected wholesale by a query.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Half-Plane Query Trace">
+    <h2>Half-Plane Query Trace</h2>
+    <div class="cols left-wide">
+      <div class="stack">
+        <div class="panel blue"><h3>Three Outcomes</h3><p>For each child: \(t(\nu)\subset h\) means select; \(t(\nu)\cap h=\emptyset\) means reject; otherwise recurse.</p></div>
+        <div class="panel teal"><h3>Disjointness Check</h3><p>The selected nodes shown here have disjoint canonical subsets, so summing their stored counts is valid.</p></div>
+        <div class="panel violet"><h3>Direct-Filter Check</h3><p>The union of selected leaves plus recursive descendants equals the points found by brute-force half-plane tests on the same toy input.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 820 520" role="img" aria-label="Half-plane query trace with selected rejected and recursive children">
+          <rect x="55" y="54" width="700" height="405" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="80" y1="345" x2="735" y2="130" stroke="#B45309" stroke-width="6"/>
+          <polygon points="80,345 735,130 755,54 55,54 55,459" fill="#B45309" opacity="0.09"/>
+          <g stroke-width="4">
+            <polygon points="92,120 240,84 218,215" fill="#F0FDFA" stroke="#0F766E"/>
+            <polygon points="278,100 420,82 372,230" fill="#F0FDFA" stroke="#0F766E"/>
+            <polygon points="455,88 620,110 540,246" fill="#EFF6FF" stroke="#2563EB"/>
+            <polygon points="110,304 260,250 276,398" fill="#EFF6FF" stroke="#2563EB"/>
+            <polygon points="330,275 470,235 490,405" fill="#FFFBEB" stroke="#B45309"/>
+            <polygon points="555,285 700,250 675,420" fill="#F8FAFC" stroke="#94A3B8"/>
+          </g>
+          <g class="svg-label" font-size="23" text-anchor="middle">
+            <text x="166" y="155" fill="#0F766E">select</text><text x="350" y="145" fill="#0F766E">select</text>
+            <text x="538" y="160" fill="#2563EB">recurse</text><text x="190" y="334" fill="#2563EB">recurse</text>
+            <text x="414" y="326" fill="#B45309">recurse</text><text x="630" y="340" fill="#64748B">reject</text>
+          </g>
+          <g transform="translate(90,468)" class="svg-label" font-size="22">
+            <rect x="0" y="0" width="28" height="18" fill="#F0FDFA" stroke="#0F766E"/><text x="40" y="17">selected</text>
+            <rect x="180" y="0" width="28" height="18" fill="#EFF6FF" stroke="#2563EB"/><text x="220" y="17">visited recursively</text>
+            <rect x="455" y="0" width="28" height="18" fill="#F8FAFC" stroke="#94A3B8"/><text x="495" y="17">rejected</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>The query returns selected nodes, then counting only sums their stored sizes</span><span>7 / 16</span></div>
+    <aside class="speaker-notes">Walk through the query at one node. The important point is that a selected child contributes its stored count immediately; it is not searched further. Rejected children contribute nothing, and only boundary-crossed children keep the recursion alive.</aside>
+  </section>
+
+  <section class="slide" data-label="Triangles Need Three Boundary Lines">
+    <h2>Triangles Need Three Boundary Lines</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Triangle range query with three boundary lines crossing partition triangles">
+          <rect x="60" y="50" width="650" height="410" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3">
+            <polygon points="95,150 220,90 250,245"/><polygon points="280,86 430,105 360,242"/><polygon points="470,92 640,132 560,270"/>
+            <polygon points="100,310 245,250 285,400"/><polygon points="330,275 475,238 510,405"/><polygon points="540,300 690,252 665,420"/>
+          </g>
+          <polygon points="190,375 382,115 615,340" fill="#2563EB" opacity="0.13" stroke="#2563EB" stroke-width="6"/>
+          <g stroke="#1E3A8A" stroke-width="4" stroke-dasharray="12 9">
+            <line x1="95" y1="505" x2="420" y2="66"/>
+            <line x1="300" y1="34" x2="720" y2="438"/>
+            <line x1="90" y1="365" x2="710" y2="328"/>
+          </g>
+          <g fill="#0F766E" opacity="0.16" stroke="#0F766E" stroke-width="4">
+            <polygon points="330,275 475,238 510,405"/><polygon points="100,310 245,250 285,400"/>
+          </g>
+          <g fill="#B45309" opacity="0.14" stroke="#B45309" stroke-width="4">
+            <polygon points="280,86 430,105 360,242"/><polygon points="470,92 640,132 560,270"/><polygon points="540,300 690,252 665,420"/>
+          </g>
+          <text x="98" y="492" class="svg-label" font-size="24">a partition triangle is ambiguous only if one of the three side lines crosses it</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel indigo"><h3>Same Query Logic</h3><p>Replace the half-plane \(h\) by triangle \(\Delta\). A child is selected if \(t(\nu)\subset \Delta\), rejected if disjoint, and recursively visited otherwise.</p></div>
+        <div class="panel blue"><h3>Crossing Bound</h3><p>The boundary of \(\Delta\) has three lines, so at most a constant multiple of \(O(\sqrt r)\) children can be ambiguous.</p></div>
+        <div class="panel amber"><h3>Boundary Accounting</h3><p>For counting, use disjoint canonical subsets. Points on shared triangulation edges need a consistent inclusion convention.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Triangle ranges inherit the half-plane partition-tree analysis</span><span>8 / 16</span></div>
+    <aside class="speaker-notes">Make the triangle extension feel almost anticlimactic. The recursion has the same three cases as the half-plane query. The only analysis change is that the boundary has three lines, and a class can be ambiguous only when one of those lines crosses its enclosing triangle.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Partition Tree Analysis">
+    <h2>Partition Tree Analysis</h2>
+    <div class="cols right-wide">
+      <div class="stack compact">
+        <div class="panel indigo"><h3>Storage Recurrence</h3><p>\(M(n) \leq 1+\sum_\nu M(n_\nu)\), with \(\sum n_\nu=n\) and \(n_\nu\leq 2n/r\). For constant \(r>2\), storage is \(O(n)\).</p></div>
+        <div class="panel blue"><h3>Query Recurrence</h3><p>\(Q(n)\leq r+\sum_{\nu\in C(h)}Q(n_\nu)\), where \(|C(h)|=O(\sqrt r)\). Choosing a large enough constant \(r\) gives \(O(n^{1/2+\epsilon})\).</p></div>
+        <div class="panel teal"><h3>Reporting</h3><p>Counting sums stored values. Reporting appends the points from selected canonical subsets and costs \(O(k)\) more.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 860 520" role="img" aria-label="Dependency graph for partition tree analysis">
+          <g class="svg-label" font-size="24" text-anchor="middle">
+            <rect x="70" y="70" width="210" height="80" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+            <text x="175" y="118">fine balance</text>
+            <rect x="325" y="70" width="210" height="80" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+            <text x="430" y="105">crossing number</text><text x="430" y="133">O(sqrt r)</text>
+            <rect x="580" y="70" width="210" height="80" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+            <text x="685" y="118">disjoint classes</text>
+            <rect x="132" y="250" width="250" height="94" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+            <text x="257" y="287">M(n)=O(n)</text><text x="257" y="318">linear storage</text>
+            <rect x="470" y="250" width="280" height="94" rx="8" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+            <text x="610" y="287">Q(n)=O(n^(1/2+eps))</text><text x="610" y="318">selection time</text>
+            <rect x="300" y="410" width="260" height="70" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+            <text x="430" y="453">storage/query tradeoff</text>
+          </g>
+          <g stroke="#64748B" stroke-width="4" fill="none" marker-end="url(#a9)">
+            <defs><marker id="a9" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748B"/></marker></defs>
+            <path d="M175 150 C182 198 218 218 252 250"/><path d="M685 150 C642 197 626 218 614 250"/>
+            <path d="M430 150 C478 194 536 212 594 250"/><path d="M310 342 C338 374 372 394 410 410"/><path d="M610 344 C566 378 512 397 450 410"/>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Linear storage buys roughly square-root query time</span><span>9 / 16</span></div>
+    <aside class="speaker-notes">Summarize the proof dependencies rather than redoing every algebraic detail. Disjointness and fine balance are what make the storage linear. Low crossing number limits the branching of the query recursion, and a sufficiently large constant r absorbs constants into the epsilon.</aside>
+  </section>
+
+  <section class="slide" data-label="Multi-Level Partition Trees">
+    <h2>Multi-Level Partition Trees</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Two-level partition tree for segment-line intersection using right and left endpoints">
+          <rect x="65" y="70" width="650" height="330" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="90" y1="275" x2="690" y2="165" stroke="#1E3A8A" stroke-width="5"/>
+          <g stroke-width="8" stroke-linecap="round">
+            <line x1="145" y1="300" x2="285" y2="122" stroke="#2563EB"/>
+            <line x1="230" y1="345" x2="405" y2="242" stroke="#0F766E"/>
+            <line x1="430" y1="112" x2="610" y2="328" stroke="#B45309"/>
+            <line x1="520" y1="250" x2="660" y2="115" stroke="#6D28D9"/>
+          </g>
+          <g fill="#111827">
+            <circle cx="285" cy="122" r="7"/><circle cx="405" cy="242" r="7"/><circle cx="610" cy="328" r="7"/><circle cx="660" cy="115" r="7"/>
+            <circle cx="145" cy="300" r="7"/><circle cx="230" cy="345" r="7"/><circle cx="430" cy="112" r="7"/><circle cx="520" cy="250" r="7"/>
+          </g>
+          <g class="svg-label" font-size="23">
+            <text x="535" y="74" fill="#1E3A8A">query line</text>
+            <text x="292" y="118">right endpoint tree</text>
+            <text x="122" y="326">left endpoint associated trees</text>
+          </g>
+          <g transform="translate(135,430)" class="svg-label" font-size="23">
+            <rect x="0" y="0" width="180" height="52" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/><text x="24" y="34">right endpoints</text>
+            <path d="M190 26 H270" stroke="#64748B" stroke-width="4" marker-end="url(#a10)"/>
+            <rect x="285" y="0" width="245" height="52" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/><text x="310" y="34">left endpoints below line</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel blue"><h3>Segment-Line Query</h3><p>A segment intersects a query line when its two endpoints lie on opposite sides. One level selects candidates by one endpoint.</p></div>
+        <div class="panel teal"><h3>Associated Structures</h3><p>Each selected canonical subset is stored in another partition tree on the other endpoint, turning a two-sided condition into two single-sided searches.</p></div>
+        <div class="panel indigo"><h3>Effect</h3><p>For partition trees, extra levels preserve the \(n^{1/2+\epsilon}\) query exponent and add only logarithmic storage factors.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Associated structures let one canonical subset carry another search problem</span><span>10 / 16</span></div>
+    <aside class="speaker-notes">Use segment-line intersection to show why multi-level structures appear before duality and cuttings. The condition has two endpoint predicates, so a first-level search selects canonical subsets for one endpoint and associated trees filter them by the second endpoint. This is the same canonical-subset philosophy, nested.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Why Cuttings Enter">
+    <h2>Why Cuttings Enter</h2>
+    <div class="cols left-wide">
+      <div class="stack">
+        <div class="panel amber"><h3>Partition Tree Bargain</h3><p>Near-linear storage means a modest repertoire of canonical subsets. Some half-plane queries still need roughly square-root many pieces.</p></div>
+        <div class="panel blue"><h3>Full Arrangement Bargain</h3><p>Precompute the combinatorial answer in every arrangement cell and queries become very fast, but storage is quadratic.</p></div>
+        <div class="panel teal"><h3>Cuttings</h3><p>A cutting tree keeps the fast-query spirit of arrangements while organizing the quadratic-scale canonical subsets recursively.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 820 520" role="img" aria-label="Storage query comparison between partition tree and full arrangement">
+          <g class="svg-label" font-size="24">
+            <rect x="70" y="70" width="260" height="330" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+            <text x="108" y="118" fill="#0F766E">Partition tree</text>
+            <text x="108" y="168">storage: O(n)</text>
+            <text x="108" y="210">query: O(n^(1/2+eps))</text>
+            <text x="108" y="252">few stored subsets</text>
+            <path d="M110 330 C150 270 220 250 285 185" fill="none" stroke="#0F766E" stroke-width="6"/>
+            <rect x="490" y="70" width="260" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+            <text x="525" y="118" fill="#2563EB">Arrangement</text>
+            <text x="525" y="168">storage: near O(n^2)</text>
+            <text x="525" y="210">query: logarithmic</text>
+            <text x="525" y="252">many stored answers</text>
+            <g stroke="#2563EB" stroke-width="2" opacity="0.65">
+              <line x1="520" y1="322" x2="710" y2="290"/><line x1="520" y1="280" x2="710" y2="350"/><line x1="560" y1="250" x2="675" y2="378"/><line x1="610" y1="245" x2="590" y2="385"/>
+            </g>
+            <path d="M354 235 H466" stroke="#B45309" stroke-width="6" marker-end="url(#a11)"/>
+            <text x="360" y="205" fill="#B45309">pay storage</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>The chapter now spends near-quadratic storage to buy logarithmic query time</span><span>11 / 16</span></div>
+    <aside class="speaker-notes">Pause to explain why a second structure is needed. Partition trees are good because storage is linear, but the query time is not logarithmic. Full arrangements suggest that logarithmic time is possible if enough information is precomputed. Cuttings are the structured way to make that idea recursive.</aside>
+  </section>
+
+  <section class="slide" data-label="Dual Half-Plane Counting">
+    <h2>Dual Half-Plane Counting</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="Point-line duality showing primal half-plane query and dual line-below-point query">
+          <rect x="55" y="60" width="305" height="350" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <rect x="420" y="60" width="305" height="350" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="82" y1="322" x2="335" y2="145" stroke="#1E3A8A" stroke-width="5"/>
+          <polygon points="82,322 335,145 360,60 55,60 55,410" fill="#1E3A8A" opacity="0.08"/>
+          <g fill="#111827"><circle cx="130" cy="170" r="7"/><circle cx="182" cy="250" r="7"/><circle cx="238" cy="180" r="7"/><circle cx="286" cy="300" r="7"/><circle cx="315" cy="128" r="7"/></g>
+          <g fill="#0F766E"><circle cx="130" cy="170" r="10"/><circle cx="238" cy="180" r="10"/><circle cx="315" cy="128" r="10"/></g>
+          <text x="126" y="445" class="svg-label" font-size="24">primal: points above line</text>
+          <g stroke-width="4">
+            <line x1="438" y1="330" x2="710" y2="130" stroke="#2563EB"/>
+            <line x1="438" y1="195" x2="710" y2="330" stroke="#0F766E"/>
+            <line x1="438" y1="360" x2="710" y2="250" stroke="#B45309"/>
+            <line x1="438" y1="110" x2="710" y2="190" stroke="#6D28D9"/>
+          </g>
+          <circle cx="590" cy="205" r="10" fill="#111827"/>
+          <line x1="590" y1="205" x2="590" y2="405" stroke="#111827" stroke-width="3" stroke-dasharray="8 7"/>
+          <text x="605" y="202" class="svg-label" font-size="24">query point</text>
+          <text x="452" y="445" class="svg-label" font-size="24">dual: count lines below query point</text>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel blue"><h3>Duality Convention</h3><p>A primal point \(p=(a,b)\) maps to the dual line \(p^*: y=ax-b\). A primal line maps to a dual point.</p></div>
+        <div class="panel teal"><h3>Sign Relation</h3><p>With this convention, a primal point above a query line corresponds to its dual line lying below the dual query point.</p></div>
+        <div class="panel violet"><h3>Check</h3><p>The displayed sample verifies the sign relation for every point-line pair before using the dual counting problem.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>Half-plane range counting becomes lines-below-a-point counting</span><span>12 / 16</span></div>
+    <aside class="speaker-notes">Introduce duality as a problem transformation, not as a decorative symmetry. Under the chosen convention, above in the primal becomes below in the dual. The data structure will now partition the dual plane, while the original points have become lines.</aside>
+  </section>
+
+  <section class="slide alt" data-label="One Over r Cuttings">
+    <h2>(1/r)-Cuttings</h2>
+    <div class="cols right-wide">
+      <div class="stack">
+        <div class="panel blue"><h3>Definition</h3><p>A \((1/r)\)-cutting for a set \(L\) of lines decomposes the plane into disjoint triangular cells so that each cell is crossed by at most \(n/r\) lines.</p></div>
+        <div class="panel indigo"><h3>Size</h3><p>There are cuttings of size \(O(r^2)\). This is arrangement-like storage at one controlled scale.</p></div>
+        <div class="panel violet"><h3>Displayed Check</h3><p>Inside the bounded viewport, the triangular cells do not overlap in their interiors and each displayed line crosses at most 2 highlighted cell interiors.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 860 520" role="img" aria-label="Disjoint triangular cutting cells crossed by few lines">
+          <rect x="70" y="55" width="720" height="410" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3">
+            <polygon points="70,55 250,55 150,205"/><polygon points="250,55 430,55 330,205"/><polygon points="430,55 610,55 510,205"/><polygon points="610,55 790,55 690,205"/>
+            <polygon points="70,465 150,205 260,465"/><polygon points="150,205 330,205 260,465"/><polygon points="330,205 510,205 430,465"/><polygon points="510,205 690,205 610,465"/><polygon points="690,205 790,55 790,465"/>
+          </g>
+          <g fill="#0F766E" opacity="0.14" stroke="#0F766E" stroke-width="4">
+            <polygon points="150,205 330,205 260,465"/><polygon points="330,205 510,205 430,465"/>
+          </g>
+          <g stroke-width="5" opacity="0.9">
+            <line x1="80" y1="390" x2="780" y2="140" stroke="#2563EB"/>
+            <line x1="80" y1="170" x2="780" y2="345" stroke="#B45309"/>
+            <line x1="160" y1="55" x2="690" y2="465" stroke="#6D28D9"/>
+            <line x1="330" y1="465" x2="610" y2="55" stroke="#0F766E"/>
+          </g>
+          <text x="120" y="498" class="svg-label" font-size="24">each cell stores the subset of lines crossing its interior</text>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Cuttings partition the dual plane, not the primal point set</span><span>13 / 16</span></div>
+    <aside class="speaker-notes">State the most common source of confusion directly. A cutting is a triangulation of the dual plane, and the objects being controlled are lines crossing cells. The cells are disjoint, but a line may be stored in several crossing subsets, which is why storage grows quickly.</aside>
+  </section>
+
+  <section class="slide" data-label="Cutting Tree Query Path">
+    <h2>Cutting Tree Query Path</h2>
+    <div class="cols">
+      <figure class="visual-card">
+        <svg viewBox="0 0 780 520" role="img" aria-label="A query point descends through a single cell path in a cutting tree">
+          <rect x="60" y="55" width="410" height="390" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <g fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3">
+            <polygon points="60,55 250,55 160,225"/><polygon points="250,55 470,55 345,225"/><polygon points="60,445 160,225 285,445"/><polygon points="160,225 345,225 285,445"/><polygon points="345,225 470,55 470,445"/>
+          </g>
+          <polygon points="160,225 345,225 285,445" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+          <g stroke="#2563EB" stroke-width="3" stroke-dasharray="8 7">
+            <polygon points="190,255 275,235 250,345"/><polygon points="265,250 325,230 306,355"/><polygon points="220,360 306,355 285,430"/>
+          </g>
+          <circle cx="286" cy="332" r="10" fill="#B45309"/>
+          <text x="302" y="326" class="svg-label" font-size="23" fill="#B45309">q</text>
+          <g transform="translate(535,72)" stroke="#475569" stroke-width="4" fill="#fff">
+            <circle cx="90" cy="35" r="32"/><circle cx="45" cy="135" r="28"/><circle cx="135" cy="135" r="28"/><circle cx="135" cy="238" r="25"/>
+            <line x1="78" y1="64" x2="52" y2="108"/><line x1="102" y1="64" x2="128" y2="108"/><line x1="135" y1="163" x2="135" y2="213"/>
+          </g>
+          <g class="svg-label" font-size="22" text-anchor="middle">
+            <text x="625" y="115">root</text><text x="580" y="215">other cell</text><text x="670" y="215" fill="#2563EB">q-cell</text><text x="670" y="325" fill="#2563EB">q-cell</text>
+          </g>
+        </svg>
+      </figure>
+      <div class="stack">
+        <div class="panel blue"><h3>One Path</h3><p>The query point lies in exactly one cutting cell at each level, so the main recursion follows one child.</p></div>
+        <div class="panel teal"><h3>Canonical Additions</h3><p>At each level, the lower canonical subset of the cell can be added for lines already known to lie below \(q\).</p></div>
+        <div class="panel indigo"><h3>Lemma 16.8</h3><p>A cutting tree counts lines below a point in \(O(\log n)\) time using \(O(n^{2+\epsilon})\) storage.</p></div>
+      </div>
+    </div>
+    <div class="footer"><span>The path is logarithmic because each crossed-line subset shrinks by a factor r</span><span>14 / 16</span></div>
+    <aside class="speaker-notes">Contrast this with partition-tree queries. A partition tree may branch into many crossed children, while a cutting-tree point query descends through one containing cell. The cost is that each cell stores information about lower, upper, and crossing line subsets, and the total storage is near quadratic.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Three Levels For A Triangle">
+    <h2>Three Levels For A Triangle</h2>
+    <div class="cols left-wide">
+      <div class="stack compact">
+        <div class="panel blue"><h3>Dual Triangle Query</h3><p>A primal triangle becomes three labeled dual query points. A dual line qualifies only if it is on the required side of all three points.</p></div>
+        <div class="panel teal"><h3>Associated Cutting Trees</h3><p>Level 1 filters by side one, level 2 by side two inside associated structures, and level 3 by side three.</p></div>
+        <div class="panel indigo"><h3>Theorem 16.10</h3><p>Triangular range counting can be answered in \(O(\log^3 n)\) time with \(O(n^{2+\epsilon})\) storage; reporting adds \(O(k)\).</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 820 520" role="img" aria-label="Three stacked cutting-tree levels for triangle side constraints in dual space">
+          <g class="svg-label" font-size="24" text-anchor="middle">
+            <rect x="85" y="72" width="650" height="84" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+            <text x="410" y="122">level 1: side constraint q1</text>
+            <rect x="145" y="212" width="530" height="84" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+            <text x="410" y="262">level 2: associated tree for q2</text>
+            <rect x="205" y="352" width="410" height="84" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+            <text x="410" y="402">level 3: associated tree for q3</text>
+          </g>
+          <g stroke="#64748B" stroke-width="5" fill="none" marker-end="url(#a15)">
+            <defs><marker id="a15" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748B"/></marker></defs>
+            <path d="M410 156 V212"/><path d="M410 296 V352"/>
+          </g>
+          <g transform="translate(88,462)" class="svg-label" font-size="22">
+            <circle cx="16" cy="16" r="8" fill="#2563EB"/><text x="34" y="24">below q1</text>
+            <circle cx="190" cy="16" r="8" fill="#0F766E"/><text x="208" y="24">below q2</text>
+            <circle cx="364" cy="16" r="8" fill="#1E3A8A"/><text x="382" y="24">above q3</text>
+            <text x="556" y="24" fill="#B45309">canonical subsets remain disjoint for counting</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Three half-plane constraints become three levels of dual side filtering</span><span>15 / 16</span></div>
+    <aside class="speaker-notes">Assemble the final data structure. The triangle is not stored as a primal object in the cutting tree; after duality it is three side tests on lines. Each level handles one test, and associated cutting trees carry the selected canonical subsets forward without breaking the disjointness needed for counting.</aside>
+  </section>
+
+  <section class="slide" data-label="The Tradeoff To Remember">
+    <h2>The Tradeoff To Remember</h2>
+    <div class="cols right-wide">
+      <div class="stack">
+        <table class="table">
+          <thead><tr><th>Structure</th><th>Storage</th><th>Triangle Query</th><th>Memory</th></tr></thead>
+          <tbody>
+            <tr><td>Partition tree</td><td>\(O(n)\)</td><td>\(O(n^{1/2+\epsilon}+k)\)</td><td>few canonical subsets</td></tr>
+            <tr><td>Cutting tree</td><td>\(O(n^{2+\epsilon})\)</td><td>\(O(\log^3 n+k)\)</td><td>near-arrangement precomputation</td></tr>
+            <tr><td>Hybrid</td><td>between</td><td>between</td><td>switch from cuttings to partitions</td></tr>
+          </tbody>
+        </table>
+        <div class="panel amber"><h3>Misconceptions To Retire</h3><p>Cutting trees partition the dual plane, canonical subsets must be disjoint for counting, fine balance matters, and logarithmic query time is paid for with near-quadratic storage.</p></div>
+      </div>
+      <figure class="visual-card">
+        <svg viewBox="0 0 860 520" role="img" aria-label="Storage query-time tradeoff curve for simplex range searching">
+          <rect x="82" y="58" width="690" height="380" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="135" y1="390" x2="710" y2="390" stroke="#111827" stroke-width="4"/>
+          <line x1="135" y1="390" x2="135" y2="105" stroke="#111827" stroke-width="4"/>
+          <path d="M155 140 C290 180 418 265 684 360" fill="none" stroke="#1E3A8A" stroke-width="7"/>
+          <circle cx="168" cy="148" r="11" fill="#0F766E"/><circle cx="690" cy="360" r="11" fill="#2563EB"/><circle cx="420" cy="266" r="11" fill="#B45309"/>
+          <g class="svg-label" font-size="24">
+            <text x="92" y="95">query time</text><text x="612" y="430">storage</text>
+            <text x="186" y="142" fill="#0F766E">partition</text><text x="585" y="344" fill="#2563EB">cutting</text><text x="440" y="260" fill="#B45309">hybrid</text>
+            <text x="156" y="468">Checks: triangle membership, disjoint selected subsets, duality signs, cutting-cell overlap, line-crossing thresholds.</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+    <div class="footer"><span>Simplex range searching is a calibrated storage/query-time tradeoff</span><span>16 / 16</span></div>
+    <aside class="speaker-notes">Close by giving students the durable mental model. Partition trees are the linear-space end of the spectrum, cutting trees are the logarithmic-query end, and hybrids interpolate by switching structures when storage budget becomes tight. The checks listed on the slide are the implementation version of the proof obligations.</aside>
+  </section>
+</deck-stage>
+
+<script id="deck-metadata" type="application/json">
+{
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-16",
+  "chapter_title": "16 - Simplex Range Searching",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-16-simplex-range-searching/16-simplex-range-searching.ipynb",
+  "source_span": "printed pages 335-356; PDF pages 346-367.",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+</script>
+<script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {"slide": 1, "notes": "Open with the GIS windowing motivation. The old rectangular window structures are not the right primitive once the affected region follows wind or terrain, so the chapter triangulates the region and studies one triangle at a time. Frame the lecture as a storage versus query-time story."},
+    {"slide": 2, "notes": "Translate the polygon problem into the smallest non-orthogonal query. A point is in the triangle exactly when it passes three side tests. This matters because the partition tree algorithm will be described for a half-plane first, and the triangle version is the same recursion with three possible boundary crossings."},
+    {"slide": 3, "notes": "Use the one-dimensional tree to introduce canonical subsets before the geometry gets heavy. Each subtree is a precomputed subset with a stored count. The query never enumerates all points if it can select a whole subtree, and the selected subtrees are disjoint by construction."},
+    {"slide": 4, "notes": "Define the object that replaces binary splits in the plane. The triangles are covers for classes, not cells of a planar subdivision, so they may overlap. The key accounting property is that each point belongs to exactly one class, while the fine condition prevents one child from carrying too much of the input."},
+    {"slide": 5, "notes": "Now isolate the parameter that drives query time. If the boundary line misses a triangle, that whole class is either inside or outside the half-plane. Only crossed triangles need recursion, so Matousek's low-crossing partition theorem is the hinge between geometry and the later recurrence."},
+    {"slide": 6, "notes": "Connect the partition to a data structure. Every child is both a geometric triangle and an accounting record for a subset of points. Recursion is only on the class, so the tree stores many canonical subsets that can later be selected wholesale by a query."},
+    {"slide": 7, "notes": "Walk through the query at one node. The important point is that a selected child contributes its stored count immediately; it is not searched further. Rejected children contribute nothing, and only boundary-crossed children keep the recursion alive."},
+    {"slide": 8, "notes": "Make the triangle extension feel almost anticlimactic. The recursion has the same three cases as the half-plane query. The only analysis change is that the boundary has three lines, and a class can be ambiguous only when one of those lines crosses its enclosing triangle."},
+    {"slide": 9, "notes": "Summarize the proof dependencies rather than redoing every algebraic detail. Disjointness and fine balance are what make the storage linear. Low crossing number limits the branching of the query recursion, and a sufficiently large constant r absorbs constants into the epsilon."},
+    {"slide": 10, "notes": "Use segment-line intersection to show why multi-level structures appear before duality and cuttings. The condition has two endpoint predicates, so a first-level search selects canonical subsets for one endpoint and associated trees filter them by the second endpoint. This is the same canonical-subset philosophy, nested."},
+    {"slide": 11, "notes": "Pause to explain why a second structure is needed. Partition trees are good because storage is linear, but the query time is not logarithmic. Full arrangements suggest that logarithmic time is possible if enough information is precomputed. Cuttings are the structured way to make that idea recursive."},
+    {"slide": 12, "notes": "Introduce duality as a problem transformation, not as a decorative symmetry. Under the chosen convention, above in the primal becomes below in the dual. The data structure will now partition the dual plane, while the original points have become lines."},
+    {"slide": 13, "notes": "State the most common source of confusion directly. A cutting is a triangulation of the dual plane, and the objects being controlled are lines crossing cells. The cells are disjoint, but a line may be stored in several crossing subsets, which is why storage grows quickly."},
+    {"slide": 14, "notes": "Contrast this with partition-tree queries. A partition tree may branch into many crossed children, while a cutting-tree point query descends through one containing cell. The cost is that each cell stores information about lower, upper, and crossing line subsets, and the total storage is near quadratic."},
+    {"slide": 15, "notes": "Assemble the final data structure. The triangle is not stored as a primal object in the cutting tree; after duality it is three side tests on lines. Each level handles one test, and associated cutting trees carry the selected canonical subsets forward without breaking the disjointness needed for counting."},
+    {"slide": 16, "notes": "Close by giving students the durable mental model. Partition trees are the linear-space end of the spectrum, cutting trees are the logarithmic-query end, and hybrids interpolate by switching structures when storage budget becomes tight. The checks listed on the slide are the implementation version of the proof obligations."}
+  ]
+}
+</script>
+</body>
+</html>

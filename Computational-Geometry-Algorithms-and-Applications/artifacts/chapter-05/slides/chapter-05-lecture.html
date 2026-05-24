@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05 - Orthogonal Range Searching</title>
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-05">
+  <meta name="chapter_title" content="05 - Orthogonal Range Searching">
+  <meta name="manifest_row" content="81">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-05-orthogonal-range-searching/05-orthogonal-range-searching.ipynb">
+  <meta name="source_span" content="printed pages 95-120; PDF pages 106-131">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      padding: 70px 96px 64px;
+      font-family: var(--font-sans);
+      color: var(--slide-ink);
+      background: var(--slide-bg);
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(37,99,235,0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15,118,110,0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 64px 64px;
+    }
+    .speaker-notes { display: none; }
+    h1 { margin: 0 0 18px; font-size: 54px; line-height: 1.05; letter-spacing: 0; color: var(--slide-ink); }
+    h2 { margin: 0 0 18px; font-size: 47px; line-height: 1.08; letter-spacing: 0; color: var(--slide-accent); }
+    h3 { margin: 0 0 10px; font-size: 30px; line-height: 1.12; letter-spacing: 0; color: var(--slide-accent); }
+    p { margin: 0; font-size: 27px; line-height: 1.35; }
+    .eyebrow { font-size: 22px; font-weight: 700; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0; margin-bottom: 10px; }
+    .rule { width: 130px; height: 6px; background: var(--slide-accent); border-radius: 5px; margin: 10px 0 22px; }
+    .subtitle { font-size: 31px; line-height: 1.28; color: var(--slide-muted); max-width: 1180px; }
+    .grid { display: grid; grid-template-columns: 0.92fr 1.08fr; gap: 42px; align-items: stretch; height: 805px; }
+    .grid.equal { grid-template-columns: 1fr 1fr; }
+    .grid.three { grid-template-columns: repeat(3, 1fr); height: 755px; }
+    .stack { display: flex; flex-direction: column; gap: 18px; }
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 22px 24px;
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.indigo { background: var(--math-theorem-bg); border-left: 6px solid var(--slide-accent); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel strong { display: block; color: var(--slide-accent); font-size: 25px; margin-bottom: 8px; }
+    .panel p, .panel li { font-size: 25px; line-height: 1.34; }
+    ul { margin: 0; padding-left: 28px; }
+    li { margin: 0 0 8px; }
+    .formula { font-family: var(--font-math); font-size: 35px; line-height: 1.2; color: var(--slide-ink); }
+    .small { font-size: 22px; line-height: 1.25; color: var(--slide-muted); }
+    .tags { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+    .tag { border: 1px solid var(--slide-border); border-radius: 6px; padding: 7px 12px; color: var(--slide-accent); background: #fff; font-weight: 700; font-size: 21px; }
+    .viz { width: 100%; height: 100%; border: 1px solid var(--slide-border-light); border-radius: 8px; background: #fff; }
+    .wide-viz { height: 690px; margin-top: 12px; }
+    .caption { margin-top: 10px; font-size: 22px; line-height: 1.25; color: var(--slide-dimmed); }
+    .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 24px; }
+    .dash-card { border: 1px solid var(--slide-border-light); border-radius: 8px; padding: 22px; background: #fff; min-height: 560px; }
+    .dash-card h3 { font-size: 31px; }
+    .dash-card .metric { margin: 14px 0; padding: 11px 13px; border-radius: 6px; background: var(--slide-bg-alt); font-family: var(--font-math); font-size: 30px; }
+    svg text { font-family: var(--font-sans); letter-spacing: 0; }
+    .math-label { font-family: var(--font-math); font-style: italic; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="slide alt" data-label="Metadata And Span Caveat">
+    <div class="eyebrow">Computational Geometry Algorithms and Applications</div>
+    <h1>05 - Orthogonal Range Searching</h1>
+    <div class="rule"></div>
+    <p class="subtitle">Chapter-grounded lecture deck for printed pages 95-120 and PDF pages 106-131. The PDF extraction offset is a bookkeeping issue only: this deck teaches Chapter 5 range searching and deliberately excludes Chapter 6 point-location material.</p>
+    <div class="grid equal" style="height:620px; margin-top:34px;">
+      <div class="stack">
+        <div class="panel indigo"><strong>Source Metadata</strong><p>Manifest row 81. Notebook: <span class="small">Computational-Geometry-Algorithms-and-Applications/chapter-05-orthogonal-range-searching/05-orthogonal-range-searching.ipynb</span></p></div>
+        <div class="panel amber"><strong>Span Caveat</strong><p>Keep the manifest span, but ground definitions, costs, and diagrams in orthogonal range searching only.</p></div>
+        <div class="panel blue"><strong>Lecture Arc</strong><p>From one-dimensional range trees to kd-trees, range trees, higher dimensions, tie handling, and fractional cascading.</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 840 620" role="img" aria-label="chapter boundary diagram">
+        <defs><marker id="arr1" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/></marker></defs>
+        <rect x="90" y="160" width="300" height="210" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+        <rect x="450" y="160" width="300" height="210" fill="#FFFBEB" stroke="#B45309" stroke-width="4" stroke-dasharray="14 12"/>
+        <text x="240" y="120" text-anchor="middle" font-size="34" font-weight="700" fill="#1E3A8A">Chapter 5</text>
+        <text x="600" y="120" text-anchor="middle" font-size="34" font-weight="700" fill="#B45309">Chapter 6</text>
+        <text x="240" y="235" text-anchor="middle" font-size="30" fill="#111827">Orthogonal boxes</text>
+        <text x="240" y="280" text-anchor="middle" font-size="30" fill="#111827">and data structures</text>
+        <text x="600" y="245" text-anchor="middle" font-size="30" fill="#64748B">Point location</text>
+        <text x="600" y="290" text-anchor="middle" font-size="30" fill="#64748B">not included</text>
+        <path d="M170 480 H665" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arr1)"/>
+        <text x="420" y="535" text-anchor="middle" font-size="28" fill="#475569">Lecture boundary follows content, not extraction offset</text>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Start by making the scope explicit. The manifest span is printed pages 95 through 120 and PDF pages 106 through 131, but the physical text extraction has an offset. For teaching purposes, we stay inside Chapter 5: orthogonal range searching, kd-trees, range trees, tie handling, and fractional cascading. Do not preview Chapter 6 point location here.</aside>
+  </section>
+
+  <section class="slide" data-label="Database To Geometry">
+    <h2>Database To Geometry</h2>
+    <div class="grid">
+      <div class="stack">
+        <div class="panel blue"><strong>Range Query Model</strong><p>A record with numeric fields becomes a point. A query with lower and upper bounds becomes an axis-aligned rectangle.</p></div>
+        <div class="panel teal"><strong>Answer</strong><p>Report exactly the points inside the box. The cost target is preprocessing plus query time proportional to search overhead and output size.</p></div>
+        <div class="panel indigo"><strong>2D Example</strong><p class="formula">Q = [x_1,x_2] \times [y_1,y_2]</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="database records mapped to box query">
+        <line x1="120" y1="590" x2="790" y2="590" stroke="#94A3B8" stroke-width="4"/>
+        <line x1="120" y1="590" x2="120" y2="80" stroke="#94A3B8" stroke-width="4"/>
+        <text x="795" y="625" font-size="28" fill="#475569">salary</text>
+        <text x="40" y="84" font-size="28" fill="#475569">age</text>
+        <rect x="330" y="190" width="300" height="250" fill="#2563EB" opacity="0.10" stroke="#2563EB" stroke-width="5"/>
+        <text x="480" y="175" text-anchor="middle" font-size="30" font-weight="700" fill="#2563EB">axis-aligned query box</text>
+        <g fill="#0F766E">
+          <circle cx="200" cy="500" r="9"/><circle cx="270" cy="330" r="9"/><circle cx="360" cy="400" r="9"/><circle cx="410" cy="245" r="9"/>
+          <circle cx="500" cy="310" r="9"/><circle cx="585" cy="390" r="9"/><circle cx="650" cy="500" r="9"/><circle cx="725" cy="205" r="9"/>
+        </g>
+        <g fill="#B45309">
+          <circle cx="360" cy="400" r="13"/><circle cx="410" cy="245" r="13"/><circle cx="500" cy="310" r="13"/><circle cx="585" cy="390" r="13"/>
+        </g>
+        <g font-size="23" fill="#111827">
+          <text x="182" y="486">r1</text><text x="252" y="315">r2</text><text x="380" y="424">r3</text><text x="428" y="240">r4</text>
+          <text x="520" y="302">r5</text><text x="602" y="384">r6</text><text x="665" y="525">r7</text><text x="740" y="196">r8</text>
+        </g>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Motivate the chapter from database queries. A tuple such as salary and age is just a point in the plane, and bounds on each field form an axis-aligned rectangle. The geometric problem is to preprocess the point set so that a rectangle query reports its contents quickly, ideally with time that separates navigation cost from the number of answers.</aside>
+  </section>
+
+  <section class="slide alt" data-label="1D Split Node">
+    <h2>1D Split Node</h2>
+    <div class="grid">
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="one dimensional range tree split node">
+        <defs><marker id="arr3" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#B45309"/></marker></defs>
+        <g stroke="#1E3A8A" stroke-width="4" fill="#fff">
+          <line x1="450" y1="90" x2="270" y2="210"/><line x1="450" y1="90" x2="630" y2="210"/>
+          <line x1="270" y1="210" x2="170" y2="350"/><line x1="270" y1="210" x2="360" y2="350"/>
+          <line x1="630" y1="210" x2="540" y2="350"/><line x1="630" y1="210" x2="730" y2="350"/>
+          <circle cx="450" cy="90" r="34"/><circle cx="270" cy="210" r="30"/><circle cx="630" cy="210" r="30"/>
+          <circle cx="170" cy="350" r="28"/><circle cx="360" cy="350" r="28"/><circle cx="540" cy="350" r="28"/><circle cx="730" cy="350" r="28"/>
+        </g>
+        <g font-size="25" fill="#111827" text-anchor="middle" font-weight="700">
+          <text x="450" y="99">8</text><text x="270" y="219">4</text><text x="630" y="219">12</text>
+          <text x="170" y="359">2</text><text x="360" y="359">6</text><text x="540" y="359">10</text><text x="730" y="359">14</text>
+        </g>
+        <path d="M445 136 C360 190 270 230 185 328" stroke="#B45309" stroke-width="5" fill="none" marker-end="url(#arr3)"/>
+        <path d="M460 136 C545 190 620 230 715 328" stroke="#B45309" stroke-width="5" fill="none" marker-end="url(#arr3)"/>
+        <rect x="250" y="520" width="400" height="60" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+        <line x1="315" y1="505" x2="315" y2="600" stroke="#2563EB" stroke-width="4"/><line x1="595" y1="505" x2="595" y2="600" stroke="#2563EB" stroke-width="4"/>
+        <text x="315" y="637" text-anchor="middle" font-size="27" fill="#2563EB">x1</text><text x="595" y="637" text-anchor="middle" font-size="27" fill="#2563EB">x2</text>
+      </svg>
+      <div class="stack">
+        <div class="panel indigo"><strong>Split Node</strong><p>The first node whose value lies between the two query endpoints separates the left endpoint search from the right endpoint search.</p></div>
+        <div class="panel blue"><strong>Canonical Subtrees</strong><p>While descending to <span class="formula">x_1</span>, take right siblings that are fully inside. While descending to <span class="formula">x_2</span>, take left siblings that are fully inside.</p></div>
+        <div class="panel teal"><strong>Reporting</strong><p>Leaves in selected subtrees are reported without testing each ancestor again.</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Review the one-dimensional structure because it is the template for everything later. A balanced binary search tree stores the sorted keys. The query interval first finds the split node where the two endpoint searches diverge. From that split, the left descent contributes whole right subtrees and the right descent contributes whole left subtrees.</aside>
+  </section>
+
+  <section class="slide" data-label="Output Sensitivity">
+    <h2>Output Sensitivity</h2>
+    <div class="grid equal">
+      <div class="stack">
+        <div class="panel blue"><strong>Search Overhead</strong><p>Only the endpoint paths require careful navigation. In a balanced tree there are <span class="formula">O(\log n)</span> such nodes.</p></div>
+        <div class="panel teal"><strong>Reported Leaves</strong><p>Once a canonical subtree is accepted, its leaves are output directly. This work is <span class="formula">O(k)</span>.</p></div>
+        <div class="panel indigo"><strong>Pattern</strong><p class="formula">T(n,k) = O(\log n + k)</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="search overhead and output size accounting">
+        <rect x="120" y="80" width="240" height="520" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+        <rect x="540" y="80" width="240" height="520" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+        <text x="240" y="135" text-anchor="middle" font-size="30" font-weight="700" fill="#2563EB">navigation</text>
+        <text x="660" y="135" text-anchor="middle" font-size="30" font-weight="700" fill="#0F766E">output</text>
+        <g stroke="#2563EB" stroke-width="5" fill="#fff">
+          <circle cx="240" cy="205" r="26"/><circle cx="240" cy="285" r="26"/><circle cx="240" cy="365" r="26"/><circle cx="240" cy="445" r="26"/>
+          <line x1="240" y1="231" x2="240" y2="259"/><line x1="240" y1="311" x2="240" y2="339"/><line x1="240" y1="391" x2="240" y2="419"/>
+        </g>
+        <g fill="#0F766E">
+          <circle cx="600" cy="215" r="12"/><circle cx="660" cy="220" r="12"/><circle cx="715" cy="255" r="12"/><circle cx="610" cy="315" r="12"/>
+          <circle cx="690" cy="335" r="12"/><circle cx="625" cy="410" r="12"/><circle cx="705" cy="455" r="12"/><circle cx="650" cy="505" r="12"/>
+        </g>
+        <text x="240" y="535" text-anchor="middle" font-size="32" fill="#1E3A8A">log n</text>
+        <text x="660" y="535" text-anchor="middle" font-size="32" fill="#0F766E">k answers</text>
+        <path d="M380 340 H520" stroke="#94A3B8" stroke-width="5" stroke-dasharray="14 12"/>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Name output sensitivity early. We do not want a query bound that hides the cost of printing many answers, because reporting k points really takes k time. The useful accounting is navigation plus output: logarithmic work to discover canonical subtrees, then linear work in the number of reported leaves.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Kd-Tree Construction">
+    <h2>Kd-Tree Construction</h2>
+    <div class="grid">
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="kd-tree alternating median cuts">
+        <rect x="90" y="70" width="720" height="540" fill="#fff" stroke="#CBD5E1" stroke-width="4"/>
+        <line x1="450" y1="70" x2="450" y2="610" stroke="#2563EB" stroke-width="6"/>
+        <line x1="90" y1="325" x2="450" y2="325" stroke="#0F766E" stroke-width="5"/>
+        <line x1="450" y1="405" x2="810" y2="405" stroke="#0F766E" stroke-width="5"/>
+        <line x1="250" y1="70" x2="250" y2="325" stroke="#6D28D9" stroke-width="4"/>
+        <line x1="610" y1="405" x2="610" y2="610" stroke="#6D28D9" stroke-width="4"/>
+        <g fill="#111827">
+          <circle cx="180" cy="145" r="8"/><circle cx="290" cy="255" r="8"/><circle cx="340" cy="460" r="8"/><circle cx="410" cy="210" r="8"/>
+          <circle cx="520" cy="130" r="8"/><circle cx="585" cy="510" r="8"/><circle cx="705" cy="300" r="8"/><circle cx="755" cy="530" r="8"/>
+        </g>
+        <text x="470" y="110" font-size="27" font-weight="700" fill="#2563EB">vertical median</text>
+        <text x="105" y="310" font-size="25" font-weight="700" fill="#0F766E">horizontal medians</text>
+        <text x="265" y="100" font-size="24" font-weight="700" fill="#6D28D9">next x-cuts</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue"><strong>Recursive Rule</strong><p>At each node, split the current point set by its median coordinate.</p></div>
+        <div class="panel teal"><strong>Alternating Axes</strong><p>Use a vertical line at one level, a horizontal line at the next, then alternate.</p></div>
+        <div class="panel indigo"><strong>Balance</strong><p>Median choices keep subproblems comparable, so the tree height is logarithmic for distinct split keys.</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Introduce kd-trees as a spatial binary tree rather than as a sorted one-dimensional tree. The construction repeatedly cuts the current point set at a median coordinate, alternating between vertical and horizontal cuts. The median keeps the tree balanced, while the changing axis lets the structure adapt to two-dimensional boxes.</aside>
+  </section>
+
+  <section class="slide" data-label="Regions Attached To Nodes">
+    <h2>Regions Attached To Nodes</h2>
+    <div class="grid">
+      <div class="stack">
+        <div class="panel blue"><strong>Cell Invariant</strong><p>Each node owns the rectangle of space consistent with the decisions made on the path from the root.</p></div>
+        <div class="panel teal"><strong>Subtree Meaning</strong><p>All points in a subtree lie inside that node region, and no point outside the subtree is needed to answer a fully-contained query cell.</p></div>
+        <div class="panel amber"><strong>Boundary Convention</strong><p>A consistent side rule for equality prevents points from being lost or duplicated.</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="kd-tree node regions">
+        <rect x="105" y="80" width="690" height="510" fill="#fff" stroke="#CBD5E1" stroke-width="4"/>
+        <rect x="105" y="80" width="345" height="250" fill="#2563EB" opacity="0.08" stroke="#2563EB" stroke-width="4"/>
+        <rect x="105" y="330" width="345" height="260" fill="#0F766E" opacity="0.08" stroke="#0F766E" stroke-width="4"/>
+        <rect x="450" y="80" width="345" height="325" fill="#6D28D9" opacity="0.08" stroke="#6D28D9" stroke-width="4"/>
+        <rect x="450" y="405" width="345" height="185" fill="#B45309" opacity="0.08" stroke="#B45309" stroke-width="4"/>
+        <line x1="450" y1="80" x2="450" y2="590" stroke="#1E3A8A" stroke-width="5"/>
+        <line x1="105" y1="330" x2="450" y2="330" stroke="#1E3A8A" stroke-width="5"/>
+        <line x1="450" y1="405" x2="795" y2="405" stroke="#1E3A8A" stroke-width="5"/>
+        <g font-size="28" font-weight="700">
+          <text x="260" y="210" text-anchor="middle" fill="#2563EB">v.left.high</text>
+          <text x="270" y="470" text-anchor="middle" fill="#0F766E">v.left.low</text>
+          <text x="625" y="250" text-anchor="middle" fill="#6D28D9">v.right.high</text>
+          <text x="625" y="510" text-anchor="middle" fill="#B45309">v.right.low</text>
+        </g>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Attach geometry to the tree nodes. The root owns the whole bounding rectangle, and each comparison on a search path clips that rectangle by a vertical or horizontal line. This is why a kd-tree can prune: the node region summarizes every point below the node without inspecting them individually.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Kd Query Pruning">
+    <h2>Kd Query Pruning</h2>
+    <div class="grid equal">
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="kd-tree query pruning cases">
+        <rect x="90" y="85" width="720" height="520" fill="#fff" stroke="#CBD5E1" stroke-width="4"/>
+        <rect x="365" y="230" width="250" height="210" fill="#2563EB" opacity="0.12" stroke="#2563EB" stroke-width="5"/>
+        <rect x="130" y="120" width="150" height="130" fill="#F8FAFC" stroke="#94A3B8" stroke-width="4"/>
+        <rect x="420" y="270" width="100" height="90" fill="#0F766E" opacity="0.16" stroke="#0F766E" stroke-width="4"/>
+        <rect x="560" y="340" width="185" height="175" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+        <text x="205" y="295" text-anchor="middle" font-size="27" fill="#64748B">disjoint</text>
+        <text x="470" y="395" text-anchor="middle" font-size="27" fill="#0F766E">inside</text>
+        <text x="655" y="550" text-anchor="middle" font-size="27" fill="#B45309">partial</text>
+        <text x="490" y="218" text-anchor="middle" font-size="28" font-weight="700" fill="#2563EB">query Q</text>
+        <g fill="#111827">
+          <circle cx="190" cy="170" r="8"/><circle cx="460" cy="310" r="8"/><circle cx="495" cy="335" r="8"/><circle cx="630" cy="390" r="8"/><circle cx="710" cy="485" r="8"/>
+        </g>
+      </svg>
+      <div class="stack">
+        <div class="panel amber"><strong>Disjoint</strong><p>If the node region misses the query rectangle, stop immediately.</p></div>
+        <div class="panel teal"><strong>Fully Contained</strong><p>If the node region lies inside the query rectangle, report the whole subtree.</p></div>
+        <div class="panel blue"><strong>Partial</strong><p>If regions overlap but neither contains the other, recurse into children.</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">The kd-tree query has three geometric cases. A disjoint node region contributes nothing, so the subtree is ignored. A fully contained node region contributes all its points, so the subtree is reported wholesale. Only partial overlap forces recursion, and the analysis is about bounding how many partial nodes can occur.</aside>
+  </section>
+
+  <section class="slide" data-label="Why Sqrt Appears">
+    <h2>Why Sqrt Appears</h2>
+    <div class="grid">
+      <div class="stack">
+        <div class="panel indigo"><strong>Line Crossing Bound</strong><p>A vertical query side crosses only a limited number of kd-tree regions at each relevant depth.</p></div>
+        <div class="panel blue"><strong>Recurrence Shape</strong><p class="formula">Q(n) = 2Q(n/4) + O(1)</p><p>Every two levels, only two grandchildren can be crossed by a fixed vertical line.</p></div>
+        <div class="panel teal"><strong>Consequence</strong><p class="formula">Q(n) = O(\sqrt n)</p><p>A rectangle has four sides, so kd-tree query time is <span class="formula">O(\sqrt n + k)</span>.</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="sqrt recurrence line crossings">
+        <rect x="120" y="75" width="640" height="520" fill="#fff" stroke="#CBD5E1" stroke-width="4"/>
+        <line x1="440" y1="75" x2="440" y2="595" stroke="#2563EB" stroke-width="5"/>
+        <line x1="120" y1="320" x2="440" y2="320" stroke="#0F766E" stroke-width="4"/>
+        <line x1="440" y1="250" x2="760" y2="250" stroke="#0F766E" stroke-width="4"/>
+        <line x1="285" y1="75" x2="285" y2="320" stroke="#6D28D9" stroke-width="4"/>
+        <line x1="600" y1="250" x2="600" y2="595" stroke="#6D28D9" stroke-width="4"/>
+        <line x1="530" y1="50" x2="530" y2="625" stroke="#B45309" stroke-width="7" stroke-dasharray="18 14"/>
+        <circle cx="530" cy="155" r="18" fill="#B45309"/><circle cx="530" cy="425" r="18" fill="#B45309"/>
+        <text x="585" y="70" font-size="28" font-weight="700" fill="#B45309">one query side</text>
+        <text x="450" y="660" text-anchor="middle" font-size="32" fill="#1E3A8A">after two split levels: two crossed grandchildren, not four</text>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Give intuition for the square-root term rather than only quoting the theorem. Track one vertical side of the query rectangle through the subdivision. After a vertical split and then a horizontal split, the line can cross two of the four grandchildren. This yields the recurrence Q of n equals two Q of n over four plus a constant, which solves to square root n.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Range Tree Idea">
+    <h2>Range Tree Idea</h2>
+    <div class="grid">
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="range tree with associated y structures">
+        <g stroke="#1E3A8A" stroke-width="4" fill="#fff">
+          <line x1="360" y1="95" x2="220" y2="220"/><line x1="360" y1="95" x2="500" y2="220"/>
+          <line x1="220" y1="220" x2="145" y2="350"/><line x1="220" y1="220" x2="295" y2="350"/>
+          <line x1="500" y1="220" x2="425" y2="350"/><line x1="500" y1="220" x2="575" y2="350"/>
+          <circle cx="360" cy="95" r="30"/><circle cx="220" cy="220" r="28"/><circle cx="500" cy="220" r="28"/>
+          <circle cx="145" cy="350" r="24"/><circle cx="295" cy="350" r="24"/><circle cx="425" cy="350" r="24"/><circle cx="575" cy="350" r="24"/>
+        </g>
+        <g font-size="24" text-anchor="middle" fill="#111827" font-weight="700">
+          <text x="360" y="104">x</text><text x="220" y="229">x</text><text x="500" y="229">x</text>
+        </g>
+        <g transform="translate(650,90)">
+          <rect x="0" y="0" width="160" height="380" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+          <text x="80" y="45" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">y-tree</text>
+          <line x1="80" y1="80" x2="45" y2="145" stroke="#0F766E" stroke-width="3"/><line x1="80" y1="80" x2="115" y2="145" stroke="#0F766E" stroke-width="3"/>
+          <line x1="45" y1="145" x2="30" y2="215" stroke="#0F766E" stroke-width="3"/><line x1="45" y1="145" x2="60" y2="215" stroke="#0F766E" stroke-width="3"/>
+          <circle cx="80" cy="80" r="15" fill="#fff" stroke="#0F766E" stroke-width="3"/><circle cx="45" cy="145" r="13" fill="#fff" stroke="#0F766E" stroke-width="3"/><circle cx="115" cy="145" r="13" fill="#fff" stroke="#0F766E" stroke-width="3"/>
+          <circle cx="30" cy="215" r="10" fill="#0F766E"/><circle cx="60" cy="215" r="10" fill="#0F766E"/>
+        </g>
+        <path d="M392 95 C505 95 565 140 650 160" stroke="#B45309" stroke-width="5" fill="none" stroke-dasharray="12 10"/>
+        <text x="460" y="570" text-anchor="middle" font-size="31" fill="#1E3A8A">x-tree chooses subsets; associated y-structures finish the query</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue"><strong>Primary Tree</strong><p>Build a balanced search tree on x-coordinates.</p></div>
+        <div class="panel teal"><strong>Associated Structures</strong><p>At every internal node, store the points in that subtree in a secondary structure ordered by y.</p></div>
+        <div class="panel indigo"><strong>Separation Of Coordinates</strong><p>Use x to choose canonical subsets, then y to filter each chosen subset.</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Now contrast kd-trees with range trees. A range tree keeps a primary balanced tree on x, but each internal node also stores an associated structure for the points in its subtree ordered by y. The data structure is larger, but it lets the two coordinate restrictions be handled in a more systematic way.</aside>
+  </section>
+
+  <section class="slide" data-label="Canonical Subsets">
+    <h2>Canonical Subsets</h2>
+    <div class="grid equal">
+      <div class="stack">
+        <div class="panel indigo"><strong>Decomposition</strong><p>The x-interval is represented as a disjoint union of subtree point sets.</p></div>
+        <div class="panel blue"><strong>Count</strong><p>Each side of the split path contributes at most one sibling per level.</p></div>
+        <div class="panel teal"><strong>Bound</strong><p class="formula">O(\log n) \text{ canonical nodes}</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="canonical subsets in range tree">
+        <g stroke="#1E3A8A" stroke-width="4" fill="#fff">
+          <line x1="450" y1="90" x2="270" y2="205"/><line x1="450" y1="90" x2="630" y2="205"/>
+          <line x1="270" y1="205" x2="170" y2="335"/><line x1="270" y1="205" x2="370" y2="335"/>
+          <line x1="630" y1="205" x2="530" y2="335"/><line x1="630" y1="205" x2="730" y2="335"/>
+          <line x1="170" y1="335" x2="120" y2="465"/><line x1="170" y1="335" x2="220" y2="465"/>
+          <line x1="730" y1="335" x2="680" y2="465"/><line x1="730" y1="335" x2="780" y2="465"/>
+          <circle cx="450" cy="90" r="28"/><circle cx="270" cy="205" r="26"/><circle cx="630" cy="205" r="26"/>
+          <circle cx="170" cy="335" r="24"/><circle cx="370" cy="335" r="24"/><circle cx="530" cy="335" r="24"/><circle cx="730" cy="335" r="24"/>
+          <circle cx="120" cy="465" r="20"/><circle cx="220" cy="465" r="20"/><circle cx="680" cy="465" r="20"/><circle cx="780" cy="465" r="20"/>
+        </g>
+        <g fill="#0F766E" opacity="0.22" stroke="#0F766E" stroke-width="5">
+          <circle cx="370" cy="335" r="38"/><circle cx="530" cy="335" r="38"/><circle cx="220" cy="465" r="33"/>
+        </g>
+        <path d="M450 120 C390 170 300 230 185 325" stroke="#B45309" stroke-width="5" fill="none"/>
+        <path d="M450 120 C520 170 620 245 715 325" stroke="#B45309" stroke-width="5" fill="none"/>
+        <text x="450" y="610" text-anchor="middle" font-size="31" fill="#0F766E">selected canonical subtrees are disjoint</text>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Use the same split-node picture from one dimension, but emphasize the word canonical. The selected nodes form disjoint subtrees whose union is exactly the x-range. Because a balanced search path has logarithmic length, the decomposition contains only logarithmically many nodes.</aside>
+  </section>
+
+  <section class="slide alt" data-label="2D Range Query Cost">
+    <h2>2D Range Query Cost</h2>
+    <div class="grid">
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="range tree query cost accounting">
+        <rect x="90" y="95" width="210" height="450" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+        <rect x="345" y="95" width="210" height="450" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+        <rect x="600" y="95" width="210" height="450" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+        <text x="195" y="150" text-anchor="middle" font-size="29" font-weight="700" fill="#2563EB">x split</text>
+        <text x="450" y="150" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">y queries</text>
+        <text x="705" y="150" text-anchor="middle" font-size="29" font-weight="700" fill="#1E3A8A">report</text>
+        <text x="195" y="305" text-anchor="middle" font-size="42" class="math-label" fill="#111827">log n</text>
+        <text x="450" y="305" text-anchor="middle" font-size="42" class="math-label" fill="#111827">log n x log n</text>
+        <text x="705" y="305" text-anchor="middle" font-size="42" class="math-label" fill="#111827">k</text>
+        <path d="M300 320 H345" stroke="#94A3B8" stroke-width="5"/><path d="M555 320 H600" stroke="#94A3B8" stroke-width="5"/>
+        <text x="450" y="625" text-anchor="middle" font-size="38" class="math-label" fill="#1E3A8A">O(log^2 n + k)</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue"><strong>Step 1</strong><p>Decompose the x-range into <span class="formula">O(\log n)</span> canonical nodes.</p></div>
+        <div class="panel teal"><strong>Step 2</strong><p>For each canonical node, query its associated y-structure for <span class="formula">[y_1,y_2]</span>.</p></div>
+        <div class="panel indigo"><strong>Cost</strong><p class="formula">O(\log n) \cdot O(\log n) + O(k)</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Derive the two-dimensional range tree query bound by multiplication. The x-search produces logarithmically many canonical nodes. Each canonical node needs a one-dimensional y-range query in its associated structure. Summing those searches gives log squared n, and the actual reported points contribute the plus k term.</aside>
+  </section>
+
+  <section class="slide" data-label="Higher Dimensions">
+    <h2>Higher Dimensions</h2>
+    <div class="grid equal">
+      <div class="stack">
+        <div class="panel indigo"><strong>Recursive Tree Of Trees</strong><p>A d-dimensional range tree stores associated range trees of dimension d minus one.</p></div>
+        <div class="panel blue"><strong>Query Pattern</strong><p>Choose canonical subsets in the first coordinate, then pass the remaining box query to the associated structures.</p></div>
+        <div class="panel teal"><strong>Typical Bound</strong><p class="formula">O(\log^d n + k)</p><p>with near <span class="formula">O(n\log^{d-1}n)</span> storage in fixed dimension.</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="recursive tree of trees">
+        <rect x="110" y="110" width="210" height="420" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+        <rect x="360" y="170" width="210" height="340" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+        <rect x="610" y="230" width="210" height="260" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+        <text x="215" y="170" text-anchor="middle" font-size="32" font-weight="700" fill="#2563EB">x1 tree</text>
+        <text x="465" y="230" text-anchor="middle" font-size="32" font-weight="700" fill="#0F766E">x2 tree</text>
+        <text x="715" y="290" text-anchor="middle" font-size="32" font-weight="700" fill="#1E3A8A">x3 tree</text>
+        <g fill="#fff" stroke-width="3">
+          <circle cx="215" cy="250" r="22" stroke="#2563EB"/><circle cx="165" cy="340" r="19" stroke="#2563EB"/><circle cx="265" cy="340" r="19" stroke="#2563EB"/>
+          <circle cx="465" cy="305" r="20" stroke="#0F766E"/><circle cx="425" cy="390" r="17" stroke="#0F766E"/><circle cx="505" cy="390" r="17" stroke="#0F766E"/>
+          <circle cx="715" cy="360" r="18" stroke="#1E3A8A"/><circle cx="680" cy="430" r="15" stroke="#1E3A8A"/><circle cx="750" cy="430" r="15" stroke="#1E3A8A"/>
+        </g>
+        <path d="M320 310 C350 290 345 255 360 250" stroke="#B45309" stroke-width="5" fill="none" stroke-dasharray="12 10"/>
+        <path d="M570 360 C600 340 595 310 610 305" stroke="#B45309" stroke-width="5" fill="none" stroke-dasharray="12 10"/>
+        <text x="465" y="610" text-anchor="middle" font-size="31" fill="#475569">each associated structure drops one coordinate</text>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Generalize the construction carefully. A range tree in d dimensions is a primary tree in one coordinate, with each node storing an associated range tree for the remaining d minus one coordinates. This recursion is elegant in fixed dimension, but students should notice the storage and logarithmic factors accumulating with dimension.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Equal Coordinate Failure">
+    <h2>Equal Coordinate Failure</h2>
+    <div class="grid">
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="tie handling by composite coordinates">
+        <rect x="80" y="90" width="330" height="500" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+        <rect x="490" y="90" width="330" height="500" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+        <text x="245" y="145" text-anchor="middle" font-size="30" font-weight="700" fill="#B45309">duplicate x</text>
+        <text x="655" y="145" text-anchor="middle" font-size="30" font-weight="700" fill="#0F766E">composite key</text>
+        <line x1="245" y1="520" x2="245" y2="200" stroke="#94A3B8" stroke-width="4"/>
+        <g fill="#B45309"><circle cx="245" cy="260" r="11"/><circle cx="245" cy="335" r="11"/><circle cx="245" cy="410" r="11"/></g>
+        <g fill="#0F766E"><circle cx="590" cy="260" r="11"/><circle cx="655" cy="335" r="11"/><circle cx="720" cy="410" r="11"/></g>
+        <text x="245" y="555" text-anchor="middle" font-size="27" fill="#B45309">ambiguous median side</text>
+        <text x="655" y="555" text-anchor="middle" font-size="27" fill="#0F766E">(x,y) or (x,id)</text>
+        <path d="M420 340 H480" stroke="#1E3A8A" stroke-width="6"/>
+      </svg>
+      <div class="stack">
+        <div class="panel amber"><strong>Failure Mode</strong><p>Equal x or y values can make a split line contain many points. A naive left-or-right rule may break balance or query consistency.</p></div>
+        <div class="panel blue"><strong>Tie Break</strong><p>Replace a coordinate by a lexicographic key such as <span class="formula">(x,y)</span> or <span class="formula">(x,\mathrm{id})</span>.</p></div>
+        <div class="panel teal"><strong>Query Translation</strong><p>Translate interval endpoints into the same composite order so closed boxes still include the intended points.</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Discuss degeneracy as a correctness issue, not a footnote. If many points share the same x or y coordinate, comparisons at split lines can become ambiguous and balance can suffer. The standard repair is to use a composite coordinate or symbolic tie breaker, and then translate query endpoints consistently so that closed ranges keep the intended inclusions.</aside>
+  </section>
+
+  <section class="slide" data-label="Fractional Cascading Warmup">
+    <h2>Fractional Cascading Warmup</h2>
+    <div class="grid">
+      <div class="stack">
+        <div class="panel indigo"><strong>Repeated Searches</strong><p>Range trees repeatedly binary-search related sorted y-lists.</p></div>
+        <div class="panel blue"><strong>Bridge Idea</strong><p>After one full binary search, stored cross-pointers move the position into neighboring lists.</p></div>
+        <div class="panel teal"><strong>Goal</strong><p>Pay <span class="formula">O(\log n)</span> once, then only constant overhead per visited canonical node plus reporting.</p></div>
+      </div>
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="fractional cascading pointer transfer">
+        <defs><marker id="arr14" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#B45309"/></marker></defs>
+        <g font-size="25" font-weight="700" fill="#1E3A8A"><text x="110" y="145">A(v)</text><text x="110" y="300">A(left)</text><text x="110" y="455">A(right)</text></g>
+        <g fill="#fff" stroke="#CBD5E1" stroke-width="3">
+          <rect x="220" y="105" width="540" height="58"/><rect x="220" y="260" width="540" height="58"/><rect x="220" y="415" width="540" height="58"/>
+        </g>
+        <g font-size="25" text-anchor="middle" fill="#111827">
+          <text x="265" y="143">3</text><text x="340" y="143">9</text><text x="415" y="143">14</text><text x="490" y="143">22</text><text x="565" y="143">31</text><text x="640" y="143">38</text><text x="715" y="143">47</text>
+          <text x="265" y="298">3</text><text x="340" y="298">14</text><text x="415" y="298">31</text><text x="490" y="298">47</text>
+          <text x="265" y="453">9</text><text x="340" y="453">22</text><text x="415" y="453">38</text>
+        </g>
+        <circle cx="490" cy="134" r="24" fill="#2563EB" opacity="0.18" stroke="#2563EB" stroke-width="4"/>
+        <path d="M490 164 C455 195 430 220 415 260" stroke="#B45309" stroke-width="5" fill="none" marker-end="url(#arr14)"/>
+        <path d="M490 164 C430 255 365 345 340 415" stroke="#B45309" stroke-width="5" fill="none" marker-end="url(#arr14)"/>
+        <text x="490" y="600" text-anchor="middle" font-size="31" fill="#475569">search once, transfer positions by pointers</text>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Prepare fractional cascading by naming the wasted work. In an ordinary range tree, many associated y-lists are searched independently, even though the lists are related by the tree. Fractional cascading stores enough linking information that a position found by one binary search can be transferred into neighboring lists with only constant extra work.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Layered Range Tree">
+    <h2>Layered Range Tree</h2>
+    <div class="grid">
+      <svg class="viz" viewBox="0 0 900 700" role="img" aria-label="layered range tree arrays reduce query time">
+        <g stroke="#1E3A8A" stroke-width="4" fill="#fff">
+          <line x1="270" y1="120" x2="170" y2="250"/><line x1="270" y1="120" x2="370" y2="250"/>
+          <line x1="170" y1="250" x2="125" y2="380"/><line x1="170" y1="250" x2="215" y2="380"/>
+          <line x1="370" y1="250" x2="325" y2="380"/><line x1="370" y1="250" x2="415" y2="380"/>
+          <circle cx="270" cy="120" r="27"/><circle cx="170" cy="250" r="25"/><circle cx="370" cy="250" r="25"/>
+          <circle cx="125" cy="380" r="21"/><circle cx="215" cy="380" r="21"/><circle cx="325" cy="380" r="21"/><circle cx="415" cy="380" r="21"/>
+        </g>
+        <g transform="translate(520,120)">
+          <rect x="0" y="0" width="270" height="60" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/><text x="135" y="38" text-anchor="middle" font-size="25" fill="#111827">2 5 8 11 17 21</text>
+          <rect x="0" y="125" width="210" height="56" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/><text x="105" y="161" text-anchor="middle" font-size="24" fill="#111827">2 8 17</text>
+          <rect x="0" y="250" width="210" height="56" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/><text x="105" y="286" text-anchor="middle" font-size="24" fill="#111827">5 11 21</text>
+          <path d="M120 60 L95 125" stroke="#B45309" stroke-width="5"/><path d="M175 60 L145 250" stroke="#B45309" stroke-width="5"/>
+        </g>
+        <text x="450" y="620" text-anchor="middle" font-size="33" class="math-label" fill="#1E3A8A">O(log n + k)</text>
+      </svg>
+      <div class="stack">
+        <div class="panel blue"><strong>Layered Lists</strong><p>Replace secondary y-trees by sorted arrays enriched with bridge pointers.</p></div>
+        <div class="panel teal"><strong>Query Saving</strong><p>One binary search locates the y-range, then pointer transfers follow the canonical x nodes.</p></div>
+        <div class="panel indigo"><strong>2D Bound</strong><p>For planar orthogonal range reporting, layered range trees achieve <span class="formula">O(\log n + k)</span> query time with extra storage.</p></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Connect the warmup to the final data structure. In the layered range tree, nodes store sorted arrays of y-coordinates, and adjacent arrays have bridge pointers. The x search still finds canonical nodes, but the y positions are cascaded through those lists, reducing the planar query overhead from log squared n to log n plus output.</aside>
+  </section>
+
+  <section class="slide" data-label="Tradeoff Dashboard">
+    <h2>Tradeoff Dashboard</h2>
+    <div class="dashboard">
+      <div class="dash-card">
+        <h3>Kd-Tree</h3>
+        <div class="metric">space: O(n)</div>
+        <div class="metric">query: O(sqrt(n)+k)</div>
+        <p>Compact, geometric, and practical for many point sets. Analysis is driven by how query sides cross subdivision cells.</p>
+      </div>
+      <div class="dash-card">
+        <h3>Range Tree</h3>
+        <div class="metric">space: O(n log n)</div>
+        <div class="metric">query: O(log^2 n+k)</div>
+        <p>Separates coordinates cleanly. Canonical x-subsets delegate to associated y-structures.</p>
+      </div>
+      <div class="dash-card">
+        <h3>Layered Range Tree</h3>
+        <div class="metric">space: O(n log n)</div>
+        <div class="metric">query: O(log n+k)</div>
+        <p>Uses fractional cascading to share searches across related sorted lists. Best when fast repeated queries justify the machinery.</p>
+      </div>
+    </div>
+    <div class="panel amber" style="margin-top:22px;"><strong>Notes Variants</strong><p>Chapter themes include general point sets, duplicate-coordinate handling, storage/query tradeoffs, and fractional-cascading refinements. The same orthogonal box model extends to higher fixed dimensions with growing logarithmic and storage costs.</p></div>
+    <aside class="speaker-notes">Close by comparing the design choices. Kd-trees are lean and spatial, with square-root query overhead in the planar worst case. Range trees spend more storage to get logarithmic canonical decompositions, and layered range trees add fractional cascading to remove one logarithmic factor. The notes and exercises around the chapter emphasize variants, degeneracies, and the tradeoff between storage and query speed.</aside>
+  </section>
+</deck-stage>
+
+<script id="speaker-notes" type="application/json">
+[
+  {
+    "slide": 1,
+    "label": "Metadata And Span Caveat",
+    "notes": "Start by making the scope explicit. The manifest span is printed pages 95 through 120 and PDF pages 106 through 131, but the physical text extraction has an offset. For teaching purposes, we stay inside Chapter 5: orthogonal range searching, kd-trees, range trees, tie handling, and fractional cascading. Do not preview Chapter 6 point location here."
+  },
+  {
+    "slide": 2,
+    "label": "Database To Geometry",
+    "notes": "Motivate the chapter from database queries. A tuple such as salary and age is just a point in the plane, and bounds on each field form an axis-aligned rectangle. The geometric problem is to preprocess the point set so that a rectangle query reports its contents quickly, ideally with time that separates navigation cost from the number of answers."
+  },
+  {
+    "slide": 3,
+    "label": "1D Split Node",
+    "notes": "Review the one-dimensional structure because it is the template for everything later. A balanced binary search tree stores the sorted keys. The query interval first finds the split node where the two endpoint searches diverge. From that split, the left descent contributes whole right subtrees and the right descent contributes whole left subtrees."
+  },
+  {
+    "slide": 4,
+    "label": "Output Sensitivity",
+    "notes": "Name output sensitivity early. We do not want a query bound that hides the cost of printing many answers, because reporting k points really takes k time. The useful accounting is navigation plus output: logarithmic work to discover canonical subtrees, then linear work in the number of reported leaves."
+  },
+  {
+    "slide": 5,
+    "label": "Kd-Tree Construction",
+    "notes": "Introduce kd-trees as a spatial binary tree rather than as a sorted one-dimensional tree. The construction repeatedly cuts the current point set at a median coordinate, alternating between vertical and horizontal cuts. The median keeps the tree balanced, while the changing axis lets the structure adapt to two-dimensional boxes."
+  },
+  {
+    "slide": 6,
+    "label": "Regions Attached To Nodes",
+    "notes": "Attach geometry to the tree nodes. The root owns the whole bounding rectangle, and each comparison on a search path clips that rectangle by a vertical or horizontal line. This is why a kd-tree can prune: the node region summarizes every point below the node without inspecting them individually."
+  },
+  {
+    "slide": 7,
+    "label": "Kd Query Pruning",
+    "notes": "The kd-tree query has three geometric cases. A disjoint node region contributes nothing, so the subtree is ignored. A fully contained node region contributes all its points, so the subtree is reported wholesale. Only partial overlap forces recursion, and the analysis is about bounding how many partial nodes can occur."
+  },
+  {
+    "slide": 8,
+    "label": "Why Sqrt Appears",
+    "notes": "Give intuition for the square-root term rather than only quoting the theorem. Track one vertical side of the query rectangle through the subdivision. After a vertical split and then a horizontal split, the line can cross two of the four grandchildren. This yields the recurrence Q of n equals two Q of n over four plus a constant, which solves to square root n."
+  },
+  {
+    "slide": 9,
+    "label": "Range Tree Idea",
+    "notes": "Now contrast kd-trees with range trees. A range tree keeps a primary balanced tree on x, but each internal node also stores an associated structure for the points in its subtree ordered by y. The data structure is larger, but it lets the two coordinate restrictions be handled in a more systematic way."
+  },
+  {
+    "slide": 10,
+    "label": "Canonical Subsets",
+    "notes": "Use the same split-node picture from one dimension, but emphasize the word canonical. The selected nodes form disjoint subtrees whose union is exactly the x-range. Because a balanced search path has logarithmic length, the decomposition contains only logarithmically many nodes."
+  },
+  {
+    "slide": 11,
+    "label": "2D Range Query Cost",
+    "notes": "Derive the two-dimensional range tree query bound by multiplication. The x-search produces logarithmically many canonical nodes. Each canonical node needs a one-dimensional y-range query in its associated structure. Summing those searches gives log squared n, and the actual reported points contribute the plus k term."
+  },
+  {
+    "slide": 12,
+    "label": "Higher Dimensions",
+    "notes": "Generalize the construction carefully. A range tree in d dimensions is a primary tree in one coordinate, with each node storing an associated range tree for the remaining d minus one coordinates. This recursion is elegant in fixed dimension, but students should notice the storage and logarithmic factors accumulating with dimension."
+  },
+  {
+    "slide": 13,
+    "label": "Equal Coordinate Failure",
+    "notes": "Discuss degeneracy as a correctness issue, not a footnote. If many points share the same x or y coordinate, comparisons at split lines can become ambiguous and balance can suffer. The standard repair is to use a composite coordinate or symbolic tie breaker, and then translate query endpoints consistently so that closed ranges keep the intended inclusions."
+  },
+  {
+    "slide": 14,
+    "label": "Fractional Cascading Warmup",
+    "notes": "Prepare fractional cascading by naming the wasted work. In an ordinary range tree, many associated y-lists are searched independently, even though the lists are related by the tree. Fractional cascading stores enough linking information that a position found by one binary search can be transferred into neighboring lists with only constant extra work."
+  },
+  {
+    "slide": 15,
+    "label": "Layered Range Tree",
+    "notes": "Connect the warmup to the final data structure. In the layered range tree, nodes store sorted arrays of y-coordinates, and adjacent arrays have bridge pointers. The x search still finds canonical nodes, but the y positions are cascaded through those lists, reducing the planar query overhead from log squared n to log n plus output."
+  },
+  {
+    "slide": 16,
+    "label": "Tradeoff Dashboard",
+    "notes": "Close by comparing the design choices. Kd-trees are lean and spatial, with square-root query overhead in the planar worst case. Range trees spend more storage to get logarithmic canonical decompositions, and layered range trees add fractional cascading to remove one logarithmic factor. The notes and exercises around the chapter emphasize variants, degeneracies, and the tradeoff between storage and query speed."
+  }
+]
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) {
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ]
+      });
+    }
+  });
+</script>
+</body>
+</html>

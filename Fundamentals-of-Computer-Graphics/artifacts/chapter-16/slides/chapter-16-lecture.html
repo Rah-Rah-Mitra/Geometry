@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computer Animation</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-16">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-16-computer-animation/16-computer-animation.ipynb">
+  <meta name="source_span" content="printed pages 429-460; PDF pages 446-477.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text fonts and KaTeX auto-render support are enabled.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open by defining animation as controlled change over time. The animator gives sparse intent through keys, constraints, procedures, forces, or captured samples, while the system fills in frames. Keep the lecture focused on diagnostics: when motion looks wrong, ask which invariant was violated."
+    },
+    {
+      "slide": 2,
+      "notes": "Use the four-lane map to orient the chapter. Keyframing gives direct artistic control, procedural methods expose compact parameter sets, physics produces motion from equations, and capture imports real movement. None is automatically best; the useful question is what the animator can still inspect and adjust."
+    },
+    {
+      "slide": 3,
+      "notes": "Connect traditional animation principles to measurable computer graphics choices. Timing sets weight and intent, staging makes the important action readable, anticipation and follow-through help viewers parse cause and effect, and squash/stretch must preserve apparent volume unless growth is the intended signal."
+    },
+    {
+      "slide": 4,
+      "notes": "Treat keyframes as sparse data samples, not finished images. Once values are set at selected times, the interpolation curve commits to tangents, speeds, overshoot, and continuity. The graph should make students look at derivative behavior, because a path can pass through every key and still move poorly."
+    },
+    {
+      "slide": 5,
+      "notes": "Frame TCB splines as an editor vocabulary for local tangent control. Tension shortens motion and reduces overshoot, continuity lets incoming and outgoing behavior differ, and bias favors one neighboring segment. The important teaching point is that curve editing is motion editing, not just shape editing."
+    },
+    {
+      "slide": 6,
+      "notes": "Separate the geometric path from the clock. A curve P(u) describes where an object can travel, while a timing law s(t) decides how far along the path each frame should be. Arc-length reparameterization and easing are practical tools for decoupling shape from perceived speed."
+    },
+    {
+      "slide": 7,
+      "notes": "Rotation interpolation is the first place where ordinary linear interpolation becomes actively misleading. Rotation matrices must remain orthonormal with determinant one, and Euler angles can lose a degree of freedom. Unit quaternions keep orientation on a sphere, so interpolation can be projected back to valid rotations."
+    },
+    {
+      "slide": 8,
+      "notes": "Deformation introduces a different animation target: parameters of a shape-changing function. Bend, twist, taper, and FFD lattices can be keyframed without keying every vertex. The tradeoff is control locality: global functions are compact, while lattices and surface weights give more localized influence."
+    },
+    {
+      "slide": 9,
+      "notes": "Introduce character animation as a two-layer model. The visible skin is detailed, but the animator usually controls a simpler joint hierarchy underneath. Forward kinematics composes joint transforms from root to leaves; inverse kinematics asks for end-effector motion and solves for internal joint changes."
+    },
+    {
+      "slide": 10,
+      "notes": "Make the numeric contract explicit. IK uses a Jacobian to relate small joint changes to small end-effector changes, often with more unknowns than constraints. Skinning then blends nearby bone transforms, so the checks are residual error, plausible pose selection, and weights that sum correctly."
+    },
+    {
+      "slide": 11,
+      "notes": "This slide keeps facial animation and motion capture from sounding automatic. A captured marker cloud must be labeled, filtered, retargeted, and constrained before it drives a character. Facial rigs similarly translate sparse controls into expression geometry, so cleanup and semantic mapping are part of animation."
+    },
+    {
+      "slide": 12,
+      "notes": "Physics-based animation is attractive because equations produce secondary motion that would be tedious to key. It is also dangerous because time stepping, collisions, and force evaluation can become unstable or expensive. Emphasize that visual realism depends on numerical behavior, not only on using physical vocabulary."
+    },
+    {
+      "slide": 13,
+      "notes": "Procedural animation should feel like a compact generator with exposed controls. Waves, animated noise, cellular automata, and L-systems can create rich motion cheaply, but their parameters are often empirical. The animator gains scale and repeatability while accepting a tuning problem."
+    },
+    {
+      "slide": 14,
+      "notes": "For group motion, show that each agent does not need a global plan. A boid negotiates local urges such as collision avoidance, velocity matching, flock centering, and goal seeking. Priorities matter because simple averaging can cancel intentions and leave the agent motionless."
+    },
+    {
+      "slide": 15,
+      "notes": "Particles are a deliberately simpler group model. The system creates and destroys many short-lived independent objects, then moves them through force fields, collisions, and random variation. This makes fire, spray, smoke, and debris controllable, but it is usually an appearance model rather than full fluid physics."
+    },
+    {
+      "slide": 16,
+      "notes": "Close with a debugging checklist. Every animation method supplies an intent channel, a fill-in rule, and a small set of invariants. Students should leave able to name the artifact, choose a diagnostic, and decide whether the fix belongs in keys, timing, constraints, simulation, or procedure parameters."
+    }
+  ]
+}
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 88px 88px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 64px;
+      line-height: 1.04;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.15;
+      color: var(--slide-accent);
+      margin-bottom: 10px;
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.34;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 32px;
+    }
+
+    .eyebrow {
+      font-size: 23px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.24;
+      max-width: 1210px;
+      margin-top: 20px;
+    }
+
+    .meta-line {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      margin-top: 18px;
+    }
+
+    .rule {
+      width: 96px;
+      height: 6px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+      margin: 24px 0 28px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 34px;
+      align-items: stretch;
+      margin-top: 30px;
+    }
+
+    .two {
+      grid-template-columns: 0.94fr 1.06fr;
+    }
+
+    .two.right {
+      grid-template-columns: 1.05fr 0.95fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .four {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border);
+      border-left: 7px solid var(--slide-accent);
+      border-radius: 8px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left-color: var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left-color: var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left-color: var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left-color: var(--slide-violet);
+    }
+
+    .panel p {
+      color: var(--slide-muted);
+    }
+
+    .diagram {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      padding: 20px;
+    }
+
+    .diagram.flat {
+      border: 0;
+      background: transparent;
+      padding: 0;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.25;
+      color: var(--slide-ink);
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 18px 22px;
+      text-align: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      background: #FFFFFF;
+      color: var(--slide-muted);
+      font-size: 22px;
+      font-weight: 700;
+      padding: 6px 11px;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.25;
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .mini-table th {
+      text-align: left;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: var(--slide-bg-alt);
+      border-bottom: 2px solid var(--slide-border);
+      padding: 14px 16px;
+    }
+
+    .mini-table td {
+      border-bottom: 1px solid #E2E8F0;
+      padding: 12px 16px;
+      color: var(--slide-muted);
+      vertical-align: top;
+    }
+
+    .mini-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .svg-label {
+      font-family: var(--font-sans);
+      font-size: 28px;
+      font-weight: 700;
+      fill: var(--slide-ink);
+    }
+
+    .svg-small {
+      font-family: var(--font-sans);
+      font-size: 23px;
+      font-weight: 600;
+      fill: var(--slide-muted);
+    }
+
+    .svg-note {
+      font-family: var(--font-sans);
+      font-size: 21px;
+      font-weight: 600;
+      fill: var(--slide-dimmed);
+    }
+
+    .svg-math {
+      font-family: var(--font-math);
+      font-size: 27px;
+      fill: var(--slide-ink);
+    }
+
+    .callout {
+      font-size: 27px;
+      line-height: 1.32;
+      color: var(--slide-muted);
+      background: var(--slide-bg-alt);
+      border-left: 7px solid var(--slide-accent);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+
+    .callout strong {
+      color: var(--slide-accent);
+    }
+
+    .katex {
+      font-size: 1em !important;
+    }
+
+    .katex-display {
+      margin: 8px 0 !important;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="eyebrow">Fundamentals of Computer Graphics</div>
+        <h1>Chapter 16: Computer Animation</h1>
+        <div class="rule"></div>
+        <p class="subtitle">Controlling change over time with keys, timing, rotations, deformation, character rigs, simulation, procedures, and group behavior.</p>
+        <p class="meta-line">Source span: printed pages 429-460; PDF pages 446-477.</p>
+        <div class="content two" style="margin-top: 42px;">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Lecture Question</h3>
+              <p>When an animation looks wrong, what should be measured first: path, timing, tangent, orientation, constraint residual, energy, or control priority?</p>
+            </div>
+            <div class="panel teal">
+              <h3>Notebook Lens</h3>
+              <p>Each method becomes a small diagnostic: interpolation error, speed continuity, quaternion norm, skinning weights, energy drift, or acceleration budget.</p>
+            </div>
+          </div>
+          <div class="diagram flat">
+            <svg viewBox="0 0 900 500" role="img" aria-label="Animation timeline with keys and interpolated motion">
+              <defs>
+                <marker id="titleArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="60" y="70" width="780" height="320" rx="22" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+              <path d="M95,318 C205,170 285,355 385,210 C485,68 590,260 715,135" fill="none" stroke="#2563EB" stroke-width="8"></path>
+              <path d="M96,318 L790,318" stroke="#1E3A8A" stroke-width="5" marker-end="url(#titleArrow)"></path>
+              <text x="790" y="360" class="svg-small" text-anchor="middle">time</text>
+              <g fill="#111827">
+                <circle cx="95" cy="318" r="14"></circle>
+                <circle cx="245" cy="252" r="14"></circle>
+                <circle cx="385" cy="210" r="14"></circle>
+                <circle cx="570" cy="238" r="14"></circle>
+                <circle cx="715" cy="135" r="14"></circle>
+              </g>
+              <g fill="#B45309">
+                <circle cx="160" cy="238" r="10"></circle>
+                <circle cx="310" cy="280" r="10"></circle>
+                <circle cx="470" cy="137" r="10"></circle>
+                <circle cx="650" cy="175" r="10"></circle>
+              </g>
+              <text x="95" y="54" class="svg-label">keys</text>
+              <text x="470" y="54" class="svg-label">computed in-betweens</text>
+              <path d="M95,380 L715,380" stroke="#0F766E" stroke-width="7" stroke-linecap="round"></path>
+              <path d="M95,380 C210,430 340,405 455,445 C560,480 640,438 715,465" fill="none" stroke="#B45309" stroke-width="6" stroke-linecap="round"></path>
+              <text x="405" y="424" class="svg-note" text-anchor="middle">motion is values plus timing plus interpretation</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open by defining animation as controlled change over time. The animator gives sparse intent through keys, constraints, procedures, forces, or captured samples, while the system fills in frames. Keep the lecture focused on diagnostics: when motion looks wrong, ask which invariant was violated.</aside>
+    </section>
+
+    <section data-label="Motion Map">
+      <div class="slide">
+        <div class="eyebrow">Chapter Map</div>
+        <h2>Four Ways To Supply Motion Intent</h2>
+        <div class="content four">
+          <div class="panel blue">
+            <h3>Keyframing</h3>
+            <p>Sparse times and values are fitted by curves. Control is direct, but tangents and timing can create hidden artifacts.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Procedures</h3>
+            <p>A compact generator uses parameters, rules, or noise to create rich motion without keying every value.</p>
+          </div>
+          <div class="panel amber">
+            <h3>Physics</h3>
+            <p>Forces and equations fill in motion. The price is stability, collision handling, and less direct artistic control.</p>
+          </div>
+          <div class="panel violet">
+            <h3>Capture</h3>
+            <p>Real movement is sampled and retargeted. Cleanup, labeling, and constraints turn data into usable animation.</p>
+          </div>
+        </div>
+        <div class="diagram" style="height: 335px; margin-top: 34px;">
+          <svg viewBox="0 0 1480 260" role="img" aria-label="Pipeline from intent to frames and diagnostics">
+            <defs>
+              <marker id="mapArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <g>
+              <rect x="40" y="82" width="250" height="92" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <rect x="360" y="82" width="250" height="92" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <rect x="680" y="82" width="250" height="92" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <rect x="1000" y="82" width="250" height="92" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+              <rect x="1310" y="82" width="130" height="92" rx="10" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="4"></rect>
+            </g>
+            <g class="svg-small" text-anchor="middle">
+              <text x="165" y="137">intent</text>
+              <text x="485" y="137">fill-in rule</text>
+              <text x="805" y="137">frame samples</text>
+              <text x="1125" y="137">diagnostic</text>
+              <text x="1375" y="137">fix</text>
+            </g>
+            <g stroke="#1E3A8A" stroke-width="5" marker-end="url(#mapArrow)">
+              <path d="M290,128 L350,128"></path>
+              <path d="M610,128 L670,128"></path>
+              <path d="M930,128 L990,128"></path>
+              <path d="M1250,128 L1300,128"></path>
+            </g>
+            <text x="740" y="225" class="svg-note" text-anchor="middle">The method changes, but the design loop stays the same: encode intent, generate frames, measure failure, then revise the control.</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the four-lane map to orient the chapter. Keyframing gives direct artistic control, procedural methods expose compact parameter sets, physics produces motion from equations, and capture imports real movement. None is automatically best; the useful question is what the animator can still inspect and adjust.</aside>
+    </section>
+
+    <section data-label="Principles">
+      <div class="slide alt">
+        <div class="eyebrow">Section 16.1</div>
+        <h2>Principles Are Readability Tests</h2>
+        <div class="content two right">
+          <div class="stack">
+            <div class="panel blue"><h3>Timing</h3><p>Speed communicates weight, intent, emotional state, and whether the viewer has enough time to notice the action.</p></div>
+            <div class="panel teal"><h3>Action Layout</h3><p>Staging, anticipation, and follow-through tell the eye what matters before, during, and after the main action.</p></div>
+            <div class="panel amber"><h3>Squash And Stretch</h3><p>Deform along motion or impact while preserving apparent volume, unless size change is itself the story.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 850 560" role="img" aria-label="Readable animation principles">
+              <defs>
+                <marker id="principleArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <line x1="85" y1="470" x2="780" y2="470" stroke="#CBD5E1" stroke-width="5"></line>
+              <path d="M110,415 C220,210 345,210 475,415" fill="none" stroke="#2563EB" stroke-width="6"></path>
+              <g>
+                <ellipse cx="125" cy="418" rx="42" ry="42" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></ellipse>
+                <ellipse cx="265" cy="265" rx="38" ry="58" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></ellipse>
+                <ellipse cx="425" cy="330" rx="64" ry="34" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></ellipse>
+              </g>
+              <path d="M95,122 C148,75 206,76 252,128" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#principleArrow)"></path>
+              <circle cx="276" cy="138" r="36" fill="#FEF3C7" stroke="#B45309" stroke-width="4"></circle>
+              <text x="188" y="55" class="svg-label" text-anchor="middle">anticipation</text>
+              <g transform="translate(560 95)">
+                <line x1="80" y1="0" x2="80" y2="220" stroke="#1E3A8A" stroke-width="8"></line>
+                <circle cx="80" cy="45" r="32" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"></circle>
+                <path d="M80,90 C30,135 25,185 52,225" fill="none" stroke="#0F766E" stroke-width="7"></path>
+                <path d="M80,90 C135,126 145,178 118,225" fill="none" stroke="#0F766E" stroke-width="7" opacity="0.55"></path>
+                <text x="80" y="275" class="svg-small" text-anchor="middle">overlap and follow-through</text>
+              </g>
+              <text x="300" y="505" class="svg-note" text-anchor="middle">volume roughly constant</text>
+              <text x="300" y="542" class="svg-math" text-anchor="middle">wide * short = tall * narrow</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Connect traditional animation principles to measurable computer graphics choices. Timing sets weight and intent, staging makes the important action readable, anticipation and follow-through help viewers parse cause and effect, and squash/stretch must preserve apparent volume unless growth is the intended signal.</aside>
+    </section>
+
+    <section data-label="Key Curves">
+      <div class="slide">
+        <div class="eyebrow">Section 16.2</div>
+        <h2>Keys Are Samples; Curves Are Commitments</h2>
+        <div class="content two">
+          <div class="diagram">
+            <svg viewBox="0 0 880 570" role="img" aria-label="Animation curve through keyframes and derivative">
+              <defs>
+                <marker id="curveArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(85 70)">
+                <line x1="0" y1="390" x2="710" y2="390" stroke="#1E3A8A" stroke-width="5" marker-end="url(#curveArrow)"></line>
+                <line x1="0" y1="390" x2="0" y2="20" stroke="#1E3A8A" stroke-width="5" marker-end="url(#curveArrow)"></line>
+                <g stroke="#E2E8F0" stroke-width="2">
+                  <line x1="0" y1="300" x2="690" y2="300"></line>
+                  <line x1="0" y1="210" x2="690" y2="210"></line>
+                  <line x1="0" y1="120" x2="690" y2="120"></line>
+                </g>
+                <path d="M40,325 C120,145 210,150 280,245 C360,355 445,82 540,162 C600,215 640,250 675,210" fill="none" stroke="#2563EB" stroke-width="8"></path>
+                <path d="M40,325 C95,265 130,234 185,215" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></path>
+                <path d="M280,245 C335,323 372,323 425,222" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></path>
+                <g fill="#111827">
+                  <circle cx="40" cy="325" r="13"></circle>
+                  <circle cx="185" cy="215" r="13"></circle>
+                  <circle cx="280" cy="245" r="13"></circle>
+                  <circle cx="425" cy="222" r="13"></circle>
+                  <circle cx="540" cy="162" r="13"></circle>
+                  <circle cx="675" cy="210" r="13"></circle>
+                </g>
+                <text x="690" y="430" class="svg-small">time</text>
+                <text x="-35" y="35" class="svg-small" text-anchor="end">value</text>
+                <text x="360" y="28" class="svg-label" text-anchor="middle">animation curve f(t)</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Interpolation Contract</h3>
+              <p>For every key \((t_k, f_k)\), the curve must satisfy \(f(t_k)=f_k\). That does not guarantee readable motion.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Derivative Contract</h3>
+              <p>The perceived parameter speed is \(\frac{df}{dt}\). Kinks, overshoot, or sudden sign changes often explain visual artifacts.</p>
+            </div>
+            <div class="formula">diagnose keys by checking value error, tangent continuity, and speed range</div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Treat keyframes as sparse data samples, not finished images. Once values are set at selected times, the interpolation curve commits to tangents, speeds, overshoot, and continuity. The graph should make students look at derivative behavior, because a path can pass through every key and still move poorly.</aside>
+    </section>
+
+    <section data-label="TCB Splines">
+      <div class="slide alt">
+        <div class="eyebrow">Catmull-Rom And TCB Control</div>
+        <h2>Local Tangents Are An Animator Interface</h2>
+        <div class="content two right">
+          <div class="stack">
+            <div class="panel blue"><h3>Tension \(T\)</h3><p>Scales tangents down or up, trading smooth passage through keys against tighter, less energetic segments.</p></div>
+            <div class="panel teal"><h3>Continuity \(C\)</h3><p>Allows incoming and outgoing tangents to differ, which can make a corner intentional rather than accidental.</p></div>
+            <div class="panel violet"><h3>Bias \(B\)</h3><p>Pulls a segment toward the previous or next neighbor, shifting how the curve approaches a key.</p></div>
+            <div class="formula">TCB = edit \(m_k^-\) and \(m_k^+\), then evaluate cubic Hermite segments</div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 570" role="img" aria-label="TCB spline variants">
+              <g transform="translate(70 70)">
+                <rect x="0" y="0" width="720" height="410" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <path d="M60,315 C140,110 250,115 330,250 C430,420 560,85 660,170" fill="none" stroke="#2563EB" stroke-width="8"></path>
+                <path d="M60,315 C150,230 250,190 330,250 C420,315 560,145 660,170" fill="none" stroke="#0F766E" stroke-width="7" stroke-dasharray="18 12"></path>
+                <path d="M60,315 C180,68 240,300 330,250 C395,210 540,75 660,170" fill="none" stroke="#6D28D9" stroke-width="7" stroke-dasharray="8 12"></path>
+                <g fill="#111827">
+                  <circle cx="60" cy="315" r="14"></circle>
+                  <circle cx="210" cy="190" r="14"></circle>
+                  <circle cx="330" cy="250" r="14"></circle>
+                  <circle cx="500" cy="160" r="14"></circle>
+                  <circle cx="660" cy="170" r="14"></circle>
+                </g>
+                <g class="svg-small">
+                  <text x="100" y="55" fill="#2563EB">Catmull-Rom</text>
+                  <text x="420" y="365" fill="#0F766E">higher tension</text>
+                  <text x="438" y="62" fill="#6D28D9">biased approach</text>
+                </g>
+              </g>
+              <rect x="138" y="520" width="585" height="38" rx="8" fill="#F8FAFC" stroke="#CBD5E1"></rect>
+              <text x="430" y="546" class="svg-note" text-anchor="middle">same keys, different tangent policy, different perceived motion</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Frame TCB splines as an editor vocabulary for local tangent control. Tension shortens motion and reduces overshoot, continuity lets incoming and outgoing behavior differ, and bias favors one neighboring segment. The important teaching point is that curve editing is motion editing, not just shape editing.</aside>
+    </section>
+
+    <section data-label="Timing">
+      <div class="slide">
+        <div class="eyebrow">Motion Controls</div>
+        <h2>Path Shape Is Not Timing</h2>
+        <div class="content two">
+          <div class="diagram">
+            <svg viewBox="0 0 880 570" role="img" aria-label="Path timing with uneven and even samples">
+              <defs>
+                <marker id="timingArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <path d="M100,425 C145,160 330,105 420,270 C505,420 650,350 755,135" fill="none" stroke="#2563EB" stroke-width="8"></path>
+              <g fill="#B45309" stroke="#FFFFFF" stroke-width="3">
+                <circle cx="100" cy="425" r="12"></circle>
+                <circle cx="145" cy="315" r="12"></circle>
+                <circle cx="190" cy="235" r="12"></circle>
+                <circle cx="270" cy="177" r="12"></circle>
+                <circle cx="410" cy="252" r="12"></circle>
+                <circle cx="565" cy="384" r="12"></circle>
+                <circle cx="700" cy="250" r="12"></circle>
+                <circle cx="755" cy="135" r="12"></circle>
+              </g>
+              <g fill="#0F766E" stroke="#FFFFFF" stroke-width="3">
+                <circle cx="100" cy="425" r="8"></circle>
+                <circle cx="185" cy="245" r="8"></circle>
+                <circle cx="305" cy="158" r="8"></circle>
+                <circle cx="420" cy="270" r="8"></circle>
+                <circle cx="535" cy="370" r="8"></circle>
+                <circle cx="650" cy="350" r="8"></circle>
+                <circle cx="720" cy="212" r="8"></circle>
+                <circle cx="755" cy="135" r="8"></circle>
+              </g>
+              <g transform="translate(70 470)">
+                <line x1="0" y1="42" x2="700" y2="42" stroke="#1E3A8A" stroke-width="5" marker-end="url(#timingArrow)"></line>
+                <path d="M0,42 C110,40 160,15 250,14 C380,12 440,75 700,42" fill="none" stroke="#B45309" stroke-width="5"></path>
+                <text x="350" y="103" class="svg-note" text-anchor="middle">easing changes distance per frame without changing the drawn path</text>
+              </g>
+              <text x="132" y="95" class="svg-label">\(P(u)\): spatial curve</text>
+              <text x="584" y="95" class="svg-label">\(s(t)\): clock</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Path</h3><p>\(P(u)\) gives positions along a geometric curve. Equal parameter steps usually do not mean equal distances.</p></div>
+            <div class="panel teal"><h3>Arc Length</h3><p>An arc-length table converts distance targets into curve parameters, making constant-speed sampling possible.</p></div>
+            <div class="panel amber"><h3>Timing</h3><p>Slow-in and slow-out come from composing the path with \(s(t)\), not from redrawing the path.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Separate the geometric path from the clock. A curve P(u) describes where an object can travel, while a timing law s(t) decides how far along the path each frame should be. Arc-length reparameterization and easing are practical tools for decoupling shape from perceived speed.</aside>
+    </section>
+
+    <section data-label="Rotations">
+      <div class="slide alt">
+        <div class="eyebrow">Interpolating Orientation</div>
+        <h2>Stay On The Rotation Group</h2>
+        <div class="content two right">
+          <div class="stack">
+            <div class="panel amber"><h3>Matrix Lerp Fails</h3><p>Elementwise interpolation can leave the set of valid rotations: columns are not orthonormal and determinant can drift away from one.</p></div>
+            <div class="panel blue"><h3>Euler Angles Are Fragile</h3><p>They are convenient keys, but axis order matters and gimbal lock can collapse one degree of freedom.</p></div>
+            <div class="panel teal"><h3>Unit Quaternions</h3><p>Represent orientation on a sphere in four dimensions; normalize or slerp so each sampled frame is still a valid rotation.</p></div>
+            <div class="formula">check \(R^T R \approx I\), \(\det R \approx 1\), and \(\lVert q\rVert = 1\)</div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 570" role="img" aria-label="Quaternion interpolation and invalid matrix lerp">
+              <defs>
+                <marker id="quatArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <g transform="translate(80 75)">
+                <circle cx="225" cy="205" r="165" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+                <ellipse cx="225" cy="205" rx="165" ry="58" fill="none" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></ellipse>
+                <path d="M120,280 C175,145 305,115 355,210" fill="none" stroke="#0F766E" stroke-width="8" marker-end="url(#quatArrow)"></path>
+                <circle cx="120" cy="280" r="14" fill="#111827"></circle>
+                <circle cx="355" cy="210" r="14" fill="#111827"></circle>
+                <text x="225" y="420" class="svg-small" text-anchor="middle">quaternion path on unit sphere</text>
+              </g>
+              <g transform="translate(530 105)">
+                <rect x="0" y="0" width="240" height="240" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+                <line x1="120" y1="120" x2="120" y2="34" stroke="#2563EB" stroke-width="7"></line>
+                <line x1="120" y1="120" x2="202" y2="120" stroke="#0F766E" stroke-width="7"></line>
+                <line x1="120" y1="120" x2="177" y2="63" stroke="#B45309" stroke-width="7"></line>
+                <line x1="120" y1="120" x2="177" y2="177" stroke="#B45309" stroke-width="7"></line>
+                <text x="120" y="290" class="svg-small" text-anchor="middle">halfway matrix can shrink axes</text>
+              </g>
+              <text x="430" y="515" class="svg-math" text-anchor="middle">q(t) = slerp(q0, q1, t)</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Rotation interpolation is the first place where ordinary linear interpolation becomes actively misleading. Rotation matrices must remain orthonormal with determinant one, and Euler angles can lose a degree of freedom. Unit quaternions keep orientation on a sphere, so interpolation can be projected back to valid rotations.</aside>
+    </section>
+
+    <section data-label="Deformation">
+      <div class="slide">
+        <div class="eyebrow">Section 16.3</div>
+        <h2>Deformation Animates Parameters, Not Only Vertices</h2>
+        <div class="content two">
+          <div class="diagram">
+            <svg viewBox="0 0 880 570" role="img" aria-label="Global deformation and free-form deformation lattice">
+              <g transform="translate(70 90)">
+                <text x="120" y="-32" class="svg-label" text-anchor="middle">global functions</text>
+                <rect x="25" y="35" width="190" height="230" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+                <path d="M320,40 C260,100 260,205 325,265" fill="none" stroke="#0F766E" stroke-width="34" stroke-linecap="round"></path>
+                <path d="M475,35 C545,85 410,135 505,185 C570,220 435,255 520,300" fill="none" stroke="#B45309" stroke-width="30" stroke-linecap="round"></path>
+                <text x="120" y="315" class="svg-small" text-anchor="middle">original</text>
+                <text x="325" y="315" class="svg-small" text-anchor="middle">bend</text>
+                <text x="505" y="315" class="svg-small" text-anchor="middle">twist</text>
+              </g>
+              <g transform="translate(605 95)">
+                <text x="120" y="-37" class="svg-label" text-anchor="middle">FFD lattice</text>
+                <g stroke="#CBD5E1" stroke-width="4">
+                  <path d="M0,0 L230,20 L220,300 L-15,270 Z" fill="#FFFFFF"></path>
+                  <line x1="75" y1="7" x2="65" y2="280"></line>
+                  <line x1="155" y1="14" x2="145" y2="290"></line>
+                  <line x1="-5" y1="90" x2="225" y2="112"></line>
+                  <line x1="-10" y1="180" x2="223" y2="205"></line>
+                </g>
+                <path d="M35,230 C85,125 150,120 195,70" fill="none" stroke="#2563EB" stroke-width="9"></path>
+                <g fill="#6D28D9">
+                  <circle cx="0" cy="0" r="9"></circle><circle cx="230" cy="20" r="9"></circle><circle cx="220" cy="300" r="9"></circle><circle cx="-15" cy="270" r="9"></circle>
+                  <circle cx="155" cy="14" r="9"></circle><circle cx="65" cy="280" r="9"></circle><circle cx="225" cy="112" r="9"></circle>
+                </g>
+              </g>
+              <text x="440" y="525" class="svg-math" text-anchor="middle">p' = F(p; gamma(t))</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Global Deformations</h3><p>Bend, twist, and taper are compact controls, but the whole object usually participates.</p></div>
+            <div class="panel teal"><h3>Local Influence</h3><p>Move a seed vertex, weight nearby surface points, or use a lattice to concentrate change where the animator needs it.</p></div>
+            <div class="panel violet"><h3>Animation Handle</h3><p>Keyframe \(\gamma(t)\), the deformation parameter vector, instead of storing a new mesh at every frame.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Deformation introduces a different animation target: parameters of a shape-changing function. Bend, twist, taper, and FFD lattices can be keyframed without keying every vertex. The tradeoff is control locality: global functions are compact, while lattices and surface weights give more localized influence.</aside>
+    </section>
+
+    <section data-label="Characters">
+      <div class="slide alt">
+        <div class="eyebrow">Section 16.4</div>
+        <h2>Characters Split Visible Shape From Control</h2>
+        <div class="content two right">
+          <div class="stack">
+            <div class="panel blue"><h3>Skin</h3><p>The rendered surface carries detail, expression, silhouette, and material response.</p></div>
+            <div class="panel teal"><h3>Skeleton</h3><p>A joint tree stores a lower-dimensional kinematic abstraction that is easier to pose and constrain.</p></div>
+            <div class="panel amber"><h3>FK vs IK</h3><p>Forward kinematics sets joint angles; inverse kinematics sets an end target and solves backward for internal joints.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 570" role="img" aria-label="Character skeleton and inverse kinematics target">
+              <defs>
+                <marker id="ikArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <g transform="translate(105 65)">
+                <path d="M210,55 C310,90 350,195 320,320 C295,435 145,445 105,325 C65,205 105,80 210,55 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="5" opacity="0.78"></path>
+                <g stroke="#111827" stroke-width="7" stroke-linecap="round">
+                  <line x1="210" y1="120" x2="210" y2="255"></line>
+                  <line x1="210" y1="170" x2="145" y2="230"></line>
+                  <line x1="210" y1="170" x2="280" y2="220"></line>
+                  <line x1="210" y1="255" x2="160" y2="345"></line>
+                  <line x1="210" y1="255" x2="275" y2="335"></line>
+                </g>
+                <g fill="#FFFFFF" stroke="#111827" stroke-width="5">
+                  <circle cx="210" cy="120" r="16"></circle>
+                  <circle cx="210" cy="170" r="13"></circle>
+                  <circle cx="210" cy="255" r="13"></circle>
+                  <circle cx="145" cy="230" r="12"></circle>
+                  <circle cx="280" cy="220" r="12"></circle>
+                  <circle cx="160" cy="345" r="12"></circle>
+                  <circle cx="275" cy="335" r="12"></circle>
+                </g>
+                <text x="210" y="500" class="svg-small" text-anchor="middle">skin follows a joint hierarchy</text>
+              </g>
+              <g transform="translate(540 95)">
+                <line x1="45" y1="280" x2="155" y2="185" stroke="#1E3A8A" stroke-width="10" stroke-linecap="round"></line>
+                <line x1="155" y1="185" x2="295" y2="130" stroke="#1E3A8A" stroke-width="10" stroke-linecap="round"></line>
+                <g fill="#FFFFFF" stroke="#1E3A8A" stroke-width="5">
+                  <circle cx="45" cy="280" r="16"></circle>
+                  <circle cx="155" cy="185" r="16"></circle>
+                  <circle cx="295" cy="130" r="16"></circle>
+                </g>
+                <circle cx="320" cy="235" r="17" fill="#B45309"></circle>
+                <path d="M295,130 C355,145 375,185 320,235" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10" marker-end="url(#ikArrow)"></path>
+                <text x="205" y="350" class="svg-small" text-anchor="middle">IK target pulls the effector</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Introduce character animation as a two-layer model. The visible skin is detailed, but the animator usually controls a simpler joint hierarchy underneath. Forward kinematics composes joint transforms from root to leaves; inverse kinematics asks for end-effector motion and solves for internal joint changes.</aside>
+    </section>
+
+    <section data-label="IK And Skinning">
+      <div class="slide">
+        <div class="eyebrow">Kinematic Diagnostics</div>
+        <h2>IK And Skinning Are Numeric Contracts</h2>
+        <div class="content two">
+          <div class="diagram">
+            <svg viewBox="0 0 880 570" role="img" aria-label="IK Jacobian and skinning weights">
+              <g transform="translate(70 60)">
+                <rect x="0" y="0" width="360" height="210" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+                <text x="180" y="48" class="svg-label" text-anchor="middle">linearized IK</text>
+                <text x="180" y="107" class="svg-math" text-anchor="middle">delta x approx J delta alpha</text>
+                <text x="180" y="163" class="svg-small" text-anchor="middle">choose delta alpha, update pose, repeat</text>
+              </g>
+              <g transform="translate(515 55)">
+                <line x1="30" y1="230" x2="155" y2="120" stroke="#2563EB" stroke-width="10" stroke-linecap="round"></line>
+                <line x1="155" y1="120" x2="285" y2="195" stroke="#0F766E" stroke-width="10" stroke-linecap="round"></line>
+                <g fill="#FFFFFF" stroke="#111827" stroke-width="5">
+                  <circle cx="30" cy="230" r="14"></circle>
+                  <circle cx="155" cy="120" r="14"></circle>
+                  <circle cx="285" cy="195" r="14"></circle>
+                </g>
+                <circle cx="330" cy="135" r="15" fill="#B45309"></circle>
+                <path d="M285,195 C320,185 342,165 330,135" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="10 8"></path>
+                <text x="180" y="295" class="svg-small" text-anchor="middle">residual = distance to target</text>
+              </g>
+              <g transform="translate(105 330)">
+                <text x="300" y="-20" class="svg-label" text-anchor="middle">skinning blend</text>
+                <g stroke="#CBD5E1" stroke-width="3">
+                  <line x1="0" y1="0" x2="600" y2="0"></line>
+                  <line x1="0" y1="55" x2="600" y2="55"></line>
+                  <line x1="0" y1="110" x2="600" y2="110"></line>
+                  <line x1="0" y1="165" x2="600" y2="165"></line>
+                </g>
+                <rect x="60" y="18" width="210" height="130" fill="#DBEAFE" stroke="#2563EB" stroke-width="4" opacity="0.8"></rect>
+                <rect x="270" y="18" width="245" height="130" fill="#CCFBF1" stroke="#0F766E" stroke-width="4" opacity="0.78"></rect>
+                <path d="M265,10 C315,48 315,118 265,156" fill="none" stroke="#B45309" stroke-width="7"></path>
+                <text x="166" y="200" class="svg-small" text-anchor="middle">bone A weight high</text>
+                <text x="392" y="200" class="svg-small" text-anchor="middle">bone B weight high</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel amber"><h3>IK Residual</h3><p>The end effector should approach the target without forcing impossible limb stretch or implausible flipped poses.</p></div>
+            <div class="panel blue"><h3>Jacobian Check</h3><p>Finite differences should agree with the analytic or geometric derivative before trusting an iterative solver.</p></div>
+            <div class="panel teal"><h3>Skinning Check</h3><p>Blend weights should sum to one and vary smoothly near joints to avoid cracks, collapsing volume, or rigid kinks.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Make the numeric contract explicit. IK uses a Jacobian to relate small joint changes to small end-effector changes, often with more unknowns than constraints. Skinning then blends nearby bone transforms, so the checks are residual error, plausible pose selection, and weights that sum correctly.</aside>
+    </section>
+
+    <section data-label="Capture">
+      <div class="slide alt">
+        <div class="eyebrow">Faces And Capture</div>
+        <h2>Recorded Motion Still Needs A Rig</h2>
+        <div class="content two right">
+          <div class="stack">
+            <div class="panel blue"><h3>Facial Controls</h3><p>Blend shapes, muscle-like controls, or parameterized expressions convert sparse sliders into many surface displacements.</p></div>
+            <div class="panel teal"><h3>Capture Data</h3><p>Markers or image features provide time-varying positions, but they may be noisy, occluded, mislabeled, or attached to a different body.</p></div>
+            <div class="panel amber"><h3>Retargeting</h3><p>Map sampled motion onto the character skeleton, then enforce feet, hands, contacts, and joint limits with constraints.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 570" role="img" aria-label="Motion capture and facial rig retargeting">
+              <defs>
+                <marker id="captureArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(70 80)">
+                <circle cx="130" cy="80" r="48" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></circle>
+                <path d="M130,128 L130,250 M130,170 L80,230 M130,170 L185,225 M130,250 L90,345 M130,250 L180,345" stroke="#0F766E" stroke-width="8" stroke-linecap="round"></path>
+                <g fill="#B45309">
+                  <circle cx="112" cy="63" r="9"></circle><circle cx="148" cy="63" r="9"></circle><circle cx="130" cy="95" r="9"></circle>
+                  <circle cx="80" cy="230" r="9"></circle><circle cx="185" cy="225" r="9"></circle><circle cx="90" cy="345" r="9"></circle><circle cx="180" cy="345" r="9"></circle>
+                </g>
+                <text x="130" y="405" class="svg-small" text-anchor="middle">tracked performer</text>
+              </g>
+              <path d="M285,260 L405,260" stroke="#1E3A8A" stroke-width="6" marker-end="url(#captureArrow)"></path>
+              <g transform="translate(430 70)">
+                <rect x="0" y="0" width="150" height="380" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+                <path d="M75,45 L75,300 M75,95 L35,150 M75,95 L115,145 M75,190 L40,260 M75,190 L112,260" stroke="#2563EB" stroke-width="7" stroke-linecap="round"></path>
+                <circle cx="75" cy="45" r="22" fill="#FFFFFF" stroke="#2563EB" stroke-width="5"></circle>
+                <text x="75" y="425" class="svg-small" text-anchor="middle">retargeted skeleton</text>
+              </g>
+              <path d="M590,260 L700,260" stroke="#1E3A8A" stroke-width="6" marker-end="url(#captureArrow)"></path>
+              <g transform="translate(675 82)">
+                <ellipse cx="70" cy="86" rx="62" ry="78" fill="#FEF3C7" stroke="#B45309" stroke-width="5"></ellipse>
+                <circle cx="48" cy="72" r="8" fill="#111827"></circle>
+                <circle cx="92" cy="72" r="8" fill="#111827"></circle>
+                <path d="M42,112 C62,132 88,132 105,112" fill="none" stroke="#111827" stroke-width="5"></path>
+                <g>
+                  <rect x="-20" y="200" width="180" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+                  <rect x="-20" y="260" width="180" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+                  <rect x="-20" y="320" width="180" height="36" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+                  <rect x="-20" y="200" width="122" height="36" rx="8" fill="#2563EB" opacity="0.75"></rect>
+                  <rect x="-20" y="260" width="80" height="36" rx="8" fill="#0F766E" opacity="0.75"></rect>
+                  <rect x="-20" y="320" width="142" height="36" rx="8" fill="#B45309" opacity="0.75"></rect>
+                </g>
+                <text x="70" y="405" class="svg-small" text-anchor="middle">expression controls</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This slide keeps facial animation and motion capture from sounding automatic. A captured marker cloud must be labeled, filtered, retargeted, and constrained before it drives a character. Facial rigs similarly translate sparse controls into expression geometry, so cleanup and semantic mapping are part of animation.</aside>
+    </section>
+
+    <section data-label="Physics">
+      <div class="slide">
+        <div class="eyebrow">Section 16.5</div>
+        <h2>Physics Gives Motion, But Also Stability Tests</h2>
+        <div class="content two">
+          <div class="diagram">
+            <svg viewBox="0 0 880 570" role="img" aria-label="Physics time stepping and stability">
+              <defs>
+                <marker id="physicsArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(80 70)">
+                <line x1="0" y1="370" x2="690" y2="370" stroke="#1E3A8A" stroke-width="5" marker-end="url(#physicsArrow)"></line>
+                <line x1="0" y1="370" x2="0" y2="30" stroke="#1E3A8A" stroke-width="5" marker-end="url(#physicsArrow)"></line>
+                <path d="M20,210 C80,185 125,250 180,230 C240,210 295,132 350,155 C420,185 470,90 535,82 C600,74 645,38 680,48" fill="none" stroke="#B45309" stroke-width="7"></path>
+                <path d="M20,210 C80,194 135,235 190,220 C250,205 315,176 370,180 C445,185 505,160 575,165 C620,170 655,158 680,162" fill="none" stroke="#0F766E" stroke-width="8"></path>
+                <text x="220" y="72" class="svg-small" fill="#B45309">energy drift</text>
+                <text x="555" y="205" class="svg-small" fill="#0F766E">controlled step</text>
+                <g transform="translate(65 415)">
+                  <rect x="0" y="0" width="185" height="76" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                  <text x="92" y="47" class="svg-small" text-anchor="middle">forces</text>
+                  <rect x="260" y="0" width="185" height="76" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+                  <text x="352" y="47" class="svg-small" text-anchor="middle">integrator</text>
+                  <rect x="520" y="0" width="185" height="76" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+                  <text x="612" y="47" class="svg-small" text-anchor="middle">collisions</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Equation</h3><p>For particles, cloth, rigid bodies, or elastic shapes, forces define acceleration and the integrator advances state.</p></div>
+            <div class="panel amber"><h3>Cost</h3><p>Collision detection and force evaluation can dominate the frame budget, especially for cloth or dense contact.</p></div>
+            <div class="panel teal"><h3>Diagnostic</h3><p>Watch energy growth, constraint violation, penetration depth, and whether the time step changes the story.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Physics-based animation is attractive because equations produce secondary motion that would be tedious to key. It is also dangerous because time stepping, collisions, and force evaluation can become unstable or expensive. Emphasize that visual realism depends on numerical behavior, not only on using physical vocabulary.</aside>
+    </section>
+
+    <section data-label="Procedural">
+      <div class="slide alt">
+        <div class="eyebrow">Section 16.6</div>
+        <h2>Procedural Motion Is A Parameterized Generator</h2>
+        <div class="content two right">
+          <div class="stack">
+            <div class="panel blue"><h3>Waves And Noise</h3><p>Animate functions like \(A\cos(\omega t-kx+\phi)\) or move through a noise lattice over time.</p></div>
+            <div class="panel teal"><h3>Rules</h3><p>Cellular automata and L-systems evolve by repeatedly applying local or grammar-like update rules.</p></div>
+            <div class="panel amber"><h3>Control Problem</h3><p>The output can be rich and cheap, but good parameters often come from tuning, experience, and visible diagnostics.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 570" role="img" aria-label="Procedural animation generators">
+              <g transform="translate(60 70)">
+                <text x="150" y="-20" class="svg-label" text-anchor="middle">wave function</text>
+                <path d="M0,130 C45,30 95,30 140,130 C185,230 235,230 280,130 C325,30 375,30 420,130" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <g fill="#2563EB">
+                  <circle cx="0" cy="130" r="8"></circle><circle cx="140" cy="130" r="8"></circle><circle cx="280" cy="130" r="8"></circle><circle cx="420" cy="130" r="8"></circle>
+                </g>
+              </g>
+              <g transform="translate(560 60)">
+                <text x="100" y="-10" class="svg-label" text-anchor="middle">rule grid</text>
+                <g stroke="#CBD5E1" stroke-width="3">
+                  <rect x="0" y="30" width="220" height="220" fill="#FFFFFF"></rect>
+                  <line x1="44" y1="30" x2="44" y2="250"></line><line x1="88" y1="30" x2="88" y2="250"></line><line x1="132" y1="30" x2="132" y2="250"></line><line x1="176" y1="30" x2="176" y2="250"></line>
+                  <line x1="0" y1="74" x2="220" y2="74"></line><line x1="0" y1="118" x2="220" y2="118"></line><line x1="0" y1="162" x2="220" y2="162"></line><line x1="0" y1="206" x2="220" y2="206"></line>
+                </g>
+                <g fill="#0F766E">
+                  <rect x="45" y="75" width="42" height="42"></rect><rect x="89" y="119" width="42" height="42"></rect><rect x="133" y="119" width="42" height="42"></rect><rect x="89" y="163" width="42" height="42"></rect><rect x="133" y="207" width="42" height="42"></rect>
+                </g>
+              </g>
+              <g transform="translate(210 340)">
+                <text x="230" y="-20" class="svg-label" text-anchor="middle">L-system growth</text>
+                <path d="M230,190 L230,75" stroke="#0F766E" stroke-width="8" stroke-linecap="round"></path>
+                <path d="M230,105 L165,45 M230,105 L300,40 M230,145 L185,115 M230,145 L280,115" stroke="#0F766E" stroke-width="6" stroke-linecap="round"></path>
+                <circle cx="165" cy="45" r="13" fill="#B45309"></circle><circle cx="300" cy="40" r="13" fill="#B45309"></circle><circle cx="185" cy="115" r="13" fill="#B45309"></circle><circle cx="280" cy="115" r="13" fill="#B45309"></circle>
+                <text x="230" y="235" class="svg-math" text-anchor="middle">rule + parameters + time</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Procedural animation should feel like a compact generator with exposed controls. Waves, animated noise, cellular automata, and L-systems can create rich motion cheaply, but their parameters are often empirical. The animator gains scale and repeatability while accepting a tuning problem.</aside>
+    </section>
+
+    <section data-label="Boids">
+      <div class="slide">
+        <div class="eyebrow">Section 16.7</div>
+        <h2>Group Motion Negotiates Urges, Not Positions</h2>
+        <div class="content two">
+          <div class="diagram">
+            <svg viewBox="0 0 880 570" role="img" aria-label="Boid group motion with priority vectors">
+              <defs>
+                <marker id="boidArrowBlue" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="boidArrowTeal" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#0F766E"></path>
+                </marker>
+                <marker id="boidArrowAmber" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <circle cx="390" cy="275" r="180" fill="#EFF6FF" stroke="#2563EB" stroke-width="4" stroke-dasharray="14 10"></circle>
+              <g fill="#111827">
+                <polygon points="390,245 435,275 390,305" fill="#111827"></polygon>
+                <polygon points="220,180 255,202 220,224" fill="#64748B"></polygon>
+                <polygon points="520,190 555,215 520,238" fill="#64748B"></polygon>
+                <polygon points="260,390 295,415 260,438" fill="#64748B"></polygon>
+                <polygon points="610,360 645,382 610,405" fill="#64748B"></polygon>
+              </g>
+              <path d="M390,275 L480,205" stroke="#B45309" stroke-width="9" marker-end="url(#boidArrowAmber)"></path>
+              <path d="M390,275 L515,290" stroke="#0F766E" stroke-width="7" marker-end="url(#boidArrowTeal)"></path>
+              <path d="M390,275 L430,380" stroke="#2563EB" stroke-width="6" marker-end="url(#boidArrowBlue)"></path>
+              <path d="M390,275 L525,130" stroke="#6D28D9" stroke-width="5" stroke-dasharray="10 8"></path>
+              <text x="508" y="198" class="svg-small" fill="#B45309">avoid</text>
+              <text x="535" y="315" class="svg-small" fill="#0F766E">match</text>
+              <text x="445" y="405" class="svg-small" fill="#2563EB">center</text>
+              <text x="535" y="118" class="svg-small" fill="#6D28D9">goal</text>
+              <rect x="85" y="470" width="690" height="54" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+              <text x="430" y="506" class="svg-note" text-anchor="middle">priority allocation avoids cancellation when desired velocities disagree</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel amber"><h3>Highest Priority</h3><p>Collision avoidance and basic safety receive acceleration before aesthetic or long-term goals.</p></div>
+            <div class="panel teal"><h3>Local Rules</h3><p>Neighbors inside a limited field of view drive velocity matching and flock centering.</p></div>
+            <div class="panel violet"><h3>Final Pose</h3><p>The negotiated velocity still has to become wing beats, leg poses, steering angle, or body orientation.</p></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">For group motion, show that each agent does not need a global plan. A boid negotiates local urges such as collision avoidance, velocity matching, flock centering, and goal seeking. Priorities matter because simple averaging can cancel intentions and leave the agent motionless.</aside>
+    </section>
+
+    <section data-label="Particles">
+      <div class="slide alt">
+        <div class="eyebrow">Particle Systems</div>
+        <h2>Many Short-Lived Objects Can Read As One Phenomenon</h2>
+        <div class="content two right">
+          <div class="stack">
+            <div class="panel blue"><h3>Birth And Death</h3><p>Emit particles with randomized lifetime, position, velocity, size, and color, then remove them when their role is finished.</p></div>
+            <div class="panel teal"><h3>Fields</h3><p>Wind, attraction, collision, and gravity are easier controls than hand-keying each particle path.</p></div>
+            <div class="panel amber"><h3>Use Case</h3><p>Best for fuzzy phenomena such as spray, sparks, smoke, dust, debris, and other effects without sharp boundaries.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 570" role="img" aria-label="Particle emitter with obstacle and wind field">
+              <defs>
+                <marker id="particleArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <rect x="60" y="250" width="95" height="70" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></rect>
+              <text x="108" y="365" class="svg-small" text-anchor="middle">source</text>
+              <circle cx="430" cy="300" r="72" fill="#FEF3C7" stroke="#B45309" stroke-width="5"></circle>
+              <text x="430" y="405" class="svg-small" text-anchor="middle">obstacle</text>
+              <g stroke="#0F766E" stroke-width="4" marker-end="url(#particleArrow)" opacity="0.8">
+                <path d="M595,155 C665,120 720,120 785,150"></path>
+                <path d="M590,225 C665,190 730,190 800,220"></path>
+                <path d="M595,300 C670,270 735,275 795,310"></path>
+                <path d="M580,375 C660,360 735,368 800,400"></path>
+              </g>
+              <g fill="#2563EB" opacity="0.9">
+                <circle cx="185" cy="275" r="9"></circle><circle cx="225" cy="260" r="7"></circle><circle cx="265" cy="305" r="10"></circle><circle cx="315" cy="242" r="7"></circle>
+                <circle cx="350" cy="342" r="8"></circle><circle cx="385" cy="220" r="6"></circle><circle cx="500" cy="230" r="8"></circle><circle cx="520" cy="360" r="10"></circle>
+                <circle cx="590" cy="205" r="7"></circle><circle cx="625" cy="310" r="8"></circle><circle cx="690" cy="260" r="6"></circle><circle cx="735" cy="340" r="9"></circle>
+              </g>
+              <path d="M155,285 C265,250 330,245 390,275" fill="none" stroke="#2563EB" stroke-width="5" stroke-dasharray="10 8"></path>
+              <path d="M485,230 C590,170 705,165 790,215" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="10 8"></path>
+              <rect x="85" y="455" width="690" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+              <text x="430" y="492" class="svg-note" text-anchor="middle">appearance comes from distributions plus simple per-particle updates</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Particles are a deliberately simpler group model. The system creates and destroys many short-lived independent objects, then moves them through force fields, collisions, and random variation. This makes fire, spray, smoke, and debris controllable, but it is usually an appearance model rather than full fluid physics.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide">
+        <div class="eyebrow">Takeaways</div>
+        <h2>Debug The Invariant, Then Choose The Control</h2>
+        <div class="content two">
+          <div class="stack">
+            <table class="mini-table">
+              <tr><th>Method</th><th>Invariant To Inspect</th><th>Likely Fix</th></tr>
+              <tr><td>Keyframes</td><td>key error, tangent continuity, speed range</td><td>edit keys or TCB tangents</td></tr>
+              <tr><td>Timing</td><td>distance per frame, overlap, ease profile</td><td>retime \(s(t)\)</td></tr>
+              <tr><td>Rotation</td><td>orthonormality, determinant, quaternion norm</td><td>project, normalize, or slerp</td></tr>
+              <tr><td>Characters</td><td>IK residual, joint limits, weight sums</td><td>adjust constraints or skin weights</td></tr>
+              <tr><td>Automatic methods</td><td>energy, stability, urge priority, parameters</td><td>change step, budget, rule, or force field</td></tr>
+            </table>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 860 570" role="img" aria-label="Animation debugging loop">
+              <defs>
+                <marker id="recapArrow" markerWidth="14" markerHeight="14" refX="10" refY="5" orient="auto">
+                  <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <circle cx="430" cy="280" r="190" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="5"></circle>
+              <rect x="302" y="58" width="256" height="70" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <rect x="590" y="245" width="220" height="70" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <rect x="302" y="432" width="256" height="70" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <rect x="50" y="245" width="220" height="70" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+              <text x="430" y="102" class="svg-small" text-anchor="middle">name intent</text>
+              <text x="700" y="288" class="svg-small" text-anchor="middle">generate frames</text>
+              <text x="430" y="474" class="svg-small" text-anchor="middle">measure artifact</text>
+              <text x="160" y="288" class="svg-small" text-anchor="middle">revise control</text>
+              <path d="M545,98 C635,135 695,188 700,245" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+              <path d="M700,315 C665,395 575,442 515,455" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+              <path d="M350,455 C260,422 185,365 163,315" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+              <path d="M163,245 C195,160 280,108 350,92" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+              <text x="430" y="272" class="svg-label" text-anchor="middle">animation</text>
+              <text x="430" y="312" class="svg-label" text-anchor="middle">debug loop</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close with a debugging checklist. Every animation method supplies an intent channel, a fill-in rule, and a small set of invariants. Students should leave able to name the artifact, choose a diagnostic, and decide whether the fix belongs in keys, timing, constraints, simulation, or procedure parameters.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

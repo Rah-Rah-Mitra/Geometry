@@ -1,0 +1,87 @@
+[
+  {
+    "slide": 1,
+    "title": "Robot Dynamics Adds Energy To Kinematics",
+    "notes": "Open by connecting this chapter to the previous kinematics material. The robot has not acquired a new configuration space; the difference is that motion now has energy, momentum, and required actuation. Tell students that the lecture will keep one through-line: every dynamics formula is a map from coordinates and velocities to forces, and every controller must respect that map rather than merely draw a plausible trajectory."
+  },
+  {
+    "slide": 2,
+    "title": "Generalized Coordinates Replace Particle Bookkeeping",
+    "notes": "The first conceptual move is reduction. A robot link contains many mass elements, but the mechanism constraints mean that a short vector of joint variables determines their positions. Emphasize that this is not a numerical convenience; it is the geometric reason Lagrange's equations are compact. The Jacobian for each mass element is the bridge from joint rates to physical velocities, which is why Jacobians keep reappearing in dynamics."
+  },
+  {
+    "slide": 3,
+    "title": "Lagrange's Equations Are The Energy-To-Force Map",
+    "notes": "Present Lagrange's equations as an energy-to-force converter. Students often see the formula as a formal derivative recipe, but the useful interpretation is that the kinetic and potential energy functions already encode the constraints and coordinates. The output is not a Cartesian force on one particle; it is a generalized force paired with the chosen coordinate. This pairing will matter later when controllers inject torques."
+  },
+  {
+    "slide": 4,
+    "title": "Rigid-Link Inertia Is A Metric On Velocity",
+    "notes": "Use the word metric deliberately. The inertia matrix is not merely a coefficient table; it defines a positive-definite quadratic form on velocity at each configuration. That is why symmetry and positive eigenvalues are not optional implementation details. The notebook sanity values confirm both properties for the sampled two-link matrix, and the ellipsoid gives students a visual way to remember what those checks mean."
+  },
+  {
+    "slide": 5,
+    "title": "Two-Link Coupling Is Configuration Dependent",
+    "notes": "Make the two-link example carry the abstract idea. The heatmap is not about a special numerical model; it shows that inertia coupling is configuration dependent. When the elbow angle changes, mass distribution relative to the joints changes, so the same joint acceleration can demand a different torque pattern. The Coriolis shape check reinforces that the velocity coupling term must match the two generalized coordinates before any controller can use it."
+  },
+  {
+    "slide": 6,
+    "title": "Newton-Euler Explains Frame Discipline",
+    "notes": "This slide explains why the chapter keeps returning to frames. Newton-Euler dynamics is physically intuitive because it balances velocities, accelerations, forces, and moments link by link. But the recursion is unforgiving: a wrench written in the tool frame cannot simply be inserted into a base-frame balance. Emphasize that frame discipline is not cosmetic notation; it is what allows local link balances to assemble into correct joint torques."
+  },
+  {
+    "slide": 7,
+    "title": "Open-Chain Inertia Assembles From Link Jacobians",
+    "notes": "This is the cleanest way to see open-chain dynamics without drowning in indices. Each link has a Jacobian that maps the same joint-rate vector into that link's spatial velocity. Each link also has its own spatial inertia. Summing the quadratic energies produces a single joint-space mass matrix. The formula is worth reading aloud because it explains why kinematic Jacobians are not left behind when the lecture turns to dynamics."
+  },
+  {
+    "slide": 8,
+    "title": "The Manipulator Equation Has Four Terms",
+    "notes": "Name the four terms as a control interface. Inertia, velocity coupling, loads, and input are not independent decorations; together they define what the controller must cancel, shape, or respect. Students should notice that the equation is already in generalized coordinates. That means the input torque is paired with virtual joint displacement, while Cartesian forces require a Jacobian transpose before they belong in this equation."
+  },
+  {
+    "slide": 9,
+    "title": "Structural Lemma Powers Control Proofs",
+    "notes": "This lemma is the hinge between modeling and proof. Without structure, the derivative of kinetic energy would contain many velocity-dependent terms that are hard to sign. The skew-symmetry property says those terms do no net power when paired with the same velocity vector. In class, stress that the lemma is not a numerical coincidence of the two-link example; it is a consequence of the way the Coriolis matrix is chosen for the manipulator dynamics."
+  },
+  {
+    "slide": 10,
+    "title": "POE Dynamics Keeps Kinematics In The Loop",
+    "notes": "This slide keeps the course sequence coherent. The product-of-exponentials machinery from kinematics remains valuable because link poses determine link velocities and their Jacobians. Once each link velocity is known, kinetic energy is a mechanical calculation rather than a new geometric mystery. The point is that dynamics does not replace kinematics; it layers energy and force accounting on top of the same chain description."
+  },
+  {
+    "slide": 11,
+    "title": "Lyapunov Stability Names What Stable Means",
+    "notes": "Before proving anything, define the target carefully. Stability and convergence are not synonyms. A trajectory can remain near an equilibrium without approaching it, and a careless controller claim may confuse those properties. Use the nested neighborhoods to separate the epsilon-delta part from attraction. This vocabulary is essential because later slides use Lyapunov functions to certify behavior without solving the differential equation explicitly."
+  },
+  {
+    "slide": 12,
+    "title": "Direct Lyapunov Method Converts Motion Into Signs",
+    "notes": "The direct method is a change of viewpoint. Instead of solving the motion equation, look for a scalar quantity whose sign behavior is decisive. Positive definiteness says the quantity measures displacement from the goal; a nonpositive derivative says trajectories do not climb its contours. In robot control, kinetic plus potential energy is the natural candidate, but tracking problems often add error terms to build the right Lyapunov function."
+  },
+  {
+    "slide": 13,
+    "title": "Phase Portraits Make Vdot <= 0 Inspectable",
+    "notes": "Use the phase portrait as a sign inspection tool. The arrows should move across or along energy contours in the direction allowed by the Lyapunov calculation, not outward through higher energy levels. The recorded maximum derivative is negative on the sampled grid, which supports the intended visual reading. Make clear that a grid check is not a theorem by itself; it is evidence that the implemented diagnostic agrees with the analytic inequality being taught."
+  },
+  {
+    "slide": 14,
+    "title": "Computed Torque Linearizes Tracking Error",
+    "notes": "Computed torque is attractive because it turns a nonlinear robot model into a familiar linear tracking error equation. But the slide should not oversell it. The controller uses the model directly, so modeling errors, unmodeled loads, or bad parameter estimates show up as imperfect cancellation. The very small final tracking error in the notebook is a diagnostic for the controlled example, not a promise that every real manipulator will behave that cleanly."
+  },
+  {
+    "slide": 15,
+    "title": "PD Control Needs An Energy Proof",
+    "notes": "PD control can look too simple after computed torque, so give it its own proof. With gravity compensation and a fixed desired configuration, the proportional term stores artificial potential energy and the derivative term dissipates kinetic energy. The structural lemma lets the derivative collapse to the damping term. The important teaching point is that stability comes from an energy argument, not from hoping that proportional and derivative gains are intuitively reasonable."
+  },
+  {
+    "slide": 16,
+    "title": "Workspace Control Moves The Error Coordinates",
+    "notes": "Workspace control changes the coordinates in which the error is expressed. The desired behavior is described in task space, but the actuators still live at the joints, so the Jacobian transpose and effective inertia matrix become central. Use the tracking comparison only as a reminder that error coordinates matter: a clean joint response and a clean task response are related through the kinematic map, not automatically identical."
+  },
+  {
+    "slide": 17,
+    "title": "Constrained Control Splits Tangent Motion From Normal Force",
+    "notes": "Close with constrained control because it tests whether students really understand generalized forces. A contact constraint removes motion directions but introduces normal reaction forces. Tangent components should accomplish the commanded motion along the allowable surface, while normal components enforce the constraint and ideally do no work on feasible velocities. This is the same energy discipline as before, now with a decomposition of force directions."
+  }
+]

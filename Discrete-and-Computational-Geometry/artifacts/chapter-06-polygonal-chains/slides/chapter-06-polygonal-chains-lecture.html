@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 6 Lecture: Polygonal Chains</title>
+  <meta name="manifest_row" content="214">
+  <meta name="course" content="Discrete and Computational Geometry">
+  <meta name="chapter_id" content="chapter-06-polygonal-chains">
+  <meta name="notebook_path" content="Discrete-and-Computational-Geometry/chapter-06-polygonal-chains/06-polygonal-chains.ipynb">
+  <meta name="source_span" content="printed pages 170-198">
+  <meta name="source_pdf" content="Discrete-and-Computational-Geometry/Discrete and Computational Geometry, 2nd Edition.pdf">
+  <meta name="design_system_version" content="Geometry Lecture Design System 2026-05">
+  <style>
+    :root {
+      --slide-bg: #ffffff;
+      --slide-bg-alt: #f8fafc;
+      --slide-ink: #111827;
+      --slide-muted: #475569;
+      --slide-dimmed: #64748b;
+      --slide-accent: #1e3a8a;
+      --slide-blue: #2563eb;
+      --slide-teal: #0f766e;
+      --slide-amber: #b45309;
+      --slide-violet: #6d28d9;
+      --slide-border: #cbd5e1;
+      --slide-border-light: #e2e8f0;
+      --font-sans: "Source Sans 3", Arial, Helvetica, sans-serif;
+      --font-math: "STIX Two Text", "Cambria Math", Georgia, serif;
+      --font-mono: "JetBrains Mono", Consolas, monospace;
+    }
+    body { margin: 0; background: #020617; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      padding: 66px 86px 58px;
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(rgba(37, 99, 235, 0.035) 1px, transparent 1px);
+      background-size: 96px 96px;
+      opacity: 0.75;
+      pointer-events: none;
+    }
+    .content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 58px; line-height: 1.06; font-weight: 700; letter-spacing: 0; color: var(--slide-ink); }
+    h2 { font-size: 46px; line-height: 1.12; font-weight: 700; letter-spacing: 0; color: var(--slide-ink); margin-bottom: 28px; }
+    h3 { font-size: 29px; line-height: 1.2; font-weight: 700; color: var(--slide-accent); margin-bottom: 10px; }
+    p, li { font-size: 28px; line-height: 1.42; }
+    ul { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 14px; }
+    .eyebrow { font-size: 22px; line-height: 1.2; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slide-accent); margin-bottom: 16px; }
+    .sub { font-size: 31px; line-height: 1.35; color: var(--slide-muted); max-width: 1160px; margin-top: 18px; }
+    .meta { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 34px; }
+    .tag { font-size: 21px; font-weight: 700; color: var(--slide-accent); border: 1px solid var(--slide-border); background: rgba(248, 250, 252, 0.92); padding: 8px 14px; border-radius: 6px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 46px; flex: 1; align-items: stretch; min-height: 0; }
+    .cols.wide-left { grid-template-columns: 1.08fr 0.92fr; }
+    .cols.wide-right { grid-template-columns: 0.88fr 1.12fr; }
+    .panel { background: rgba(255,255,255,0.94); border: 1px solid var(--slide-border); border-radius: 8px; padding: 28px 30px; box-sizing: border-box; }
+    .box { border-left: 5px solid var(--slide-blue); background: #eff6ff; border-radius: 6px; padding: 22px 26px; }
+    .box.theorem { border-left-color: var(--slide-accent); background: #eef2ff; }
+    .box.example { border-left-color: var(--slide-teal); background: #f0fdfa; }
+    .box.warning { border-left-color: var(--slide-amber); background: #fffbeb; }
+    .box.exercise { border-left-color: var(--slide-violet); background: #f5f3ff; }
+    .box + .box, .panel + .panel { margin-top: 22px; }
+    .label { font-size: 21px; line-height: 1.2; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--slide-dimmed); margin-bottom: 8px; }
+    .math { font-family: var(--font-math); font-style: italic; }
+    .formula { font-family: var(--font-math); font-size: 35px; line-height: 1.35; text-align: center; color: var(--slide-ink); padding: 16px 18px; background: #f8fafc; border: 1px solid var(--slide-border-light); border-radius: 8px; }
+    .small { font-size: 23px; line-height: 1.35; color: var(--slide-muted); }
+    .caption { font-size: 21px; line-height: 1.28; color: var(--slide-dimmed); margin-top: 12px; }
+    .svg-wrap { display: flex; align-items: center; justify-content: center; min-height: 0; height: 100%; }
+    svg { max-width: 100%; height: auto; }
+    .footer { position: absolute; left: 86px; right: 86px; bottom: 28px; z-index: 2; display: flex; justify-content: space-between; color: var(--slide-dimmed); font-size: 20px; }
+    .toc { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; margin-top: 34px; }
+    .toc .panel { min-height: 176px; }
+    .toc-num { font-family: var(--font-mono); font-size: 26px; color: var(--slide-blue); font-weight: 600; margin-bottom: 12px; }
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 22px; }
+    .step { border-top: 5px solid var(--slide-blue); background: #fff; border-radius: 8px; border-left: 1px solid var(--slide-border); border-right: 1px solid var(--slide-border); border-bottom: 1px solid var(--slide-border); padding: 20px; }
+    .step:nth-child(2) { border-top-color: var(--slide-teal); }
+    .step:nth-child(3) { border-top-color: var(--slide-amber); }
+    .step:nth-child(4) { border-top-color: var(--slide-violet); }
+    aside.speaker-notes { display: none; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" id="slide-01">
+  <div class="content">
+    <div class="eyebrow">Discrete and Computational Geometry</div>
+    <div class="cols wide-left" style="align-items:center;">
+      <div>
+        <h1>Polygonal Chains: Motion, Reachability, And Straightening</h1>
+        <p class="sub">A lecture on linkages as geometric objects: how fixed edge lengths create configuration spaces, which motions preserve simplicity, and why the plane behaves more generously than space.</p>
+        <div class="meta">
+          <div class="tag">Chapter 6</div>
+          <div class="tag">Printed pages 170-198</div>
+          <div class="tag">15 minute visual spine plus theorem discussion</div>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 720 540" role="img" aria-label="Open polygonal chain changing shape">
+          <defs>
+            <marker id="arr" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="#b45309"/></marker>
+          </defs>
+          <rect x="30" y="40" width="660" height="440" fill="#f8fafc" stroke="#cbd5e1" rx="8"/>
+          <path d="M96 374 L190 258 L298 320 L405 168 L544 222 L620 134" fill="none" stroke="#2563eb" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M96 374 L218 342 L340 356 L472 310 L574 248 L620 134" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+          <path d="M244 196 C316 124 422 110 520 156" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="15 13" marker-end="url(#arr)"/>
+          <g fill="#111827">
+            <circle cx="96" cy="374" r="13"/><circle cx="190" cy="258" r="13"/><circle cx="298" cy="320" r="13"/>
+            <circle cx="405" cy="168" r="13"/><circle cx="544" cy="222" r="13"/><circle cx="620" cy="134" r="13"/>
+          </g>
+          <text x="86" y="420" font-size="27" font-family="Source Sans 3" fill="#475569">p0</text>
+          <text x="607" y="102" font-size="27" font-family="Source Sans 3" fill="#475569">pn</text>
+          <text x="250" y="90" font-size="26" font-family="Source Sans 3" fill="#b45309" font-weight="700">same bars, different angles</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>chapter-06-polygonal-chains</span><span>1 / 16</span></div>
+  <aside class="speaker-notes">Open by treating a polygonal chain as a linkage: the edge lengths are fixed, but the joint angles are variables. The lecture follows one question through several lenses: what motions are possible without changing the bars, and what geometric facts certify that a motion is safe?</aside>
+</section>
+
+<section class="slide" id="slide-02">
+  <div class="content">
+    <div class="eyebrow">Roadmap</div>
+    <h2>Five Ways To Look At One Moving Object</h2>
+    <div class="toc">
+      <div class="panel"><div class="toc-num">01</div><h3>Arms</h3><p class="small">Angle changes and endpoint distance.</p></div>
+      <div class="panel"><div class="toc-num">02</div><h3>Reachability</h3><p class="small">Which terminal points can a chain attain?</p></div>
+      <div class="panel"><div class="toc-num">03</div><h3>Folding</h3><p class="small">Local signs versus global self-intersection.</p></div>
+      <div class="panel"><div class="toc-num">04</div><h3>Straightening</h3><p class="small">Planar freedom and spatial obstruction.</p></div>
+      <div class="panel"><div class="toc-num">05</div><h3>Shortening</h3><p class="small">A discrete flow that removes excess turning.</p></div>
+    </div>
+    <div class="box theorem" style="margin-top:30px;">
+      <div class="label">Lecture Thesis</div>
+      <p>Polygonal chains are finite, combinatorial data, but their natural questions live in continuous configuration spaces.</p>
+    </div>
+  </div>
+  <div class="footer"><span>original prose and diagrams</span><span>2 / 16</span></div>
+  <aside class="speaker-notes">This roadmap is not a list of disconnected topics. Each part changes the coordinate system used to understand motion: first angles, then endpoint sets, then certificates for folding, then global straightening, and finally a curvature-reducing process.</aside>
+</section>
+
+<section class="slide" id="slide-03">
+  <div class="content">
+    <div class="eyebrow">Basic Object</div>
+    <h2>Open Chains And Closed Chains</h2>
+    <div class="cols">
+      <div>
+        <div class="box">
+          <div class="label">Definition</div>
+          <p>A polygonal chain is an ordered list of vertices <span class="math">p0, p1, ..., pn</span> joined by fixed segments. Its link lengths are <span class="math">li = |pi - pi-1|</span>.</p>
+        </div>
+        <div class="box example">
+          <div class="label">Configuration</div>
+          <p>Once translations and rotations are factored out, a planar open chain with <span class="math">n</span> links is controlled by its turn angles.</p>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 760 510" role="img" aria-label="Open and closed chains">
+          <rect x="22" y="30" width="716" height="430" fill="#fff" stroke="#cbd5e1" rx="8"/>
+          <path d="M92 160 L194 86 L302 162 L436 104 L604 184" fill="none" stroke="#2563eb" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+          <path d="M110 354 L226 276 L362 306 L496 250 L602 356 L424 412 L250 404 Z" fill="none" stroke="#0f766e" stroke-width="8" stroke-linejoin="round"/>
+          <g fill="#111827">
+            <circle cx="92" cy="160" r="11"/><circle cx="194" cy="86" r="11"/><circle cx="302" cy="162" r="11"/><circle cx="436" cy="104" r="11"/><circle cx="604" cy="184" r="11"/>
+            <circle cx="110" cy="354" r="10"/><circle cx="226" cy="276" r="10"/><circle cx="362" cy="306" r="10"/><circle cx="496" cy="250" r="10"/><circle cx="602" cy="356" r="10"/><circle cx="424" cy="412" r="10"/><circle cx="250" cy="404" r="10"/>
+          </g>
+          <text x="78" y="58" font-size="27" font-family="Source Sans 3" fill="#2563eb" font-weight="700">open chain: endpoint free</text>
+          <text x="78" y="250" font-size="27" font-family="Source Sans 3" fill="#0f766e" font-weight="700">closed chain: endpoint constrained</text>
+          <path d="M194 86 L194 160 L302 162" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="10 10"/>
+          <text x="214" y="145" font-size="25" font-family="STIX Two Text" fill="#b45309">theta</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>fixed lengths, variable joints</span><span>3 / 16</span></div>
+  <aside class="speaker-notes">Emphasize the distinction between the data and the drawing. The list of lengths is not the same as a configuration. A configuration is one realized placement of those links, usually considered up to rigid motion so the interesting variables are internal.</aside>
+</section>
+
+<section class="slide" id="slide-04">
+  <div class="content">
+    <div class="eyebrow">Cauchy's Arm Lemma</div>
+    <h2>Opening Angles Cannot Bring The Endpoint Closer</h2>
+    <div class="cols wide-left">
+      <div class="svg-wrap">
+        <svg viewBox="0 0 940 560" role="img" aria-label="Two arms with larger turn angles showing endpoint distance">
+          <rect x="24" y="34" width="890" height="470" fill="#f8fafc" stroke="#cbd5e1" rx="8"/>
+          <path d="M96 404 L214 326 L350 358 L486 260 L654 282 L792 174" fill="none" stroke="#2563eb" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+          <path d="M96 404 L236 384 L382 382 L526 332 L674 260 L792 174" fill="none" stroke="#0f766e" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" opacity=".58"/>
+          <line x1="96" y1="404" x2="792" y2="174" stroke="#b45309" stroke-width="5" stroke-dasharray="14 12"/>
+          <line x1="96" y1="432" x2="792" y2="202" stroke="#0f766e" stroke-width="4" stroke-dasharray="8 12" opacity=".7"/>
+          <text x="360" y="458" font-size="27" font-family="Source Sans 3" fill="#b45309" font-weight="700">terminal distance</text>
+          <text x="114" y="94" font-size="26" font-family="Source Sans 3" fill="#2563eb" font-weight="700">more open chain</text>
+          <text x="560" y="424" font-size="26" font-family="Source Sans 3" fill="#0f766e" font-weight="700">reference chain</text>
+          <g fill="#111827"><circle cx="96" cy="404" r="13"/><circle cx="792" cy="174" r="13"/></g>
+        </svg>
+      </div>
+      <div>
+        <div class="box theorem">
+          <div class="label">Cauchy Arm Lemma, Informal Form</div>
+          <p>For two planar arms with the same link lengths, increasing the relevant joint angles cannot decrease the distance between the endpoints.</p>
+        </div>
+        <div class="formula">|p_n - p_0| <= |q_n - q_0|</div>
+        <p class="caption">The inequality compares complete arms, not a single hinge in isolation.</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>monotonicity under opening</span><span>4 / 16</span></div>
+  <aside class="speaker-notes">State this as a monotonicity principle. The proof idea is geometric: opening angles accumulates outward. The important classroom warning is that the conclusion is about the final endpoint distance, not about every vertex moving monotonically in one coordinate direction.</aside>
+</section>
+
+<section class="slide" id="slide-05">
+  <div class="content">
+    <div class="eyebrow">Proof Roadmap</div>
+    <h2>Why The Arm Lemma Is A Global Statement</h2>
+    <div class="timeline">
+      <div class="step"><h3>Fix The Links</h3><p class="small">Both arms have the same sequence of segment lengths.</p></div>
+      <div class="step"><h3>Compare Angles</h3><p class="small">Each corresponding turn is no smaller in the opened arm.</p></div>
+      <div class="step"><h3>Triangulate The Fan</h3><p class="small">Introduce diagonals from the initial vertex and compare triangles.</p></div>
+      <div class="step"><h3>Propagate Distances</h3><p class="small">Induct along the chain so the terminal diagonal cannot shrink.</p></div>
+    </div>
+    <div class="cols" style="margin-top:30px;">
+      <div class="box warning">
+        <div class="label">Common Misread</div>
+        <p>The lemma does not say every deformation that looks more extended is certified. The angle inequalities are the certificate.</p>
+      </div>
+      <div class="box example">
+        <div class="label">Computational Use</div>
+        <p>Distance sweeps over angle families reveal monotone regions and expose where a proposed comparison lacks hypotheses.</p>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>proof as propagation</span><span>5 / 16</span></div>
+  <aside class="speaker-notes">Use this slide to avoid presenting the arm lemma as a black box. The proof strategy is a controlled induction through auxiliary triangles. Each step turns an angle comparison into a diagonal comparison, so the endpoint inequality is accumulated rather than guessed.</aside>
+</section>
+
+<section class="slide" id="slide-06">
+  <div class="content">
+    <div class="eyebrow">Configuration Space</div>
+    <h2>Angles Are Coordinates, But Geometry Supplies The Constraints</h2>
+    <div class="cols">
+      <div>
+        <div class="box">
+          <div class="label">Planar Open Chain</div>
+          <p>After pinning the first vertex and first link, a configuration can be encoded by <span class="math">(theta1, ..., theta n-1)</span> on a torus of angle choices.</p>
+        </div>
+        <div class="box warning">
+          <div class="label">Feasible Versus Legal</div>
+          <p>Fixed lengths are automatic in angle coordinates. Avoiding collisions, staying inside a region, or closing a loop are extra constraints.</p>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 760 520" role="img" aria-label="Angle torus projected to feasible set">
+          <rect x="35" y="35" width="690" height="430" rx="8" fill="#fff" stroke="#cbd5e1"/>
+          <ellipse cx="370" cy="250" rx="250" ry="150" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+          <ellipse cx="370" cy="250" rx="118" ry="64" fill="#fff" stroke="#2563eb" stroke-width="4"/>
+          <path d="M168 312 C248 184 432 140 578 222 C636 254 640 326 584 362 C466 438 270 416 168 312 Z" fill="#f0fdfa" stroke="#0f766e" stroke-width="5" opacity=".9"/>
+          <path d="M214 340 C314 268 420 260 536 316" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="13 12"/>
+          <text x="172" y="118" font-size="25" font-family="Source Sans 3" fill="#2563eb" font-weight="700">angle choices</text>
+          <text x="456" y="420" font-size="25" font-family="Source Sans 3" fill="#0f766e" font-weight="700">legal motions</text>
+          <text x="292" y="254" font-size="29" font-family="STIX Two Text" fill="#111827">S1 x S1 x ...</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>continuous space from finite data</span><span>6 / 16</span></div>
+  <aside class="speaker-notes">The angle coordinate picture is useful because it separates constraints. The bar lengths are built in; geometric legality is not. This is the right moment to connect the chapter with algorithmic search, because algorithms often move through this space while testing constraints.</aside>
+</section>
+
+<section class="slide" id="slide-07">
+  <div class="content">
+    <div class="eyebrow">Reachability</div>
+    <h2>The Endpoint Lives In An Annulus</h2>
+    <div class="cols wide-right">
+      <div>
+        <div class="box theorem">
+          <div class="label">Reachable Radii</div>
+          <p>For link lengths <span class="math">l1, ..., ln</span>, the terminal distance <span class="math">r</span> satisfies an upper bound by total length and a lower bound by the excess of the longest link, if any.</p>
+        </div>
+        <div class="formula">max(0, Lmax - (L - Lmax)) <= r <= L</div>
+        <p class="caption">Rotating a realized endpoint fills the corresponding circle of radius <span class="math">r</span>.</p>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 850 560" role="img" aria-label="Reachability annulus">
+          <rect x="38" y="32" width="774" height="470" rx="8" fill="#fff" stroke="#cbd5e1"/>
+          <circle cx="425" cy="268" r="190" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+          <circle cx="425" cy="268" r="74" fill="#fff" stroke="#b45309" stroke-width="5"/>
+          <line x1="425" y1="268" x2="615" y2="268" stroke="#2563eb" stroke-width="5"/>
+          <line x1="425" y1="268" x2="499" y2="268" stroke="#b45309" stroke-width="5"/>
+          <path d="M425 268 L510 202 L606 224 L666 168" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+          <g fill="#111827"><circle cx="425" cy="268" r="12"/><circle cx="666" cy="168" r="12"/></g>
+          <text x="535" y="257" font-size="25" font-family="Source Sans 3" fill="#2563eb" font-weight="700">L</text>
+          <text x="440" y="315" font-size="25" font-family="Source Sans 3" fill="#b45309" font-weight="700">forced gap</text>
+          <text x="282" y="82" font-size="27" font-family="Source Sans 3" fill="#0f766e" font-weight="700">reachable endpoints</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>triangle inequality as a region</span><span>7 / 16</span></div>
+  <aside class="speaker-notes">The annulus is the triangle inequality made visual. The outer radius is the fully aligned chain. The inner radius appears only when the longest link is too long to be cancelled by the rest. This picture is a good place to ask students to predict examples before naming the formula.</aside>
+</section>
+
+<section class="slide" id="slide-08">
+  <div class="content">
+    <div class="eyebrow">From Radii To Paths</div>
+    <h2>Reachability Is More Than A Static Set</h2>
+    <div class="cols">
+      <div class="svg-wrap">
+        <svg viewBox="0 0 820 540" role="img" aria-label="Continuous path in reachability annulus">
+          <rect x="32" y="32" width="752" height="446" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <circle cx="410" cy="255" r="178" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+          <circle cx="410" cy="255" r="72" fill="#fff" stroke="#b45309" stroke-width="4"/>
+          <path d="M270 334 C292 242 356 178 438 160 C536 138 604 204 574 284 C546 360 450 390 360 372" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round"/>
+          <g fill="#0f766e"><circle cx="270" cy="334" r="12"/><circle cx="574" cy="284" r="12"/><circle cx="360" cy="372" r="12"/></g>
+          <text x="120" y="86" font-size="25" font-family="Source Sans 3" fill="#2563eb" font-weight="700">region</text>
+          <text x="454" y="410" font-size="25" font-family="Source Sans 3" fill="#0f766e" font-weight="700">motion path</text>
+          <text x="468" y="256" font-size="23" font-family="Source Sans 3" fill="#b45309" font-weight="700">unreachable disk</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box example">
+          <div class="label">Path Question</div>
+          <p>If two endpoints are reachable, can a collision-free motion carry the chain from one placement to another?</p>
+        </div>
+        <div class="box">
+          <div class="label">Algorithmic Lens</div>
+          <p>The endpoint annulus is a projection of the configuration space. It answers where the terminal point can be, but not which route the whole chain takes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>projection loses information</span><span>8 / 16</span></div>
+  <aside class="speaker-notes">This slide prevents an overclaim. The annulus describes possible endpoints, but it collapses many configurations to the same point. Motion planning needs the lifted path in configuration space, where self-intersection and obstacles can matter. Ask students what information about the middle joints has disappeared in the projection.</aside>
+</section>
+
+<section class="slide" id="slide-09">
+  <div class="content">
+    <div class="eyebrow">Folding Verification</div>
+    <h2>Local Turn Signs Are Fast, But They Are Not The Whole Story</h2>
+    <div class="cols wide-left">
+      <div>
+        <div class="box">
+          <div class="label">Orientation Test</div>
+          <p>The sign of a cross product detects whether three consecutive vertices turn left, turn right, or become collinear.</p>
+        </div>
+        <div class="formula">sign((b - a) x (c - b))</div>
+        <div class="box warning">
+          <div class="label">Verification Gap</div>
+          <p>A sequence of legal local turns may still create a global crossing elsewhere in the chain.</p>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 900 540" role="img" aria-label="Local turn signs and global crossing">
+          <rect x="34" y="34" width="824" height="442" rx="8" fill="#fff" stroke="#cbd5e1"/>
+          <path d="M92 390 L210 250 L348 314 L482 162 L628 360 L760 220" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M478 162 L628 360" stroke="#b45309" stroke-width="15" opacity=".18"/>
+          <path d="M210 250 L348 314 L482 162" fill="none" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 10"/>
+          <circle cx="552" cy="256" r="24" fill="#fff7ed" stroke="#b45309" stroke-width="5"/>
+          <text x="576" y="264" font-size="26" font-family="Source Sans 3" fill="#b45309" font-weight="700">crossing</text>
+          <text x="246" y="220" font-size="26" font-family="Source Sans 3" fill="#0f766e" font-weight="700">local turn</text>
+          <g fill="#111827"><circle cx="210" cy="250" r="11"/><circle cx="348" cy="314" r="11"/><circle cx="482" cy="162" r="11"/></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>local tests versus global geometry</span><span>9 / 16</span></div>
+  <aside class="speaker-notes">Students often trust local predicates too much because they are exact and cheap. The point is to respect them without overusing them: orientation signs are excellent local witnesses, but global simplicity requires segment intersection checks or stronger structural invariants.</aside>
+</section>
+
+<section class="slide" id="slide-10">
+  <div class="content">
+    <div class="eyebrow">Certificates</div>
+    <h2>A Useful Folding Audit Has Three Layers</h2>
+    <div class="cols">
+      <div class="panel">
+        <h3>Layer 1: Lengths</h3>
+        <p class="small">Every proposed move preserves each bar length within numerical tolerance or exactly by construction.</p>
+      </div>
+      <div class="panel">
+        <h3>Layer 2: Turns</h3>
+        <p class="small">The sign pattern and angle bounds match the intended fold or comparison theorem.</p>
+      </div>
+      <div class="panel">
+        <h3>Layer 3: Intersections</h3>
+        <p class="small">Nonadjacent segment pairs are tested so global simplicity is not inferred from local behavior.</p>
+      </div>
+      <div class="panel">
+        <h3>Layer 4: Continuity</h3>
+        <p class="small">A path should change configurations continuously; endpoint snapshots alone do not certify a motion.</p>
+      </div>
+    </div>
+    <div class="box example" style="margin-top:26px;">
+      <div class="label">Instructor Prompt</div>
+      <p>Which layer would catch a chain that keeps all lengths but passes through itself halfway through the motion?</p>
+    </div>
+  </div>
+  <div class="footer"><span>building reliable evidence</span><span>10 / 16</span></div>
+  <aside class="speaker-notes">Frame verification as layered evidence. Length preservation is necessary but too weak. Turn signs add local structure. Intersection tests catch the global failure mode. Continuity reminds students that a pair of legal drawings does not automatically produce a legal deformation between them.</aside>
+</section>
+
+<section class="slide" id="slide-11">
+  <div class="content">
+    <div class="eyebrow">Straightening</div>
+    <h2>In The Plane, Open Chains Can Be Untangled</h2>
+    <div class="cols wide-right">
+      <div>
+        <div class="box theorem">
+          <div class="label">Planar Straightening Principle</div>
+          <p>A simple open polygonal chain in the plane admits a continuous motion to a straight configuration while preserving lengths and avoiding self-intersection.</p>
+        </div>
+        <div class="box example">
+          <div class="label">Intuition</div>
+          <p>The motion increases global separation while maintaining simplicity, much like carefully opening an articulated ruler.</p>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 850 550" role="img" aria-label="Planar chain straightening sequence">
+          <rect x="34" y="34" width="782" height="442" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <path d="M92 356 L202 244 L324 306 L456 188 L584 284 L742 194" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M92 400 L236 372 L378 350 L522 318 L638 274 L742 194" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity=".62"/>
+          <path d="M92 444 L222 400 L352 356 L482 312 L612 268 L742 224" fill="none" stroke="#6d28d9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+          <path d="M240 120 C390 72 570 80 684 142" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="15 13"/>
+          <text x="285" y="106" font-size="26" font-family="Source Sans 3" fill="#b45309" font-weight="700">expansive motion</text>
+          <text x="95" y="88" font-size="25" font-family="Source Sans 3" fill="#2563eb" font-weight="700">initial</text>
+          <text x="628" y="424" font-size="25" font-family="Source Sans 3" fill="#6d28d9" font-weight="700">straighter</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>planar chains are not locked</span><span>11 / 16</span></div>
+  <aside class="speaker-notes">Keep the theorem at a lecture-ready level rather than proving the full result. The main conceptual contrast is that planarity plus openness prevents permanent locking. The proof machinery is deep, but the geometric message is accessible: a simple planar arm can be unfolded without tearing or crossing.</aside>
+</section>
+
+<section class="slide" id="slide-12">
+  <div class="content">
+    <div class="eyebrow">Spatial Warning</div>
+    <h2>Three Dimensions Add Room, But Also Add Locks</h2>
+    <div class="cols">
+      <div class="svg-wrap">
+        <svg viewBox="0 0 800 560" role="img" aria-label="Spatial chain with locked over under structure">
+          <rect x="38" y="36" width="724" height="452" rx="8" fill="#fff" stroke="#cbd5e1"/>
+          <path d="M124 360 C230 190 330 178 402 302 C482 438 610 384 688 178" fill="none" stroke="#2563eb" stroke-width="12" stroke-linecap="round"/>
+          <path d="M150 178 C236 342 360 402 474 282 C570 182 650 258 704 378" fill="none" stroke="#0f766e" stroke-width="12" stroke-linecap="round"/>
+          <rect x="365" y="260" width="88" height="52" fill="#fff" opacity=".94"/>
+          <path d="M124 360 C230 190 330 178 402 302" fill="none" stroke="#2563eb" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="410" cy="286" r="30" fill="none" stroke="#b45309" stroke-width="6"/>
+          <text x="484" y="104" font-size="27" font-family="Source Sans 3" fill="#b45309" font-weight="700">over-under data matters</text>
+          <text x="118" y="448" font-size="23" font-family="Source Sans 3" fill="#475569">projection can hide a spatial obstruction</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box warning">
+          <div class="label">Locking Phenomenon</div>
+          <p>A spatial chain may have more ambient room and still be trapped by its own three-dimensional arrangement.</p>
+        </div>
+        <div class="box">
+          <div class="label">Projection Trap</div>
+          <p>A planar drawing of a spatial linkage omits over-under information, so it can make a locked configuration look harmless.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>ambient dimension changes the problem</span><span>12 / 16</span></div>
+  <aside class="speaker-notes">This slide is deliberately cautionary. More dimension does not simply mean easier motion. Spatial chains carry knot-like information in their over-under relationships, and a projection can erase exactly the feature that blocks a motion. Emphasize that a correct certificate must remember depth ordering, not just the planar shadow.</aside>
+</section>
+
+<section class="slide" id="slide-13">
+  <div class="content">
+    <div class="eyebrow">Discrete Curve Shortening</div>
+    <h2>Move Vertices To Reduce Excess Turning</h2>
+    <div class="cols wide-left">
+      <div>
+        <div class="box">
+          <div class="label">Process</div>
+          <p>A discrete shortening step replaces local bends by shorter or straighter alternatives while preserving the endpoints or other required boundary data.</p>
+        </div>
+        <div class="box example">
+          <div class="label">Why It Helps</div>
+          <p>The flow turns qualitative untangling into measurable descent: perimeter, total turn, or another energy should decrease.</p>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 900 540" role="img" aria-label="Discrete curve shortening flow">
+          <rect x="34" y="34" width="832" height="438" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <path d="M92 364 L186 210 L286 340 L386 184 L506 318 L622 208 L762 330" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M92 388 L206 306 L326 320 L442 268 L560 292 L664 286 L762 330" fill="none" stroke="#0f766e" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".62"/>
+          <path d="M92 414 C260 356 502 328 762 330" fill="none" stroke="#6d28d9" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+          <g fill="#111827"><circle cx="92" cy="364" r="11"/><circle cx="762" cy="330" r="11"/></g>
+          <text x="118" y="106" font-size="26" font-family="Source Sans 3" fill="#2563eb" font-weight="700">jagged chain</text>
+          <text x="548" y="426" font-size="26" font-family="Source Sans 3" fill="#6d28d9" font-weight="700">after shortening</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>descent as geometry</span><span>13 / 16</span></div>
+  <aside class="speaker-notes">Present curve shortening as a computational habit of mind. Instead of directly guessing a final straightening, define a local operation that reduces an energy. The mathematical task is then to prove the operation preserves legality and cannot stall at a bad shape.</aside>
+</section>
+
+<section class="slide" id="slide-14">
+  <div class="content">
+    <div class="eyebrow">Worked Micro-Example</div>
+    <h2>A Three-Link Arm: Bounds, Angles, And A Sanity Check</h2>
+    <div class="cols">
+      <div>
+        <div class="box example">
+          <div class="label">Lengths</div>
+          <p>Let the links have lengths <span class="math">4, 3, 2</span>. Then <span class="math">L = 9</span> and the longest link is <span class="math">4</span>.</p>
+        </div>
+        <div class="formula">0 <= r <= 9</div>
+        <p class="caption">There is no forced inner gap because the shorter links can cancel the longest one.</p>
+      </div>
+      <div class="panel">
+        <h3>Questions To Ask Students</h3>
+        <ul>
+          <li>Which configuration reaches <span class="math">r = 9</span>?</li>
+          <li>How can the chain fold to bring the endpoint to the start?</li>
+          <li>What changes if the lengths are <span class="math">7, 3, 2</span>?</li>
+        </ul>
+      </div>
+    </div>
+    <div class="box warning" style="margin-top:28px;">
+      <div class="label">Sanity Check</div>
+      <p>Endpoint bounds are necessary for a target point, but a motion plan still needs collision and continuity checks.</p>
+    </div>
+  </div>
+  <div class="footer"><span>small numbers, full concept stack</span><span>14 / 16</span></div>
+  <aside class="speaker-notes">This example is intentionally small enough to do aloud. For 4, 3, and 2 the reachable radii start at zero. Switching to 7, 3, and 2 creates an inner radius of two, which makes the annulus formula memorable and testable.</aside>
+</section>
+
+<section class="slide" id="slide-15">
+  <div class="content">
+    <div class="eyebrow">Synthesis</div>
+    <h2>What To Remember About Polygonal Chains</h2>
+    <div class="cols">
+      <div>
+        <div class="box theorem">
+          <div class="label">Geometric Principle</div>
+          <p>Fixed-length chains turn metric constraints into motion questions. The right invariant depends on the question: distance, angle, crossing, or energy.</p>
+        </div>
+        <div class="box">
+          <div class="label">Computational Principle</div>
+          <p>Most algorithms alternate between generating candidate configurations and certifying that required invariants have survived.</p>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 760 520" role="img" aria-label="Four invariants around a chain">
+          <rect x="36" y="38" width="688" height="420" rx="8" fill="#fff" stroke="#cbd5e1"/>
+          <path d="M140 310 L252 210 L372 280 L486 168 L620 250" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+          <g fill="#111827"><circle cx="140" cy="310" r="10"/><circle cx="252" cy="210" r="10"/><circle cx="372" cy="280" r="10"/><circle cx="486" cy="168" r="10"/><circle cx="620" cy="250" r="10"/></g>
+          <text x="86" y="106" font-size="25" font-family="Source Sans 3" fill="#2563eb" font-weight="700">lengths</text>
+          <text x="520" y="116" font-size="25" font-family="Source Sans 3" fill="#0f766e" font-weight="700">angles</text>
+          <text x="92" y="410" font-size="25" font-family="Source Sans 3" fill="#b45309" font-weight="700">crossings</text>
+          <text x="530" y="414" font-size="25" font-family="Source Sans 3" fill="#6d28d9" font-weight="700">energy</text>
+          <path d="M150 116 C230 64 338 70 426 124" fill="none" stroke="#2563eb" stroke-width="4" stroke-dasharray="10 10"/>
+          <path d="M568 136 C626 188 650 260 624 334" fill="none" stroke="#0f766e" stroke-width="4" stroke-dasharray="10 10"/>
+          <path d="M150 394 C222 442 326 444 414 396" fill="none" stroke="#b45309" stroke-width="4" stroke-dasharray="10 10"/>
+          <path d="M548 392 C484 440 398 436 336 390" fill="none" stroke="#6d28d9" stroke-width="4" stroke-dasharray="10 10"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>invariants organize motion</span><span>15 / 16</span></div>
+  <aside class="speaker-notes">Tie the chapter together by naming the invariants. Lengths define the linkage, angles support comparison lemmas, crossings protect simplicity, and energies guide deformation. The same chain can look very different depending on which invariant is currently doing the work.</aside>
+</section>
+
+<section class="slide" id="slide-16">
+  <div class="content">
+    <div class="eyebrow">Closing Exercise</div>
+    <h2>Design A Certificate For A Proposed Motion</h2>
+    <div class="cols wide-left">
+      <div class="panel">
+        <h3>Task</h3>
+        <p>Given two drawings of the same simple open chain, propose a sequence of intermediate configurations and list what must be checked at every step.</p>
+        <div class="box exercise" style="margin-top:24px;">
+          <div class="label">Deliverable</div>
+          <p>A short certificate with preserved lengths, angle or distance claims, nonintersection tests, and a reason the sequence approximates a continuous motion.</p>
+        </div>
+      </div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 780 540" role="img" aria-label="Exercise chain before and after">
+          <rect x="34" y="34" width="710" height="440" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <path d="M96 348 L190 232 L312 308 L430 188 L548 304 L670 228" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M96 410 L214 388 L336 360 L458 326 L574 280 L670 228" fill="none" stroke="#0f766e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M258 116 C368 72 510 86 610 154" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="14 12"/>
+          <text x="104" y="104" font-size="26" font-family="Source Sans 3" fill="#2563eb" font-weight="700">start</text>
+          <text x="560" y="420" font-size="26" font-family="Source Sans 3" fill="#0f766e" font-weight="700">target</text>
+          <text x="304" y="132" font-size="25" font-family="Source Sans 3" fill="#b45309" font-weight="700">certified path?</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>discussion prompt</span><span>16 / 16</span></div>
+  <aside class="speaker-notes">End with a certificate-design exercise rather than a computation. The goal is for students to articulate what evidence would make a motion trustworthy: bar lengths, legal local turns, absence of crossings, and continuity. This also previews why computational geometry needs both construction and verification.</aside>
+</section>
+
+</deck-stage>
+<script src="deck-stage.js"></script>
+<script id="speaker-notes" type="application/json">
+{
+  "notes": [
+    "Open by treating a polygonal chain as a linkage: the edge lengths are fixed, but the joint angles are variables. The lecture follows one question through several lenses: what motions are possible without changing the bars, and what geometric facts certify that a motion is safe?",
+    "This roadmap is not a list of disconnected topics. Each part changes the coordinate system used to understand motion: first angles, then endpoint sets, then certificates for folding, then global straightening, and finally a curvature-reducing process.",
+    "Emphasize the distinction between the data and the drawing. The list of lengths is not the same as a configuration. A configuration is one realized placement of those links, usually considered up to rigid motion so the interesting variables are internal.",
+    "State this as a monotonicity principle. The proof idea is geometric: opening angles accumulates outward. The important classroom warning is that the conclusion is about the final endpoint distance, not about every vertex moving monotonically in one coordinate direction.",
+    "Use this slide to avoid presenting the arm lemma as a black box. The proof strategy is a controlled induction through auxiliary triangles. Each step turns an angle comparison into a diagonal comparison, so the endpoint inequality is accumulated rather than guessed.",
+    "The angle coordinate picture is useful because it separates constraints. The bar lengths are built in; geometric legality is not. This is the right moment to connect the chapter with algorithmic search, because algorithms often move through this space while testing constraints.",
+    "The annulus is the triangle inequality made visual. The outer radius is the fully aligned chain. The inner radius appears only when the longest link is too long to be cancelled by the rest. This picture is a good place to ask students to predict examples before naming the formula.",
+    "This slide prevents an overclaim. The annulus describes possible endpoints, but it collapses many configurations to the same point. Motion planning needs the lifted path in configuration space, where self-intersection and obstacles can matter. Ask students what information about the middle joints has disappeared in the projection.",
+    "Students often trust local predicates too much because they are exact and cheap. The point is to respect them without overusing them: orientation signs are excellent local witnesses, but global simplicity requires segment intersection checks or stronger structural invariants.",
+    "Frame verification as layered evidence. Length preservation is necessary but too weak. Turn signs add local structure. Intersection tests catch the global failure mode. Continuity reminds students that a pair of legal drawings does not automatically produce a legal deformation between them.",
+    "Keep the theorem at a lecture-ready level rather than proving the full result. The main conceptual contrast is that planarity plus openness prevents permanent locking. The proof machinery is deep, but the geometric message is accessible: a simple planar arm can be unfolded without tearing or crossing.",
+    "This slide is deliberately cautionary. More dimension does not simply mean easier motion. Spatial chains carry knot-like information in their over-under relationships, and a projection can erase exactly the feature that blocks a motion. Emphasize that a correct certificate must remember depth ordering, not just the planar shadow.",
+    "Present curve shortening as a computational habit of mind. Instead of directly guessing a final straightening, define a local operation that reduces an energy. The mathematical task is then to prove the operation preserves legality and cannot stall at a bad shape.",
+    "This example is intentionally small enough to do aloud. For 4, 3, and 2 the reachable radii start at zero. Switching to 7, 3, and 2 creates an inner radius of two, which makes the annulus formula memorable and testable.",
+    "Tie the chapter together by naming the invariants. Lengths define the linkage, angles support comparison lemmas, crossings protect simplicity, and energies guide deformation. The same chain can look very different depending on which invariant is currently doing the work.",
+    "End with a certificate-design exercise rather than a computation. The goal is for students to articulate what evidence would make a motion trustworthy: bar lengths, legal local turns, absence of crossings, and continuity. This also previews why computational geometry needs both construction and verification."
+  ]
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nonholonomic Behavior In Robotic Systems</title>
+  <meta name="course" content="A Mathematical Introduction to Robotic Manipulation">
+  <meta name="chapter_id" content="chapter-07">
+  <meta name="chapter_title" content="Chapter 07: Nonholonomic Behavior in Robotic Systems">
+  <meta name="notebook_path" content="A-Mathematical-Introduction-to-Robotic-Manipulation/part-03-nonholonomic-systems/chapter-07-nonholonomic-behavior-in-robotic-systems/07-nonholonomic-behavior-in-robotic-systems.ipynb">
+  <meta name="source_span" content="printed pages 317-354; PDF pages 335-372.">
+  <meta name="source_pdf" content="A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #0f172a; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      padding: 72px 96px 54px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 68px 68px;
+    }
+    .speaker-notes { display: none; }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 68px; line-height: 1.02; font-weight: 700; max-width: 1280px; }
+    h2 { font-size: 52px; line-height: 1.08; font-weight: 700; color: var(--slide-ink); }
+    h3 { font-size: 31px; line-height: 1.16; font-weight: 700; color: var(--slide-accent); margin-bottom: 10px; }
+    p, li { font-size: 27px; line-height: 1.29; }
+    ul, ol { margin: 0; padding-left: 32px; }
+    li + li { margin-top: 10px; }
+    a { color: var(--slide-accent); text-decoration: none; border-bottom: 2px solid rgba(30, 58, 138, 0.25); }
+    .kicker {
+      font-size: 23px;
+      line-height: 1.15;
+      font-weight: 700;
+      color: var(--slide-teal);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .subtitle { font-size: 32px; line-height: 1.24; color: var(--slide-muted); max-width: 1220px; }
+    .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 24px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; align-items: stretch; min-height: 0; }
+    .grid2.wide-left { grid-template-columns: 1.15fr 0.85fr; }
+    .grid2.wide-right { grid-template-columns: 0.85fr 1.15fr; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: stretch; }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 24px 26px;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel.slate { background: var(--slide-bg-alt); border-left: 6px solid var(--slide-border); }
+    .tag {
+      display: inline-block;
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      padding: 8px 11px;
+      margin-bottom: 12px;
+    }
+    .formula { font-family: var(--font-math); font-size: 36px; line-height: 1.22; color: var(--slide-ink); }
+    .formula.big { font-size: 45px; line-height: 1.14; }
+    .formula.small { font-size: 30px; line-height: 1.22; }
+    .mini { font-size: 23px; line-height: 1.25; color: var(--slide-muted); }
+    .caption { font-size: 22px; line-height: 1.22; color: var(--slide-dimmed); margin-top: 10px; }
+    .source {
+      margin-top: auto;
+      border-top: 1px solid var(--slide-border-light);
+      padding-top: 13px;
+      font-size: 21px;
+      line-height: 1.2;
+      color: var(--slide-dimmed);
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+    }
+    .diagram {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .diagram.soft { background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); }
+    .diagram img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .full-img { height: 690px; }
+    .mid-img { height: 560px; }
+    .svg-label { font-family: var(--font-sans); font-size: 28px; font-weight: 700; fill: #111827; }
+    .svg-small { font-family: var(--font-sans); font-size: 23px; fill: #475569; }
+    .svg-math { font-family: var(--font-math); font-size: 30px; fill: #111827; }
+    .rule { width: 108px; height: 6px; border-radius: 4px; background: var(--slide-accent); margin: 22px 0 28px; }
+    .title-block { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0; }
+    .callout { font-size: 40px; line-height: 1.15; color: var(--slide-accent); font-weight: 700; }
+    .check-table { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 12px 20px; align-items: center; }
+    .check-table div { font-size: 25px; line-height: 1.22; }
+    .check-table .key { color: var(--slide-muted); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "A Mathematical Introduction to Robotic Manipulation",
+  "chapter_id": "chapter-07",
+  "chapter_title": "Chapter 07: Nonholonomic Behavior in Robotic Systems",
+  "notebook_path": "A-Mathematical-Introduction-to-Robotic-Manipulation/part-03-nonholonomic-systems/chapter-07-nonholonomic-behavior-in-robotic-systems/07-nonholonomic-behavior-in-robotic-systems.ipynb",
+  "source_span": "printed pages 317-354; PDF pages 335-372.",
+  "source_pdf": "A-Mathematical-Introduction-to-Robotic-Manipulation/A Mathematical Introduction to Robotic Manipulation.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+[
+  {"slide":1,"title":"Forbidden Now, Possible Later","notes":"Open with the paradox, because it is the cleanest way to motivate the whole chapter. A car cannot move sideways at an instant, and a rolling contact cannot slip in its forbidden direction. Yet the driver can parallel park, and a rolling contact can reorient through sequences. Tell students that the lecture is about the mathematical object that reconciles those facts: a velocity distribution whose brackets may create effective directions not present at first order."},
+  {"slide":2,"title":"Pfaffian Constraints","notes":"Spend time on the row interpretation. A matrix row is not just an algebraic object; it is a covector that tests a candidate velocity. The distribution Delta is what remains after all tests return zero. That distinction matters later, because integrability asks whether these allowed tangent planes fit together into configuration-space surfaces, while nonholonomy asks what motion sequences can do when they do not."},
+  {"slide":3,"title":"From One-Forms To Allowed Directions","notes":"Use the image as a bridge between covectors and motion. The one-form is easier to compute with, but the distribution is easier to reason about geometrically. Ask the class to read a single point first: which drawn direction survives the Pfaffian test? Then zoom out and ask the integrability question: do these directions assemble into sheets, or do their brackets force motion out of any candidate sheet?"},
+  {"slide":4,"title":"Holonomic, Partially Holonomic, Completely Nonholonomic","notes":"The goal is to prevent students from treating nonholonomic as a synonym for difficult. Holonomic constraints have enough first integrals to define leaves. Partially holonomic systems sit between the extremes: brackets add directions, but not all directions. Completely nonholonomic systems are the dramatic case for planning, because the Lie closure reaches the full tangent space. Keep the terms tied to rank and leaves, not to intuition alone."},
+  {"slide":5,"title":"Vector Fields And Flows","notes":"This slide sets up the bracket square by making flows concrete. A vector field is an assignment of tangent vectors, but a flow is the result of following that assignment for time t. In control language, each admissible input selects a vector field or combination of vector fields. The later bracket formula is not an abstract algebra trick; it is the leading error term produced when four short flow segments are composed in a loop."},
+  {"slide":6,"title":"Lie Bracket Flow Square","notes":"Make the cancellation explicit. Four small moves appear to return the system to its starting point if students only add first-order arrows. The image and formula show why that reasoning is incomplete: the flows are evaluated at shifted points, so a second-order term survives. Connect this directly to parking and rolling examples. The forbidden direction is not violated instantaneously; it is accumulated through a loop of legal motions."},
+  {"slide":7,"title":"Bracket Algebra Rules","notes":"Treat the rules as a computational grammar. Bilinearity lets students expand candidate fields, antisymmetry prevents double counting, Jacobi identifies dependencies among nested brackets, and the function-coefficient rule explains why brackets are not merely formal symbols with scalar labels. Emphasize that the algebra is used to build a rank test, so simplification is not cosmetic. It decides whether a proposed new direction is genuinely independent."},
+  {"slide":8,"title":"Frobenius: Leaves Versus Brackets","notes":"This is the conceptual hinge of the lecture. Frobenius turns a geometric question about leaves into a bracket calculation. If all brackets of tangent vector fields remain inside the distribution, the allowed planes fit together as tangent planes to submanifolds. If a bracket points outside, then loops of allowed motion detect a direction that no leaf could contain. That is precisely the phenomenon students saw in the flow square."},
+  {"slide":9,"title":"Pfaffian Integrability Test","notes":"Give students the chapter's actual test route. First ask whether a single Pfaffian equation has an integrating factor that turns it into an exact differential. For multiple one-forms, build the annihilating distribution Delta equals Omega perpendicular, then use Frobenius to test bracket closure. The point is not to introduce a new exterior-calculus toolbox; it is to show how the one-form view and the vector-field view meet."},
+  {"slide":10,"title":"Chow And The Rank Condition","notes":"After Frobenius says when leaves exist, Chow says why the opposite case can be powerful. A bracket-generating distribution gives a reachability statement: even though controls are restricted to horizontal directions, enough short loops can synthesize the missing directions. Be careful with the practical caveat. The theorem guarantees connectivity under its hypotheses, but it does not hand over an efficient trajectory, account for actuator bounds, or solve obstacle avoidance."},
+  {"slide":11,"title":"Where Nonholonomy Comes From","notes":"Use examples to anchor the formalism without replacing it. Rolling and steering give contact-level no-slip equations, while angular-momentum conservation gives velocity constraints even when there is no wheel on the ground. Hoppers and space robots are important because they show that nonholonomy is not only a rolling phenomenon. It can also appear when internal shape change is coupled to conserved momentum."},
+  {"slide":12,"title":"Kinematic Car","notes":"Use the car to make Pfaffian notation feel physical. The form minus sine theta dx plus cosine theta dy measures sideways body-frame motion, and the constraint sets that measurement to zero. The car can drive forward and change orientation, but not translate sideways at an instant. The parking maneuver is therefore not a violation of the constraint; it is a sequence that changes orientation and accumulates a lateral net effect."},
+  {"slide":13,"title":"Rolling Disk And Fingertip","notes":"The dashboard should be read as a rank story, not just as a plot. For a rolling disk, the no-slip rules are velocity constraints at the ground contact. For a rolling fingertip, the same logic is lifted into two moving surface frames. In both cases, first-order allowed directions may be too few, and the growth vector tells how quickly bracket operations add missing directions."},
+  {"slide":14,"title":"Filtration And Degree Of Nonholonomy","notes":"Connect this definition back to computation. A rank condition is not checked by listing all possible brackets forever. The filtration organizes the search by depth. At each step, add brackets between original allowed directions and the directions already discovered. The degree of nonholonomy measures how many layers of this process are needed before the system sees the full tangent space."},
+  {"slide":15,"title":"Philip Hall Basis","notes":"Present the Hall basis as an algorithmic convenience with mathematical depth. When there are several control fields, the number of formal nested brackets grows rapidly. Antisymmetry tells us some words only differ by sign, and Jacobi tells us some combinations are dependent. A Hall ordering supplies a disciplined list of representatives, which is why it appears naturally when implementing rank-growth checks."},
+  {"slide":16,"title":"Computational Check And Lab","notes":"Close by connecting the abstract lecture to the executable artifacts. The final sanity payload verifies the intended bracket direction and the second-order scaling of the bracket loop. The lab then asks students to rerun the diagnostic under a small perturbation and explain the invariant, rather than merely reporting a plot. This is the habit the chapter is trying to build: every geometric claim should have a visible object and a compact computational check."}
+]
+  </script>
+  <deck-stage width="1920" height="1080">
+
+    <section class="slide alt" data-label="Forbidden Now">
+      <div class="kicker">Chapter 07</div>
+      <div class="title-block">
+        <h1>Forbidden Now, Possible Later</h1>
+        <div class="rule"></div>
+        <p class="subtitle">Nonholonomic behavior begins with a sharp asymmetry: the instantaneous velocity constraint forbids a direction, but carefully ordered admissible motions can still generate net displacement in that direction.</p>
+      </div>
+      <div class="content grid3">
+        <div class="panel amber"><h3>Instantaneous Rule</h3><p>A wheel, car, or rolling contact may have a side direction that is not allowed in the current tangent space.</p></div>
+        <div class="panel blue"><h3>Motion Sequence</h3><p>Composed flows do not simply add; their second-order term can expose a bracket direction.</p></div>
+        <div class="panel teal"><h3>Reachability Test</h3><p>The chapter asks whether the Lie algebra generated by allowed fields spans every direction needed for motion planning.</p></div>
+      </div>
+      <p class="source"><span>Source grounding: printed pages 317-354; PDF pages 335-372</span><span>Notebook: 07-nonholonomic-behavior-in-robotic-systems.ipynb</span></p>
+      <aside class="speaker-notes">Open with the paradox, because it is the cleanest way to motivate the whole chapter. A car cannot move sideways at an instant, and a rolling contact cannot slip in its forbidden direction. Yet the driver can parallel park, and a rolling contact can reorient through sequences. Tell students that the lecture is about the mathematical object that reconciles those facts: a velocity distribution whose brackets may create effective directions not present at first order.</aside>
+    </section>
+
+    <section class="slide" data-label="Pfaffian Constraints">
+      <div class="kicker">Velocity Constraints As One-Forms</div>
+      <h2>Pfaffian Constraints</h2>
+      <div class="content grid2 wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <span class="tag">Definition</span>
+            <p class="formula big">\(A(q)\dot q=0,\qquad \omega^i_q(\dot q)=0\)</p>
+            <p>Each row of \(A(q)\) is a one-form; its kernel is the set of velocities the mechanism may actually take.</p>
+          </div>
+          <div class="panel teal">
+            <p class="formula">\(\Delta_q=\ker A(q)\subset T_qQ,\qquad \dim \Delta_q=n-\operatorname{rank} A(q)\)</p>
+          </div>
+          <div class="panel slate"><p>Engineering reading: a constraint does not remove configurations first. It removes tangent directions first.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Pfaffian rows cutting allowed tangent directions">
+            <defs>
+              <marker id="arrow-pfaffian" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker>
+            </defs>
+            <rect x="70" y="85" width="230" height="320" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <text x="115" y="135" class="svg-label">A(q)</text>
+            <line x1="120" y1="185" x2="250" y2="185" stroke="#2563eb" stroke-width="5"/>
+            <line x1="120" y1="245" x2="250" y2="245" stroke="#2563eb" stroke-width="5"/>
+            <line x1="120" y1="305" x2="250" y2="305" stroke="#2563eb" stroke-width="5"/>
+            <text x="110" y="366" class="svg-small">rows are one-forms</text>
+            <line x1="315" y1="245" x2="430" y2="245" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-pfaffian)"/>
+            <ellipse cx="575" cy="275" rx="150" ry="92" fill="rgba(15,118,110,0.1)" stroke="#0f766e" stroke-width="5"/>
+            <line x1="470" y1="275" x2="680" y2="275" stroke="#0f766e" stroke-width="7" marker-end="url(#arrow-pfaffian)"/>
+            <line x1="575" y1="390" x2="575" y2="160" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 10"/>
+            <text x="505" y="130" class="svg-label">Delta_q</text>
+            <text x="480" y="455" class="svg-small">allowed velocities live in the nullspace</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: Pfaffian constraints, printed pp. 317-354</span><span>Visual: original SVG nullspace diagram</span></p>
+      <aside class="speaker-notes">Spend time on the row interpretation. A matrix row is not just an algebraic object; it is a covector that tests a candidate velocity. The distribution Delta is what remains after all tests return zero. That distinction matters later, because integrability asks whether these allowed tangent planes fit together into configuration-space surfaces, while nonholonomy asks what motion sequences can do when they do not.</aside>
+    </section>
+
+    <section class="slide" data-label="One-Forms To Directions">
+      <div class="kicker">Artifact Inspection</div>
+      <h2>From One-Forms To Allowed Directions</h2>
+      <div class="content grid2 wide-right">
+        <figure class="stack">
+          <div class="diagram full-img">
+            <img src="../figures/pfaffian-distribution-view.png" alt="Pfaffian distribution view showing nullspaces of one-forms">
+          </div>
+          <figcaption class="caption">Generated chapter artifact: pfaffian-distribution-view.png</figcaption>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>What To Inspect</h3><p>At each sample point, the one-form rejects velocities transverse to the drawn distribution and keeps only the local allowed directions.</p></div>
+          <div class="panel teal"><h3>What The Picture Is Not</h3><p>The drawn directions are not paths yet. They are local tangent instructions that still need flows and compositions.</p></div>
+          <div class="panel amber"><h3>Common Mistake</h3><p>A visually smooth field of allowed directions can still fail to be tangent to any family of leaves.</p></div>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: printed pages 317-354; PDF pages 335-372</span><span>Artifact: ../figures/pfaffian-distribution-view.png</span></p>
+      <aside class="speaker-notes">Use the image as a bridge between covectors and motion. The one-form is easier to compute with, but the distribution is easier to reason about geometrically. Ask the class to read a single point first: which drawn direction survives the Pfaffian test? Then zoom out and ask the integrability question: do these directions assemble into sheets, or do their brackets force motion out of any candidate sheet?</aside>
+    </section>
+
+    <section class="slide" data-label="Holonomy Taxonomy">
+      <div class="kicker">Constraint Taxonomy</div>
+      <h2>Holonomic, Partially Holonomic, Completely Nonholonomic</h2>
+      <div class="content grid3">
+        <div class="panel blue">
+          <h3>Holonomic</h3>
+          <p class="formula small">\(h(q)=c,\qquad dh(\dot q)=0\)</p>
+          <p>Allowed velocities are tangent to level sets. The constraint can be integrated into position equations.</p>
+        </div>
+        <div class="panel slate">
+          <h3>Partially Holonomic</h3>
+          <p class="formula small">\(\operatorname{rank}\mathcal{L}(\Delta)\lt n\)</p>
+          <p>Some first integrals survive, but bracket-generated directions enlarge the original distribution.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Completely Nonholonomic</h3>
+          <p class="formula small">\(\mathcal{L}_q(\Delta)=T_qQ\)</p>
+          <p>Allowed fields and their iterated brackets span the full tangent space at the points under study.</p>
+        </div>
+      </div>
+      <div class="diagram soft" style="height: 360px;">
+        <svg viewBox="0 0 1320 300" role="img" aria-label="Taxonomy from leaves to bracket generating systems">
+          <path d="M75 180 C190 70, 320 80, 430 180 C545 280, 675 280, 790 180 C910 70, 1040 70, 1245 178" fill="none" stroke="#cbd5e1" stroke-width="6"/>
+          <rect x="95" y="95" width="270" height="120" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+          <text x="145" y="150" class="svg-label">leaves</text>
+          <text x="130" y="185" class="svg-small">position equations</text>
+          <rect x="525" y="95" width="270" height="120" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/>
+          <text x="570" y="150" class="svg-label">mixed rank</text>
+          <text x="560" y="185" class="svg-small">some invariants remain</text>
+          <rect x="955" y="95" width="270" height="120" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+          <text x="1000" y="150" class="svg-label">full span</text>
+          <text x="990" y="185" class="svg-small">bracket generating</text>
+          <path d="M380 155 H505" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-tax)"/>
+          <path d="M810 155 H935" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-tax)"/>
+          <defs><marker id="arrow-tax" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+        </svg>
+      </div>
+      <p class="source"><span>Source grounding: integrability and nonholonomy classification, printed pp. 317-354</span><span>Visual: original SVG taxonomy</span></p>
+      <aside class="speaker-notes">The goal is to prevent students from treating nonholonomic as a synonym for difficult. Holonomic constraints have enough first integrals to define leaves. Partially holonomic systems sit between the extremes: brackets add directions, but not all directions. Completely nonholonomic systems are the dramatic case for planning, because the Lie closure reaches the full tangent space. Keep the terms tied to rank and leaves, not to intuition alone.</aside>
+    </section>
+
+    <section class="slide" data-label="Vector Fields">
+      <div class="kicker">Dynamics Of Allowed Directions</div>
+      <h2>Vector Fields And Flows</h2>
+      <div class="content grid2 wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <span class="tag">Flow Definition</span>
+            <p class="formula big">\(\dot q=g(q),\qquad q(t)=\varphi_t^g(q_0)\)</p>
+            <p>A vector field turns an allowed direction rule into a local motion map.</p>
+          </div>
+          <div class="panel teal"><p>Control systems compose short pieces of flows: move along \(g_1\), then \(g_2\), then reverse \(g_1\), then reverse \(g_2\).</p></div>
+          <div class="panel amber"><p>The order of these pieces matters because flows generally do not commute.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Vector field with integral curve and flow maps">
+            <defs><marker id="arrow-flow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#2563eb"/></marker></defs>
+            <g stroke="#cbd5e1" stroke-width="2">
+              <path d="M80 110 H690"/><path d="M80 190 H690"/><path d="M80 270 H690"/><path d="M80 350 H690"/><path d="M80 430 H690"/>
+              <path d="M120 70 V480"/><path d="M240 70 V480"/><path d="M360 70 V480"/><path d="M480 70 V480"/><path d="M600 70 V480"/>
+            </g>
+            <g stroke="#2563eb" stroke-width="4" marker-end="url(#arrow-flow)">
+              <path d="M140 410 C165 390, 180 370, 200 340"/>
+              <path d="M275 390 C305 365, 320 325, 330 288"/>
+              <path d="M420 388 C455 348, 455 310, 445 270"/>
+              <path d="M565 390 C605 365, 625 325, 640 288"/>
+              <path d="M160 250 C185 225, 210 205, 245 190"/>
+              <path d="M340 210 C380 188, 420 180, 465 182"/>
+              <path d="M535 205 C575 215, 610 235, 645 265"/>
+            </g>
+            <path d="M130 420 C240 315, 340 380, 435 250 C505 155, 600 175, 660 238" fill="none" stroke="#0f766e" stroke-width="8"/>
+            <circle cx="130" cy="420" r="11" fill="#0f766e"/><circle cx="660" cy="238" r="11" fill="#b45309"/>
+            <text x="98" y="462" class="svg-label">q0</text>
+            <text x="620" y="218" class="svg-label">phi_t(q0)</text>
+            <text x="95" y="76" class="svg-small">arrows are values of g(q); the curve is one integral trajectory</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: vector fields and flows, PDF pages 335-372</span><span>Visual: original SVG flow field</span></p>
+      <aside class="speaker-notes">This slide sets up the bracket square by making flows concrete. A vector field is an assignment of tangent vectors, but a flow is the result of following that assignment for time t. In control language, each admissible input selects a vector field or combination of vector fields. The later bracket formula is not an abstract algebra trick; it is the leading error term produced when four short flow segments are composed in a loop.</aside>
+    </section>
+
+    <section class="slide" data-label="Lie Bracket Square">
+      <div class="kicker">Second-Order Motion From A Loop</div>
+      <h2>Lie Bracket Flow Square</h2>
+      <div class="content grid2 wide-right">
+        <figure class="stack">
+          <div class="diagram mid-img">
+            <img src="../figures/lie-bracket-flow-square.png" alt="Lie bracket flow square showing second-order drift">
+          </div>
+          <figcaption class="caption">Generated chapter artifact: lie-bracket-flow-square.png</figcaption>
+        </figure>
+        <div class="stack">
+          <div class="panel blue">
+            <span class="tag">Bracket Loop</span>
+            <p class="formula big">\(q(4\epsilon)=q_0+\epsilon^2[g_1,g_2](q_0)+O(\epsilon^3)\)</p>
+          </div>
+          <div class="panel teal"><p>First-order displacements cancel around the square; the commutator records the second-order drift that remains.</p></div>
+          <div class="panel amber"><p>The sign depends on the convention for the order of the four flows, so always inspect the chosen loop orientation.</p></div>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: Lie bracket flow computation, printed pp. 317-354</span><span>Artifact: ../figures/lie-bracket-flow-square.png</span></p>
+      <aside class="speaker-notes">Make the cancellation explicit. Four small moves appear to return the system to its starting point if students only add first-order arrows. The image and formula show why that reasoning is incomplete: the flows are evaluated at shifted points, so a second-order term survives. Connect this directly to parking and rolling examples. The forbidden direction is not violated instantaneously; it is accumulated through a loop of legal motions.</aside>
+    </section>
+
+    <section class="slide" data-label="Bracket Rules">
+      <div class="kicker">Algebra Of Effective Directions</div>
+      <h2>Bracket Algebra Rules</h2>
+      <div class="content grid2 wide-left">
+        <div class="stack">
+          <div class="panel blue"><h3>Bilinearity</h3><p class="formula small">\([aX+bY,Z]=a[X,Z]+b[Y,Z]\)</p></div>
+          <div class="panel teal"><h3>Antisymmetry</h3><p class="formula small">\([X,Y]=-[Y,X],\qquad [X,X]=0\)</p></div>
+          <div class="panel violet"><h3>Jacobi Identity</h3><p class="formula small">\([X,[Y,Z]]+[Y,[Z,X]]+[Z,[X,Y]]=0\)</p></div>
+          <div class="panel amber"><h3>Function Coefficients</h3><p class="formula small">\([fX,Y]=f[X,Y]-Y(f)X\)</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Bracket algebra as a directed expansion tree">
+            <defs><marker id="arrow-bracket" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <circle cx="210" cy="120" r="54" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/><text x="181" y="132" class="svg-label">X</text>
+            <circle cx="520" cy="120" r="54" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/><text x="492" y="132" class="svg-label">Y</text>
+            <circle cx="365" cy="285" r="70" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/><text x="306" y="296" class="svg-label">[X,Y]</text>
+            <circle cx="205" cy="455" r="70" fill="#f5f3ff" stroke="#6d28d9" stroke-width="5"/><text x="122" y="466" class="svg-label">[X,[X,Y]]</text>
+            <circle cx="525" cy="455" r="70" fill="#fffbeb" stroke="#b45309" stroke-width="5"/><text x="443" y="466" class="svg-label">[Y,[X,Y]]</text>
+            <path d="M250 160 L320 230" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-bracket)"/>
+            <path d="M480 160 L410 230" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-bracket)"/>
+            <path d="M330 345 L245 400" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-bracket)"/>
+            <path d="M400 345 L485 400" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-bracket)"/>
+            <text x="210" y="47" class="svg-small">generators</text>
+            <text x="296" y="380" class="svg-small">new candidates for motion directions</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: bracket algebra and generated distributions, printed pp. 317-354</span><span>Visual: original SVG bracket expansion</span></p>
+      <aside class="speaker-notes">Treat the rules as a computational grammar. Bilinearity lets students expand candidate fields, antisymmetry prevents double counting, Jacobi identifies dependencies among nested brackets, and the function-coefficient rule explains why brackets are not merely formal symbols with scalar labels. Emphasize that the algebra is used to build a rank test, so simplification is not cosmetic. It decides whether a proposed new direction is genuinely independent.</aside>
+    </section>
+
+    <section class="slide" data-label="Frobenius">
+      <div class="kicker">The Integrability Boundary</div>
+      <h2>Frobenius: Leaves Versus Brackets</h2>
+      <div class="content grid2">
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Foliation leaves compared with bracket escaping a plane">
+            <defs><marker id="arrow-frob" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#2563eb"/></marker></defs>
+            <path d="M70 160 C190 110, 280 115, 385 160 C505 210, 600 210, 690 160" fill="none" stroke="#cbd5e1" stroke-width="5"/>
+            <path d="M70 260 C190 210, 280 215, 385 260 C505 310, 600 310, 690 260" fill="none" stroke="#cbd5e1" stroke-width="5"/>
+            <path d="M70 360 C190 310, 280 315, 385 360 C505 410, 600 410, 690 360" fill="none" stroke="#cbd5e1" stroke-width="5"/>
+            <ellipse cx="280" cy="255" rx="115" ry="60" fill="rgba(37,99,235,0.1)" stroke="#2563eb" stroke-width="5"/>
+            <path d="M235 260 C260 238, 295 235, 330 250" fill="none" stroke="#2563eb" stroke-width="6" marker-end="url(#arrow-frob)"/>
+            <path d="M255 284 C285 312, 322 315, 350 292" fill="none" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-frob)"/>
+            <path d="M488 270 C525 220, 570 180, 610 130" fill="none" stroke="#b45309" stroke-width="8" marker-end="url(#arrow-frob)"/>
+            <text x="108" y="110" class="svg-label">candidate leaves</text>
+            <text x="216" y="338" class="svg-small">X,Y stay tangent</text>
+            <text x="500" y="112" class="svg-small">bracket points out</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <div class="panel blue">
+            <span class="tag">Frobenius Criterion</span>
+            <p>A constant-rank distribution \(\Delta\) is tangent to a foliation exactly when it is involutive.</p>
+          </div>
+          <div class="panel teal"><p class="formula">\(X,Y\in\Delta\quad\Longrightarrow\quad [X,Y]\in\Delta\)</p></div>
+          <div class="panel amber"><p>If one bracket escapes the distribution, the local planes cannot be the tangent planes of configuration-space leaves.</p></div>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: Frobenius theorem, PDF pages 335-372</span><span>Visual: original SVG leaf/bracket contrast</span></p>
+      <aside class="speaker-notes">This is the conceptual hinge of the lecture. Frobenius turns a geometric question about leaves into a bracket calculation. If all brackets of tangent vector fields remain inside the distribution, the allowed planes fit together as tangent planes to submanifolds. If a bracket points outside, then loops of allowed motion detect a direction that no leaf could contain. That is precisely the phenomenon students saw in the flow square.</aside>
+    </section>
+
+    <section class="slide" data-label="Pfaffian Test">
+      <div class="kicker">Chapter Integrability Route</div>
+      <h2>Pfaffian Integrability Test</h2>
+      <div class="content grid2 wide-left">
+        <div class="stack">
+          <div class="panel blue">
+            <span class="tag">Single Constraint</span>
+            <p class="formula big">\(\alpha(q)\,\omega(q)=dh(q)\)</p>
+            <p>An integrating factor turns one Pfaffian equation into a holonomic position constraint.</p>
+          </div>
+          <div class="panel teal">
+            <span class="tag">Multiple Constraints</span>
+            <p class="formula">\(\Omega=\operatorname{span}\{\omega_i\},\qquad \Delta=\Omega^\perp\)</p>
+            <p class="mini">Build the allowed vector fields, then test whether their brackets remain in \(\Delta\).</p>
+          </div>
+          <div class="panel amber"><p>If \([X,Y]\notin\Delta\), legal velocity directions do not assemble into configuration leaves.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Workflow for testing Pfaffian integrability">
+            <defs><marker id="arrow-test" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <rect x="70" y="90" width="230" height="92" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="112" y="145" class="svg-label">one-forms</text>
+            <rect x="70" y="240" width="230" height="92" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="122" y="295" class="svg-label">nullspace</text>
+            <rect x="70" y="390" width="230" height="92" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="125" y="445" class="svg-label">brackets</text>
+            <path d="M185 184 V232" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-test)"/>
+            <path d="M185 334 V382" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-test)"/>
+            <path d="M340 436 H590" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-test)"/>
+            <circle cx="635" cy="436" r="60" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <text x="594" y="427" class="svg-label">inside?</text>
+            <text x="570" y="468" class="svg-small">involutive</text>
+            <text x="350" y="140" class="svg-math">Omega=span omega_i</text>
+            <text x="350" y="290" class="svg-math">Delta=Omega perp</text>
+            <text x="350" y="415" class="svg-math">[X,Y] in Delta?</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: integrating factors, annihilating distributions, and Frobenius</span><span>Visual: original SVG test workflow</span></p>
+      <aside class="speaker-notes">Give students the chapter's actual test route. First ask whether a single Pfaffian equation has an integrating factor that turns it into an exact differential. For multiple one-forms, build the annihilating distribution Delta equals Omega perpendicular, then use Frobenius to test bracket closure. The point is not to introduce a new exterior-calculus toolbox; it is to show how the one-form view and the vector-field view meet.</aside>
+    </section>
+
+    <section class="slide" data-label="Chow">
+      <div class="kicker">From Local Brackets To Reachability</div>
+      <h2>Chow And The Rank Condition</h2>
+      <div class="content grid2">
+        <div class="stack">
+          <div class="panel teal">
+            <span class="tag">Chow-Rashevskii Message</span>
+            <p>If a connected system has a bracket-generating distribution, then horizontal paths can connect points within the relevant component.</p>
+          </div>
+          <div class="panel blue"><p class="formula big">\(\operatorname{span}\{g_i,[g_i,g_j],[g_i,[g_j,g_k]],\ldots\}_q=T_qQ\)</p></div>
+          <div class="panel amber"><p>For control, the rank condition is a reachability certificate, not a recipe for the shortest motion.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Rank condition expanding to full tangent space">
+            <defs><marker id="arrow-rank" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <rect x="95" y="390" width="155" height="60" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <rect x="285" y="320" width="155" height="130" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <rect x="475" y="220" width="155" height="230" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <line x1="70" y1="450" x2="680" y2="450" stroke="#94a3b8" stroke-width="4"/>
+            <line x1="70" y1="450" x2="70" y2="160" stroke="#94a3b8" stroke-width="4"/>
+            <text x="110" y="374" class="svg-label">D1</text>
+            <text x="300" y="304" class="svg-label">D2</text>
+            <text x="490" y="204" class="svg-label">D3=TQ</text>
+            <text x="105" y="490" class="svg-small">fields</text>
+            <text x="285" y="490" class="svg-small">add brackets</text>
+            <text x="480" y="490" class="svg-small">full rank</text>
+            <path d="M250 355 H285" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-rank)"/>
+            <path d="M440 270 H475" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-rank)"/>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: Chow theorem and Lie algebra rank condition, PDF pages 335-372</span><span>Visual: original SVG rank ladder</span></p>
+      <aside class="speaker-notes">After Frobenius says when leaves exist, Chow says why the opposite case can be powerful. A bracket-generating distribution gives a reachability statement: even though controls are restricted to horizontal directions, enough short loops can synthesize the missing directions. Be careful with the practical caveat. The theorem guarantees connectivity under its hypotheses, but it does not hand over an efficient trajectory, account for actuator bounds, or solve obstacle avoidance.</aside>
+    </section>
+
+    <section class="slide" data-label="Sources">
+      <div class="kicker">Physical Sources Of Velocity Constraints</div>
+      <h2>Where Nonholonomy Comes From</h2>
+      <div class="content grid2 wide-right">
+        <div class="grid3">
+          <div class="panel blue"><h3>Rolling</h3><p>No slip couples translation and rotation at the contact point.</p></div>
+          <div class="panel teal"><h3>Steering</h3><p>Wheels choose directions through orientation, not through arbitrary lateral velocity.</p></div>
+          <div class="panel violet"><h3>Angular Momentum</h3><p>Hoppers and space robots gain velocity constraints from conserved momentum, not from ground contact.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 520" role="img" aria-label="Wheel contact and no lateral slip constraint">
+            <defs><marker id="arrow-source" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <line x1="70" y1="390" x2="690" y2="390" stroke="#94a3b8" stroke-width="5"/>
+            <ellipse cx="365" cy="258" rx="88" ry="132" fill="#eff6ff" stroke="#2563eb" stroke-width="7"/>
+            <line x1="365" y1="126" x2="365" y2="390" stroke="#2563eb" stroke-width="4" stroke-dasharray="9 9"/>
+            <circle cx="365" cy="390" r="11" fill="#b45309"/>
+            <path d="M365 390 C420 344, 462 306, 498 248" fill="none" stroke="#0f766e" stroke-width="7" marker-end="url(#arrow-source)"/>
+            <path d="M365 390 H530" stroke="#b45309" stroke-width="7" stroke-dasharray="14 10" marker-end="url(#arrow-source)"/>
+            <text x="505" y="232" class="svg-label">roll</text>
+            <text x="535" y="404" class="svg-label">side slip forbidden</text>
+            <text x="126" y="82" class="svg-small">constraint is imposed at velocity level at the contact point</text>
+          </svg>
+        </div>
+      </div>
+      <div class="panel amber"><p>A nonholonomic constraint is not simply an awkward coordinate choice. It can come from rolling contact, steering geometry, or angular-momentum conservation while leaving positions apparently unconstrained.</p></div>
+      <p class="source"><span>Source grounding: robotic examples in printed pages 317-354</span><span>Visual: original SVG rolling-contact diagram</span></p>
+      <aside class="speaker-notes">Use examples to anchor the formalism without replacing it. Rolling and steering give contact-level no-slip equations, while angular-momentum conservation gives velocity constraints even when there is no wheel on the ground. Hoppers and space robots are important because they show that nonholonomy is not only a rolling phenomenon. It can also appear when internal shape change is coupled to conserved momentum.</aside>
+    </section>
+
+    <section class="slide" data-label="Kinematic Car">
+      <div class="kicker">Canonical Mobile Robot Example</div>
+      <h2>Kinematic Car</h2>
+      <div class="content grid2">
+        <div class="stack">
+          <div class="panel blue">
+            <p class="formula">\(\dot x=v\cos\theta,\qquad \dot y=v\sin\theta,\qquad \dot\theta=\frac{v}{L}\tan\phi\)</p>
+          </div>
+          <div class="panel teal">
+            <p class="formula">\(-\sin\theta\,dx+\cos\theta\,dy=0\)</p>
+            <p>The Pfaffian form says the car has no sideways velocity in its body frame.</p>
+          </div>
+          <div class="panel amber"><p>Parallel parking is therefore a bracket story: small legal arcs synthesize lateral displacement over time.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Kinematic car with forward and forbidden lateral direction">
+            <defs><marker id="arrow-car" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <g transform="translate(380 285) rotate(-22)">
+              <rect x="-150" y="-70" width="300" height="140" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/>
+              <rect x="-115" y="-100" width="62" height="32" rx="8" fill="#111827"/>
+              <rect x="55" y="-100" width="62" height="32" rx="8" fill="#111827"/>
+              <rect x="-115" y="68" width="62" height="32" rx="8" fill="#111827"/>
+              <rect x="55" y="68" width="62" height="32" rx="8" fill="#111827"/>
+              <line x1="0" y1="0" x2="210" y2="0" stroke="#0f766e" stroke-width="9" marker-end="url(#arrow-car)"/>
+              <line x1="0" y1="0" x2="0" y2="-165" stroke="#b45309" stroke-width="8" stroke-dasharray="15 10" marker-end="url(#arrow-car)"/>
+              <text x="215" y="8" class="svg-label">v</text>
+              <text x="12" y="-150" class="svg-label">forbidden</text>
+            </g>
+            <path d="M145 422 C230 360, 310 370, 398 430 C500 500, 600 470, 662 386" fill="none" stroke="#6d28d9" stroke-width="6" stroke-dasharray="12 10"/>
+            <text x="115" y="90" class="svg-small">orientation changes the allowed forward direction</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: kinematic car model, printed pp. 317-354</span><span>Visual: original SVG car model</span></p>
+      <aside class="speaker-notes">Use the car to make Pfaffian notation feel physical. The form minus sine theta dx plus cosine theta dy measures sideways body-frame motion, and the constraint sets that measurement to zero. The car can drive forward and change orientation, but not translate sideways at an instant. The parking maneuver is therefore not a violation of the constraint; it is a sequence that changes orientation and accumulates a lateral net effect.</aside>
+    </section>
+
+    <section class="slide" data-label="Rolling And Fingertip">
+      <div class="kicker">Growth Vectors In Contact Systems</div>
+      <h2>Rolling Disk And Fingertip</h2>
+      <div class="content grid2 wide-right">
+        <figure class="stack">
+          <div class="diagram full-img">
+            <img src="../figures/growth-vector-dashboard.png" alt="Growth vector dashboard showing rank expansion through brackets">
+          </div>
+          <figcaption class="caption">Generated chapter artifact: growth-vector-dashboard.png</figcaption>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Rolling Disk</h3><p>Configuration includes position, heading, and spin. No-slip constraints tie translational motion to angular motion.</p></div>
+          <div class="panel teal"><h3>Rolling Fingertip</h3><p>Contact frames on the fingertip and object evolve together; admissible motions depend on local surface geometry.</p></div>
+          <div class="panel violet"><h3>Dashboard Reading</h3><p>The growth vector records how many independent directions appear after brackets of each depth.</p></div>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: rolling systems and growth vectors, PDF pages 335-372</span><span>Artifact: ../figures/growth-vector-dashboard.png</span></p>
+      <aside class="speaker-notes">The dashboard should be read as a rank story, not just as a plot. For a rolling disk, the no-slip rules are velocity constraints at the ground contact. For a rolling fingertip, the same logic is lifted into two moving surface frames. In both cases, first-order allowed directions may be too few, and the growth vector tells how quickly bracket operations add missing directions.</aside>
+    </section>
+
+    <section class="slide" data-label="Filtration">
+      <div class="kicker">How Many Bracket Layers Are Needed?</div>
+      <h2>Filtration And Degree Of Nonholonomy</h2>
+      <div class="content grid2">
+        <div class="stack">
+          <div class="panel blue">
+            <p class="formula big">\(\Delta^1=\Delta,\qquad \Delta^{s+1}=\Delta^s+[\Delta,\Delta^s]\)</p>
+          </div>
+          <div class="panel teal"><p>The growth vector is \((\dim\Delta^1,\dim\Delta^2,\ldots)\). It stops when the filtration stabilizes.</p></div>
+          <div class="panel amber"><p>The degree of nonholonomy is the first step \(r\) with \(\Delta^r=TQ\), when such a step exists.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Filtration staircase for nonholonomic degree">
+            <defs><marker id="arrow-filtration" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <line x1="100" y1="460" x2="670" y2="460" stroke="#94a3b8" stroke-width="4"/>
+            <line x1="100" y1="460" x2="100" y2="105" stroke="#94a3b8" stroke-width="4"/>
+            <path d="M100 410 H250 V330 H400 V235 H550 V150 H660" fill="none" stroke="#1e3a8a" stroke-width="8" stroke-linejoin="round"/>
+            <circle cx="250" cy="330" r="12" fill="#2563eb"/>
+            <circle cx="400" cy="235" r="12" fill="#0f766e"/>
+            <circle cx="550" cy="150" r="12" fill="#b45309"/>
+            <text x="115" y="405" class="svg-label">D1</text>
+            <text x="270" y="324" class="svg-label">D2</text>
+            <text x="420" y="230" class="svg-label">D3</text>
+            <text x="555" y="134" class="svg-label">TQ</text>
+            <text x="322" y="510" class="svg-small">bracket depth</text>
+            <text x="122" y="95" class="svg-small">rank</text>
+            <path d="M570 205 C635 235, 650 285, 635 340" fill="none" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-filtration)"/>
+            <text x="505" y="380" class="svg-small">degree is where full rank first appears</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: filtration and growth vector material, printed pages 317-354</span><span>Visual: original SVG filtration staircase</span></p>
+      <aside class="speaker-notes">Connect this definition back to computation. A rank condition is not checked by listing all possible brackets forever. The filtration organizes the search by depth. At each step, add brackets between original allowed directions and the directions already discovered. The degree of nonholonomy measures how many layers of this process are needed before the system sees the full tangent space.</aside>
+    </section>
+
+    <section class="slide" data-label="Hall Basis">
+      <div class="kicker">Avoiding Duplicate Bracket Words</div>
+      <h2>Philip Hall Basis</h2>
+      <div class="content grid2 wide-left">
+        <div class="stack">
+          <div class="panel blue"><p>A Hall basis gives an ordered, nonredundant list of bracket words in the free Lie algebra generated by the control fields.</p></div>
+          <div class="panel teal"><p class="formula small">\(X_1,\ X_2,\ [X_1,X_2],\ [X_1,[X_1,X_2]],\ [X_2,[X_1,X_2]],\ldots\)</p></div>
+          <div class="panel amber"><p>The point is bookkeeping: antisymmetry and Jacobi create many formal duplicates that should not be recomputed in a rank test.</p></div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Hall basis bracket tree">
+            <defs><marker id="arrow-hall" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <rect x="110" y="70" width="170" height="76" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="160" y="118" class="svg-label">X1</text>
+            <rect x="480" y="70" width="170" height="76" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="530" y="118" class="svg-label">X2</text>
+            <rect x="295" y="210" width="170" height="76" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="321" y="258" class="svg-label">[X1,X2]</text>
+            <rect x="135" y="360" width="240" height="76" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="162" y="408" class="svg-label">[X1,[X1,X2]]</text>
+            <rect x="425" y="360" width="240" height="76" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="452" y="408" class="svg-label">[X2,[X1,X2]]</text>
+            <path d="M240 145 L330 205" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-hall)"/>
+            <path d="M520 145 L430 205" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-hall)"/>
+            <path d="M340 287 L280 353" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-hall)"/>
+            <path d="M425 287 L510 353" stroke="#64748b" stroke-width="5" marker-end="url(#arrow-hall)"/>
+            <text x="120" y="505" class="svg-small">ordered words let algorithms grow brackets without reusing equivalent expressions</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: Hall bases and bracket bookkeeping, PDF pages 335-372</span><span>Visual: original SVG Hall bracket tree</span></p>
+      <aside class="speaker-notes">Present the Hall basis as an algorithmic convenience with mathematical depth. When there are several control fields, the number of formal nested brackets grows rapidly. Antisymmetry tells us some words only differ by sign, and Jacobi tells us some combinations are dependent. A Hall ordering supplies a disciplined list of representatives, which is why it appears naturally when implementing rank-growth checks.</aside>
+    </section>
+
+    <section class="slide" data-label="Check And Lab">
+      <div class="kicker">Executable Closure</div>
+      <h2>Computational Check And Lab</h2>
+      <div class="content grid2">
+        <div class="stack">
+          <div class="panel blue">
+            <h3>Final Sanity Payload</h3>
+            <div class="check-table">
+              <div class="key">Lie bracket</div><div>[0, 0, 2]</div>
+              <div class="key">z drifts</div><div>0.0032, 0.0072, 0.0128</div>
+              <div class="key">order fit</div><div>2.0000000000000044</div>
+              <div class="key">visual count</div><div>3 nonblank generated artifacts</div>
+            </div>
+            <p class="caption"><a href="../checks/final-sanity.json">Open ../checks/final-sanity.json</a></p>
+          </div>
+          <div class="panel teal">
+            <h3>Applied Lab</h3>
+            <p>Run a bracket square, shrink the loop size, fit the drift order, then change one parameter and explain which invariant did or did not change.</p>
+            <p class="caption"><a href="../labs/applied-lab.json">Open ../labs/applied-lab.json</a></p>
+          </div>
+        </div>
+        <div class="diagram soft">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Computational loop from model to visual to JSON to lab">
+            <defs><marker id="arrow-lab" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#64748b"/></marker></defs>
+            <circle cx="380" cy="280" r="190" fill="rgba(37,99,235,0.06)" stroke="#cbd5e1" stroke-width="5"/>
+            <rect x="260" y="70" width="240" height="80" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="318" y="120" class="svg-label">model</text>
+            <rect x="520" y="240" width="180" height="80" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="567" y="290" class="svg-label">visual</text>
+            <rect x="280" y="410" width="200" height="80" rx="10" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/><text x="338" y="460" class="svg-label">JSON</text>
+            <rect x="60" y="240" width="180" height="80" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="111" y="290" class="svg-label">lab</text>
+            <path d="M500 110 C590 130, 640 175, 650 235" stroke="#64748b" stroke-width="5" fill="none" marker-end="url(#arrow-lab)"/>
+            <path d="M610 320 C585 390, 530 430, 485 445" stroke="#64748b" stroke-width="5" fill="none" marker-end="url(#arrow-lab)"/>
+            <path d="M280 450 C200 430, 150 380, 145 325" stroke="#64748b" stroke-width="5" fill="none" marker-end="url(#arrow-lab)"/>
+            <path d="M150 240 C175 165, 225 125, 255 110" stroke="#64748b" stroke-width="5" fill="none" marker-end="url(#arrow-lab)"/>
+            <text x="190" y="535" class="svg-small">the notebook closes the theorem story with a reproducible bracket-square diagnostic</text>
+          </svg>
+        </div>
+      </div>
+      <p class="source"><span>Source grounding: printed pp. 317-354; PDF pp. 335-372</span><span>Artifacts: final-sanity.json and applied-lab.json</span></p>
+      <aside class="speaker-notes">Close by connecting the abstract lecture to the executable artifacts. The final sanity payload verifies the intended bracket direction and the second-order scaling of the bracket loop. The lab then asks students to rerun the diagnostic under a small perturbation and explain the invariant, rather than merely reporting a plot. This is the habit the chapter is trying to build: every geometric claim should have a visible object and a compact computational check.</aside>
+    </section>
+
+  </deck-stage>
+</body>
+</html>

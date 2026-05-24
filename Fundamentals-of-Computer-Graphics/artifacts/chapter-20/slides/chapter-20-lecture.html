@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 20: Tone Reproduction</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-20">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-20-tone-reproduction/20-tone-reproduction.ipynb">
+  <meta name="source_span" content="printed pages 569-594; PDF pages 586-611.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text fonts and KaTeX auto-render support are enabled.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "notes": "Open by defining tone reproduction as a deliberate mapping from radiance-like scene data to display values. The important phrase is controlled loss. The operator cannot preserve everything, so the lecture will ask what signal each family protects: ratios, local contrast, gradients, color relationships, or visual appearance."
+    },
+    {
+      "slide": 2,
+      "notes": "Use the ladder to make dynamic range numerical instead of vague. The notebook scene spans about 16.7 stops, while the target display interval is bounded and quantized. Point out that lowering every value does not lower dynamic range; only the ratio between useful dark and bright values changes it."
+    },
+    {
+      "slide": 3,
+      "notes": "This slide is the map for the chapter. Tone reproduction operators differ less by taste than by the domain in which they decide to spend contrast. A one-dimensional curve, a base-detail split, an edited gradient field, a local adaptation map, and a night appearance model answer different questions."
+    },
+    {
+      "slide": 4,
+      "notes": "Present tone curves as transfer functions with explicit failure modes. Linear normalization keeps ratios but wastes most display codes when highlights set the maximum. Clamping chooses a white point and discards brighter structure. Log, Reinhard, and sigmoid maps bend the curve so midtones receive usable display resolution."
+    },
+    {
+      "slide": 5,
+      "notes": "The exposure panels should feel like a diagnostic sweep through the same HDR array. A dark exposure protects the bright window and loses the room. A bright exposure reveals interior detail and clips the window. Compression is attractive because it tries to keep evidence from both exposure regimes."
+    },
+    {
+      "slide": 6,
+      "notes": "Move from photography language to image formation. In diffuse regions, luminance can be treated as reflectance multiplied by illuminance. Taking logs turns that product into a sum, which explains why density, base layers, and detail layers are natural computational objects for tone reproduction."
+    },
+    {
+      "slide": 7,
+      "notes": "The frequency view says that illumination often changes slowly while texture and object boundaries change quickly. The operator compresses the smooth base and adds detail back afterward. Stress the limitation: highlights and visible light sources break the clean physical interpretation, but the split remains useful."
+    },
+    {
+      "slide": 8,
+      "notes": "For gradient-domain operators, the editable object is not luminance but the slope field. Large density jumps from highlights are attenuated, then a Poisson reconstruction finds an image whose gradients best match the edited field. The notebook residual reminds students that edited gradients are not always perfectly integrable."
+    },
+    {
+      "slide": 9,
+      "notes": "Contrast global and local spatial operators by their source of the adaptation value. A global method anchors every pixel to one image statistic, often the geometric mean. A local method uses neighborhood evidence, which can reveal shadow detail but also makes the operator sensitive to neighborhood size and edges."
+    },
+    {
+      "slide": 10,
+      "notes": "Division by a blurred adaptation image is intuitive but fragile. Near a strong edge, the blur mixes two neighborhoods that should not share one divisor, producing bands or halos. Increasing the blur can hide the artifact, but in the limit the operator gives up its local advantage."
+    },
+    {
+      "slide": 11,
+      "notes": "The sigmoid slide should make the semi-saturation constant feel like a pivot rather than a magic parameter. For exponent one, an input equal to f maps to one half. Moving f decides which luminance band is most legible, and making f local turns the curve into an adaptation operator."
+    },
+    {
+      "slide": 12,
+      "notes": "Separate luminance compression from color reconstruction. Preserving RGB-to-luminance ratios is a clean invariant before clipping, but it can look too saturated when the display surround differs from the scene. The parameter s is a controlled way to trade chromatic constancy against plausible appearance."
+    },
+    {
+      "slide": 13,
+      "notes": "Night tone mapping is an appearance model, not a dark exposure. The processing changes luminance, contrast, saturation, hue tendency, and fine detail. Connect the blue-gray output and reduced acuity to scotopic viewing, then use the notebook metrics to show all three appearance cues moved together."
+    },
+    {
+      "slide": 14,
+      "notes": "Use this ledger as a decision surface. Real-time preview wants simple bounded curves; offline stills can pay for local or bilateral adaptation; diagnostic images may need gradient preservation; color-critical review should inspect chromaticity drift. The best operator is the one whose loss matches the task."
+    },
+    {
+      "slide": 15,
+      "notes": "Close by giving students a repeatable checklist. First measure the range, then choose the signal to protect, then name the artifact the operator can create, and finally verify with a numeric invariant. Tone reproduction is successful when its compromises are visible to the designer before the viewer notices them."
+    }
+  ]
+}
+  </script>
+  <style>
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 80px 80px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.04;
+      font-weight: 700;
+      color: var(--slide-ink);
+      max-width: 1160px;
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    p,
+    li {
+      font-size: 27px;
+      line-height: 1.34;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 32px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .kicker {
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-dimmed);
+      margin-bottom: 14px;
+    }
+
+    .rule {
+      width: 86px;
+      height: 5px;
+      border-radius: 5px;
+      background: var(--slide-accent);
+      margin: 22px 0 28px;
+    }
+
+    .subtitle {
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.34;
+      max-width: 1080px;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .chip {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      border-radius: 6px;
+      padding: 7px 13px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 36px;
+      align-items: stretch;
+    }
+
+    .split {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .split-wide {
+      grid-template-columns: 1.08fr 0.92fr;
+    }
+
+    .split-left {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .four {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 6px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 6px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 6px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 6px solid var(--slide-violet);
+    }
+
+    .label {
+      font-size: 21px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-accent);
+      margin-bottom: 10px;
+    }
+
+    .muted {
+      color: var(--slide-muted);
+    }
+
+    .small {
+      font-size: 23px;
+      line-height: 1.34;
+    }
+
+    .caption {
+      font-size: 21px;
+      line-height: 1.28;
+      color: var(--slide-dimmed);
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.32;
+      text-align: center;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px 22px;
+    }
+
+    .math-inline {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+
+    .visual {
+      width: 100%;
+      height: 100%;
+      min-height: 340px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+    }
+
+    .footer {
+      margin-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--slide-dimmed);
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .svg-label {
+      font-family: var(--font-sans);
+      font-size: 28px;
+      font-weight: 700;
+      fill: #111827;
+    }
+
+    .svg-small {
+      font-family: var(--font-sans);
+      font-size: 22px;
+      font-weight: 600;
+      fill: #475569;
+    }
+
+    .svg-math {
+      font-family: var(--font-math);
+      font-size: 30px;
+      fill: #111827;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 23px;
+      line-height: 1.24;
+    }
+
+    .mini-table th {
+      text-align: left;
+      color: var(--slide-accent);
+      font-size: 22px;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--slide-border);
+      background: var(--slide-bg-alt);
+    }
+
+    .mini-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--slide-border-light);
+      vertical-align: top;
+    }
+
+    .mini-table tr:last-child td {
+      border-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Tone Reproduction">
+      <div class="slide alt">
+        <div class="content split-wide" style="align-items:center;">
+          <div>
+            <div class="kicker">Fundamentals of Computer Graphics</div>
+            <h1>Chapter 20: Tone Reproduction</h1>
+            <div class="rule"></div>
+            <p class="subtitle">Map high dynamic range scene values to low dynamic range displays while choosing which visual information is allowed to survive the compression.</p>
+            <div class="meta-row">
+              <span class="chip">printed pages 569-594</span>
+              <span class="chip">PDF pages 586-611</span>
+              <span class="chip">15 slides</span>
+            </div>
+            <p class="caption" style="margin-top: 22px;">Notebook: Fundamentals-of-Computer-Graphics/chapter-20-tone-reproduction/20-tone-reproduction.ipynb</p>
+          </div>
+          <svg class="visual" viewBox="0 0 820 620" role="img" aria-label="High dynamic range scene values compressed to display values">
+            <defs>
+              <linearGradient id="titleScene" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stop-color="#0f172a"></stop>
+                <stop offset="0.35" stop-color="#1d4ed8"></stop>
+                <stop offset="0.68" stop-color="#f59e0b"></stop>
+                <stop offset="1" stop-color="#fff7ed"></stop>
+              </linearGradient>
+              <linearGradient id="titleDisplay" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stop-color="#111827"></stop>
+                <stop offset="0.28" stop-color="#2563eb"></stop>
+                <stop offset="0.72" stop-color="#0f766e"></stop>
+                <stop offset="1" stop-color="#f8fafc"></stop>
+              </linearGradient>
+              <marker id="titleArrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                <path d="M0,0 L14,7 L0,14 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="65" y="72" width="690" height="118" rx="12" fill="url(#titleScene)" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="80" y="55" class="svg-label">scene luminance: radiance-like range</text>
+            <g stroke="#FFFFFF" stroke-width="3" opacity="0.78">
+              <line x1="170" y1="72" x2="170" y2="190"></line>
+              <line x1="315" y1="72" x2="315" y2="190"></line>
+              <line x1="520" y1="72" x2="520" y2="190"></line>
+              <line x1="700" y1="72" x2="700" y2="190"></line>
+            </g>
+            <text x="90" y="150" fill="#FFFFFF" font-family="Source Sans 3" font-size="28" font-weight="700">shadows</text>
+            <text x="350" y="150" fill="#FFFFFF" font-family="Source Sans 3" font-size="28" font-weight="700">surfaces</text>
+            <text x="594" y="150" fill="#111827" font-family="Source Sans 3" font-size="28" font-weight="700">window</text>
+            <path d="M410 220 C410 275 410 305 410 360" stroke="#1E3A8A" stroke-width="6" fill="none" marker-end="url(#titleArrow)"></path>
+            <rect x="145" y="388" width="530" height="96" rx="12" fill="url(#titleDisplay)" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="168" y="545" class="svg-label">display interval: bounded code values</text>
+            <g fill="#FFFFFF" opacity="0.75">
+              <rect x="175" y="406" width="22" height="60"></rect>
+              <rect x="220" y="406" width="22" height="60"></rect>
+              <rect x="265" y="406" width="22" height="60"></rect>
+              <rect x="310" y="406" width="22" height="60"></rect>
+              <rect x="355" y="406" width="22" height="60"></rect>
+              <rect x="400" y="406" width="22" height="60"></rect>
+              <rect x="445" y="406" width="22" height="60"></rect>
+              <rect x="490" y="406" width="22" height="60"></rect>
+              <rect x="535" y="406" width="22" height="60"></rect>
+              <rect x="580" y="406" width="22" height="60"></rect>
+              <rect x="625" y="406" width="22" height="60"></rect>
+            </g>
+            <text x="410" y="304" text-anchor="middle" class="svg-math">T: Lw -> Ld</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Chapter 20</span><span>Tone Reproduction</span></div>
+      </div>
+      <aside class="speaker-notes">Open by defining tone reproduction as a deliberate mapping from radiance-like scene data to display values. The important phrase is controlled loss. The operator cannot preserve everything, so the lecture will ask what signal each family protects: ratios, local contrast, gradients, color relationships, or visual appearance.</aside>
+    </section>
+
+    <section data-label="Dynamic Range">
+      <div class="slide">
+        <div class="kicker">Range before appearance</div>
+        <h2>The Display Has Fewer Useful Stops Than The Scene</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="panel blue">
+              <div class="label">Definition</div>
+              <p>Dynamic range is a ratio, so the useful measurement lives naturally in log units.</p>
+              <div class="formula" style="margin-top: 18px;">$$R_{\mathrm{stops}}=\log_2\left({L_{\mathrm{hi}}\over L_{\mathrm{lo}}}\right)$$</div>
+            </div>
+            <div class="panel">
+              <ul>
+                <li>The notebook synthetic HDR scene measures about <strong>16.7 stops</strong>.</li>
+                <li>Robust percentiles avoid treating isolated outliers as the whole scene.</li>
+                <li>A darker night scene may have lower values but still have high range.</li>
+              </ul>
+            </div>
+          </div>
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Dynamic range ladder comparing scene and display stops">
+            <defs>
+              <linearGradient id="rangeHdr" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stop-color="#020617"></stop>
+                <stop offset="0.3" stop-color="#1e3a8a"></stop>
+                <stop offset="0.58" stop-color="#0f766e"></stop>
+                <stop offset="0.82" stop-color="#b45309"></stop>
+                <stop offset="1" stop-color="#fff7ed"></stop>
+              </linearGradient>
+              <linearGradient id="rangeLdr" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stop-color="#111827"></stop>
+                <stop offset="0.45" stop-color="#64748b"></stop>
+                <stop offset="1" stop-color="#f8fafc"></stop>
+              </linearGradient>
+            </defs>
+            <text x="70" y="68" class="svg-label">robust luminance ladder</text>
+            <rect x="90" y="120" width="650" height="72" rx="10" fill="url(#rangeHdr)" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="92" y="228" class="svg-small">HDR scene: about 16.7 stops in the notebook array</text>
+            <g stroke="#FFFFFF" stroke-width="3" opacity="0.62">
+              <line x1="130" y1="120" x2="130" y2="192"></line>
+              <line x1="250" y1="120" x2="250" y2="192"></line>
+              <line x1="370" y1="120" x2="370" y2="192"></line>
+              <line x1="490" y1="120" x2="490" y2="192"></line>
+              <line x1="610" y1="120" x2="610" y2="192"></line>
+              <line x1="710" y1="120" x2="710" y2="192"></line>
+            </g>
+            <rect x="220" y="335" width="380" height="72" rx="10" fill="url(#rangeLdr)" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="222" y="443" class="svg-small">display: bounded low dynamic range target</text>
+            <path d="M110 520 H710" stroke="#CBD5E1" stroke-width="5"></path>
+            <g fill="#1E3A8A">
+              <circle cx="110" cy="520" r="9"></circle>
+              <circle cx="710" cy="520" r="9"></circle>
+            </g>
+            <text x="110" y="565" text-anchor="middle" class="svg-small">P0.1</text>
+            <text x="710" y="565" text-anchor="middle" class="svg-small">P99.9</text>
+            <text x="410" y="512" text-anchor="middle" class="svg-math">log ratio, not absolute brightness</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Dynamic range</span><span>printed pages 569-574</span></div>
+      </div>
+      <aside class="speaker-notes">Use the ladder to make dynamic range numerical instead of vague. The notebook scene spans about 16.7 stops, while the target display interval is bounded and quantized. Point out that lowering every value does not lower dynamic range; only the ratio between useful dark and bright values changes it.</aside>
+    </section>
+
+    <section data-label="Operator Families">
+      <div class="slide alt">
+        <div class="kicker">Classification</div>
+        <h2>Operators Choose A Domain For The Sacrifice</h2>
+        <div class="content split-left" style="margin-top: 30px;">
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Five tone reproduction operator families">
+            <defs>
+              <marker id="familyArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <circle cx="410" cy="315" r="88" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></circle>
+            <text x="410" y="303" text-anchor="middle" class="svg-label">HDR</text>
+            <text x="410" y="338" text-anchor="middle" class="svg-label">image</text>
+            <g fill="#FFFFFF" stroke-width="4">
+              <rect x="80" y="72" width="230" height="92" rx="10" stroke="#2563EB"></rect>
+              <rect x="510" y="72" width="230" height="92" rx="10" stroke="#0F766E"></rect>
+              <rect x="80" y="472" width="230" height="92" rx="10" stroke="#B45309"></rect>
+              <rect x="510" y="472" width="230" height="92" rx="10" stroke="#6D28D9"></rect>
+              <rect x="295" y="510" width="230" height="92" rx="10" stroke="#64748B"></rect>
+            </g>
+            <text x="195" y="112" text-anchor="middle" class="svg-small">tone curve</text>
+            <text x="625" y="112" text-anchor="middle" class="svg-small">base/detail</text>
+            <text x="195" y="512" text-anchor="middle" class="svg-small">gradient field</text>
+            <text x="625" y="512" text-anchor="middle" class="svg-small">local adaptation</text>
+            <text x="410" y="550" text-anchor="middle" class="svg-small">appearance model</text>
+            <g stroke="#1E3A8A" stroke-width="5" fill="none" marker-end="url(#familyArrow)">
+              <path d="M360 245 C300 185 255 155 215 135"></path>
+              <path d="M460 245 C515 185 565 155 610 135"></path>
+              <path d="M355 385 C295 425 250 460 210 492"></path>
+              <path d="M465 385 C535 422 580 456 620 492"></path>
+              <path d="M410 405 C410 450 410 480 410 510"></path>
+            </g>
+          </svg>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Curve families</h3>
+              <p class="muted">Use one compressive mapping for every pixel. Fast, controllable, and often good enough for preview.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Image-formation families</h3>
+              <p class="muted">Use log luminance, frequency, base-detail, or gradient fields to protect texture-like structure.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Spatial and appearance families</h3>
+              <p class="muted">Use neighborhoods or vision models when global compression cannot preserve the intended perceptual signal.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Operator taxonomy</span><span>What information moves?</span></div>
+      </div>
+      <aside class="speaker-notes">This slide is the map for the chapter. Tone reproduction operators differ less by taste than by the domain in which they decide to spend contrast. A one-dimensional curve, a base-detail split, an edited gradient field, a local adaptation map, and a night appearance model answer different questions.</aside>
+    </section>
+
+    <section data-label="Tone Curves">
+      <div class="slide">
+        <div class="kicker">Transfer functions</div>
+        <h2>Tone Curves Spend Display Codes Nonlinearly</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Tone curve family plotted on log luminance axis">
+            <rect x="92" y="70" width="650" height="470" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <g stroke="#E2E8F0" stroke-width="2">
+              <line x1="92" y1="446" x2="742" y2="446"></line>
+              <line x1="92" y1="352" x2="742" y2="352"></line>
+              <line x1="92" y1="258" x2="742" y2="258"></line>
+              <line x1="92" y1="164" x2="742" y2="164"></line>
+              <line x1="222" y1="70" x2="222" y2="540"></line>
+              <line x1="352" y1="70" x2="352" y2="540"></line>
+              <line x1="482" y1="70" x2="482" y2="540"></line>
+              <line x1="612" y1="70" x2="612" y2="540"></line>
+            </g>
+            <line x1="92" y1="540" x2="742" y2="540" stroke="#64748B" stroke-width="4"></line>
+            <line x1="92" y1="540" x2="92" y2="70" stroke="#64748B" stroke-width="4"></line>
+            <polyline points="92,520 222,468 352,372 482,252 612,138 742,88" fill="none" stroke="#CBD5E1" stroke-width="7"></polyline>
+            <polyline points="92,520 222,430 352,252 482,92 612,92 742,92" fill="none" stroke="#B45309" stroke-width="7"></polyline>
+            <path d="M92 520 C230 450 340 332 450 240 C570 140 650 105 742 92" fill="none" stroke="#2563EB" stroke-width="7"></path>
+            <path d="M92 520 C250 505 355 430 420 306 C500 154 600 92 742 82" fill="none" stroke="#0F766E" stroke-width="7"></path>
+            <path d="M92 520 C210 480 350 370 460 245 C560 135 650 96 742 84" fill="none" stroke="#6D28D9" stroke-width="7"></path>
+            <text x="390" y="600" text-anchor="middle" class="svg-small">log input luminance</text>
+            <text x="34" y="330" text-anchor="middle" class="svg-small" transform="rotate(-90 34 330)">display value</text>
+            <g class="svg-small">
+              <text x="565" y="166" fill="#2563EB">log</text>
+              <text x="585" y="220" fill="#0F766E">sigmoid</text>
+              <text x="545" y="296" fill="#6D28D9">Reinhard</text>
+              <text x="524" y="112" fill="#B45309">clamp</text>
+              <text x="300" y="418" fill="#64748B">linear</text>
+            </g>
+          </svg>
+          <div class="stack">
+            <div class="panel blue">
+              <div class="label">Global curve idea</div>
+              <p>Every pixel uses the same input-output rule. The curve controls where contrast is dense and where it is compressed.</p>
+            </div>
+            <div class="panel">
+              <table class="mini-table">
+                <tr><th>Curve</th><th>Risk</th></tr>
+                <tr><td>linear normalize</td><td>dark detail quantizes away</td></tr>
+                <tr><td>clamp</td><td>highlight structure is discarded</td></tr>
+                <tr><td>log</td><td>midtones can look flat</td></tr>
+                <tr><td>sigmoid</td><td>choice of pivot matters</td></tr>
+              </table>
+            </div>
+            <div class="formula">$$L_d={L\over 1+L}\qquad L_d={\log(1+L)\over\log(1+L_{\max})}$$</div>
+          </div>
+        </div>
+        <div class="footer"><span>Tone curves</span><span>One rule for all pixels</span></div>
+      </div>
+      <aside class="speaker-notes">Present tone curves as transfer functions with explicit failure modes. Linear normalization keeps ratios but wastes most display codes when highlights set the maximum. Clamping chooses a white point and discards brighter structure. Log, Reinhard, and sigmoid maps bend the curve so midtones receive usable display resolution.</aside>
+    </section>
+
+    <section data-label="Exposure">
+      <div class="slide">
+        <div class="kicker">Exposure is diagnosis</div>
+        <h2>Compression Tries To Keep Evidence From Several Exposures</h2>
+        <div class="three" style="margin-top: 34px; flex: 1;">
+          <div class="panel">
+            <h3>Underexpose</h3>
+            <svg class="visual" viewBox="0 0 500 360" role="img" aria-label="Dark exposure preserves bright window">
+              <defs>
+                <linearGradient id="roomDark" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#020617"></stop>
+                  <stop offset="1" stop-color="#1e293b"></stop>
+                </linearGradient>
+              </defs>
+              <rect x="35" y="45" width="430" height="260" rx="8" fill="url(#roomDark)" stroke="#475569" stroke-width="4"></rect>
+              <rect x="310" y="70" width="105" height="118" fill="#fef3c7" stroke="#f59e0b" stroke-width="4"></rect>
+              <rect x="76" y="225" width="150" height="48" fill="#0f172a" stroke="#334155" stroke-width="3"></rect>
+              <circle cx="186" cy="186" r="26" fill="#111827"></circle>
+              <text x="250" y="342" text-anchor="middle" class="svg-small">window detail survives</text>
+            </svg>
+            <p class="caption" style="margin-top: 12px;">Interior evidence is buried in shadows.</p>
+          </div>
+          <div class="panel">
+            <h3>Overexpose</h3>
+            <svg class="visual" viewBox="0 0 500 360" role="img" aria-label="Bright exposure reveals room but clips window">
+              <defs>
+                <linearGradient id="roomBright" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#dbeafe"></stop>
+                  <stop offset="1" stop-color="#f8fafc"></stop>
+                </linearGradient>
+              </defs>
+              <rect x="35" y="45" width="430" height="260" rx="8" fill="url(#roomBright)" stroke="#CBD5E1" stroke-width="4"></rect>
+              <rect x="310" y="70" width="105" height="118" fill="#FFFFFF" stroke="#f8fafc" stroke-width="4"></rect>
+              <rect x="76" y="225" width="150" height="48" fill="#0f766e" opacity="0.82" stroke="#0f766e" stroke-width="3"></rect>
+              <circle cx="186" cy="186" r="26" fill="#2563eb" opacity="0.8"></circle>
+              <text x="250" y="342" text-anchor="middle" class="svg-small">room detail appears</text>
+            </svg>
+            <p class="caption" style="margin-top: 12px;">Bright regions saturate to the same code.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Compress</h3>
+            <svg class="visual" viewBox="0 0 500 360" role="img" aria-label="Compressed tone mapped view balances room and window">
+              <defs>
+                <linearGradient id="roomTone" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#bfdbfe"></stop>
+                  <stop offset="0.55" stop-color="#e0f2fe"></stop>
+                  <stop offset="1" stop-color="#f8fafc"></stop>
+                </linearGradient>
+              </defs>
+              <rect x="35" y="45" width="430" height="260" rx="8" fill="url(#roomTone)" stroke="#CBD5E1" stroke-width="4"></rect>
+              <rect x="310" y="70" width="105" height="118" fill="#fde68a" stroke="#b45309" stroke-width="4"></rect>
+              <line x1="362" y1="72" x2="362" y2="188" stroke="#b45309" stroke-width="3"></line>
+              <line x1="310" y1="129" x2="415" y2="129" stroke="#b45309" stroke-width="3"></line>
+              <rect x="76" y="225" width="150" height="48" fill="#0f766e" opacity="0.9" stroke="#0f766e" stroke-width="3"></rect>
+              <circle cx="186" cy="186" r="26" fill="#2563eb" opacity="0.86"></circle>
+              <text x="250" y="342" text-anchor="middle" class="svg-small">both regions remain legible</text>
+            </svg>
+            <p class="caption" style="margin-top: 12px;">The operator compresses range rather than choosing one exposure.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Exposure and clipping</span><span>Synthetic HDR scene from the notebook</span></div>
+      </div>
+      <aside class="speaker-notes">The exposure panels should feel like a diagnostic sweep through the same HDR array. A dark exposure protects the bright window and loses the room. A bright exposure reveals interior detail and clips the window. Compression is attractive because it tries to keep evidence from both exposure regimes.</aside>
+    </section>
+
+    <section data-label="Image Formation">
+      <div class="slide alt">
+        <div class="kicker">Image formation in density</div>
+        <h2>Log Luminance Turns A Product Into A Sum</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="panel blue">
+              <div class="label">Diffuse model</div>
+              <div class="formula">$$L_v(x,y)=r(x,y)E_v(x,y)$$</div>
+              <div class="formula" style="margin-top: 18px;">$$D(x,y)=\log L_v=\log r+\log E_v$$</div>
+            </div>
+            <div class="panel">
+              <ul>
+                <li>Reflectance is surface structure and tends to be lower range.</li>
+                <li>Illuminance can span many stops and dominates HDR variation.</li>
+                <li>Highlights violate the clean diffuse interpretation but still need handling.</li>
+              </ul>
+            </div>
+          </div>
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Reflectance and illuminance layers combine into log density">
+            <defs>
+              <pattern id="reflectPattern" width="44" height="44" patternUnits="userSpaceOnUse">
+                <rect width="44" height="44" fill="#EFF6FF"></rect>
+                <path d="M0 44 L44 0" stroke="#2563EB" stroke-width="4" opacity="0.55"></path>
+              </pattern>
+              <linearGradient id="illumGrad" x1="0" x2="1" y1="1" y2="0">
+                <stop offset="0" stop-color="#1e293b"></stop>
+                <stop offset="0.62" stop-color="#f59e0b"></stop>
+                <stop offset="1" stop-color="#fff7ed"></stop>
+              </linearGradient>
+              <marker id="formationArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="72" y="96" width="230" height="160" rx="10" fill="url(#reflectPattern)" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="187" y="72" text-anchor="middle" class="svg-label">reflectance r</text>
+            <rect x="520" y="96" width="230" height="160" rx="10" fill="url(#illumGrad)" stroke="#B45309" stroke-width="4"></rect>
+            <text x="635" y="72" text-anchor="middle" class="svg-label">illuminance E</text>
+            <circle cx="658" cy="138" r="24" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></circle>
+            <path d="M315 176 H505" stroke="#1E3A8A" stroke-width="6" marker-end="url(#formationArrow)"></path>
+            <text x="410" y="154" text-anchor="middle" class="svg-math">multiply</text>
+            <rect x="206" y="382" width="410" height="150" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+            <path d="M242 492 C305 450 346 452 403 414 C480 360 520 418 580 394" fill="none" stroke="#1E3A8A" stroke-width="6"></path>
+            <path d="M242 478 C315 478 392 478 580 438" fill="none" stroke="#0F766E" stroke-width="6"></path>
+            <text x="411" y="360" text-anchor="middle" class="svg-label">density D = base + detail</text>
+            <text x="250" y="570" class="svg-small" fill="#0F766E">slow base</text>
+            <text x="470" y="570" class="svg-small" fill="#1E3A8A">texture and edges</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Image formation</span><span>Base/detail intuition</span></div>
+      </div>
+      <aside class="speaker-notes">Move from photography language to image formation. In diffuse regions, luminance can be treated as reflectance multiplied by illuminance. Taking logs turns that product into a sum, which explains why density, base layers, and detail layers are natural computational objects for tone reproduction.</aside>
+    </section>
+
+    <section data-label="Frequency Operators">
+      <div class="slide">
+        <div class="kicker">Frequency and base-detail operators</div>
+        <h2>Compress The Low-Frequency Base, Then Restore Detail</h2>
+        <div class="content split-wide" style="margin-top: 30px;">
+          <svg class="visual" viewBox="0 0 900 640" role="img" aria-label="Frequency operator splits density into base and detail then recombines">
+            <defs>
+              <marker id="freqArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+              <linearGradient id="baseGrad" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stop-color="#dbeafe"></stop>
+                <stop offset="1" stop-color="#fef3c7"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="60" y="88" width="250" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <path d="M80 184 C124 92 160 218 206 132 C246 72 270 188 292 116" fill="none" stroke="#1E3A8A" stroke-width="6"></path>
+            <text x="185" y="62" text-anchor="middle" class="svg-label">log image D</text>
+            <path d="M330 163 H430" stroke="#1E3A8A" stroke-width="6" marker-end="url(#freqArrow)"></path>
+            <rect x="460" y="58" width="180" height="110" rx="10" fill="url(#baseGrad)" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="550" y="35" text-anchor="middle" class="svg-small">smooth base</text>
+            <path d="M482 120 C528 88 584 96 624 76" fill="none" stroke="#0F766E" stroke-width="6"></path>
+            <rect x="460" y="218" width="180" height="110" rx="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="550" y="200" text-anchor="middle" class="svg-small">detail layer</text>
+            <path d="M482 272 L500 252 L518 292 L538 246 L558 284 L584 258 L624 276" fill="none" stroke="#2563EB" stroke-width="6"></path>
+            <path d="M658 112 C706 120 728 155 754 194" stroke="#1E3A8A" stroke-width="6" fill="none" marker-end="url(#freqArrow)"></path>
+            <path d="M658 274 C708 270 730 240 754 202" stroke="#1E3A8A" stroke-width="6" fill="none" marker-end="url(#freqArrow)"></path>
+            <rect x="650" y="408" width="190" height="94" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="745" y="450" text-anchor="middle" class="svg-small">compress</text>
+            <text x="745" y="480" text-anchor="middle" class="svg-small">base range</text>
+            <rect x="92" y="430" width="430" height="100" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+            <path d="M116 498 C168 458 214 500 260 464 C306 426 348 498 398 456 C450 416 486 456 506 440" fill="none" stroke="#1E3A8A" stroke-width="6"></path>
+            <text x="307" y="572" text-anchor="middle" class="svg-label">compressed density, preserved texture</text>
+            <path d="M650 456 H540" stroke="#1E3A8A" stroke-width="6" marker-end="url(#freqArrow)"></path>
+          </svg>
+          <div class="stack">
+            <div class="panel teal">
+              <div class="label">Operator pattern</div>
+              <p>Filter log luminance into a smooth base and a detail layer. Compress the base, then add detail back before exponentiating to display values.</p>
+            </div>
+            <div class="panel">
+              <table class="mini-table">
+                <tr><th>Notebook check</th><th>Value</th></tr>
+                <tr><td>reflectance stops</td><td>1.70</td></tr>
+                <tr><td>illuminance stops</td><td>15.77</td></tr>
+                <tr><td>frequency base compression</td><td>14.62 display stops</td></tr>
+              </table>
+            </div>
+            <p class="caption">The split is a design tool. It resembles reflectance and illumination only when scene assumptions cooperate.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Frequency operators</span><span>Low frequencies carry much of the range</span></div>
+      </div>
+      <aside class="speaker-notes">The frequency view says that illumination often changes slowly while texture and object boundaries change quickly. The operator compresses the smooth base and adds detail back afterward. Stress the limitation: highlights and visible light sources break the clean physical interpretation, but the split remains useful.</aside>
+    </section>
+
+    <section data-label="Gradient Operators">
+      <div class="slide alt">
+        <div class="kicker">Gradient-domain operators</div>
+        <h2>Edit Slopes First, Reconstruct Luminance Second</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="panel blue">
+              <div class="label">Pipeline</div>
+              <p>Compute log-luminance gradients, attenuate extreme jumps, then solve for the density image whose gradients best match the edited field.</p>
+            </div>
+            <div class="formula">$$\nabla D \rightarrow g' \qquad \Delta D'=\nabla\cdot g'$$</div>
+            <div class="panel">
+              <table class="mini-table">
+                <tr><th>Check</th><th>Notebook value</th></tr>
+                <tr><td>source gradient norm</td><td>0.671</td></tr>
+                <tr><td>compressed gradient norm</td><td>0.074</td></tr>
+                <tr><td>Poisson residual</td><td>0.0069</td></tr>
+              </table>
+            </div>
+          </div>
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Gradient compression and Poisson reconstruction">
+            <defs>
+              <marker id="gradArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="80" y="70" width="660" height="140" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <path d="M110 170 C180 160 235 152 292 146 L330 80 L360 154 C430 150 510 144 590 136 L628 76 L666 132 C700 130 720 128 730 126" fill="none" stroke="#1E3A8A" stroke-width="7"></path>
+            <text x="410" y="48" text-anchor="middle" class="svg-label">density profile with highlights</text>
+            <rect x="80" y="284" width="660" height="100" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <g stroke="#B45309" stroke-width="7">
+              <line x1="150" y1="352" x2="150" y2="318"></line>
+              <line x1="224" y1="352" x2="224" y2="336"></line>
+              <line x1="328" y1="370" x2="328" y2="292"></line>
+              <line x1="360" y1="292" x2="360" y2="360"></line>
+              <line x1="522" y1="352" x2="522" y2="334"></line>
+              <line x1="628" y1="370" x2="628" y2="290"></line>
+              <line x1="666" y1="292" x2="666" y2="354"></line>
+            </g>
+            <text x="410" y="265" text-anchor="middle" class="svg-label">large gradients are compressed</text>
+            <path d="M410 398 V456" stroke="#1E3A8A" stroke-width="6" marker-end="url(#gradArrow)"></path>
+            <rect x="140" y="480" width="540" height="104" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <path d="M170 548 C250 534 292 518 334 500 C390 548 475 532 548 510 C602 548 642 536 656 530" fill="none" stroke="#0F766E" stroke-width="7"></path>
+            <text x="410" y="610" text-anchor="middle" class="svg-label">reconstructed display density</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Gradient operators</span><span>Edited derivative field plus integration</span></div>
+      </div>
+      <aside class="speaker-notes">For gradient-domain operators, the editable object is not luminance but the slope field. Large density jumps from highlights are attenuated, then a Poisson reconstruction finds an image whose gradients best match the edited field. The notebook residual reminds students that edited gradients are not always perfectly integrable.</aside>
+    </section>
+
+    <section data-label="Spatial Operators">
+      <div class="slide">
+        <div class="kicker">Spatial operators</div>
+        <h2>Global Operators Use One Anchor; Local Operators Use Neighborhoods</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Global and local adaptation maps for spatial tone mapping">
+            <defs>
+              <radialGradient id="localMap" cx="0.25" cy="0.35" r="0.8">
+                <stop offset="0" stop-color="#fef3c7"></stop>
+                <stop offset="0.45" stop-color="#dbeafe"></stop>
+                <stop offset="1" stop-color="#1e293b"></stop>
+              </radialGradient>
+              <marker id="spatialArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="74" y="74" width="285" height="215" rx="10" fill="#E0F2FE" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="216" y="52" text-anchor="middle" class="svg-label">global anchor</text>
+            <circle cx="216" cy="182" r="62" fill="#2563EB" opacity="0.16" stroke="#2563EB" stroke-width="5"></circle>
+            <text x="216" y="190" text-anchor="middle" class="svg-math">Lbar</text>
+            <rect x="466" y="74" width="285" height="215" rx="10" fill="url(#localMap)" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="609" y="52" text-anchor="middle" class="svg-label">local map f(x,y)</text>
+            <g fill="none" stroke="#FFFFFF" stroke-width="4" opacity="0.85">
+              <circle cx="550" cy="150" r="38"></circle>
+              <circle cx="650" cy="228" r="58"></circle>
+              <circle cx="598" cy="176" r="96"></circle>
+            </g>
+            <path d="M216 318 V392" stroke="#1E3A8A" stroke-width="6" marker-end="url(#spatialArrow)"></path>
+            <path d="M609 318 V392" stroke="#1E3A8A" stroke-width="6" marker-end="url(#spatialArrow)"></path>
+            <rect x="74" y="430" width="285" height="126" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="216" y="482" text-anchor="middle" class="svg-small">same curve</text>
+            <text x="216" y="516" text-anchor="middle" class="svg-small">everywhere</text>
+            <rect x="466" y="430" width="285" height="126" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="609" y="482" text-anchor="middle" class="svg-small">curve adapts</text>
+            <text x="609" y="516" text-anchor="middle" class="svg-small">per pixel</text>
+          </svg>
+          <div class="stack">
+            <div class="panel blue">
+              <div class="label">Global</div>
+              <p>Analyze the whole image once. Geometric mean luminance often steers a bounded curve.</p>
+            </div>
+            <div class="panel teal">
+              <div class="label">Local</div>
+              <p>Compute a neighborhood statistic for each pixel. This increases local detail but makes halos possible near strong edges.</p>
+            </div>
+            <div class="formula">$$\bar L_v=\exp\left({1\over N}\sum_{x,y}\log(\delta+L_v(x,y))\right)$$</div>
+          </div>
+        </div>
+        <div class="footer"><span>Spatial operators</span><span>Global statistics versus adaptation fields</span></div>
+      </div>
+      <aside class="speaker-notes">Contrast global and local spatial operators by their source of the adaptation value. A global method anchors every pixel to one image statistic, often the geometric mean. A local method uses neighborhood evidence, which can reveal shadow detail but also makes the operator sensitive to neighborhood size and edges.</aside>
+    </section>
+
+    <section data-label="Division Halos">
+      <div class="slide">
+        <div class="kicker">Division operators</div>
+        <h2>Blurred Divisors Create A Halo Tradeoff At Edges</h2>
+        <div class="content split-wide" style="margin-top: 30px;">
+          <svg class="visual" viewBox="0 0 900 640" role="img" aria-label="Local division halo from blurred edge divisor">
+            <defs>
+              <linearGradient id="edgeScene" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stop-color="#172554"></stop>
+                <stop offset="0.49" stop-color="#1d4ed8"></stop>
+                <stop offset="0.51" stop-color="#fde68a"></stop>
+                <stop offset="1" stop-color="#fff7ed"></stop>
+              </linearGradient>
+              <linearGradient id="edgeBlur" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0" stop-color="#1d4ed8"></stop>
+                <stop offset="0.34" stop-color="#60a5fa"></stop>
+                <stop offset="0.5" stop-color="#f59e0b"></stop>
+                <stop offset="0.66" stop-color="#fde68a"></stop>
+                <stop offset="1" stop-color="#fff7ed"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="70" y="74" width="760" height="120" rx="10" fill="url(#edgeScene)" stroke="#CBD5E1" stroke-width="4"></rect>
+            <text x="76" y="52" class="svg-label">source edge</text>
+            <rect x="70" y="266" width="760" height="120" rx="10" fill="url(#edgeBlur)" stroke="#CBD5E1" stroke-width="4"></rect>
+            <text x="76" y="244" class="svg-label">Gaussian local average crosses the edge</text>
+            <rect x="70" y="458" width="760" height="120" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+            <rect x="70" y="458" width="350" height="120" fill="#93c5fd"></rect>
+            <rect x="480" y="458" width="350" height="120" fill="#fef3c7"></rect>
+            <rect x="398" y="458" width="42" height="120" fill="#B45309" opacity="0.62"></rect>
+            <rect x="458" y="458" width="42" height="120" fill="#B45309" opacity="0.40"></rect>
+            <line x1="450" y1="74" x2="450" y2="578" stroke="#111827" stroke-width="3" stroke-dasharray="10 10" opacity="0.48"></line>
+            <text x="450" y="618" text-anchor="middle" class="svg-small">halo band near contrast step</text>
+          </svg>
+          <div class="stack">
+            <div class="panel amber">
+              <div class="label">Division form</div>
+              <div class="formula">$$L_d(x,y)={L_v(x,y)\over f(x,y)}$$</div>
+              <p class="muted" style="margin-top: 14px;">When \(f\) is a blurred image, it may describe neither side of a strong edge.</p>
+            </div>
+            <div class="panel">
+              <table class="mini-table">
+                <tr><th>Notebook halo score</th><th>Value</th></tr>
+                <tr><td>division small blur</td><td>0.532</td></tr>
+                <tr><td>division large blur</td><td>0.591</td></tr>
+                <tr><td>sigmoid bilateral</td><td>0.0098</td></tr>
+              </table>
+            </div>
+            <p class="caption">Large blur hides local mismatch but also moves the operator back toward global behavior.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Division operators</span><span>Local contrast versus halo risk</span></div>
+      </div>
+      <aside class="speaker-notes">Division by a blurred adaptation image is intuitive but fragile. Near a strong edge, the blur mixes two neighborhoods that should not share one divisor, producing bands or halos. Increasing the blur can hide the artifact, but in the limit the operator gives up its local advantage.</aside>
+    </section>
+
+    <section data-label="Sigmoids">
+      <div class="slide alt">
+        <div class="kicker">Sigmoid operators</div>
+        <h2>Semi-Saturation Selects The Most Legible Luminance Band</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="panel violet">
+              <div class="label">Compressive form</div>
+              <div class="formula">$$L_d={L_v\over L_v+f^n}$$</div>
+              <p class="muted" style="margin-top: 14px;">For \(n=1\), \(L_v=f\) maps to \(L_d=0.5\).</p>
+            </div>
+            <div class="panel">
+              <ul>
+                <li>Small luminance values are approximately linear.</li>
+                <li>The output is bounded above by one.</li>
+                <li>A local \(f(x,y)\) acts like an adaptation image.</li>
+              </ul>
+            </div>
+          </div>
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Sigmoid semi-saturation curves and pivot">
+            <rect x="100" y="78" width="630" height="440" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <g stroke="#E2E8F0" stroke-width="2">
+              <line x1="100" y1="430" x2="730" y2="430"></line>
+              <line x1="100" y1="342" x2="730" y2="342"></line>
+              <line x1="100" y1="254" x2="730" y2="254"></line>
+              <line x1="100" y1="166" x2="730" y2="166"></line>
+              <line x1="226" y1="78" x2="226" y2="518"></line>
+              <line x1="352" y1="78" x2="352" y2="518"></line>
+              <line x1="478" y1="78" x2="478" y2="518"></line>
+              <line x1="604" y1="78" x2="604" y2="518"></line>
+            </g>
+            <line x1="100" y1="518" x2="730" y2="518" stroke="#64748B" stroke-width="4"></line>
+            <line x1="100" y1="518" x2="100" y2="78" stroke="#64748B" stroke-width="4"></line>
+            <path d="M100 512 C220 500 304 430 372 300 C438 178 520 122 730 94" fill="none" stroke="#2563EB" stroke-width="7"></path>
+            <path d="M100 516 C278 510 394 480 486 356 C560 255 626 164 730 108" fill="none" stroke="#0F766E" stroke-width="7"></path>
+            <path d="M100 518 C350 514 500 494 600 390 C660 326 700 230 730 138" fill="none" stroke="#6D28D9" stroke-width="7"></path>
+            <line x1="478" y1="518" x2="478" y2="298" stroke="#B45309" stroke-width="5" stroke-dasharray="10 10"></line>
+            <line x1="100" y1="298" x2="478" y2="298" stroke="#B45309" stroke-width="5" stroke-dasharray="10 10"></line>
+            <circle cx="478" cy="298" r="11" fill="#B45309"></circle>
+            <text x="502" y="290" class="svg-small" fill="#B45309">f maps to 0.5</text>
+            <text x="414" y="590" text-anchor="middle" class="svg-small">log input luminance</text>
+            <text x="42" y="300" text-anchor="middle" class="svg-small" transform="rotate(-90 42 300)">display response</text>
+            <text x="622" y="148" class="svg-small" fill="#2563EB">low f</text>
+            <text x="626" y="246" class="svg-small" fill="#0F766E">middle f</text>
+            <text x="624" y="366" class="svg-small" fill="#6D28D9">high f</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Sigmoids</span><span>Photoreceptor-inspired bounded response</span></div>
+      </div>
+      <aside class="speaker-notes">The sigmoid slide should make the semi-saturation constant feel like a pivot rather than a magic parameter. For exponent one, an input equal to f maps to one half. Moving f decides which luminance band is most legible, and making f local turns the curve into an adaptation operator.</aside>
+    </section>
+
+    <section data-label="Color Reconstruction">
+      <div class="slide">
+        <div class="kicker">Color after luminance compression</div>
+        <h2>Preserving Ratios Is A Numerical Choice, Not Always An Appearance Choice</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Color reconstruction with saturation parameter after luminance mapping">
+            <defs>
+              <marker id="colorArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="78" y="82" width="190" height="150" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <rect x="105" y="114" width="42" height="84" fill="#dc2626"></rect>
+            <rect x="152" y="114" width="42" height="84" fill="#16a34a"></rect>
+            <rect x="199" y="114" width="42" height="84" fill="#2563eb"></rect>
+            <text x="173" y="62" text-anchor="middle" class="svg-label">input RGB</text>
+            <path d="M280 158 H410" stroke="#1E3A8A" stroke-width="6" marker-end="url(#colorArrow)"></path>
+            <rect x="430" y="82" width="190" height="150" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+            <rect x="470" y="116" width="110" height="78" fill="#94a3b8"></rect>
+            <text x="525" y="62" text-anchor="middle" class="svg-label">mapped luminance</text>
+            <path d="M525 250 V330" stroke="#1E3A8A" stroke-width="6" marker-end="url(#colorArrow)"></path>
+            <rect x="120" y="410" width="250" height="135" rx="10" fill="#FFFFFF" stroke="#0F766E" stroke-width="4"></rect>
+            <rect x="158" y="448" width="50" height="62" fill="#ef4444"></rect>
+            <rect x="214" y="448" width="50" height="62" fill="#22c55e"></rect>
+            <rect x="270" y="448" width="50" height="62" fill="#3b82f6"></rect>
+            <text x="245" y="390" text-anchor="middle" class="svg-small">s = 1, ratios preserved</text>
+            <rect x="470" y="410" width="250" height="135" rx="10" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></rect>
+            <rect x="508" y="448" width="50" height="62" fill="#d97757"></rect>
+            <rect x="564" y="448" width="50" height="62" fill="#7da86d"></rect>
+            <rect x="620" y="448" width="50" height="62" fill="#7895c7"></rect>
+            <text x="595" y="390" text-anchor="middle" class="svg-small">s below 1, desaturated</text>
+            <path d="M525 330 C430 370 335 386 260 410" stroke="#1E3A8A" stroke-width="6" fill="none" marker-end="url(#colorArrow)"></path>
+            <path d="M525 330 C600 365 630 384 610 410" stroke="#1E3A8A" stroke-width="6" fill="none" marker-end="url(#colorArrow)"></path>
+          </svg>
+          <div class="stack">
+            <div class="panel blue">
+              <div class="label">Ratio reconstruction</div>
+              <div class="formula">$$I_{r,d}=\left({I_r\over L_v}\right)^s L_d$$</div>
+            </div>
+            <div class="panel">
+              <table class="mini-table">
+                <tr><th>Notebook invariant</th><th>Value</th></tr>
+                <tr><td>ratio preservation error before clipping</td><td>1.29e-08</td></tr>
+                <tr><td>per-channel sigmoid chromaticity error</td><td>0.0678</td></tr>
+                <tr><td>strong desaturation chromaticity error</td><td>0.0899</td></tr>
+              </table>
+            </div>
+            <p class="caption">Color appearance can be adjusted after luminance compression, but the adjustment should be named and measured.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Color preservation</span><span>Luminance mapping plus chromaticity choice</span></div>
+      </div>
+      <aside class="speaker-notes">Separate luminance compression from color reconstruction. Preserving RGB-to-luminance ratios is a clean invariant before clipping, but it can look too saturated when the display surround differs from the scene. The parameter s is a controlled way to trade chromatic constancy against plausible appearance.</aside>
+    </section>
+
+    <section data-label="Night Tone Mapping">
+      <div class="slide alt">
+        <div class="kicker">Night tone mapping</div>
+        <h2>Scotopic Appearance Is More Than A Darker Exposure</h2>
+        <div class="content split-wide" style="margin-top: 30px;">
+          <svg class="visual" viewBox="0 0 900 640" role="img" aria-label="Night tone mapping pipeline from RGB to scotopic blue gray low acuity image">
+            <defs>
+              <marker id="nightArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+              <linearGradient id="nightInput" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#fef3c7"></stop>
+                <stop offset="0.45" stop-color="#0f766e"></stop>
+                <stop offset="1" stop-color="#1e3a8a"></stop>
+              </linearGradient>
+              <linearGradient id="nightOutput" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#dbeafe"></stop>
+                <stop offset="0.5" stop-color="#64748b"></stop>
+                <stop offset="1" stop-color="#0f172a"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="56" y="98" width="210" height="150" rx="10" fill="url(#nightInput)" stroke="#CBD5E1" stroke-width="4"></rect>
+            <circle cx="115" cy="146" r="20" fill="#fde68a"></circle>
+            <path d="M92 210 C130 172 172 190 224 150" fill="none" stroke="#FFFFFF" stroke-width="5" opacity="0.8"></path>
+            <text x="161" y="72" text-anchor="middle" class="svg-label">photopic RGB</text>
+            <path d="M286 174 H386" stroke="#1E3A8A" stroke-width="6" marker-end="url(#nightArrow)"></path>
+            <rect x="410" y="92" width="170" height="162" rx="10" fill="#F8FAFC" stroke="#64748B" stroke-width="4"></rect>
+            <text x="495" y="143" text-anchor="middle" class="svg-small">XYZ</text>
+            <text x="495" y="181" text-anchor="middle" class="svg-small">scotopic V</text>
+            <text x="495" y="219" text-anchor="middle" class="svg-small">adaptation</text>
+            <path d="M600 174 H700" stroke="#1E3A8A" stroke-width="6" marker-end="url(#nightArrow)"></path>
+            <rect x="724" y="98" width="150" height="150" rx="10" fill="url(#nightOutput)" stroke="#1E3A8A" stroke-width="4"></rect>
+            <path d="M750 205 C790 180 820 196 850 154" fill="none" stroke="#DBEAFE" stroke-width="8" opacity="0.45"></path>
+            <text x="799" y="72" text-anchor="middle" class="svg-label">night image</text>
+            <g transform="translate(96,390)">
+              <rect x="0" y="0" width="190" height="96" rx="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="95" y="40" text-anchor="middle" class="svg-small">lower</text>
+              <text x="95" y="72" text-anchor="middle" class="svg-small">brightness</text>
+            </g>
+            <g transform="translate(356,390)">
+              <rect x="0" y="0" width="190" height="96" rx="10" fill="#FFFFFF" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="95" y="40" text-anchor="middle" class="svg-small">lower</text>
+              <text x="95" y="72" text-anchor="middle" class="svg-small">saturation</text>
+            </g>
+            <g transform="translate(616,390)">
+              <rect x="0" y="0" width="190" height="96" rx="10" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></rect>
+              <text x="95" y="40" text-anchor="middle" class="svg-small">reduced</text>
+              <text x="95" y="72" text-anchor="middle" class="svg-small">acuity</text>
+            </g>
+          </svg>
+          <div class="stack">
+            <div class="panel violet">
+              <div class="label">Appearance operator</div>
+              <p>Convert to an eye-weighted channel, map it to display, shift toward blue-gray, desaturate, and reduce fine detail while keeping major edges readable.</p>
+            </div>
+            <div class="panel">
+              <table class="mini-table">
+                <tr><th>Notebook night metric</th><th>Photopic</th><th>Night</th></tr>
+                <tr><td>mean luminance</td><td>0.253</td><td>0.182</td></tr>
+                <tr><td>contrast</td><td>0.0133</td><td>0.0102</td></tr>
+                <tr><td>mean saturation</td><td>0.0592</td><td>0.0564</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Night tone mapping</span><span>Scotopic cue simulation</span></div>
+      </div>
+      <aside class="speaker-notes">Night tone mapping is an appearance model, not a dark exposure. The processing changes luminance, contrast, saturation, hue tendency, and fine detail. Connect the blue-gray output and reduced acuity to scotopic viewing, then use the notebook metrics to show all three appearance cues moved together.</aside>
+    </section>
+
+    <section data-label="Selection Ledger">
+      <div class="slide">
+        <div class="kicker">Applied operator selection</div>
+        <h2>Choose The Operator Whose Loss Matches The Task</h2>
+        <div class="content split-left" style="margin-top: 30px;">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Fast preview</h3>
+              <p class="muted">Use a global log, Reinhard, or sigmoid curve. Accept less local detail for predictable speed.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Offline still with extreme range</h3>
+              <p class="muted">Use bilateral base compression or local sigmoid adaptation when halos can be inspected.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Diagnostic or color-critical review</h3>
+              <p class="muted">Inspect clipping, gradient energy, chromaticity drift, and saturation decisions separately.</p>
+            </div>
+          </div>
+          <div class="panel" style="padding: 26px;">
+            <table class="mini-table">
+              <tr><th>Operator</th><th>Stops</th><th>Clipping</th><th>Signal protected</th></tr>
+              <tr><td>linear normalize</td><td>16.66</td><td>0.00002</td><td>ratios, not visibility</td></tr>
+              <tr><td>global Reinhard</td><td>6.60</td><td>0.0966</td><td>bounded midtones</td></tr>
+              <tr><td>log compression</td><td>9.75</td><td>0.0034</td><td>dark and middle values</td></tr>
+              <tr><td>gradient compression</td><td>10.80</td><td>0.0019</td><td>edited slopes</td></tr>
+              <tr><td>bilateral base compression</td><td>12.81</td><td>0.0022</td><td>base/detail structure</td></tr>
+              <tr><td>scotopic night operator</td><td>10.07</td><td>0.0000</td><td>night appearance</td></tr>
+            </table>
+            <p class="caption" style="margin-top: 20px;">Values are from the chapter notebook ledger and are used as design checks, not as universal rankings.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Operator ledger</span><span>Task before taste</span></div>
+      </div>
+      <aside class="speaker-notes">Use this ledger as a decision surface. Real-time preview wants simple bounded curves; offline stills can pay for local or bilateral adaptation; diagnostic images may need gradient preservation; color-critical review should inspect chromaticity drift. The best operator is the one whose loss matches the task.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide alt">
+        <div class="kicker">Takeaways</div>
+        <h2>A Tone Operator Is A Contract About Visible Loss</h2>
+        <div class="content split" style="margin-top: 30px;">
+          <div class="panel">
+            <table class="mini-table">
+              <tr><th>Question</th><th>Good answer names</th></tr>
+              <tr><td>How much range is present?</td><td>robust stops or log ratio</td></tr>
+              <tr><td>What should be protected?</td><td>detail, contrast, brightness, color, appearance</td></tr>
+              <tr><td>Where is compression applied?</td><td>curve, base, gradient, neighborhood, scotopic model</td></tr>
+              <tr><td>What artifact is likely?</td><td>clipping, flatness, halos, chroma drift, blur</td></tr>
+              <tr><td>What check confirms behavior?</td><td>range ledger, residual, halo score, chromaticity error</td></tr>
+            </table>
+          </div>
+          <svg class="visual" viewBox="0 0 820 640" role="img" aria-label="Tone reproduction checklist loop">
+            <defs>
+              <marker id="recapArrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto">
+                <path d="M0,0 L13,6.5 L0,13 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <circle cx="410" cy="310" r="190" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+            <g fill="#FFFFFF" stroke-width="4">
+              <rect x="300" y="70" width="220" height="78" rx="10" stroke="#2563EB"></rect>
+              <rect x="570" y="270" width="190" height="78" rx="10" stroke="#0F766E"></rect>
+              <rect x="300" y="502" width="220" height="78" rx="10" stroke="#B45309"></rect>
+              <rect x="60" y="270" width="190" height="78" rx="10" stroke="#6D28D9"></rect>
+            </g>
+            <text x="410" y="116" text-anchor="middle" class="svg-small">measure range</text>
+            <text x="665" y="317" text-anchor="middle" class="svg-small">choose signal</text>
+            <text x="410" y="548" text-anchor="middle" class="svg-small">verify invariant</text>
+            <text x="155" y="317" text-anchor="middle" class="svg-small">name artifact</text>
+            <path d="M500 112 C612 150 666 214 676 270" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+            <path d="M672 348 C636 438 544 500 496 522" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+            <path d="M322 522 C232 486 170 410 158 348" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+            <path d="M158 270 C185 190 262 128 322 108" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#recapArrow)"></path>
+            <text x="410" y="292" text-anchor="middle" class="svg-label">controlled</text>
+            <text x="410" y="332" text-anchor="middle" class="svg-label">loss</text>
+          </svg>
+        </div>
+        <div class="footer"><span>Recap</span><span>Make the compromise inspectable</span></div>
+      </div>
+      <aside class="speaker-notes">Close by giving students a repeatable checklist. First measure the range, then choose the signal to protect, then name the artifact the operator can create, and finally verify with a numeric invariant. Tone reproduction is successful when its compromises are visible to the designer before the viewer notices them.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

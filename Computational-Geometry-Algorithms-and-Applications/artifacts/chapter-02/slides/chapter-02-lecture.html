@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Line Segment Intersection</title>
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-02">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-02-line-segment-intersection/02-line-segment-intersection.ipynb">
+  <meta name="source_span" content="printed pages 19-44; PDF pages 30-55">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      padding: 72px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+      position: relative;
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 64px 64px;
+    }
+    .speaker-notes { display: none; }
+    h1 { margin: 0; font-size: 66px; line-height: 1.05; letter-spacing: 0; }
+    h2 { margin: 0; font-size: 50px; line-height: 1.12; letter-spacing: 0; }
+    h3 { margin: 0 0 14px; font-size: 32px; color: var(--slide-accent); }
+    p, li { font-size: 27px; line-height: 1.34; }
+    ul { margin: 0; padding-left: 30px; }
+    code { font-family: var(--font-mono); font-size: 25px; }
+    .eyebrow { font-size: 22px; font-weight: 700; color: var(--slide-dimmed); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px; }
+    .rule { width: 92px; height: 6px; background: var(--slide-accent); border-radius: 4px; margin: 20px 0 28px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; height: 820px; }
+    .cols.wide-left { grid-template-columns: 1.18fr 0.82fr; }
+    .cols.wide-right { grid-template-columns: 0.82fr 1.18fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 24px; background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04); }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel.gray { background: var(--slide-bg-alt); }
+    .kicker { font-size: 21px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slide-dimmed); margin-bottom: 10px; }
+    .big { font-size: 34px; line-height: 1.22; }
+    .mathline { font-family: var(--font-math); font-size: 34px; line-height: 1.3; }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; padding: 18px; min-height: 420px; display: grid; place-items: center; }
+    .diagram svg { width: 100%; height: 100%; max-height: 620px; }
+    .footer { position: absolute; left: 96px; right: 96px; bottom: 24px; display: flex; justify-content: space-between; color: var(--slide-dimmed); font-size: 20px; }
+    .tag { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 22px; font-weight: 700; background: var(--math-definition-bg); color: var(--slide-blue); }
+    .stack { display: flex; flex-direction: column; gap: 18px; }
+    .truth { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; border: 1px solid var(--slide-border); border-radius: 8px; overflow: hidden; font-size: 25px; }
+    .truth div { padding: 14px 18px; border-right: 1px solid var(--slide-border); border-bottom: 1px solid var(--slide-border); }
+    .truth div:nth-child(5n) { border-right: 0; }
+    .truth .head { background: var(--slide-bg-alt); font-weight: 700; color: var(--slide-accent); }
+    .mini-table { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid var(--slide-border); border-radius: 8px; overflow: hidden; font-size: 24px; }
+    .mini-table div { padding: 13px 16px; border-right: 1px solid var(--slide-border); border-bottom: 1px solid var(--slide-border); }
+    .mini-table div:nth-child(3n) { border-right: 0; }
+    .mini-table .head { background: var(--slide-bg-alt); font-weight: 700; color: var(--slide-accent); }
+    .callout { font-size: 28px; line-height: 1.32; padding: 22px 26px; border-radius: 8px; background: var(--math-theorem-bg); border-left: 6px solid var(--slide-accent); }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="eyebrow">Manifest row 78 · chapter-02</div>
+        <h1>Line Segment Intersection</h1>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="stack">
+            <p class="big">Plane sweep turns a global pairwise problem into a sequence of local order changes.</p>
+            <div class="panel blue">
+              <div class="kicker">Metadata</div>
+              <p><strong>Course:</strong> Computational Geometry Algorithms and Applications</p>
+              <p><strong>Source span:</strong> printed pages 19-44; PDF pages 30-55</p>
+              <p><strong>Notebook:</strong> Computational-Geometry-Algorithms-and-Applications/chapter-02-line-segment-intersection/02-line-segment-intersection.ipynb</p>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 560" role="img" aria-label="Line segments and sweep line">
+              <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"/></marker></defs>
+              <rect x="40" y="40" width="680" height="480" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="120" y1="440" x2="650" y2="120" stroke="#2563EB" stroke-width="8" stroke-linecap="round"/>
+              <line x1="120" y1="130" x2="630" y2="470" stroke="#0F766E" stroke-width="8" stroke-linecap="round"/>
+              <line x1="330" y1="80" x2="330" y2="510" stroke="#B45309" stroke-width="6" stroke-dasharray="18 14"/>
+              <path d="M330 70 L330 120" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow)"/>
+              <circle cx="379" cy="284" r="13" fill="#B45309"/>
+              <text x="356" y="324" font-size="28" fill="#B45309" font-weight="700">reported event</text>
+              <text x="355" y="94" font-size="28" fill="#1E3A8A" font-weight="700">sweep</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Computational Geometry Algorithms and Applications</span><span>02 - Line Segment Intersection</span></div>
+      </div>
+      <aside class="speaker-notes">Open by placing the lecture inside the manifest row and the chapter span. The subject is not just detecting one intersection; it is building a disciplined sweep that can report every crossing among closed segments while preparing the data structures needed later for map overlay.</aside>
+    </section>
+
+    <section data-label="Overlay Motivation">
+      <div class="slide">
+        <h2>Thematic Maps: Overlay Creates Information</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 900 560" role="img" aria-label="Road river and region overlay">
+              <rect x="35" y="40" width="830" height="480" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <path d="M70 420 C180 260 270 430 390 250 C500 90 620 250 830 110" fill="none" stroke="#0F766E" stroke-width="12" stroke-linecap="round"/>
+              <path d="M120 110 L810 470" stroke="#2563EB" stroke-width="9" stroke-linecap="round"/>
+              <path d="M90 250 L290 110 L520 180 L760 125 L825 310 L610 460 L300 410 Z" fill="#6D28D9" opacity="0.10" stroke="#6D28D9" stroke-width="5"/>
+              <path d="M120 490 L220 350 L355 330 L510 250 L690 270 L820 210" fill="none" stroke="#B45309" stroke-width="8" stroke-dasharray="18 12"/>
+              <circle cx="441" cy="278" r="11" fill="#B45309"/>
+              <circle cx="626" cy="374" r="11" fill="#B45309"/>
+              <circle cx="700" cy="165" r="11" fill="#B45309"/>
+              <text x="80" y="82" font-size="30" fill="#1E3A8A" font-weight="700">overlay graph</text>
+              <text x="560" y="515" font-size="26" fill="#475569">new vertices encode crossings and containment changes</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel teal"><h3>Application Pattern</h3><p>Combine roads, rivers, parcels, and zones, then ask questions about connectivity, adjacency, containment, and conflict.</p></div>
+            <div class="panel blue"><h3>Algorithmic Demand</h3><p>The overlay must discover geometric intersections before it can build a reliable planar subdivision.</p></div>
+            <div class="callout">Chapter 2 begins with intersection reporting, then uses it as the engine for subdivision overlay.</div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 19-20</span><span>Motivation</span></div>
+      </div>
+      <aside class="speaker-notes">Use the synthetic map to make the application concrete. Roads, rivers, and regions each carry partial information, but overlaying them creates new vertices and faces that answer richer questions. The chapter's algorithms are motivated by this need to turn layered geometry into searchable combinatorial structure.</aside>
+    </section>
+
+    <section data-label="Closed Segments">
+      <div class="slide">
+        <h2>From Application Geometry To Closed Segments</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="diagram">
+            <svg viewBox="0 0 760 520" role="img" aria-label="Closed and open segment predicates">
+              <line x1="90" y1="170" x2="610" y2="170" stroke="#2563EB" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="90" cy="170" r="13" fill="#2563EB"/><circle cx="610" cy="170" r="13" fill="#2563EB"/>
+              <circle cx="350" cy="170" r="15" fill="#B45309"/>
+              <text x="95" y="120" font-size="30" fill="#111827">closed: endpoints count</text>
+              <line x1="120" y1="350" x2="580" y2="350" stroke="#0F766E" stroke-width="8" stroke-linecap="round" stroke-dasharray="22 12"/>
+              <circle cx="120" cy="350" r="15" fill="#fff" stroke="#0F766E" stroke-width="6"/><circle cx="580" cy="350" r="15" fill="#fff" stroke="#0F766E" stroke-width="6"/>
+              <circle cx="350" cy="350" r="15" fill="#B45309"/>
+              <text x="95" y="305" font-size="30" fill="#111827">open interior: endpoints excluded</text>
+              <text x="675" y="178" font-size="30" fill="#2563EB">a,b</text>
+              <text x="625" y="360" font-size="30" fill="#0F766E">(a,b)</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Predicate Contract</h3><p>A point \(p\) lies on closed segment \(\overline{ab}\) when it is collinear with \(a,b\) and its coordinates are between the endpoint coordinates.</p></div>
+            <div class="panel amber"><h3>Endpoint Contacts</h3><p>Two segments intersect even if they only share an endpoint. Reporting must avoid treating these as numerical accidents.</p></div>
+            <div class="mathline">closed test: \(p \in \overline{ab}\) vs. open test: \(p \in (a,b)\)</div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 20-21</span><span>Segment predicates</span></div>
+      </div>
+      <aside class="speaker-notes">Emphasize that the input objects are closed line segments, so endpoints are part of the segment and can be genuine intersections. This is why the predicate must distinguish proper interior crossings from endpoint contacts; otherwise the sweep will miss events or count them inconsistently.</aside>
+    </section>
+
+    <section data-label="Output Sensitivity">
+      <div class="slide alt">
+        <h2>Brute Force Versus Output Sensitivity</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="diagram">
+            <svg viewBox="0 0 720 520" role="img" aria-label="Pair grid">
+              <text x="70" y="48" font-size="28" fill="#1E3A8A" font-weight="700">all pairs</text>
+              <g fill="#EFF6FF" stroke="#CBD5E1" stroke-width="2">
+                <rect x="80" y="80" width="360" height="360"/>
+              </g>
+              <g stroke="#CBD5E1" stroke-width="2">
+                <path d="M140 80 V440 M200 80 V440 M260 80 V440 M320 80 V440 M380 80 V440"/>
+                <path d="M80 140 H440 M80 200 H440 M80 260 H440 M80 320 H440 M80 380 H440"/>
+              </g>
+              <g fill="#B45309"><circle cx="140" cy="260" r="12"/><circle cx="320" cy="140" r="12"/><circle cx="380" cy="380" r="12"/></g>
+              <text x="80" y="492" font-size="30" fill="#111827">\( \binom{n}{2} \) tests, few hits</text>
+            </svg>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 720 520" role="img" aria-label="Sparse segment intersections">
+              <text x="70" y="48" font-size="28" fill="#1E3A8A" font-weight="700">sparse output</text>
+              <rect x="50" y="75" width="610" height="370" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="95" y1="370" x2="590" y2="190" stroke="#2563EB" stroke-width="7"/>
+              <line x1="150" y1="110" x2="230" y2="410" stroke="#0F766E" stroke-width="7"/>
+              <line x1="300" y1="120" x2="570" y2="420" stroke="#6D28D9" stroke-width="7"/>
+              <line x1="90" y1="150" x2="610" y2="145" stroke="#475569" stroke-width="7"/>
+              <circle cx="185" cy="243" r="12" fill="#B45309"/>
+              <circle cx="516" cy="360" r="12" fill="#B45309"/>
+              <text x="68" y="492" font-size="30" fill="#111827">target: \(O((n+k)\log n)\)</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 21-22</span><span>Why output-sensitive algorithms matter</span></div>
+      </div>
+      <aside class="speaker-notes">The brute force grid is easy to trust because it tests every pair, but it spends time on pairs that are far apart and never interact. The sparse drawing shows why the target complexity should depend on the number of reported intersections as well as the number of input segments.</aside>
+    </section>
+
+    <section data-label="Failed Interval Sweep">
+      <div class="slide">
+        <h2>A First Sweep Fails: Interval Overlap Is Too Weak</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 900 560" role="img" aria-label="Too many active vertical interval candidates">
+              <rect x="55" y="55" width="780" height="430" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <g stroke-width="7" stroke-linecap="round">
+                <line x1="90" y1="120" x2="800" y2="110" stroke="#2563EB"/>
+                <line x1="95" y1="210" x2="790" y2="220" stroke="#0F766E"/>
+                <line x1="110" y1="315" x2="805" y2="300" stroke="#6D28D9"/>
+                <line x1="90" y1="410" x2="820" y2="405" stroke="#475569"/>
+                <line x1="420" y1="75" x2="420" y2="470" stroke="#B45309"/>
+              </g>
+              <g fill="#B45309"><circle cx="420" cy="115" r="9"/><circle cx="420" cy="215" r="9"/><circle cx="420" cy="305" r="9"/><circle cx="420" cy="407" r="9"/></g>
+              <text x="450" y="92" font-size="28" fill="#B45309" font-weight="700">vertical query segment</text>
+              <text x="85" y="525" font-size="30" fill="#111827">same x-range does not imply nearby in y</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel amber"><h3>Temptation</h3><p>Keep every segment whose \(x\)-interval contains the current sweep coordinate.</p></div>
+            <div class="panel gray"><h3>Failure Mode</h3><p>A single vertical segment can overlap the \(x\)-intervals of many unrelated segments.</p></div>
+            <div class="callout">The sweep must maintain vertical order, not just interval membership.</div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 22-23</span><span>Design pressure for status tree</span></div>
+      </div>
+      <aside class="speaker-notes">Walk through the tempting one-dimensional idea: sweep by x and keep segments whose x-intervals overlap the sweep position. The vertical probe makes the failure visible, because many active segments can share an x-range while being far apart in y, producing too many candidate tests.</aside>
+    </section>
+
+    <section data-label="Sweep State">
+      <div class="slide alt">
+        <h2>Plane Sweep State: Event Queue \(Q\) And Status Tree \(T\)</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 920 580" role="img" aria-label="Sweep line queue and active tree">
+              <rect x="55" y="55" width="540" height="470" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="330" y1="70" x2="330" y2="510" stroke="#B45309" stroke-width="6" stroke-dasharray="18 13"/>
+              <line x1="100" y1="430" x2="555" y2="120" stroke="#2563EB" stroke-width="7"/>
+              <line x1="100" y1="155" x2="570" y2="470" stroke="#0F766E" stroke-width="7"/>
+              <line x1="130" y1="300" x2="520" y2="275" stroke="#6D28D9" stroke-width="7"/>
+              <circle cx="330" cy="273" r="12" fill="#B45309"/>
+              <text x="355" y="96" font-size="28" fill="#B45309" font-weight="700">sweep line</text>
+              <rect x="645" y="70" width="215" height="180" fill="#EFF6FF" stroke="#2563EB" stroke-width="3" rx="8"/>
+              <text x="670" y="112" font-size="30" fill="#1E3A8A" font-weight="700">Q</text>
+              <text x="670" y="154" font-size="25" fill="#111827">highest y first</text>
+              <text x="670" y="192" font-size="25" fill="#111827">tie: smaller x</text>
+              <rect x="645" y="300" width="215" height="180" fill="#F0FDFA" stroke="#0F766E" stroke-width="3" rx="8"/>
+              <text x="670" y="342" font-size="30" fill="#0F766E" font-weight="700">T</text>
+              <text x="670" y="384" font-size="25" fill="#111827">top-to-bottom</text>
+              <text x="670" y="422" font-size="25" fill="#111827">active order</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Event Queue \(Q\)</h3><p>Stores endpoints and discovered crossings by sweep priority: decreasing \(y\), with a deterministic \(x\)-tie break.</p></div>
+            <div class="panel teal"><h3>Status Tree \(T\)</h3><p>Stores the segments intersecting the sweep line in their current vertical order.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 23-24</span><span>Core data structures</span></div>
+      </div>
+      <aside class="speaker-notes">Introduce the two pieces of state slowly. The event queue orders points lexicographically from top to bottom, and the active tree stores the vertical order of segments cut by the sweep line. The entire algorithm is a conversation between these two ordered structures.</aside>
+    </section>
+
+    <section data-label="Local Adjacency">
+      <div class="slide">
+        <h2>Local Adjacency Rule: Only Neighbors Need New Tests</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="diagram">
+            <svg viewBox="0 0 760 540" role="img" aria-label="Active status adjacency">
+              <rect x="60" y="55" width="640" height="430" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="360" y1="75" x2="360" y2="470" stroke="#B45309" stroke-width="6" stroke-dasharray="16 12"/>
+              <line x1="95" y1="420" x2="650" y2="150" stroke="#2563EB" stroke-width="7"/>
+              <line x1="105" y1="140" x2="650" y2="410" stroke="#0F766E" stroke-width="7"/>
+              <line x1="95" y1="280" x2="650" y2="260" stroke="#6D28D9" stroke-width="7"/>
+              <g fill="#fff" stroke-width="5"><circle cx="360" cy="291" r="14" stroke="#2563EB"/><circle cx="360" cy="266" r="14" stroke="#6D28D9"/><circle cx="360" cy="267" r="14" stroke="#0F766E"/></g>
+              <text x="470" y="125" font-size="28" fill="#1E3A8A" font-weight="700">test adjacent pairs in T</text>
+              <text x="425" y="305" font-size="26" fill="#475569">middle segment blocks non-neighbor tests</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel teal"><h3>Neighbor Pair</h3><p>After an event updates \(T\), test the segment immediately above and below the changed block.</p></div>
+            <div class="panel amber"><h3>Skipped Pair</h3><p>If another segment lies between two candidates at the sweep line, their crossing cannot be the next local event.</p></div>
+            <div class="mathline">local tests \( \Rightarrow \) queue receives future crossings</div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 24-25</span><span>Adjacency economy</span></div>
+      </div>
+      <aside class="speaker-notes">The local adjacency rule is the central economy of the sweep. If two segments are separated in the active order by another segment at the current sweep position, they cannot be the next pair to meet below that position. Only neighbors need to be scheduled for future tests.</aside>
+    </section>
+
+    <section data-label="Lemma 2.1">
+      <div class="slide alt">
+        <h2>Lemma 2.1: Interior Crossings Force Adjacency</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 920 590" role="img" aria-label="Adjacency just above crossing">
+              <rect x="55" y="55" width="800" height="470" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <ellipse cx="455" cy="290" rx="150" ry="95" fill="#B45309" opacity="0.10" stroke="#B45309" stroke-width="4"/>
+              <line x1="160" y1="450" x2="745" y2="135" stroke="#2563EB" stroke-width="8"/>
+              <line x1="150" y1="135" x2="750" y2="450" stroke="#0F766E" stroke-width="8"/>
+              <line x1="455" y1="60" x2="455" y2="520" stroke="#B45309" stroke-width="5" stroke-dasharray="18 12"/>
+              <line x1="250" y1="245" x2="665" y2="245" stroke="#1E3A8A" stroke-width="5" stroke-dasharray="14 12"/>
+              <circle cx="455" cy="294" r="13" fill="#B45309"/>
+              <text x="485" y="305" font-size="28" fill="#B45309" font-weight="700">crossing p</text>
+              <text x="270" y="232" font-size="27" fill="#1E3A8A" font-weight="700">just above p: consecutive in T</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Visual Proof Idea</h3><p>Zoom into a small neighborhood of an interior crossing point \(p\).</p></div>
+            <div class="panel gray"><h3>No Room For A Separator</h3><p>A third segment between the two crossing segments immediately above \(p\) would have to enter the small neighborhood and create another local event.</p></div>
+            <div class="callout">Therefore the sweep will eventually test the crossing pair as neighbors.</div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed p. 25</span><span>Lemma 2.1 visual proof</span></div>
+      </div>
+      <aside class="speaker-notes">Present this as a visual proof rather than a formal detour. Just above an interior crossing, the two crossing segments have no other segment between them in sweep order; otherwise that intervening segment would have to pass through the tiny lens around the crossing point.</aside>
+    </section>
+
+    <section data-label="Event Cases">
+      <div class="slide">
+        <h2>Event Handler Cases: \(U(p), L(p), C(p)\)</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="diagram">
+            <svg viewBox="0 0 760 550" role="img" aria-label="Upper lower and crossing segment sets">
+              <rect x="60" y="60" width="640" height="430" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <circle cx="380" cy="275" r="15" fill="#B45309"/>
+              <g stroke-width="8" stroke-linecap="round">
+                <line x1="380" y1="275" x2="190" y2="105" stroke="#2563EB"/>
+                <line x1="380" y1="275" x2="590" y2="105" stroke="#2563EB"/>
+                <line x1="170" y1="445" x2="380" y2="275" stroke="#0F766E"/>
+                <line x1="590" y1="440" x2="380" y2="275" stroke="#0F766E"/>
+                <line x1="130" y1="250" x2="635" y2="310" stroke="#6D28D9"/>
+              </g>
+              <text x="145" y="96" font-size="30" fill="#2563EB" font-weight="700">U(p)</text>
+              <text x="115" y="480" font-size="30" fill="#0F766E" font-weight="700">L(p)</text>
+              <text x="600" y="345" font-size="30" fill="#6D28D9" font-weight="700">C(p)</text>
+              <text x="410" y="267" font-size="29" fill="#B45309" font-weight="700">p</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="mini-table">
+              <div class="head">Set</div><div class="head">Meaning</div><div class="head">Action</div>
+              <div>\(U(p)\)</div><div>starts at \(p\)</div><div>insert</div>
+              <div>\(L(p)\)</div><div>ends at \(p\)</div><div>delete</div>
+              <div>\(C(p)\)</div><div>passes through \(p\)</div><div>reverse local order</div>
+            </div>
+            <div class="panel amber"><h3>Clustered Events</h3><p>When several segments meet at one point, handle them together so the status tree makes one coherent local update.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 25-29</span><span>Event handling</span></div>
+      </div>
+      <aside class="speaker-notes">Explain the three sets attached to an event point. U contains segments starting at the point, L contains segments ending there, and C contains segments passing through from above to below. Clustered events matter because several segments may meet at the same coordinates.</aside>
+    </section>
+
+    <section data-label="Algorithm Dashboard">
+      <div class="slide alt">
+        <h2>Full Algorithm Dashboard</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 940 580" role="img" aria-label="Algorithm dashboard with queue status and output">
+              <rect x="40" y="50" width="520" height="460" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="310" y1="65" x2="310" y2="500" stroke="#B45309" stroke-width="5" stroke-dasharray="16 12"/>
+              <line x1="90" y1="440" x2="510" y2="150" stroke="#2563EB" stroke-width="7"/>
+              <line x1="80" y1="170" x2="520" y2="420" stroke="#0F766E" stroke-width="7"/>
+              <line x1="130" y1="300" x2="510" y2="285" stroke="#6D28D9" stroke-width="7"/>
+              <circle cx="310" cy="292" r="12" fill="#B45309"/>
+              <rect x="610" y="50" width="280" height="125" fill="#EFF6FF" stroke="#2563EB" stroke-width="3" rx="8"/>
+              <text x="635" y="92" font-size="29" fill="#1E3A8A" font-weight="700">Q: next events</text>
+              <text x="635" y="132" font-size="24" fill="#111827">p1, p2, p3, crossing</text>
+              <rect x="610" y="220" width="280" height="125" fill="#F0FDFA" stroke="#0F766E" stroke-width="3" rx="8"/>
+              <text x="635" y="262" font-size="29" fill="#0F766E" font-weight="700">T: active order</text>
+              <text x="635" y="302" font-size="24" fill="#111827">s2 above s3 above s1</text>
+              <rect x="610" y="390" width="280" height="125" fill="#FFFBEB" stroke="#B45309" stroke-width="3" rx="8"/>
+              <text x="635" y="432" font-size="29" fill="#B45309" font-weight="700">reported</text>
+              <text x="635" y="472" font-size="24" fill="#111827">intersection points</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Loop</h3><p>Extract the next event from \(Q\), compute its incident sets, report if needed, and update \(T\).</p></div>
+            <div class="panel teal"><h3>Scheduling</h3><p>After the local update, test the newly adjacent segment pairs and insert future crossing events.</p></div>
+            <div class="mathline">events \(= 2n + k\) under the no-overlap assumption</div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 29-31</span><span>Algorithm walk-through</span></div>
+      </div>
+      <aside class="speaker-notes">Use the dashboard as a rehearsal of the whole sweep. Pop the next event, report the intersection when multiple incident segments meet, update the active order, and then test the new adjacent pairs. The visual separates queue, status tree, and output list so the invariants stay visible.</aside>
+    </section>
+
+    <section data-label="Correctness Invariant">
+      <div class="slide">
+        <h2>Correctness Invariant: Everything Above Is Done</h2>
+        <div class="rule"></div>
+        <div class="cols wide-right">
+          <div class="stack">
+            <div class="panel blue"><h3>Processed Region</h3><p>All intersections strictly above the current sweep line have been reported.</p></div>
+            <div class="panel teal"><h3>Frontier</h3><p>The queue contains every known event that can affect the sweep state below the frontier.</p></div>
+            <div class="panel amber"><h3>Discovery Mechanism</h3><p>Any unreported crossing must first appear as a neighbor crossing before the sweep reaches it.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 560" role="img" aria-label="Processed and future regions">
+              <rect x="60" y="60" width="640" height="430" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <rect x="60" y="60" width="640" height="205" fill="#0F766E" opacity="0.10"/>
+              <rect x="60" y="265" width="640" height="225" fill="#2563EB" opacity="0.06"/>
+              <line x1="60" y1="265" x2="700" y2="265" stroke="#B45309" stroke-width="6" stroke-dasharray="18 12"/>
+              <line x1="110" y1="430" x2="620" y2="115" stroke="#2563EB" stroke-width="7"/>
+              <line x1="120" y1="130" x2="650" y2="440" stroke="#0F766E" stroke-width="7"/>
+              <circle cx="314" cy="304" r="12" fill="#B45309"/>
+              <circle cx="512" cy="181" r="12" fill="#0F766E"/>
+              <text x="105" y="116" font-size="30" fill="#0F766E" font-weight="700">done</text>
+              <text x="105" y="468" font-size="30" fill="#2563EB" font-weight="700">future</text>
+              <text x="455" y="250" font-size="28" fill="#B45309" font-weight="700">current event line</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 31-32</span><span>Correctness</span></div>
+      </div>
+      <aside class="speaker-notes">The correctness invariant says that everything strictly above the sweep line has already been handled. Events are processed in priority order, and every future crossing must first become a neighbor crossing that gets inserted into the queue. This turns local tests into global completeness.</aside>
+    </section>
+
+    <section data-label="Runtime Count">
+      <div class="slide alt">
+        <h2>Runtime Count: Endpoints Plus Intersections</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="stack">
+            <div class="panel blue"><h3>Queue Events</h3><p>There are \(2n\) endpoint events and at most \(k\) intersection events to process.</p></div>
+            <div class="panel teal"><h3>Tree Work</h3><p>Each event performs a constant number of neighbor searches plus insertions and deletions in \(T\).</p></div>
+            <div class="callout">Total time: \(O((n+k)\log n)\), with linear output storage.</div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 540" role="img" aria-label="Planar graph split count">
+              <rect x="70" y="70" width="610" height="380" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <g stroke-width="7" stroke-linecap="round">
+                <line x1="115" y1="400" x2="615" y2="125" stroke="#2563EB"/>
+                <line x1="130" y1="120" x2="610" y2="405" stroke="#0F766E"/>
+                <line x1="105" y1="270" x2="635" y2="255" stroke="#6D28D9"/>
+                <line x1="235" y1="90" x2="500" y2="430" stroke="#475569"/>
+              </g>
+              <g fill="#B45309"><circle cx="374" cy="258" r="11"/><circle cx="275" cy="274" r="11"/><circle cx="454" cy="247" r="11"/><circle cx="357" cy="248" r="11"/></g>
+              <text x="100" y="505" font-size="30" fill="#111827">splits create a planar subdivision of size \(O(n+k)\)</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 32-35</span><span>Runtime and output size</span></div>
+      </div>
+      <aside class="speaker-notes">Connect the running time to counting events. There are two endpoints per segment and one event for each discovered intersection point. Splitting the arrangement into a planar graph supplies the geometric intuition that the output size bounds the extra work caused by crossings.</aside>
+    </section>
+
+    <section data-label="DCEL Records">
+      <div class="slide">
+        <h2>DCEL Record Model For The Overlay</h2>
+        <div class="rule"></div>
+        <div class="three" style="height: 760px;">
+          <div class="panel blue">
+            <h3>Vertex</h3>
+            <p>Coordinates and one incident half-edge.</p>
+            <div class="diagram" style="min-height: 420px;">
+              <svg viewBox="0 0 360 360" role="img" aria-label="Vertex card"><circle cx="170" cy="155" r="18" fill="#2563EB"/><path d="M170 155 L285 245" stroke="#2563EB" stroke-width="8"/><text x="55" y="310" font-size="27" fill="#111827">origin pointer</text></svg>
+            </div>
+          </div>
+          <div class="panel teal">
+            <h3>Half-Edge</h3>
+            <p>origin, twin, next, prev, and incident face pointers.</p>
+            <div class="diagram" style="min-height: 420px;">
+              <svg viewBox="0 0 360 360" role="img" aria-label="Half edge card"><defs><marker id="smallArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"/></marker></defs><path d="M70 180 L280 180" stroke="#0F766E" stroke-width="9" marker-end="url(#smallArrow)"/><path d="M280 210 L70 210" stroke="#B45309" stroke-width="6" marker-end="url(#smallArrow)"/><text x="52" y="92" font-size="26" fill="#111827">twin pair</text><text x="52" y="305" font-size="26" fill="#111827">next/prev around face</text></svg>
+            </div>
+          </div>
+          <div class="panel violet">
+            <h3>Face</h3>
+            <p>Outer boundary, inner components, and labels.</p>
+            <div class="diagram" style="min-height: 420px;">
+              <svg viewBox="0 0 360 360" role="img" aria-label="Face card"><polygon points="75,105 275,90 295,245 135,285 60,210" fill="#6D28D9" opacity="0.12" stroke="#6D28D9" stroke-width="6"/><circle cx="180" cy="190" r="40" fill="#fff" stroke="#B45309" stroke-width="6"/><text x="90" y="330" font-size="26" fill="#111827">outer + hole cycles</text></svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 35-37</span><span>Doubly connected edge list</span></div>
+      </div>
+      <aside class="speaker-notes">Shift from detecting intersections to representing the subdivided map. The DCEL stores vertices, faces, and directed half-edges with explicit twin, next, previous, origin, and incident-face pointers. The benefit is local navigation around boundaries after the overlay creates many small pieces.</aside>
+    </section>
+
+    <section data-label="Overlay Splits">
+      <div class="slide alt">
+        <h2>Overlay Updates: Split Half-Edges At Vertices And Crossings</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="diagram">
+            <svg viewBox="0 0 760 540" role="img" aria-label="Edge splitting at vertex and crossing">
+              <text x="80" y="58" font-size="29" fill="#1E3A8A" font-weight="700">before</text>
+              <line x1="95" y1="170" x2="645" y2="170" stroke="#2563EB" stroke-width="9"/>
+              <line x1="365" y1="70" x2="365" y2="270" stroke="#0F766E" stroke-width="9"/>
+              <circle cx="365" cy="170" r="13" fill="#B45309"/>
+              <text x="80" y="335" font-size="29" fill="#1E3A8A" font-weight="700">after split</text>
+              <line x1="95" y1="430" x2="365" y2="430" stroke="#2563EB" stroke-width="9"/>
+              <line x1="365" y1="430" x2="645" y2="430" stroke="#2563EB" stroke-width="9"/>
+              <line x1="365" y1="330" x2="365" y2="430" stroke="#0F766E" stroke-width="9"/>
+              <line x1="365" y1="430" x2="365" y2="505" stroke="#0F766E" stroke-width="9"/>
+              <circle cx="365" cy="430" r="15" fill="#B45309"/>
+              <text x="405" y="462" font-size="27" fill="#111827">new vertex, four half-edge pairs</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Passing Through A Vertex</h3><p>Insert a subdivision vertex on the edge and split the two directed half-edges.</p></div>
+            <div class="panel teal"><h3>Crossing Two Edges</h3><p>Create the intersection vertex, split both input edges, and rewire local adjacency pointers.</p></div>
+            <div class="panel amber"><h3>Invariant</h3><p>Every boundary walk must remain a valid next-pointer cycle after the update.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 37-40</span><span>Overlay construction</span></div>
+      </div>
+      <aside class="speaker-notes">The overlay step is a controlled surgery on the DCEL. When an edge passes through a vertex or two edges cross, the affected half-edges are split and rewired so that the next and previous pointers still trace valid boundary cycles in the refined subdivision.</aside>
+    </section>
+
+    <section data-label="Face Recovery">
+      <div class="slide">
+        <h2>Face Recovery And Labels From \(S_1, S_2\)</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="diagram">
+            <svg viewBox="0 0 900 560" role="img" aria-label="Boundary cycles and face labels">
+              <rect x="55" y="55" width="790" height="450" fill="#fff" stroke="#CBD5E1" stroke-width="3"/>
+              <polygon points="110,130 420,95 520,275 360,435 120,375" fill="#2563EB" opacity="0.12" stroke="#2563EB" stroke-width="6"/>
+              <polygon points="330,145 745,130 790,360 530,470 390,315" fill="#0F766E" opacity="0.13" stroke="#0F766E" stroke-width="6"/>
+              <circle cx="450" cy="275" r="70" fill="#fff" stroke="#B45309" stroke-width="6"/>
+              <text x="165" y="245" font-size="31" fill="#2563EB" font-weight="700">S1 face A</text>
+              <text x="585" y="275" font-size="31" fill="#0F766E" font-weight="700">S2 face B</text>
+              <text x="385" y="300" font-size="29" fill="#B45309" font-weight="700">hole</text>
+              <text x="140" y="505" font-size="27" fill="#111827">walk cycles, classify outer boundaries and holes, attach labels</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue"><h3>Boundary-Cycle Graph</h3><p>Follow next pointers to list every directed boundary cycle in the refined subdivision.</p></div>
+            <div class="panel teal"><h3>Label Propagation</h3><p>Each output face records the containing face from \(S_1\) and the containing face from \(S_2\).</p></div>
+            <div class="panel amber"><h3>Holes</h3><p>Inner cycles belong to the surrounding face rather than becoming independent outer faces.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 40-43</span><span>Face recovery and labeling</span></div>
+      </div>
+      <aside class="speaker-notes">After all splits, faces are recovered by walking boundary cycles. Labels are inherited from the two input subdivisions, so each output face knows which face of S1 and which face of S2 contains it. Holes require special attention because not every boundary cycle is an outer boundary.</aside>
+    </section>
+
+    <section data-label="Boolean Operations">
+      <div class="slide alt">
+        <h2>Boolean Operations Are Label Selection</h2>
+        <div class="rule"></div>
+        <div class="cols wide-right">
+          <div class="stack">
+            <div class="truth">
+              <div class="head">in \(S_1\)</div><div class="head">in \(S_2\)</div><div class="head">union</div><div class="head">intersection</div><div class="head">difference</div>
+              <div>0</div><div>0</div><div>0</div><div>0</div><div>0</div>
+              <div>1</div><div>0</div><div>1</div><div>0</div><div>1</div>
+              <div>0</div><div>1</div><div>1</div><div>0</div><div>0</div>
+              <div>1</div><div>1</div><div>1</div><div>1</div><div>0</div>
+            </div>
+            <div class="panel amber"><h3>Chapter Boundary</h3><p>The lecture assumes no overlapping segment interiors; later variants can reduce constants or handle richer degeneracies.</p></div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 560" role="img" aria-label="Boolean operation label selection">
+              <circle cx="310" cy="270" r="150" fill="#2563EB" opacity="0.16" stroke="#2563EB" stroke-width="6"/>
+              <circle cx="455" cy="270" r="150" fill="#0F766E" opacity="0.16" stroke="#0F766E" stroke-width="6"/>
+              <path d="M382 141 A150 150 0 0 1 382 399 A150 150 0 0 1 382 141" fill="#B45309" opacity="0.28"/>
+              <text x="222" y="275" font-size="34" fill="#2563EB" font-weight="700">S1</text>
+              <text x="500" y="275" font-size="34" fill="#0F766E" font-weight="700">S2</text>
+              <text x="295" y="480" font-size="31" fill="#111827">select faces by labels</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Printed pp. 43-44</span><span>Wrap</span></div>
+      </div>
+      <aside class="speaker-notes">Close by translating labels into operations. Union, intersection, and difference do not require a new geometric algorithm once the overlay is built; they select faces by truth conditions on membership in the two inputs. Mention that the chapter excludes overlapping segment interiors and that more optimal variants exist.</aside>
+    </section>
+
+  </deck-stage>
+  <script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "label": "Title",
+    "notes": "Open by placing the lecture inside the manifest row and the chapter span. The subject is not just detecting one intersection; it is building a disciplined sweep that can report every crossing among closed segments while preparing the data structures needed later for map overlay."
+  },
+  {
+    "slide": 2,
+    "label": "Overlay Motivation",
+    "notes": "Use the synthetic map to make the application concrete. Roads, rivers, and regions each carry partial information, but overlaying them creates new vertices and faces that answer richer questions. The chapter's algorithms are motivated by this need to turn layered geometry into searchable combinatorial structure."
+  },
+  {
+    "slide": 3,
+    "label": "Closed Segments",
+    "notes": "Emphasize that the input objects are closed line segments, so endpoints are part of the segment and can be genuine intersections. This is why the predicate must distinguish proper interior crossings from endpoint contacts; otherwise the sweep will miss events or count them inconsistently."
+  },
+  {
+    "slide": 4,
+    "label": "Output Sensitivity",
+    "notes": "The brute force grid is easy to trust because it tests every pair, but it spends time on pairs that are far apart and never interact. The sparse drawing shows why the target complexity should depend on the number of reported intersections as well as the number of input segments."
+  },
+  {
+    "slide": 5,
+    "label": "Failed Interval Sweep",
+    "notes": "Walk through the tempting one-dimensional idea: sweep by x and keep segments whose x-intervals overlap the sweep position. The vertical probe makes the failure visible, because many active segments can share an x-range while being far apart in y, producing too many candidate tests."
+  },
+  {
+    "slide": 6,
+    "label": "Sweep State",
+    "notes": "Introduce the two pieces of state slowly. The event queue orders points lexicographically from top to bottom, and the active tree stores the vertical order of segments cut by the sweep line. The entire algorithm is a conversation between these two ordered structures."
+  },
+  {
+    "slide": 7,
+    "label": "Local Adjacency",
+    "notes": "The local adjacency rule is the central economy of the sweep. If two segments are separated in the active order by another segment at the current sweep position, they cannot be the next pair to meet below that position. Only neighbors need to be scheduled for future tests."
+  },
+  {
+    "slide": 8,
+    "label": "Lemma 2.1",
+    "notes": "Present this as a visual proof rather than a formal detour. Just above an interior crossing, the two crossing segments have no other segment between them in sweep order; otherwise that intervening segment would have to pass through the tiny lens around the crossing point."
+  },
+  {
+    "slide": 9,
+    "label": "Event Cases",
+    "notes": "Explain the three sets attached to an event point. U contains segments starting at the point, L contains segments ending there, and C contains segments passing through from above to below. Clustered events matter because several segments may meet at the same coordinates."
+  },
+  {
+    "slide": 10,
+    "label": "Algorithm Dashboard",
+    "notes": "Use the dashboard as a rehearsal of the whole sweep. Pop the next event, report the intersection when multiple incident segments meet, update the active order, and then test the new adjacent pairs. The visual separates queue, status tree, and output list so the invariants stay visible."
+  },
+  {
+    "slide": 11,
+    "label": "Correctness Invariant",
+    "notes": "The correctness invariant says that everything strictly above the sweep line has already been handled. Events are processed in priority order, and every future crossing must first become a neighbor crossing that gets inserted into the queue. This turns local tests into global completeness."
+  },
+  {
+    "slide": 12,
+    "label": "Runtime Count",
+    "notes": "Connect the running time to counting events. There are two endpoints per segment and one event for each discovered intersection point. Splitting the arrangement into a planar graph supplies the geometric intuition that the output size bounds the extra work caused by crossings."
+  },
+  {
+    "slide": 13,
+    "label": "DCEL Records",
+    "notes": "Shift from detecting intersections to representing the subdivided map. The DCEL stores vertices, faces, and directed half-edges with explicit twin, next, previous, origin, and incident-face pointers. The benefit is local navigation around boundaries after the overlay creates many small pieces."
+  },
+  {
+    "slide": 14,
+    "label": "Overlay Splits",
+    "notes": "The overlay step is a controlled surgery on the DCEL. When an edge passes through a vertex or two edges cross, the affected half-edges are split and rewired so that the next and previous pointers still trace valid boundary cycles in the refined subdivision."
+  },
+  {
+    "slide": 15,
+    "label": "Face Recovery",
+    "notes": "After all splits, faces are recovered by walking boundary cycles. Labels are inherited from the two input subdivisions, so each output face knows which face of S1 and which face of S2 contains it. Holes require special attention because not every boundary cycle is an outer boundary."
+  },
+  {
+    "slide": 16,
+    "label": "Boolean Operations",
+    "notes": "Close by translating labels into operations. Union, intersection, and difference do not require a new geometric algorithm once the overlay is built; they select faces by truth conditions on membership in the two inputs. Mention that the chapter excludes overlapping segment interiors and that more optimal variants exist."
+  }
+]
+  </script>
+</body>
+</html>

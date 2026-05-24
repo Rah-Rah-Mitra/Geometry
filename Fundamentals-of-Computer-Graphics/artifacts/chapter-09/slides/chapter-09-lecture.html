@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Graphics Pipeline | Fundamentals of Computer Graphics</title>
+  <meta name="course" content="Fundamentals of Computer Graphics">
+  <meta name="chapter_id" content="chapter-09">
+  <meta name="notebook_path" content="Fundamentals-of-Computer-Graphics/chapter-09-graphics-pipeline/09-graphics-pipeline.ipynb">
+  <meta name="source_span" content="printed pages 177-204; PDF pages 194-221.">
+  <meta name="source_pdf" content="Fundamentals-of-Computer-Graphics/Fundamentals of Computer Graphics.pdf">
+  <meta name="design_system_version" content="Geometry Lecture Design System 1.0">
+  <meta name="math_support" content="STIX Two Text and KaTeX 0.16.11 declared">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    section.slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 26px;
+      padding: 72px 92px 52px;
+      border-top: 10px solid var(--slide-accent);
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    section.slide.alt {
+      background:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 68px;
+      line-height: 1.05;
+      font-weight: 700;
+      max-width: 1220px;
+    }
+
+    h2 {
+      font-size: 52px;
+      line-height: 1.1;
+      font-weight: 700;
+      max-width: 1380px;
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.18;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    p,
+    li {
+      font-size: 27px;
+      line-height: 1.35;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .kicker {
+      font-size: 23px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 24px;
+      color: var(--slide-muted);
+      font-size: 32px;
+      line-height: 1.32;
+      max-width: 1160px;
+    }
+
+    .source-line {
+      margin-top: 20px;
+      color: var(--slide-dimmed);
+      font-size: 23px;
+      line-height: 1.3;
+    }
+
+    .rule {
+      width: 104px;
+      height: 6px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+      margin-top: 26px;
+    }
+
+    .content {
+      min-height: 0;
+      display: grid;
+      gap: 30px;
+      align-items: stretch;
+    }
+
+    .two {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .wide-right {
+      grid-template-columns: 0.88fr 1.12fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stack {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 6px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 6px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 6px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 6px solid var(--slide-violet);
+    }
+
+    .panel.slate {
+      background: var(--math-proof-bg);
+      border-left: 6px solid var(--math-proof-rule);
+    }
+
+    .panel h3 {
+      margin-bottom: 10px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .tag {
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 7px 12px;
+      color: var(--slide-accent);
+      background: #fff;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .math {
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.25;
+    }
+
+    .code {
+      font-family: var(--font-mono);
+      font-size: 23px;
+      line-height: 1.35;
+      white-space: pre-line;
+    }
+
+    .diagram {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .diagram.clean {
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+      padding: 0;
+    }
+
+    .caption {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      line-height: 1.28;
+      margin-top: 10px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      line-height: 1.25;
+      border-top: 1px solid var(--slide-border-light);
+      padding-top: 14px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .svg-text {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      fill: var(--slide-ink);
+    }
+
+    .svg-small {
+      font-family: var(--font-sans);
+      font-size: 21px;
+      fill: var(--slide-muted);
+    }
+
+    .svg-math {
+      font-family: var(--font-math);
+      font-size: 28px;
+      fill: var(--slide-ink);
+    }
+
+    .grid-line {
+      stroke: #E2E8F0;
+      stroke-width: 2;
+    }
+
+    .axis {
+      stroke: #94A3B8;
+      stroke-width: 3;
+    }
+
+    .blue-stroke {
+      stroke: var(--slide-blue);
+      stroke-width: 5;
+      fill: none;
+    }
+
+    .teal-stroke {
+      stroke: var(--slide-teal);
+      stroke-width: 5;
+      fill: none;
+    }
+
+    .amber-stroke {
+      stroke: var(--slide-amber);
+      stroke-width: 5;
+      fill: none;
+    }
+
+    .violet-stroke {
+      stroke: var(--slide-violet);
+      stroke-width: 5;
+      fill: none;
+    }
+
+    .muted-stroke {
+      stroke: #94A3B8;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .blue-fill {
+      fill: rgba(37, 99, 235, 0.14);
+    }
+
+    .teal-fill {
+      fill: rgba(15, 118, 110, 0.14);
+    }
+
+    .amber-fill {
+      fill: rgba(180, 83, 9, 0.16);
+    }
+
+    .violet-fill {
+      fill: rgba(109, 40, 217, 0.14);
+    }
+
+    .dot-blue {
+      fill: var(--slide-blue);
+    }
+
+    .dot-teal {
+      fill: var(--slide-teal);
+    }
+
+    .dot-amber {
+      fill: var(--slide-amber);
+    }
+
+    .dot-violet {
+      fill: var(--slide-violet);
+    }
+  </style>
+</head>
+<body>
+<deck-stage>
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Fundamentals of Computer Graphics | Chapter 09</div>
+      <h1>The Graphics Pipeline</h1>
+      <p class="subtitle">How object-order rendering turns transformed primitives into stable pixels, colors, and depth decisions.</p>
+      <p class="source-line">Notebook: Fundamentals-of-Computer-Graphics/chapter-09-graphics-pipeline/09-graphics-pipeline.ipynb<br>Source span: printed pages 177-204; PDF pages 194-221.</p>
+      <div class="rule"></div>
+    </header>
+    <div class="content wide-right">
+      <div class="panel blue">
+        <h3>Lecture Goal</h3>
+        <p>Read the pipeline as a sequence of invariants: valid coordinates, covered samples, interpolated attributes, visibility winners, and efficient rejection.</p>
+      </div>
+      <div class="diagram clean">
+        <svg viewBox="0 0 900 520" role="img" aria-label="Pipeline title diagram">
+          <defs>
+            <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+            </marker>
+          </defs>
+          <rect x="70" y="96" width="180" height="118" rx="8" class="blue-fill" stroke="#2563EB" stroke-width="4"></rect>
+          <rect x="360" y="96" width="180" height="118" rx="8" class="teal-fill" stroke="#0F766E" stroke-width="4"></rect>
+          <rect x="650" y="96" width="180" height="118" rx="8" class="amber-fill" stroke="#B45309" stroke-width="4"></rect>
+          <path d="M255 155 L345 155" class="blue-stroke" marker-end="url(#arrow-title)"></path>
+          <path d="M545 155 L635 155" class="blue-stroke" marker-end="url(#arrow-title)"></path>
+          <text x="160" y="146" text-anchor="middle" class="svg-text">vertices</text>
+          <text x="160" y="180" text-anchor="middle" class="svg-small">attributes</text>
+          <text x="450" y="146" text-anchor="middle" class="svg-text">fragments</text>
+          <text x="450" y="180" text-anchor="middle" class="svg-small">samples</text>
+          <text x="740" y="146" text-anchor="middle" class="svg-text">framebuffer</text>
+          <text x="740" y="180" text-anchor="middle" class="svg-small">color + depth</text>
+          <polygon points="240,350 420,290 700,390" class="violet-fill" stroke="#6D28D9" stroke-width="5"></polygon>
+          <circle cx="330" cy="345" r="9" class="dot-blue"></circle>
+          <circle cx="430" cy="326" r="9" class="dot-teal"></circle>
+          <circle cx="560" cy="358" r="9" class="dot-amber"></circle>
+          <circle cx="625" cy="372" r="9" class="dot-violet"></circle>
+          <text x="470" y="448" text-anchor="middle" class="svg-text">one primitive, many pixel contracts</text>
+        </svg>
+      </div>
+    </div>
+    <footer class="footer"><span>Geometry Lecture Design System 1.0 | STIX and KaTeX support declared</span><span>1 / 17</span></footer>
+    <aside class="speaker-notes">Open by positioning the pipeline as the object-order counterpart to ray tracing. The chapter is not only about hardware boxes; it is about the promises each stage makes to the next one. Ask students to watch for data that must survive coordinate changes, sampling choices, and visibility contests.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">Rendering Loop</div>
+      <h2>Object-Order Rendering Changes The Loop Nest</h2>
+    </header>
+    <div class="content two">
+      <div class="panel slate">
+        <h3>Image-Order Question</h3>
+        <p>For each pixel, which object and light paths determine its color?</p>
+        <div class="diagram clean">
+          <svg viewBox="0 0 700 430" role="img" aria-label="Image order loop">
+            <rect x="60" y="58" width="260" height="260" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+            <g>
+              <circle cx="105" cy="103" r="10" class="dot-blue"></circle>
+              <circle cx="160" cy="103" r="10" fill="#CBD5E1"></circle>
+              <circle cx="215" cy="103" r="10" fill="#CBD5E1"></circle>
+              <circle cx="270" cy="103" r="10" fill="#CBD5E1"></circle>
+              <circle cx="105" cy="158" r="10" fill="#CBD5E1"></circle>
+              <circle cx="160" cy="158" r="10" class="dot-blue"></circle>
+              <circle cx="215" cy="158" r="10" fill="#CBD5E1"></circle>
+              <circle cx="270" cy="158" r="10" fill="#CBD5E1"></circle>
+              <circle cx="105" cy="213" r="10" fill="#CBD5E1"></circle>
+              <circle cx="160" cy="213" r="10" fill="#CBD5E1"></circle>
+              <circle cx="215" cy="213" r="10" class="dot-blue"></circle>
+              <circle cx="270" cy="213" r="10" fill="#CBD5E1"></circle>
+              <circle cx="105" cy="268" r="10" fill="#CBD5E1"></circle>
+              <circle cx="160" cy="268" r="10" fill="#CBD5E1"></circle>
+              <circle cx="215" cy="268" r="10" fill="#CBD5E1"></circle>
+              <circle cx="270" cy="268" r="10" class="dot-blue"></circle>
+            </g>
+            <path d="M336 101 C430 80 470 80 570 120" class="blue-stroke"></path>
+            <path d="M336 158 C430 150 470 140 570 160" class="blue-stroke"></path>
+            <path d="M336 213 C430 225 470 215 570 205" class="blue-stroke"></path>
+            <path d="M336 268 C430 300 470 280 570 250" class="blue-stroke"></path>
+            <polygon points="552,84 622,126 585,206 510,168" class="teal-fill" stroke="#0F766E" stroke-width="4"></polygon>
+            <text x="190" y="372" text-anchor="middle" class="svg-text">outer loop: pixels</text>
+            <text x="556" y="372" text-anchor="middle" class="svg-text">query scene repeatedly</text>
+          </svg>
+        </div>
+      </div>
+      <div class="panel blue">
+        <h3>Object-Order Question</h3>
+        <p>For each primitive, which pixel samples can it influence?</p>
+        <div class="diagram clean">
+          <svg viewBox="0 0 700 430" role="img" aria-label="Object order loop">
+            <polygon points="92,105 364,62 300,310" class="violet-fill" stroke="#6D28D9" stroke-width="5"></polygon>
+            <rect x="418" y="58" width="220" height="260" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+            <g>
+              <circle cx="462" cy="98" r="10" fill="#CBD5E1"></circle>
+              <circle cx="512" cy="98" r="10" class="dot-violet"></circle>
+              <circle cx="562" cy="98" r="10" class="dot-violet"></circle>
+              <circle cx="462" cy="148" r="10" fill="#CBD5E1"></circle>
+              <circle cx="512" cy="148" r="10" class="dot-violet"></circle>
+              <circle cx="562" cy="148" r="10" class="dot-violet"></circle>
+              <circle cx="462" cy="198" r="10" fill="#CBD5E1"></circle>
+              <circle cx="512" cy="198" r="10" class="dot-violet"></circle>
+              <circle cx="562" cy="198" r="10" fill="#CBD5E1"></circle>
+              <circle cx="462" cy="248" r="10" fill="#CBD5E1"></circle>
+              <circle cx="512" cy="248" r="10" fill="#CBD5E1"></circle>
+              <circle cx="562" cy="248" r="10" fill="#CBD5E1"></circle>
+            </g>
+            <path d="M348 162 C388 135 400 122 435 104" class="teal-stroke"></path>
+            <path d="M337 190 C383 177 404 167 435 152" class="teal-stroke"></path>
+            <path d="M325 223 C381 218 405 207 435 198" class="teal-stroke"></path>
+            <text x="217" y="372" text-anchor="middle" class="svg-text">outer loop: primitives</text>
+            <text x="528" y="372" text-anchor="middle" class="svg-text">stream affected samples</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>Object-order rendering makes rasterization central.</span><span>2 / 17</span></footer>
+    <aside class="speaker-notes">Contrast the two mental loops carefully. Image-order rendering starts at a pixel and asks which scene objects matter there. Object-order rendering starts at a primitive and asks which pixels it can influence. That reversal explains why streaming geometry once can be fast, but also why visibility, aliasing, and edge ownership become pipeline responsibilities.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Stage Contracts</div>
+      <h2>The Pipeline Is A Chain Of Data Contracts</h2>
+    </header>
+    <div class="content">
+      <div class="diagram">
+        <svg viewBox="0 0 1640 470" role="img" aria-label="Pipeline data contracts">
+          <defs>
+            <marker id="arrow-contract" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g>
+            <rect x="40" y="120" width="230" height="150" rx="8" class="blue-fill" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="155" y="178" text-anchor="middle" class="svg-text">Application</text>
+            <text x="155" y="216" text-anchor="middle" class="svg-small">vertices, indices</text>
+            <text x="155" y="247" text-anchor="middle" class="svg-small">attributes</text>
+          </g>
+          <g>
+            <rect x="365" y="120" width="230" height="150" rx="8" class="teal-fill" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="480" y="178" text-anchor="middle" class="svg-text">Vertex</text>
+            <text x="480" y="216" text-anchor="middle" class="svg-small">screen positions</text>
+            <text x="480" y="247" text-anchor="middle" class="svg-small">varying payload</text>
+          </g>
+          <g>
+            <rect x="690" y="120" width="230" height="150" rx="8" class="violet-fill" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="805" y="178" text-anchor="middle" class="svg-text">Rasterizer</text>
+            <text x="805" y="216" text-anchor="middle" class="svg-small">covered samples</text>
+            <text x="805" y="247" text-anchor="middle" class="svg-small">barycentrics</text>
+          </g>
+          <g>
+            <rect x="1015" y="120" width="230" height="150" rx="8" class="amber-fill" stroke="#B45309" stroke-width="4"></rect>
+            <text x="1130" y="178" text-anchor="middle" class="svg-text">Fragment</text>
+            <text x="1130" y="216" text-anchor="middle" class="svg-small">color, depth</text>
+            <text x="1130" y="247" text-anchor="middle" class="svg-small">coverage mask</text>
+          </g>
+          <g>
+            <rect x="1340" y="120" width="230" height="150" rx="8" fill="#F8FAFC" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="1455" y="178" text-anchor="middle" class="svg-text">Blending</text>
+            <text x="1455" y="216" text-anchor="middle" class="svg-small">framebuffer</text>
+            <text x="1455" y="247" text-anchor="middle" class="svg-small">resolved pixels</text>
+          </g>
+          <path d="M275 195 L350 195" class="muted-stroke" marker-end="url(#arrow-contract)"></path>
+          <path d="M600 195 L675 195" class="muted-stroke" marker-end="url(#arrow-contract)"></path>
+          <path d="M925 195 L1000 195" class="muted-stroke" marker-end="url(#arrow-contract)"></path>
+          <path d="M1250 195 L1325 195" class="muted-stroke" marker-end="url(#arrow-contract)"></path>
+          <text x="312" y="106" text-anchor="middle" class="svg-small">primitive contract</text>
+          <text x="637" y="106" text-anchor="middle" class="svg-small">sample contract</text>
+          <text x="962" y="106" text-anchor="middle" class="svg-small">attribute contract</text>
+          <text x="1287" y="106" text-anchor="middle" class="svg-small">visibility contract</text>
+          <rect x="200" y="344" width="1240" height="68" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+          <text x="820" y="388" text-anchor="middle" class="svg-text">Every stage trusts that the previous stage delivered coherent coordinate and attribute data.</text>
+        </svg>
+      </div>
+      <div class="tag-row">
+        <span class="tag">positions</span>
+        <span class="tag">barycentric weights</span>
+        <span class="tag">u/w and 1/w</span>
+        <span class="tag">depth</span>
+        <span class="tag">coverage</span>
+        <span class="tag">framebuffer state</span>
+      </div>
+    </div>
+    <footer class="footer"><span>A later stage cannot infer missing invariants for free.</span><span>3 / 17</span></footer>
+    <aside class="speaker-notes">Use the diagram as a contract ledger rather than a simple flow chart. Each arrow should name what the next stage is allowed to assume. If an attribute, coordinate, or depth value is missing or represented inconsistently, the later stage cannot repair the mistake without doing different work.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">Before Rasterization</div>
+      <h2>Vertex Processing Prepares Screen-Space Work</h2>
+    </header>
+    <div class="content wide-left">
+      <div class="diagram">
+        <svg viewBox="0 0 980 610" role="img" aria-label="Vertex processing coordinate path">
+          <defs>
+            <marker id="arrow-vertex" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g transform="translate(60,70)">
+            <polygon points="40,250 235,105 320,330" class="blue-fill" stroke="#2563EB" stroke-width="5"></polygon>
+            <circle cx="40" cy="250" r="10" class="dot-blue"></circle>
+            <circle cx="235" cy="105" r="10" class="dot-blue"></circle>
+            <circle cx="320" cy="330" r="10" class="dot-blue"></circle>
+            <text x="180" y="390" text-anchor="middle" class="svg-text">object space</text>
+          </g>
+          <path d="M430 285 L545 285" class="teal-stroke" marker-end="url(#arrow-vertex)"></path>
+          <text x="488" y="252" text-anchor="middle" class="svg-small">model-view</text>
+          <text x="488" y="334" text-anchor="middle" class="svg-small">projection</text>
+          <g transform="translate(580,58)">
+            <rect x="22" y="42" width="330" height="410" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+            <path d="M62 382 L302 382 M62 382 L62 86" class="axis"></path>
+            <polygon points="86,322 278,140 250,356" class="teal-fill" stroke="#0F766E" stroke-width="5"></polygon>
+            <circle cx="86" cy="322" r="10" class="dot-teal"></circle>
+            <circle cx="278" cy="140" r="10" class="dot-teal"></circle>
+            <circle cx="250" cy="356" r="10" class="dot-teal"></circle>
+            <text x="188" y="502" text-anchor="middle" class="svg-text">screen-ready vertices</text>
+          </g>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Output Must Include</h3>
+          <ul>
+            <li>screen-space positions for primitive assembly</li>
+            <li>interpolatable attributes for later fragments</li>
+            <li>homogeneous terms when perspective correction is needed</li>
+          </ul>
+        </div>
+        <div class="panel amber">
+          <h3>Coordinate Warning</h3>
+          <p>Shading angles require an orthonormal coordinate system; nonuniform scale and perspective projection do not preserve them.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>Vertex work decides what the rasterizer can know.</span><span>4 / 17</span></footer>
+    <aside class="speaker-notes">Emphasize that vertex processing is not merely multiplication by a matrix. It also decides which quantities are computed per vertex, which coordinate system is orthonormal enough for shading, and which homogeneous quantities must be preserved so the rasterizer can interpolate them correctly after projection.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Rasterization</div>
+      <h2>Rasterization Emits Fragments At Pixel Centers</h2>
+    </header>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Rasterizer Jobs</h3>
+          <ol>
+            <li>Enumerate sample locations covered by the primitive.</li>
+            <li>Attach attributes to each fragment at that location.</li>
+          </ol>
+        </div>
+        <div class="panel slate">
+          <h3>Fragment</h3>
+          <p>A candidate contribution to one framebuffer sample, carrying position, depth, coverage, and interpolated data.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 850 620" role="img" aria-label="Triangle raster grid">
+          <g transform="translate(70,50)">
+            <rect x="0" y="0" width="560" height="480" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <g>
+              <path d="M0 60 H560 M0 120 H560 M0 180 H560 M0 240 H560 M0 300 H560 M0 360 H560 M0 420 H560" class="grid-line"></path>
+              <path d="M70 0 V480 M140 0 V480 M210 0 V480 M280 0 V480 M350 0 V480 M420 0 V480 M490 0 V480" class="grid-line"></path>
+            </g>
+            <polygon points="92,394 476,120 336,446" fill="rgba(109,40,217,0.20)" stroke="#6D28D9" stroke-width="6"></polygon>
+            <g fill="#CBD5E1">
+              <circle cx="35" cy="30" r="6"></circle><circle cx="105" cy="30" r="6"></circle><circle cx="175" cy="30" r="6"></circle><circle cx="245" cy="30" r="6"></circle><circle cx="315" cy="30" r="6"></circle><circle cx="385" cy="30" r="6"></circle><circle cx="455" cy="30" r="6"></circle><circle cx="525" cy="30" r="6"></circle>
+              <circle cx="35" cy="90" r="6"></circle><circle cx="105" cy="90" r="6"></circle><circle cx="175" cy="90" r="6"></circle><circle cx="245" cy="90" r="6"></circle><circle cx="315" cy="90" r="6"></circle><circle cx="385" cy="90" r="6"></circle><circle cx="455" cy="90" r="6"></circle><circle cx="525" cy="90" r="6"></circle>
+              <circle cx="35" cy="150" r="6"></circle><circle cx="105" cy="150" r="6"></circle><circle cx="175" cy="150" r="6"></circle><circle cx="245" cy="150" r="6"></circle><circle cx="315" cy="150" r="6"></circle><circle cx="385" cy="150" r="6"></circle><circle cx="455" cy="150" r="6"></circle><circle cx="525" cy="150" r="6"></circle>
+              <circle cx="35" cy="210" r="6"></circle><circle cx="105" cy="210" r="6"></circle><circle cx="175" cy="210" r="6"></circle><circle cx="245" cy="210" r="6"></circle><circle cx="315" cy="210" r="6"></circle><circle cx="385" cy="210" r="6"></circle><circle cx="455" cy="210" r="6"></circle><circle cx="525" cy="210" r="6"></circle>
+              <circle cx="35" cy="270" r="6"></circle><circle cx="105" cy="270" r="6"></circle><circle cx="175" cy="270" r="6"></circle><circle cx="245" cy="270" r="6"></circle><circle cx="315" cy="270" r="6"></circle><circle cx="385" cy="270" r="6"></circle><circle cx="455" cy="270" r="6"></circle><circle cx="525" cy="270" r="6"></circle>
+              <circle cx="35" cy="330" r="6"></circle><circle cx="105" cy="330" r="6"></circle><circle cx="175" cy="330" r="6"></circle><circle cx="245" cy="330" r="6"></circle><circle cx="315" cy="330" r="6"></circle><circle cx="385" cy="330" r="6"></circle><circle cx="455" cy="330" r="6"></circle><circle cx="525" cy="330" r="6"></circle>
+              <circle cx="35" cy="390" r="6"></circle><circle cx="105" cy="390" r="6" class="dot-violet"></circle><circle cx="175" cy="390" r="6" class="dot-violet"></circle><circle cx="245" cy="390" r="6" class="dot-violet"></circle><circle cx="315" cy="390" r="6" class="dot-violet"></circle><circle cx="385" cy="390" r="6"></circle><circle cx="455" cy="390" r="6"></circle><circle cx="525" cy="390" r="6"></circle>
+              <circle cx="35" cy="450" r="6"></circle><circle cx="105" cy="450" r="6"></circle><circle cx="175" cy="450" r="6"></circle><circle cx="245" cy="450" r="6"></circle><circle cx="315" cy="450" r="6" class="dot-violet"></circle><circle cx="385" cy="450" r="6"></circle><circle cx="455" cy="450" r="6"></circle><circle cx="525" cy="450" r="6"></circle>
+            </g>
+            <text x="280" y="548" text-anchor="middle" class="svg-text">covered centers become fragments</text>
+          </g>
+          <path d="M682 132 v312" class="axis"></path>
+          <text x="720" y="165" class="svg-small">pixel center</text>
+          <circle cx="690" cy="202" r="9" class="dot-violet"></circle>
+          <text x="720" y="243" class="svg-small">fragment carries</text>
+          <text x="720" y="277" class="svg-small">attributes</text>
+        </svg>
+      </div>
+    </div>
+    <footer class="footer"><span>Coverage is a sampling convention over a geometric primitive.</span><span>5 / 17</span></footer>
+    <aside class="speaker-notes">Frame rasterization as two jobs performed together: enumerate covered sample locations and attach interpolated attributes to each resulting fragment. Pixel centers are a sampling convention, not a fact about geometry, so the class should see immediately why edge cases and antialiasing require additional policy.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">Triangle Algebra</div>
+      <h2>Barycentric Coordinates Are The Triangle Workhorse</h2>
+    </header>
+    <div class="content wide-left">
+      <div class="diagram">
+        <svg viewBox="0 0 970 620" role="img" aria-label="Barycentric interpolation triangle">
+          <polygon points="145,480 775,400 365,105" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="6"></polygon>
+          <circle cx="145" cy="480" r="13" class="dot-blue"></circle>
+          <circle cx="775" cy="400" r="13" class="dot-teal"></circle>
+          <circle cx="365" cy="105" r="13" class="dot-amber"></circle>
+          <circle cx="405" cy="332" r="14" class="dot-violet"></circle>
+          <line x1="405" y1="332" x2="145" y2="480" class="muted-stroke"></line>
+          <line x1="405" y1="332" x2="775" y2="400" class="muted-stroke"></line>
+          <line x1="405" y1="332" x2="365" y2="105" class="muted-stroke"></line>
+          <text x="115" y="526" class="svg-text">p0, c0</text>
+          <text x="785" y="444" class="svg-text">p1, c1</text>
+          <text x="333" y="78" class="svg-text">p2, c2</text>
+          <text x="430" y="318" class="svg-text">sample</text>
+          <rect x="108" y="28" width="760" height="72" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+          <text x="488" y="74" text-anchor="middle" class="svg-math">c = alpha c0 + beta c1 + gamma c2, with alpha + beta + gamma = 1</text>
+          <rect x="638" y="480" width="250" height="74" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+          <text x="763" y="526" text-anchor="middle" class="svg-small">weights test inside</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Inside Test</h3>
+          <p class="math">alpha, beta, gamma &ge; 0 and alpha + beta + gamma = 1</p>
+        </div>
+        <div class="panel teal">
+          <h3>Interpolation</h3>
+          <p>The same weights blend color, depth, normals, texture coordinates, or any stage-approved attribute.</p>
+        </div>
+        <div class="panel amber">
+          <h3>Convexity Check</h3>
+          <p>If vertex colors are valid and weights are nonnegative, the interpolated color stays in range.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>One algebraic object answers both coverage and attribute questions.</span><span>6 / 17</span></footer>
+    <aside class="speaker-notes">Walk through the weights as a practical test and a practical interpolator. Nonnegative weights with sum one mean the sample is inside the triangle, and the same weights blend color, depth, texture coordinates after correction, or normals. This dual use is the reason triangles dominate pipeline design.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Exact Boundaries</div>
+      <h2>Shared Edges Need Deterministic Ownership</h2>
+    </header>
+    <div class="content two">
+      <div class="diagram">
+        <svg viewBox="0 0 780 610" role="img" aria-label="Shared edge ownership">
+          <rect x="110" y="80" width="420" height="420" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <path d="M110 164 H530 M110 248 H530 M110 332 H530 M110 416 H530 M194 80 V500 M278 80 V500 M362 80 V500 M446 80 V500" class="grid-line"></path>
+          <polygon points="110,500 530,80 110,80" class="blue-fill" stroke="#2563EB" stroke-width="5"></polygon>
+          <polygon points="110,500 530,500 530,80" class="amber-fill" stroke="#B45309" stroke-width="5"></polygon>
+          <path d="M110 500 L530 80" stroke="#1E3A8A" stroke-width="8"></path>
+          <g>
+            <circle cx="194" cy="416" r="11" class="dot-blue"></circle>
+            <circle cx="278" cy="332" r="11" class="dot-blue"></circle>
+            <circle cx="362" cy="248" r="11" class="dot-blue"></circle>
+            <circle cx="446" cy="164" r="11" class="dot-blue"></circle>
+            <circle cx="194" cy="332" r="9" class="dot-blue"></circle>
+            <circle cx="278" cy="416" r="9" class="dot-amber"></circle>
+            <circle cx="362" cy="416" r="9" class="dot-amber"></circle>
+            <circle cx="446" cy="332" r="9" class="dot-amber"></circle>
+          </g>
+          <text x="242" y="124" text-anchor="middle" class="svg-text">triangle A</text>
+          <text x="410" y="464" text-anchor="middle" class="svg-text">triangle B</text>
+          <text x="320" y="566" text-anchor="middle" class="svg-small">edge samples are awarded exactly once</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel amber">
+          <h3>Without A Rule</h3>
+          <ul>
+            <li>both triangles draw the same sample</li>
+            <li>neither triangle draws the boundary sample</li>
+            <li>color depends on draw order</li>
+          </ul>
+        </div>
+        <div class="panel teal">
+          <h3>With A Rule</h3>
+          <p>A top-left style convention or equivalent tie policy makes a tessellated surface continuous in the sampled image.</p>
+        </div>
+        <div class="panel slate">
+          <h3>Invariant</h3>
+          <p>For every sample on a shared edge: exactly one owner.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>Rasterizers are also policy engines for degeneracies.</span><span>7 / 17</span></footer>
+    <aside class="speaker-notes">This slide addresses a subtle bug students often miss. Adjacent triangles should tile a surface without gaps or double writes along their common boundary. A deterministic ownership convention assigns exact edge samples to one side, so the image does not depend on accidental draw order or floating point tie behavior.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">Attributes Under Projection</div>
+      <h2>Perspective-Correct Interpolation Keeps Attributes Honest</h2>
+    </header>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="panel amber">
+          <h3>The Trap</h3>
+          <p>After perspective division, equal steps in screen space are not equal steps along the original 3D primitive.</p>
+        </div>
+        <div class="panel blue">
+          <h3>The Repair</h3>
+          <p class="math">interpolate u/w and 1/w, then recover u = (u/w) / (1/w)</p>
+        </div>
+        <div class="panel teal">
+          <h3>Pipeline Meaning</h3>
+          <p>The vertex stage must pass compatible homogeneous attributes before the rasterizer can do the right interpolation.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 900 610" role="img" aria-label="Perspective interpolation plot">
+          <rect x="80" y="70" width="680" height="400" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <path d="M80 470 H760 M80 470 V70" class="axis"></path>
+          <path d="M80 470 C190 406 270 350 358 288 C470 208 594 145 760 92" class="teal-stroke"></path>
+          <path d="M80 470 L760 92" stroke="#B45309" stroke-width="5" stroke-dasharray="18 14" fill="none"></path>
+          <path d="M80 470 C210 418 332 337 458 245 C565 167 650 117 760 92" stroke="#94A3B8" stroke-width="4" stroke-dasharray="9 12" fill="none"></path>
+          <circle cx="406" cy="255" r="10" class="dot-teal"></circle>
+          <circle cx="406" cy="274" r="10" class="dot-amber"></circle>
+          <text x="230" y="126" class="svg-small" fill="#0F766E">world-linear attribute</text>
+          <text x="430" y="408" class="svg-small" fill="#B45309">naive screen-linear u</text>
+          <text x="380" y="536" text-anchor="middle" class="svg-small">screen parameter across primitive</text>
+          <text x="50" y="270" text-anchor="middle" class="svg-small" transform="rotate(-90 50 270)">attribute value</text>
+          <rect x="500" y="496" width="292" height="66" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+          <text x="646" y="538" text-anchor="middle" class="svg-small">correct curve follows 3D data</text>
+        </svg>
+      </div>
+    </div>
+    <footer class="footer"><span>Screen-linear is not automatically world-linear after division by w.</span><span>8 / 17</span></footer>
+    <aside class="speaker-notes">Slow down on the algebraic idea without drowning the class in formulas. After perspective division, screen-linear interpolation is no longer world-linear. The repair is to interpolate homogeneous ratios such as u over w and one over w, then divide back at the fragment.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">View Volume Safety</div>
+      <h2>Clipping Keeps Invalid Geometry Out Of Rasterization</h2>
+    </header>
+    <div class="content wide-left">
+      <div class="diagram">
+        <svg viewBox="0 0 980 620" role="img" aria-label="Clipping polygon to view square">
+          <rect x="270" y="120" width="390" height="390" fill="#F8FAFC" stroke="#1E3A8A" stroke-width="5"></rect>
+          <polygon points="130,336 390,70 795,238 628,566 250,520" fill="rgba(180,83,9,0.15)" stroke="#B45309" stroke-width="5" stroke-dasharray="18 12"></polygon>
+          <polygon points="270,480 270,244 390,120 660,232 660,510 300,510" fill="rgba(15,118,110,0.20)" stroke="#0F766E" stroke-width="6"></polygon>
+          <circle cx="270" cy="244" r="10" class="dot-teal"></circle>
+          <circle cx="390" cy="120" r="10" class="dot-teal"></circle>
+          <circle cx="660" cy="232" r="10" class="dot-teal"></circle>
+          <circle cx="660" cy="510" r="10" class="dot-teal"></circle>
+          <circle cx="300" cy="510" r="10" class="dot-teal"></circle>
+          <text x="465" y="92" text-anchor="middle" class="svg-text">canonical view bounds</text>
+          <text x="520" y="580" text-anchor="middle" class="svg-small">new vertices are boundary intersections</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel amber">
+          <h3>Why Clip?</h3>
+          <p>Projection and rasterization can fail or create nonsense when a primitive crosses the eye plane or leaves the valid view region.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Invariant</h3>
+          <p>Every primitive emitted to rasterization lies inside the accepted view domain, possibly after replacing it with a trimmed polygon.</p>
+        </div>
+        <div class="panel slate">
+          <h3>Engineering Choice</h3>
+          <p>Simple clipping exposes the idea; production clippers optimize the same geometric contract.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>Clipping is both correctness and bounded work.</span><span>9 / 17</span></footer>
+    <aside class="speaker-notes">Explain that clipping is a safety gate, not just an optimization. Primitives outside the view volume can be discarded, while primitives crossing a boundary must be trimmed so later division and rasterization operate on meaningful coordinates. The invariant is simple: every emitted vertex satisfies the view bounds.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">After Rasterization</div>
+      <h2>Fragment Processing And Blending Decide Pixel Winners</h2>
+    </header>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Fragment Processing</h3>
+          <p>Compute or refine color, depth, coverage, masks, and material effects from interpolated data.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Blending / Depth Test</h3>
+          <p>Compare the candidate fragment with current framebuffer state and decide whether color and depth are updated.</p>
+        </div>
+        <div class="panel amber">
+          <h3>Local Pixel State</h3>
+          <p>A pixel may receive many fragments; the framebuffer stores the resolved sample state.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 900 610" role="img" aria-label="Fragment candidates to framebuffer">
+          <defs>
+            <marker id="arrow-fragment" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+            </marker>
+          </defs>
+          <rect x="90" y="92" width="270" height="410" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+          <text x="225" y="140" text-anchor="middle" class="svg-text">fragment queue</text>
+          <rect x="132" y="180" width="184" height="72" rx="8" class="blue-fill" stroke="#2563EB" stroke-width="3"></rect>
+          <text x="224" y="225" text-anchor="middle" class="svg-small">color A, z 0.42</text>
+          <rect x="132" y="278" width="184" height="72" rx="8" class="amber-fill" stroke="#B45309" stroke-width="3"></rect>
+          <text x="224" y="323" text-anchor="middle" class="svg-small">color B, z 0.58</text>
+          <rect x="132" y="376" width="184" height="72" rx="8" class="teal-fill" stroke="#0F766E" stroke-width="3"></rect>
+          <text x="224" y="421" text-anchor="middle" class="svg-small">color C, z 0.31</text>
+          <path d="M380 300 L505 300" class="blue-stroke" marker-end="url(#arrow-fragment)"></path>
+          <rect x="520" y="120" width="270" height="360" rx="8" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="4"></rect>
+          <text x="655" y="171" text-anchor="middle" class="svg-text">pixel sample</text>
+          <rect x="585" y="220" width="140" height="140" rx="8" fill="#0F766E" opacity="0.82"></rect>
+          <text x="655" y="414" text-anchor="middle" class="svg-small">winner: closest z</text>
+        </svg>
+      </div>
+    </div>
+    <footer class="footer"><span>Fragments are candidates; framebuffer samples are resolved state.</span><span>10 / 17</span></footer>
+    <aside class="speaker-notes">Connect this slide to the data contracts from the beginning. The rasterizer can create several fragments for the same pixel, but the framebuffer stores one resolved result per sample. Fragment processing supplies color and depth, while blending or depth testing determines whether the candidate becomes visible state.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Hidden Surfaces</div>
+      <h2>The Z-Buffer Localizes Hidden-Surface Decisions</h2>
+    </header>
+    <div class="content two">
+      <div class="diagram">
+        <svg viewBox="0 0 820 610" role="img" aria-label="Z buffer competing triangles">
+          <rect x="105" y="70" width="560" height="420" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <path d="M105 140 H665 M105 210 H665 M105 280 H665 M105 350 H665 M105 420 H665 M175 70 V490 M245 70 V490 M315 70 V490 M385 70 V490 M455 70 V490 M525 70 V490 M595 70 V490" class="grid-line"></path>
+          <polygon points="160,430 615,380 278,115" class="amber-fill" stroke="#B45309" stroke-width="5"></polygon>
+          <polygon points="210,455 568,120 640,450" class="blue-fill" stroke="#2563EB" stroke-width="5"></polygon>
+          <rect x="350" y="250" width="72" height="72" rx="8" fill="#0F766E" opacity="0.85"></rect>
+          <text x="386" y="298" text-anchor="middle" fill="#FFFFFF" font-size="24" font-family="Source Sans 3">near</text>
+          <text x="387" y="548" text-anchor="middle" class="svg-small">the closest depth wins at each sample</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Algorithm</h3>
+          <p class="code">if fragment.z &lt; zbuffer[pixel]:
+    color[pixel] = fragment.color
+    zbuffer[pixel] = fragment.z
+else:
+    discard fragment</p>
+        </div>
+        <div class="panel teal">
+          <h3>Why It Works</h3>
+          <p>The ordering problem is solved only where samples exist, avoiding a global sort of all primitives.</p>
+        </div>
+        <div class="panel amber">
+          <h3>Ties Still Need Policy</h3>
+          <p>Equal depths can reveal draw-order decisions, precision limits, or deliberate blending behavior.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>The z-buffer is a per-pixel memory for visibility.</span><span>11 / 17</span></footer>
+    <aside class="speaker-notes">Present the z-buffer as a deliberately local alternative to sorting geometry. It only solves the visibility question at pixels that are actually sampled, which is why it is so practical. The important teaching point is that the final visible color can be independent of primitive order when depths are well defined.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">Precision</div>
+      <h2>Depth Precision Is A Near-Far Design Choice</h2>
+    </header>
+    <div class="content wide-left">
+      <div class="diagram">
+        <svg viewBox="0 0 980 620" role="img" aria-label="Depth precision curve">
+          <rect x="95" y="70" width="720" height="430" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <path d="M95 500 H815 M95 500 V70" class="axis"></path>
+          <path d="M120 470 C245 464 370 452 490 410 C608 368 706 275 800 94" class="amber-stroke"></path>
+          <line x1="170" y1="500" x2="170" y2="70" stroke="#2563EB" stroke-width="4" stroke-dasharray="12 12"></line>
+          <line x1="770" y1="500" x2="770" y2="70" stroke="#0F766E" stroke-width="4" stroke-dasharray="12 12"></line>
+          <text x="170" y="536" text-anchor="middle" class="svg-small">near n</text>
+          <text x="770" y="536" text-anchor="middle" class="svg-small">far f</text>
+          <text x="450" y="578" text-anchor="middle" class="svg-small">world depth from camera</text>
+          <text x="54" y="300" text-anchor="middle" class="svg-small" transform="rotate(-90 54 300)">world-space bin width</text>
+          <rect x="538" y="150" width="236" height="68" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+          <text x="656" y="192" text-anchor="middle" class="svg-small">bins grow with distance</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel amber">
+          <h3>Integer Depth Bins</h3>
+          <p>A finite z-buffer maps continuous depth into discrete values, so near and far plane choices allocate precision.</p>
+        </div>
+        <div class="panel blue">
+          <h3>Perspective Effect</h3>
+          <p class="math">larger world depth means coarser world-space separation per bin</p>
+        </div>
+        <div class="panel teal">
+          <h3>Rule Of Thumb</h3>
+          <p>Place the near plane as far out and the far plane as close in as the scene allows.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>Depth precision is part of camera design, not a fixed constant.</span><span>12 / 17</span></footer>
+    <aside class="speaker-notes">Use the curve to make the near plane feel consequential. Perspective depth spends much more resolution near the eye than far away, so moving the near plane too close can make distant bins very coarse. Students should leave with the engineering rule: maximize near, minimize far, within scene requirements.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Shading Frequency</div>
+      <h2>Per-Vertex And Per-Fragment Shading Trade Cost For Detail</h2>
+    </header>
+    <div class="content two">
+      <div class="panel blue">
+        <h3>Per-Vertex Shading</h3>
+        <div class="diagram clean">
+          <svg viewBox="0 0 720 430" role="img" aria-label="Per vertex shading misses highlight">
+            <polygon points="80,350 590,320 330,70" fill="rgba(37,99,235,0.15)" stroke="#2563EB" stroke-width="5"></polygon>
+            <circle cx="80" cy="350" r="18" fill="#334155"></circle>
+            <circle cx="590" cy="320" r="18" fill="#334155"></circle>
+            <circle cx="330" cy="70" r="18" fill="#334155"></circle>
+            <circle cx="338" cy="240" r="46" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></circle>
+            <text x="340" y="248" text-anchor="middle" class="svg-small">missed</text>
+            <text x="338" y="398" text-anchor="middle" class="svg-small">only vertices evaluate illumination</text>
+          </svg>
+        </div>
+        <p class="caption">Cheap, but small lighting features can disappear inside large primitives.</p>
+      </div>
+      <div class="panel teal">
+        <h3>Per-Fragment Shading</h3>
+        <div class="diagram clean">
+          <svg viewBox="0 0 720 430" role="img" aria-label="Per fragment shading detects highlight">
+            <polygon points="80,350 590,320 330,70" fill="rgba(15,118,110,0.15)" stroke="#0F766E" stroke-width="5"></polygon>
+            <g fill="#CBD5E1">
+              <circle cx="210" cy="305" r="7"></circle><circle cx="275" cy="288" r="7"></circle><circle cx="340" cy="270" r="7"></circle><circle cx="405" cy="253" r="7"></circle>
+              <circle cx="250" cy="246" r="7"></circle><circle cx="315" cy="228" r="7" class="dot-amber"></circle><circle cx="380" cy="211" r="7" class="dot-amber"></circle>
+              <circle cx="302" cy="184" r="7"></circle><circle cx="360" cy="168" r="7"></circle>
+            </g>
+            <circle cx="342" cy="222" r="58" fill="rgba(180,83,9,0.22)" stroke="#B45309" stroke-width="5"></circle>
+            <text x="342" y="230" text-anchor="middle" class="svg-small">highlight</text>
+            <text x="338" y="398" text-anchor="middle" class="svg-small">fragments evaluate illumination</text>
+          </svg>
+        </div>
+        <p class="caption">More work, but lighting is sampled where the final image samples lie.</p>
+      </div>
+    </div>
+    <footer class="footer"><span>Choose shading frequency to match the scale of visible detail.</span><span>13 / 17</span></footer>
+    <aside class="speaker-notes">Keep the comparison tied to sampling frequency. Per-vertex shading is cheap when illumination changes slowly or geometry is dense enough, but it can miss a small highlight inside a large triangle. Per-fragment shading evaluates the lighting model where fragments actually land, at higher cost.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">Texture Coordinates</div>
+      <h2>Texture Mapping Adds An Image-Valued Attribute Source</h2>
+    </header>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Attribute Contract</h3>
+          <p>Each vertex carries texture coordinates that are interpolated across the primitive, usually with perspective correction.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Lookup Contract</h3>
+          <p>The fragment stage uses those coordinates to query an image or procedural domain for material detail.</p>
+        </div>
+        <div class="panel amber">
+          <h3>Preview</h3>
+          <p>Once a lookup is image-valued, filtering becomes essential when one pixel covers many texels or one texel covers many pixels.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 900 610" role="img" aria-label="Texture coordinate lookup">
+          <defs>
+            <marker id="arrow-texture" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+            </marker>
+            <pattern id="checker" width="52" height="52" patternUnits="userSpaceOnUse">
+              <rect width="52" height="52" fill="#EFF6FF"></rect>
+              <rect width="26" height="26" fill="#2563EB" opacity="0.45"></rect>
+              <rect x="26" y="26" width="26" height="26" fill="#2563EB" opacity="0.45"></rect>
+            </pattern>
+          </defs>
+          <polygon points="85,455 370,125 505,455" fill="rgba(109,40,217,0.14)" stroke="#6D28D9" stroke-width="5"></polygon>
+          <circle cx="85" cy="455" r="10" class="dot-violet"></circle>
+          <circle cx="370" cy="125" r="10" class="dot-violet"></circle>
+          <circle cx="505" cy="455" r="10" class="dot-violet"></circle>
+          <text x="94" y="492" class="svg-small">(0,0)</text>
+          <text x="340" y="102" class="svg-small">(0.5,1)</text>
+          <text x="480" y="492" class="svg-small">(1,0)</text>
+          <path d="M515 300 L630 300" class="blue-stroke" marker-end="url(#arrow-texture)"></path>
+          <rect x="650" y="125" width="200" height="330" fill="url(#checker)" stroke="#1E3A8A" stroke-width="5"></rect>
+          <circle cx="738" cy="273" r="16" fill="#B45309"></circle>
+          <text x="750" y="508" text-anchor="middle" class="svg-small">texture domain</text>
+          <rect x="190" y="285" width="120" height="62" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+          <text x="250" y="324" text-anchor="middle" class="svg-small">lookup uv</text>
+        </svg>
+      </div>
+    </div>
+    <footer class="footer"><span>Texture coordinates are just attributes until a fragment shader uses them.</span><span>14 / 17</span></footer>
+    <aside class="speaker-notes">Describe texture coordinates as another attribute contract. The primitive carries coordinates that identify where it lives in a texture domain, and the fragment shader performs a lookup to obtain material detail. This also previews why filtering and mipmaps matter in the later texture chapter.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Antialiasing</div>
+      <h2>Antialiasing Separates Coverage Samples From Shading Samples</h2>
+    </header>
+    <div class="content wide-left">
+      <div class="diagram">
+        <svg viewBox="0 0 980 620" role="img" aria-label="Coverage samples and antialiasing">
+          <g transform="translate(72,82)">
+            <rect x="0" y="0" width="365" height="365" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <path d="M0 73 H365 M0 146 H365 M0 219 H365 M0 292 H365 M73 0 V365 M146 0 V365 M219 0 V365 M292 0 V365" class="grid-line"></path>
+            <path d="M-30 330 L390 96" class="blue-stroke"></path>
+            <g fill="#CBD5E1">
+              <circle cx="36" cy="36" r="7"></circle><circle cx="109" cy="36" r="7"></circle><circle cx="182" cy="36" r="7"></circle><circle cx="255" cy="36" r="7"></circle><circle cx="328" cy="36" r="7"></circle>
+              <circle cx="36" cy="109" r="7"></circle><circle cx="109" cy="109" r="7"></circle><circle cx="182" cy="109" r="7"></circle><circle cx="255" cy="109" r="7" class="dot-blue"></circle><circle cx="328" cy="109" r="7" class="dot-blue"></circle>
+              <circle cx="36" cy="182" r="7"></circle><circle cx="109" cy="182" r="7"></circle><circle cx="182" cy="182" r="7" class="dot-blue"></circle><circle cx="255" cy="182" r="7" class="dot-blue"></circle><circle cx="328" cy="182" r="7"></circle>
+              <circle cx="36" cy="255" r="7"></circle><circle cx="109" cy="255" r="7" class="dot-blue"></circle><circle cx="182" cy="255" r="7" class="dot-blue"></circle><circle cx="255" cy="255" r="7"></circle><circle cx="328" cy="255" r="7"></circle>
+              <circle cx="36" cy="328" r="7" class="dot-blue"></circle><circle cx="109" cy="328" r="7"></circle><circle cx="182" cy="328" r="7"></circle><circle cx="255" cy="328" r="7"></circle><circle cx="328" cy="328" r="7"></circle>
+            </g>
+            <text x="182" y="432" text-anchor="middle" class="svg-text">single center sample</text>
+          </g>
+          <g transform="translate(535,82)">
+            <rect x="0" y="0" width="365" height="365" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <path d="M0 73 H365 M0 146 H365 M0 219 H365 M0 292 H365 M73 0 V365 M146 0 V365 M219 0 V365 M292 0 V365" class="grid-line"></path>
+            <path d="M-30 330 L390 96" class="teal-stroke"></path>
+            <g>
+              <rect x="73" y="219" width="73" height="73" fill="#0F766E" opacity="0.25"></rect>
+              <rect x="146" y="146" width="73" height="73" fill="#0F766E" opacity="0.55"></rect>
+              <rect x="219" y="73" width="73" height="73" fill="#0F766E" opacity="0.72"></rect>
+              <circle cx="92" cy="238" r="5" class="dot-teal"></circle><circle cx="126" cy="238" r="5" fill="#CBD5E1"></circle><circle cx="92" cy="272" r="5" class="dot-teal"></circle><circle cx="126" cy="272" r="5" class="dot-teal"></circle>
+              <circle cx="165" cy="165" r="5" class="dot-teal"></circle><circle cx="199" cy="165" r="5" class="dot-teal"></circle><circle cx="165" cy="199" r="5" fill="#CBD5E1"></circle><circle cx="199" cy="199" r="5" class="dot-teal"></circle>
+              <circle cx="238" cy="92" r="5" class="dot-teal"></circle><circle cx="272" cy="92" r="5" class="dot-teal"></circle><circle cx="238" cy="126" r="5" class="dot-teal"></circle><circle cx="272" cy="126" r="5" fill="#CBD5E1"></circle>
+            </g>
+            <text x="182" y="432" text-anchor="middle" class="svg-text">multiple coverage samples</text>
+          </g>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel amber">
+          <h3>Aliased Rasterization</h3>
+          <p>Each pixel is inside or outside according to one sample, so diagonal edges stair-step.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Supersampling</h3>
+          <p>Estimate partial coverage by averaging many samples in the pixel area.</p>
+        </div>
+        <div class="panel blue">
+          <h3>Multisampling</h3>
+          <p>Store several coverage and depth samples while often reusing one shaded color.</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>Visibility can be sampled more often than shading.</span><span>15 / 17</span></footer>
+    <aside class="speaker-notes">Use the split pixel diagram to distinguish visibility from color. Standard rasterization makes a binary decision at one sample location, which creates jagged edges. Supersampling estimates coverage by many samples, while multisampling reuses a color calculation but stores several coverage and depth decisions.</aside>
+  </section>
+
+  <section class="slide">
+    <header>
+      <div class="kicker">Efficiency</div>
+      <h2>Culling Saves Work With Conservative Tests</h2>
+    </header>
+    <div class="content two">
+      <div class="panel blue">
+        <h3>View-Volume Culling</h3>
+        <div class="diagram clean">
+          <svg viewBox="0 0 720 420" role="img" aria-label="View volume culling">
+            <path d="M90 330 L360 90 L630 330 Z" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></path>
+            <line x1="360" y1="90" x2="360" y2="330" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 12"></line>
+            <circle cx="210" cy="242" r="56" class="teal-fill" stroke="#0F766E" stroke-width="5"></circle>
+            <circle cx="622" cy="172" r="50" class="amber-fill" stroke="#B45309" stroke-width="5"></circle>
+            <line x1="540" y1="104" x2="620" y2="284" class="amber-stroke"></line>
+            <text x="210" y="334" text-anchor="middle" class="svg-small">possible contributor</text>
+            <text x="610" y="334" text-anchor="middle" class="svg-small">safe reject</text>
+            <text x="360" y="384" text-anchor="middle" class="svg-text">test a bounding volume before its triangles</text>
+          </svg>
+        </div>
+      </div>
+      <div class="panel teal">
+        <h3>Backface Culling</h3>
+        <div class="diagram clean">
+          <svg viewBox="0 0 720 420" role="img" aria-label="Backface culling">
+            <circle cx="172" cy="210" r="42" fill="#111827"></circle>
+            <path d="M220 210 C318 144 418 126 548 92" class="muted-stroke"></path>
+            <polygon points="380,280 570,232 518,350" class="blue-fill" stroke="#2563EB" stroke-width="5"></polygon>
+            <polygon points="320,128 505,82 565,190" class="amber-fill" stroke="#B45309" stroke-width="5"></polygon>
+            <path d="M478 286 L538 244" class="teal-stroke"></path>
+            <path d="M445 126 L400 86" class="amber-stroke"></path>
+            <text x="172" y="286" text-anchor="middle" class="svg-small">eye</text>
+            <text x="492" y="382" text-anchor="middle" class="svg-small">front-facing remains</text>
+            <text x="470" y="50" text-anchor="middle" class="svg-small">rear-facing can be skipped</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <footer class="footer"><span>Culling is correct only when the rejection test is conservative enough.</span><span>16 / 17</span></footer>
+    <aside class="speaker-notes">Make the performance logic explicit. Culling is valuable only when a cheap test discards work that cannot affect the framebuffer. View-volume culling can reject a whole bounded object conservatively, while backface culling relies on closed, consistently oriented surfaces whose rear-facing triangles are guaranteed to be hidden.</aside>
+  </section>
+
+  <section class="slide alt">
+    <header>
+      <div class="kicker">Debugging Checklist</div>
+      <h2>Pipeline Debugging Means Checking Invariants</h2>
+    </header>
+    <div class="content three">
+      <div class="stack">
+        <div class="panel blue"><h3>Geometry</h3><p>Coordinates are transformed into the expected space before rasterization.</p></div>
+        <div class="panel teal"><h3>Coverage</h3><p>Pixel centers, edge ties, and clipping rules produce stable fragments.</p></div>
+      </div>
+      <div class="stack">
+        <div class="panel amber"><h3>Attributes</h3><p>Barycentric interpolation uses consistent quantities, especially under perspective.</p></div>
+        <div class="panel violet"><h3>Visibility</h3><p>Depth tests choose the nearer fragment with enough precision for the scene.</p></div>
+      </div>
+      <div class="stack">
+        <div class="panel slate"><h3>Sampling</h3><p>Shading and coverage rates match the scale of image detail.</p></div>
+        <div class="panel blue"><h3>Efficiency</h3><p>Culling discards only work that cannot change the framebuffer.</p></div>
+      </div>
+    </div>
+    <footer class="footer"><span>Stable rendering comes from preserving the right invariant at each stage.</span><span>17 / 17</span></footer>
+    <aside class="speaker-notes">Close by turning the chapter into a debugging checklist. Students should be able to name the invariant at each stage: valid coordinates, single edge ownership, corrected interpolation, clipped primitives, depth winners, adequate sampling, and conservative culling. Those invariants are what make a renderer predictable.</aside>
+  </section>
+</deck-stage>
+
+<script id="speaker-notes" type="application/json">{"slides":[{"slide":1,"title":"The Graphics Pipeline","notes":"Open by positioning the pipeline as the object-order counterpart to ray tracing. The chapter is not only about hardware boxes; it is about the promises each stage makes to the next one. Ask students to watch for data that must survive coordinate changes, sampling choices, and visibility contests."},{"slide":2,"title":"Object-Order Rendering Changes The Loop Nest","notes":"Contrast the two mental loops carefully. Image-order rendering starts at a pixel and asks which scene objects matter there. Object-order rendering starts at a primitive and asks which pixels it can influence. That reversal explains why streaming geometry once can be fast, but also why visibility, aliasing, and edge ownership become pipeline responsibilities."},{"slide":3,"title":"The Pipeline Is A Chain Of Data Contracts","notes":"Use the diagram as a contract ledger rather than a simple flow chart. Each arrow should name what the next stage is allowed to assume. If an attribute, coordinate, or depth value is missing or represented inconsistently, the later stage cannot repair the mistake without doing different work."},{"slide":4,"title":"Vertex Processing Prepares Screen-Space Work","notes":"Emphasize that vertex processing is not merely multiplication by a matrix. It also decides which quantities are computed per vertex, which coordinate system is orthonormal enough for shading, and which homogeneous quantities must be preserved so the rasterizer can interpolate them correctly after projection."},{"slide":5,"title":"Rasterization Emits Fragments At Pixel Centers","notes":"Frame rasterization as two jobs performed together: enumerate covered sample locations and attach interpolated attributes to each resulting fragment. Pixel centers are a sampling convention, not a fact about geometry, so the class should see immediately why edge cases and antialiasing require additional policy."},{"slide":6,"title":"Barycentric Coordinates Are The Triangle Workhorse","notes":"Walk through the weights as a practical test and a practical interpolator. Nonnegative weights with sum one mean the sample is inside the triangle, and the same weights blend color, depth, texture coordinates after correction, or normals. This dual use is the reason triangles dominate pipeline design."},{"slide":7,"title":"Shared Edges Need Deterministic Ownership","notes":"This slide addresses a subtle bug students often miss. Adjacent triangles should tile a surface without gaps or double writes along their common boundary. A deterministic ownership convention assigns exact edge samples to one side, so the image does not depend on accidental draw order or floating point tie behavior."},{"slide":8,"title":"Perspective-Correct Interpolation Keeps Attributes Honest","notes":"Slow down on the algebraic idea without drowning the class in formulas. After perspective division, screen-linear interpolation is no longer world-linear. The repair is to interpolate homogeneous ratios such as u over w and one over w, then divide back at the fragment."},{"slide":9,"title":"Clipping Keeps Invalid Geometry Out Of Rasterization","notes":"Explain that clipping is a safety gate, not just an optimization. Primitives outside the view volume can be discarded, while primitives crossing a boundary must be trimmed so later division and rasterization operate on meaningful coordinates. The invariant is simple: every emitted vertex satisfies the view bounds."},{"slide":10,"title":"Fragment Processing And Blending Decide Pixel Winners","notes":"Connect this slide to the data contracts from the beginning. The rasterizer can create several fragments for the same pixel, but the framebuffer stores one resolved result per sample. Fragment processing supplies color and depth, while blending or depth testing determines whether the candidate becomes visible state."},{"slide":11,"title":"The Z-Buffer Localizes Hidden-Surface Decisions","notes":"Present the z-buffer as a deliberately local alternative to sorting geometry. It only solves the visibility question at pixels that are actually sampled, which is why it is so practical. The important teaching point is that the final visible color can be independent of primitive order when depths are well defined."},{"slide":12,"title":"Depth Precision Is A Near-Far Design Choice","notes":"Use the curve to make the near plane feel consequential. Perspective depth spends much more resolution near the eye than far away, so moving the near plane too close can make distant bins very coarse. Students should leave with the engineering rule: maximize near, minimize far, within scene requirements."},{"slide":13,"title":"Per-Vertex And Per-Fragment Shading Trade Cost For Detail","notes":"Keep the comparison tied to sampling frequency. Per-vertex shading is cheap when illumination changes slowly or geometry is dense enough, but it can miss a small highlight inside a large triangle. Per-fragment shading evaluates the lighting model where fragments actually land, at higher cost."},{"slide":14,"title":"Texture Mapping Adds An Image-Valued Attribute Source","notes":"Describe texture coordinates as another attribute contract. The primitive carries coordinates that identify where it lives in a texture domain, and the fragment shader performs a lookup to obtain material detail. This also previews why filtering and mipmaps matter in the later texture chapter."},{"slide":15,"title":"Antialiasing Separates Coverage Samples From Shading Samples","notes":"Use the split pixel diagram to distinguish visibility from color. Standard rasterization makes a binary decision at one sample location, which creates jagged edges. Supersampling estimates coverage by many samples, while multisampling reuses a color calculation but stores several coverage and depth decisions."},{"slide":16,"title":"Culling Saves Work With Conservative Tests","notes":"Make the performance logic explicit. Culling is valuable only when a cheap test discards work that cannot affect the framebuffer. View-volume culling can reject a whole bounded object conservatively, while backface culling relies on closed, consistently oriented surfaces whose rear-facing triangles are guaranteed to be hidden."},{"slide":17,"title":"Pipeline Debugging Means Checking Invariants","notes":"Close by turning the chapter into a debugging checklist. Students should be able to name the invariant at each stage: valid coordinates, single edge ownership, corrected interpolation, clipped primitives, depth winners, adequate sampling, and conservative culling. Those invariants are what make a renderer predictable."}]}</script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.renderMathInElement) {
+      window.renderMathInElement(document.body);
+    }
+  });
+</script>
+</body>
+</html>

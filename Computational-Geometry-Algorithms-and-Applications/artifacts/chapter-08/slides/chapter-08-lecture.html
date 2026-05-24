@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="manifest_row" content="84">
+  <meta name="course_root" content="Computational-Geometry-Algorithms-and-Applications">
+  <meta name="course" content="Computational Geometry Algorithms and Applications">
+  <meta name="chapter_id" content="chapter-08">
+  <meta name="chapter_title" content="08 - Arrangements and Duality">
+  <meta name="notebook_path" content="Computational-Geometry-Algorithms-and-Applications/chapter-08-arrangements-and-duality/08-arrangements-and-duality.ipynb">
+  <meta name="source_span" content="printed pages 173-190; PDF pages 184-201">
+  <meta name="source_pdf" content="Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>08 - Arrangements and Duality</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "manifest_row": 84,
+  "course_root": "Computational-Geometry-Algorithms-and-Applications",
+  "course": "Computational Geometry Algorithms and Applications",
+  "chapter_id": "chapter-08",
+  "chapter_title": "08 - Arrangements and Duality",
+  "notebook_path": "Computational-Geometry-Algorithms-and-Applications/chapter-08-arrangements-and-duality/08-arrangements-and-duality.ipynb",
+  "source_span": "printed pages 173-190; PDF pages 184-201",
+  "source_pdf": "Computational-Geometry-Algorithms-and-Applications/Computational Geometry Algorithms and Applications.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+[
+  {
+    "slide": 1,
+    "title": "Title And Problem: Supersampling Half-Plane Discrepancy",
+    "notes": "Begin from the rendering motivation on printed pages 173-174: ray tracing estimates what fraction of a pixel is covered by a surface, and supersampling replaces a continuous area question by finitely many sample probes. The lecture problem is to place samples so every local edge half-plane is counted nearly in proportion to its area."
+  },
+  {
+    "slide": 2,
+    "title": "Why Half-Planes: Pixel Edge As Local Half-Plane",
+    "notes": "Use the pixel-edge picture to justify the abstraction rather than assuming it. At the scale of one pixel, a smooth boundary is approximated by a line, so the visible part of the pixel is one side of that line. The source discussion on printed pages 173-174 motivates why half-planes are the stress test for sample patterns."
+  },
+  {
+    "slide": 3,
+    "title": "Continuous vs Discrete Measure: Area Versus Sample Count",
+    "notes": "Now formalize the mismatch from printed pages 175-177. The continuous quantity is area fraction inside a region, while the discrete estimator is the fraction of stored samples in the same region. Discrepancy measures the worst absolute gap over all half-planes; low discrepancy means the sample set behaves like area for every edge position."
+  },
+  {
+    "slide": 4,
+    "title": "Infinite Search Becomes Candidates",
+    "notes": "Printed pages 175-177 show the first finiteness move. Although there are infinitely many half-planes, the sample count changes only when the boundary crosses a sample point. Between such events, the area changes continuously while the count is fixed, so maxima can be hunted among boundaries touching points and among extreme placements."
+  },
+  {
+    "slide": 5,
+    "title": "Theorem 8.2 Route Map: Type-I, Dualize Type-II, Arrangement Levels",
+    "notes": "Present Theorem 8.2 as a route map, not as a copied proof. The chapter separates candidate half-planes into direct type-I cases and type-II cases that become easier after duality. The arrangement of dual lines then organizes the relevant level counts, tying the discrepancy computation to planar subdivision machinery."
+  },
+  {
+    "slide": 6,
+    "title": "Point-Line Duality Definition: (a,b) To y=ax-b",
+    "notes": "Introduce the duality from printed pages 177-179 with the exact mapping used in the chapter. A primal point (a,b) becomes the nonvertical line y equals ax minus b. A primal nonvertical line y equals mx plus c becomes the dual point (m,-c). The sign convention is chosen so incidence and vertical order line up cleanly."
+  },
+  {
+    "slide": 7,
+    "title": "Incidence And Order Preservation",
+    "notes": "Stay on printed pages 177-179 and emphasize what the transformation buys us. If a primal point lies on a primal line, the dual line passes through the dual point. If the primal point is above the primal line, then at the dual x-coordinate the dual line is below the dual point, giving a controlled reversal that still preserves order information."
+  },
+  {
+    "slide": 8,
+    "title": "Vertical Lines And Segment Wedges",
+    "notes": "Handle the caveat that ordinary point-line duality avoids vertical primal lines. For a vertical segment or a pair of points with the same x-coordinate, the set of compatible nonvertical lines appears as a wedge or interval of slopes in the dual plane. This is the geometric bridge needed before counting candidates from point pairs."
+  },
+  {
+    "slide": 9,
+    "title": "Discrepancy In The Dual Plane: Primal Pair Line To Dual Vertex Counts",
+    "notes": "Move from duality to discrepancy. A primal line through two samples corresponds to the intersection vertex of their two dual lines. Counting how many primal points lie on one side becomes counting how many dual lines lie above or below that vertex. This is where the half-plane discrepancy problem becomes a level query in an arrangement."
+  },
+  {
+    "slide": 10,
+    "title": "Arrangement Complexity: Simple vs Degenerate Arrangements",
+    "notes": "Use printed pages 179-182 to define arrangements as the subdivision induced by lines. In simple position, every pair meets once and no three lines meet at one point, giving a clean quadratic count of vertices, edges, and faces. Degeneracies collapse events and require consistent handling, but the subdivision viewpoint remains the same."
+  },
+  {
+    "slide": 11,
+    "title": "Why A Bounding Box And DCEL",
+    "notes": "The arrangement is easier to store when it is clipped to a large box, because every face boundary becomes finite. The DCEL records directed half-edges with twin, next, previous, incident face, and origin links. Printed pages 179-182 use this structure so local edits can update topology without rebuilding the whole subdivision."
+  },
+  {
+    "slide": 12,
+    "title": "Incremental Construction Walk",
+    "notes": "Explain the incremental construction from printed pages 179-182. Insert lines one by one. For the new line, find its intersections with the existing subdivision in order, walk through the sequence of crossed faces, and split those faces as the line segment inside the bounding box is added."
+  },
+  {
+    "slide": 13,
+    "title": "Face Split Operation",
+    "notes": "Zoom in on the DCEL operation behind the previous slide. When a new line cuts through a face, two new half-edges separate the old boundary cycle into two face cycles. The important teaching point is local topology: only pointers around the crossed face and the new edge pieces change."
+  },
+  {
+    "slide": 14,
+    "title": "Zone Theorem As The Runtime Lens",
+    "notes": "Printed pages 183-185 introduce the zone theorem as the lens for runtime. The zone of a line is the collection of arrangement faces the line crosses. Even though the whole arrangement may be quadratic, the total complexity of this crossed strip is linear in the number of existing lines, so one insertion can be charged locally."
+  },
+  {
+    "slide": 15,
+    "title": "Level Walk Along A Line",
+    "notes": "Use printed pages 185-186 to connect arrangements to levels. The k-level consists of points that have exactly k lines strictly below them. Walking along a line from left to right, the level changes by one at every crossing, so the arrangement supplies the sequence of counts needed for discrepancy."
+  },
+  {
+    "slide": 16,
+    "title": "Discrepancy From Levels And Takeaways",
+    "notes": "Close by summarizing the pipeline from printed pages 186-190. Supersampling asks for area versus count agreement over all half-planes. Candidate reduction makes the search finite, duality converts side counts into line levels, and arrangements with DCEL and zone analysis make those levels algorithmically accessible."
+  }
+]
+  </script>
+  <style>
+    body { margin: 0; background: #000; color: var(--slide-ink); }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 64px 92px 48px;
+      gap: 20px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37,99,235,.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15,118,110,.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 62px; line-height: 1.04; font-weight: 700; max-width: 1500px; }
+    h2 { font-size: 50px; line-height: 1.08; font-weight: 700; }
+    h3 { font-size: 29px; line-height: 1.12; font-weight: 700; color: var(--slide-accent); margin-bottom: 8px; }
+    p, li { font-size: 25px; line-height: 1.28; }
+    ul { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--slide-muted); font-size: 22px; }
+    .eyebrow { color: var(--slide-teal); font-size: 22px; font-weight: 700; text-transform: uppercase; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 8px 13px; background: #fff; color: var(--slide-accent); font-size: 20px; font-weight: 700; white-space: nowrap; }
+    .lead { font-size: 31px; line-height: 1.25; color: var(--slide-muted); max-width: 1280px; }
+    .content { flex: 1; min-height: 0; display: grid; gap: 28px; align-items: stretch; }
+    .cols { grid-template-columns: 0.95fr 1.05fr; }
+    .wide-left { grid-template-columns: 1.12fr .88fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack { display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+    .panel { border: 1px solid var(--slide-border); border-radius: 8px; padding: 21px 23px; background: #fff; box-shadow: var(--shadow-sm); }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .math-box { padding: 22px 24px; border-radius: 8px; }
+    .math-box-label { font-size: 21px; line-height: 1.1; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--slide-accent); }
+    .formula { font-family: var(--font-math); font-size: 34px; line-height: 1.35; }
+    .big-formula { font-family: var(--font-math); font-size: 42px; line-height: 1.28; text-align: center; }
+    .small { font-size: 22px; line-height: 1.25; color: var(--slide-muted); }
+    .diagram { border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: clip; }
+    .diagram svg { width: 100%; height: 100%; display: block; }
+    .footer { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--slide-border-light); padding-top: 13px; color: var(--slide-dimmed); font-size: 20px; font-weight: 600; }
+    .svg-label { font: 700 26px 'Source Sans 3', Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 20px 'Source Sans 3', Arial, sans-serif; fill: #64748b; }
+    .svg-math { font: 400 25px 'STIX Two Text', Georgia, serif; fill: #111827; }
+    .svg-big { font: 700 32px 'Source Sans 3', Arial, sans-serif; fill: #1e3a8a; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Supersampling Problem">
+      <div class="topline"><div class="eyebrow">Arrangements And Duality</div><div class="badge">source span pp. 173-190 / PDF 184-201</div></div>
+      <h1>Title And Problem: Supersampling Half-Plane Discrepancy</h1>
+      <p class="lead">A pixel edge asks for a continuous area fraction; a renderer stores finitely many sample points. The chapter asks how bad the worst half-plane estimate can be.</p>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Pixel samples and a half-plane edge">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><clipPath id="clipPixel1"><rect x="130" y="80" width="520" height="420" rx="8"/></clipPath></defs>
+            <rect x="130" y="80" width="520" height="420" rx="8" fill="#f8fafc" stroke="#111827" stroke-width="5"/>
+            <g clip-path="url(#clipPixel1)">
+              <polygon points="130,80 650,80 650,254 130,498" fill="#eff6ff"/>
+              <line x1="88" y1="520" x2="705" y2="230" stroke="#2563eb" stroke-width="8"/>
+            </g>
+            <g fill="#0f766e">
+              <circle cx="206" cy="152" r="11"/><circle cx="314" cy="134" r="11"/><circle cx="444" cy="172" r="11"/><circle cx="572" cy="128" r="11"/>
+              <circle cx="214" cy="272" r="11"/><circle cx="338" cy="246" r="11"/><circle cx="470" cy="294" r="11"/><circle cx="594" cy="258" r="11"/>
+              <circle cx="186" cy="408" r="11"/><circle cx="332" cy="384" r="11"/><circle cx="480" cy="428" r="11"/><circle cx="604" cy="392" r="11"/>
+            </g>
+            <path d="M704 228 L790 188" stroke="#2563eb" stroke-width="6" marker-end="url(#arrowTitle)"/>
+            <defs><marker id="arrowTitle" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#2563eb"/></marker></defs>
+            <text x="690" y="180" class="svg-label">local edge</text>
+            <text x="184" y="560" class="svg-small">area estimate from finitely many probes</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Lecture Problem</div><p>For a finite sample set \(P\) in a pixel square, compare area \(\mu(h)\) with sample fraction \(|P\cap h|/|P|\) for every half-plane \(h\).</p></div>
+          <div class="panel teal"><h3>Why This Is Geometric</h3><p>Each candidate image edge becomes a line. The chosen side is the locally visible part of the pixel.</p></div>
+          <div class="panel amber"><h3>Why This Is Algorithmic</h3><p>The search is over infinitely many half-planes, but only finitely many combinatorial events change the sample count.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Ray tracing and supersampling motivate the discrepancy model</span><span>Goal: make area and count agree uniformly</span></div>
+      <aside class="speaker-notes">Begin from the rendering motivation on printed pages 173-174: ray tracing estimates what fraction of a pixel is covered by a surface, and supersampling replaces a continuous area question by finitely many sample probes. The lecture problem is to place samples so every local edge half-plane is counted nearly in proportion to its area.</aside>
+    </section>
+
+    <section class="slide" data-label="Half-Plane Model">
+      <div class="topline"><div class="eyebrow">Modeling Move</div><div class="badge">smooth edge -> local line</div></div>
+      <h2>Why Half-Planes: Pixel Edge As Local Half-Plane</h2>
+      <div class="content wide-left">
+        <figure class="diagram" aria-label="Curved edge approximated by a half-plane inside a pixel">
+          <svg viewBox="0 0 980 620" role="img">
+            <rect x="92" y="86" width="360" height="360" rx="8" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <path d="M66 370 C152 210,262 190,478 142" fill="none" stroke="#0f766e" stroke-width="9"/>
+            <path d="M92 86 L452 86 L452 150 C294 190,170 232,92 372 Z" fill="#f0fdfa" opacity=".9"/>
+            <text x="132" y="500" class="svg-label">curved boundary through one pixel</text>
+            <rect x="590" y="86" width="360" height="360" rx="8" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <polygon points="590,86 950,86 950,202 590,400" fill="#eff6ff"/>
+            <line x1="566" y1="414" x2="974" y2="190" stroke="#2563eb" stroke-width="9"/>
+            <text x="642" y="500" class="svg-label">linear half-plane surrogate</text>
+            <path d="M476 260 L568 260" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow2)"/>
+            <defs><marker id="arrow2" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Local Approximation</h3><p>Over one small pixel, a smooth visible boundary is treated as a line segment.</p></div>
+          <div class="panel teal"><h3>Half-Plane Query</h3><p>The visible side is one of the two half-planes cut out by that line.</p></div>
+          <div class="math-box math-box--remark"><div class="math-box-label">Design Target</div><p>Good sample patterns are judged against all edge positions and orientations, not one chosen image.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Half-planes encode local edge coverage</span><span>The pixel square supplies the bounded measure space</span></div>
+      <aside class="speaker-notes">Use the pixel-edge picture to justify the abstraction rather than assuming it. At the scale of one pixel, a smooth boundary is approximated by a line, so the visible part of the pixel is one side of that line. The source discussion on printed pages 173-174 motivates why half-planes are the stress test for sample patterns.</aside>
+    </section>
+
+    <section class="slide" data-label="Measure Discrepancy">
+      <div class="topline"><div class="eyebrow">Discrepancy</div><div class="badge">continuous area versus finite count</div></div>
+      <h2>Continuous vs Discrete Measure: Area Versus Sample Count</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Half-Plane Discrepancy</div><p class="formula">\(D(P)=\sup_h \left|\mu(Q\cap h)-\frac{|P\cap h|}{|P|}\right|\)</p></div>
+          <div class="panel blue"><h3>Continuous Side</h3><p>\(\mu(Q\cap h)\) is the normalized area of the clipped pixel region.</p></div>
+          <div class="panel teal"><h3>Discrete Side</h3><p>\(|P\cap h|/|P|\) is the fraction of sample probes that land on the same side.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Area fraction compared with sample count">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="120" y="92" width="320" height="360" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <polygon points="120,92 440,92 440,228 120,382" fill="#eff6ff"/>
+            <line x1="94" y1="394" x2="466" y2="216" stroke="#2563eb" stroke-width="7"/>
+            <text x="180" y="520" class="svg-label">area fraction</text>
+            <rect x="536" y="92" width="320" height="360" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <polygon points="536,92 856,92 856,228 536,382" fill="#f0fdfa"/>
+            <line x1="510" y1="394" x2="882" y2="216" stroke="#0f766e" stroke-width="7"/>
+            <g fill="#111827">
+              <circle cx="590" cy="150" r="10"/><circle cx="660" cy="132" r="10"/><circle cx="760" cy="170" r="10"/><circle cx="814" cy="126" r="10"/>
+              <circle cx="604" cy="262" r="10"/><circle cx="686" cy="240" r="10"/><circle cx="780" cy="292" r="10"/><circle cx="820" cy="366" r="10"/>
+              <circle cx="592" cy="390" r="10"/><circle cx="700" cy="406" r="10"/>
+            </g>
+            <g fill="#0f766e"><circle cx="590" cy="150" r="14" opacity=".35"/><circle cx="660" cy="132" r="14" opacity=".35"/><circle cx="760" cy="170" r="14" opacity=".35"/><circle cx="814" cy="126" r="14" opacity=".35"/><circle cx="686" cy="240" r="14" opacity=".35"/></g>
+            <text x="598" y="520" class="svg-label">sample fraction</text>
+            <text x="404" y="320" class="svg-big">vs</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>The supremum ranges over all half-planes</span><span>Uniform accuracy is stronger than average accuracy</span></div>
+      <aside class="speaker-notes">Now formalize the mismatch from printed pages 175-177. The continuous quantity is area fraction inside a region, while the discrete estimator is the fraction of stored samples in the same region. Discrepancy measures the worst absolute gap over all half-planes; low discrepancy means the sample set behaves like area for every edge position.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Candidate Reduction">
+      <div class="topline"><div class="eyebrow">Finiteness</div><div class="badge">events happen when a line touches samples</div></div>
+      <h2>Infinite Search Becomes Candidates</h2>
+      <div class="content wide-left">
+        <figure class="diagram" aria-label="Moving line through sample events">
+          <svg viewBox="0 0 980 620" role="img">
+            <rect x="90" y="70" width="520" height="430" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <g stroke="#cbd5e1" stroke-width="3">
+              <line x1="126" y1="70" x2="126" y2="500"/><line x1="222" y1="70" x2="222" y2="500"/><line x1="318" y1="70" x2="318" y2="500"/><line x1="414" y1="70" x2="414" y2="500"/><line x1="510" y1="70" x2="510" y2="500"/>
+            </g>
+            <g fill="#111827"><circle cx="176" cy="178" r="11"/><circle cx="280" cy="248" r="11"/><circle cx="396" cy="176" r="11"/><circle cx="472" cy="344" r="11"/><circle cx="242" cy="404" r="11"/></g>
+            <line x1="72" y1="444" x2="622" y2="190" stroke="#94a3b8" stroke-width="5" stroke-dasharray="14 10"/>
+            <line x1="76" y1="410" x2="626" y2="156" stroke="#2563eb" stroke-width="7"/>
+            <line x1="80" y1="376" x2="630" y2="122" stroke="#94a3b8" stroke-width="5" stroke-dasharray="14 10"/>
+            <circle cx="280" cy="248" r="28" fill="none" stroke="#b45309" stroke-width="6"/>
+            <text x="658" y="156" class="svg-label">same count</text>
+            <text x="658" y="198" class="svg-small">until crossing a sample</text>
+            <path d="M654 220 L308 248" stroke="#b45309" stroke-width="5" marker-end="url(#arrow4)"/>
+            <defs><marker id="arrow4" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#b45309"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Count Is Piecewise Constant</h3><p>Slide or rotate a boundary without crossing samples; \(|P\cap h|\) does not change.</p></div>
+          <div class="panel amber"><h3>Area Still Moves</h3><p>Inside one count interval, the area term changes continuously, so endpoints and tangencies matter.</p></div>
+          <div class="math-box math-box--theorem"><div class="math-box-label">Candidate Principle</div><p>Worst cases can be sought among a finite set of boundary events.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Infinite geometric search becomes finite combinatorics</span><span>This is the first step toward Theorem 8.2</span></div>
+      <aside class="speaker-notes">Printed pages 175-177 show the first finiteness move. Although there are infinitely many half-planes, the sample count changes only when the boundary crosses a sample point. Between such events, the area changes continuously while the count is fixed, so maxima can be hunted among boundaries touching points and among extreme placements.</aside>
+    </section>
+
+    <section class="slide" data-label="Theorem Route Map">
+      <div class="topline"><div class="eyebrow">Theorem 8.2</div><div class="badge">candidate types -> duality -> levels</div></div>
+      <h2>Theorem 8.2 Route Map: Type-I, Dualize Type-II, Arrangement Levels</h2>
+      <div class="content">
+        <figure class="diagram" aria-label="Route map for Theorem 8.2">
+          <svg viewBox="0 0 1550 620" role="img">
+            <defs><marker id="arrow5" markerWidth="15" markerHeight="15" refX="13" refY="7.5" orient="auto"><path d="M0,0 L15,7.5 L0,15 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="52" y="196" width="260" height="150" rx="16" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <text x="94" y="254" class="svg-label">Half-plane</text><text x="92" y="292" class="svg-small">continuous + count terms</text>
+            <rect x="390" y="90" width="282" height="150" rx="16" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <text x="438" y="148" class="svg-label">Type-I cases</text><text x="426" y="186" class="svg-small">direct candidate check</text>
+            <rect x="390" y="352" width="282" height="150" rx="16" fill="#fffbeb" stroke="#b45309" stroke-width="5"/>
+            <text x="434" y="410" class="svg-label">Type-II cases</text><text x="424" y="448" class="svg-small">turn into dual counts</text>
+            <rect x="760" y="352" width="282" height="150" rx="16" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/>
+            <text x="820" y="410" class="svg-label">Dualize</text><text x="800" y="448" class="svg-small">points become lines</text>
+            <rect x="1130" y="220" width="300" height="170" rx="16" fill="#f5f3ff" stroke="#6d28d9" stroke-width="5"/>
+            <text x="1192" y="282" class="svg-label">Arrangement</text><text x="1190" y="322" class="svg-small">levels give side counts</text>
+            <line x1="312" y1="252" x2="380" y2="176" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow5)"/>
+            <line x1="312" y1="292" x2="380" y2="416" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow5)"/>
+            <line x1="672" y1="427" x2="750" y2="427" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow5)"/>
+            <line x1="1042" y1="427" x2="1120" y2="326" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow5)"/>
+            <line x1="672" y1="164" x2="1120" y2="270" stroke="#94a3b8" stroke-width="5" stroke-dasharray="14 10" marker-end="url(#arrow5)"/>
+          </svg>
+        </figure>
+        <div class="content three">
+          <div class="panel blue"><h3>Candidate Typing</h3><p>Separate boundary configurations by how they touch the sample set and pixel boundary.</p></div>
+          <div class="panel amber"><h3>Dual Detour</h3><p>Some cases are easier after changing points into lines and lines into points.</p></div>
+          <div class="panel violet"><h3>Level Counts</h3><p>The arrangement reports how many dual lines lie above or below a query vertex.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The proof route is geometric bookkeeping</span><span>Duality is used because levels organize side counts</span></div>
+      <aside class="speaker-notes">Present Theorem 8.2 as a route map, not as a copied proof. The chapter separates candidate half-planes into direct type-I cases and type-II cases that become easier after duality. The arrangement of dual lines then organizes the relevant level counts, tying the discrepancy computation to planar subdivision machinery.</aside>
+    </section>
+
+    <section class="slide" data-label="Duality Definition">
+      <div class="topline"><div class="eyebrow">Duality</div><div class="badge">point (a,b) <-> line y = ax - b</div></div>
+      <h2>Point-Line Duality Definition: \((a,b)\) To \(y=ax-b\)</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Primal point mapped to dual line">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow6" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <line x1="88" y1="500" x2="382" y2="500" stroke="#111827" stroke-width="4"/><line x1="126" y1="540" x2="126" y2="110" stroke="#111827" stroke-width="4"/>
+            <circle cx="254" cy="284" r="13" fill="#2563eb"/><text x="272" y="276" class="svg-label">p=(a,b)</text><text x="134" y="100" class="svg-small">primal</text>
+            <line x1="430" y1="306" x2="510" y2="306" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow6)"/>
+            <line x1="548" y1="500" x2="842" y2="500" stroke="#111827" stroke-width="4"/><line x1="586" y1="540" x2="586" y2="110" stroke="#111827" stroke-width="4"/>
+            <line x1="548" y1="438" x2="842" y2="232" stroke="#0f766e" stroke-width="7"/>
+            <text x="620" y="206" class="svg-label">p*: y = ax - b</text><text x="594" y="100" class="svg-small">dual</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Point To Line</div><p class="formula">\(p=(a,b)\quad\longmapsto\quad p^\ast:\ y=ax-b\)</p></div>
+          <div class="math-box math-box--definition"><div class="math-box-label">Line To Point</div><p class="formula">\(\ell:y=mx+c\quad\longmapsto\quad \ell^\ast=(m,-c)\)</p></div>
+          <div class="panel slate"><h3>Scope</h3><p>This version treats nonvertical primal lines directly; vertical cases are handled separately.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The slope of the dual line stores the primal x-coordinate</span><span>The intercept sign is chosen for clean order tests</span></div>
+      <aside class="speaker-notes">Introduce the duality from printed pages 177-179 with the exact mapping used in the chapter. A primal point (a,b) becomes the nonvertical line y equals ax minus b. A primal nonvertical line y equals mx plus c becomes the dual point (m,-c). The sign convention is chosen so incidence and vertical order line up cleanly.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Incidence Order">
+      <div class="topline"><div class="eyebrow">Duality Properties</div><div class="badge">incidence and order become algebraic</div></div>
+      <h2>Incidence And Order Preservation</h2>
+      <div class="content wide-left">
+        <figure class="diagram" aria-label="Incidence and order relation under duality">
+          <svg viewBox="0 0 980 620" role="img">
+            <line x1="90" y1="502" x2="418" y2="502" stroke="#111827" stroke-width="4"/><line x1="130" y1="540" x2="130" y2="100" stroke="#111827" stroke-width="4"/>
+            <line x1="96" y1="400" x2="420" y2="204" stroke="#2563eb" stroke-width="7"/>
+            <circle cx="270" cy="214" r="12" fill="#b45309"/><text x="288" y="206" class="svg-label">p above l</text>
+            <circle cx="290" cy="282" r="11" fill="#2563eb"/><text x="300" y="314" class="svg-small">incidence point</text>
+            <path d="M444 306 L536 306" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow7)"/>
+            <line x1="562" y1="502" x2="900" y2="502" stroke="#111827" stroke-width="4"/><line x1="610" y1="540" x2="610" y2="100" stroke="#111827" stroke-width="4"/>
+            <line x1="566" y1="418" x2="900" y2="230" stroke="#0f766e" stroke-width="7"/>
+            <circle cx="730" cy="236" r="12" fill="#b45309"/><text x="748" y="226" class="svg-label">l*</text>
+            <line x1="730" y1="460" x2="730" y2="138" stroke="#cbd5e1" stroke-width="4" stroke-dasharray="12 8"/>
+            <circle cx="730" cy="326" r="12" fill="#0f766e"/><text x="750" y="336" class="svg-label">p* at x=m</text>
+            <defs><marker id="arrow7" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Incidence</div><p>\(p\in \ell\) in the primal plane exactly when \(p^\ast\) passes through \(\ell^\ast\) in the dual plane.</p></div>
+          <div class="panel amber"><h3>Order Signal</h3><p>Above in the primal becomes below the dual point when evaluated at the corresponding slope coordinate.</p></div>
+          <div class="panel teal"><h3>Algorithmic Use</h3><p>Side-of-line counts become above/below-line counts in a dual arrangement.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Duality preserves incidence exactly</span><span>Vertical order is controlled, with a predictable reversal</span></div>
+      <aside class="speaker-notes">Stay on printed pages 177-179 and emphasize what the transformation buys us. If a primal point lies on a primal line, the dual line passes through the dual point. If the primal point is above the primal line, then at the dual x-coordinate the dual line is below the dual point, giving a controlled reversal that still preserves order information.</aside>
+    </section>
+
+    <section class="slide" data-label="Vertical Wedges">
+      <div class="topline"><div class="eyebrow">Duality Caveat</div><div class="badge">vertical configurations require a wedge view</div></div>
+      <h2>Vertical Lines And Segment Wedges</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Vertical segment represented by dual wedge">
+          <svg viewBox="0 0 900 620" role="img">
+            <line x1="96" y1="502" x2="384" y2="502" stroke="#111827" stroke-width="4"/><line x1="132" y1="540" x2="132" y2="100" stroke="#111827" stroke-width="4"/>
+            <line x1="260" y1="390" x2="260" y2="172" stroke="#2563eb" stroke-width="8"/>
+            <circle cx="260" cy="172" r="13" fill="#2563eb"/><circle cx="260" cy="390" r="13" fill="#2563eb"/>
+            <text x="182" y="132" class="svg-label">same x</text><text x="184" y="432" class="svg-small">vertical segment in primal</text>
+            <path d="M430 306 L502 306" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow8)"/>
+            <line x1="548" y1="502" x2="842" y2="502" stroke="#111827" stroke-width="4"/><line x1="586" y1="540" x2="586" y2="100" stroke="#111827" stroke-width="4"/>
+            <line x1="552" y1="440" x2="842" y2="210" stroke="#0f766e" stroke-width="6"/>
+            <line x1="552" y1="330" x2="842" y2="102" stroke="#0f766e" stroke-width="6"/>
+            <polygon points="630,316 842,102 842,210" fill="#f0fdfa" opacity=".9"/>
+            <text x="654" y="284" class="svg-label">slope wedge</text><text x="612" y="560" class="svg-small">compatible lines live between two dual boundaries</text>
+            <defs><marker id="arrow8" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel amber"><h3>Problem</h3><p>The mapping \(\ell:y=mx+c\mapsto(m,-c)\) does not represent vertical primal lines as ordinary finite dual points.</p></div>
+          <div class="panel blue"><h3>Replacement Picture</h3><p>A same-\(x\) pair constrains a range of slopes; in the dual plane, that range is visible as a wedge.</p></div>
+          <div class="math-box math-box--remark"><div class="math-box-label">Takeaway</div><p>Duality still organizes the candidates, but vertical boundary events need a local convention.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Vertical exceptions are handled geometrically, not ignored</span><span>Wedges encode ranges of compatible slopes</span></div>
+      <aside class="speaker-notes">Handle the caveat that ordinary point-line duality avoids vertical primal lines. For a vertical segment or a pair of points with the same x-coordinate, the set of compatible nonvertical lines appears as a wedge or interval of slopes in the dual plane. This is the geometric bridge needed before counting candidates from point pairs.</aside>
+    </section>
+
+    <section class="slide" data-label="Dual Counts">
+      <div class="topline"><div class="eyebrow">Counts As Levels</div><div class="badge">primal side count -> dual line count</div></div>
+      <h2>Discrepancy In The Dual Plane: Primal Pair Line To Dual Vertex Counts</h2>
+      <div class="content wide-left">
+        <figure class="diagram" aria-label="Primal point pair line becomes dual vertex">
+          <svg viewBox="0 0 980 620" role="img">
+            <line x1="70" y1="500" x2="420" y2="500" stroke="#111827" stroke-width="4"/><line x1="110" y1="540" x2="110" y2="110" stroke="#111827" stroke-width="4"/>
+            <g fill="#111827"><circle cx="170" cy="352" r="10"/><circle cx="254" cy="242" r="10"/><circle cx="338" cy="288" r="10"/><circle cx="370" cy="170" r="10"/></g>
+            <circle cx="170" cy="352" r="16" fill="#2563eb"/><circle cx="338" cy="288" r="16" fill="#2563eb"/>
+            <line x1="92" y1="384" x2="404" y2="262" stroke="#2563eb" stroke-width="7"/>
+            <text x="104" y="82" class="svg-small">primal: line through two samples</text>
+            <path d="M448 306 L524 306" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow9)"/>
+            <line x1="564" y1="500" x2="930" y2="500" stroke="#111827" stroke-width="4"/><line x1="604" y1="540" x2="604" y2="110" stroke="#111827" stroke-width="4"/>
+            <g stroke-width="5" fill="none">
+              <line x1="560" y1="438" x2="930" y2="214" stroke="#0f766e"/>
+              <line x1="560" y1="312" x2="930" y2="390" stroke="#0f766e"/>
+              <line x1="560" y1="238" x2="930" y2="162" stroke="#94a3b8"/>
+              <line x1="560" y1="520" x2="930" y2="300" stroke="#94a3b8"/>
+            </g>
+            <circle cx="744" cy="326" r="15" fill="#b45309"/><text x="762" y="320" class="svg-label">dual vertex</text>
+            <text x="612" y="82" class="svg-small">dual: count lines above/below vertex</text>
+            <defs><marker id="arrow9" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Pair Boundary</h3><p>A candidate primal line often passes through two samples.</p></div>
+          <div class="panel teal"><h3>Dual Vertex</h3><p>The two corresponding dual lines meet at one arrangement vertex.</p></div>
+          <div class="math-box math-box--example"><div class="math-box-label">Count Translation</div><p>Number of samples on a side equals the number of dual lines above or below the associated vertex.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Discrepancy queries become arrangement level queries</span><span>Vertices are the finite checkpoints</span></div>
+      <aside class="speaker-notes">Move from duality to discrepancy. A primal line through two samples corresponds to the intersection vertex of their two dual lines. Counting how many primal points lie on one side becomes counting how many dual lines lie above or below that vertex. This is where the half-plane discrepancy problem becomes a level query in an arrangement.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Arrangement Complexity">
+      <div class="topline"><div class="eyebrow">Arrangements</div><div class="badge">simple position and degeneracy</div></div>
+      <h2>Arrangement Complexity: Simple vs Degenerate Arrangements</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Simple and degenerate line arrangements">
+          <svg viewBox="0 0 900 620" role="img">
+            <rect x="70" y="80" width="330" height="390" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#2563eb" stroke-width="5"><line x1="70" y1="416" x2="400" y2="130"/><line x1="70" y1="170" x2="400" y2="384"/><line x1="112" y1="470" x2="358" y2="80"/><line x1="86" y1="92" x2="380" y2="456"/></g>
+            <text x="120" y="532" class="svg-label">simple</text><text x="80" y="566" class="svg-small">pairwise crossings, no triple vertex</text>
+            <rect x="500" y="80" width="330" height="390" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <g stroke="#b45309" stroke-width="5"><line x1="500" y1="420" x2="830" y2="130"/><line x1="500" y1="130" x2="830" y2="420"/><line x1="665" y1="80" x2="665" y2="470"/><line x1="500" y1="275" x2="830" y2="275"/></g>
+            <circle cx="665" cy="275" r="20" fill="#b45309" opacity=".28"/><text x="556" y="532" class="svg-label">degenerate</text><text x="514" y="566" class="svg-small">many lines share one event</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">Arrangement</div><p>The subdivision of the plane into vertices, edges, and faces induced by a set of lines.</p></div>
+          <div class="panel blue"><h3>Simple Position</h3><p>\(n\) lines have \(\binom n2\) vertices when every pair crosses and no three are concurrent.</p></div>
+          <div class="panel amber"><h3>Degeneracy</h3><p>Coincident or concurrent events change local counts and must be represented consistently.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Arrangement size is quadratic in the worst case</span><span>The subdivision is the data object behind level queries</span></div>
+      <aside class="speaker-notes">Use printed pages 179-182 to define arrangements as the subdivision induced by lines. In simple position, every pair meets once and no three lines meet at one point, giving a clean quadratic count of vertices, edges, and faces. Degeneracies collapse events and require consistent handling, but the subdivision viewpoint remains the same.</aside>
+    </section>
+
+    <section class="slide" data-label="Bounding Box DCEL">
+      <div class="topline"><div class="eyebrow">Data Structure</div><div class="badge">bounded arrangement + DCEL records</div></div>
+      <h2>Why A Bounding Box And DCEL</h2>
+      <div class="content wide-left">
+        <figure class="diagram" aria-label="Bounded arrangement and DCEL half-edge records">
+          <svg viewBox="0 0 980 620" role="img">
+            <rect x="76" y="78" width="440" height="430" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <g stroke="#2563eb" stroke-width="6"><line x1="76" y1="430" x2="516" y2="150"/><line x1="76" y1="180" x2="516" y2="382"/><line x1="180" y1="508" x2="420" y2="78"/></g>
+            <polygon points="208,346 290,294 344,318 266,378" fill="#eff6ff" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="112" y="558" class="svg-small">box turns unbounded lines into finite edge chains</text>
+            <rect x="610" y="98" width="270" height="70" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="650" y="144" class="svg-label">origin</text>
+            <rect x="610" y="186" width="270" height="70" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/><text x="650" y="232" class="svg-label">twin</text>
+            <rect x="610" y="274" width="270" height="70" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"/><text x="650" y="320" class="svg-label">next / prev</text>
+            <rect x="610" y="362" width="270" height="70" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"/><text x="650" y="408" class="svg-label">incident face</text>
+            <text x="634" y="492" class="svg-label">DCEL half-edge record</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="panel blue"><h3>Bounding Box</h3><p>Clipping the arrangement makes every stored boundary finite.</p></div>
+          <div class="panel teal"><h3>DCEL</h3><p>Directed half-edges encode adjacency: twin, next, previous, incident face, and origin.</p></div>
+          <div class="math-box math-box--proof"><div class="math-box-label">Locality</div><p>A face split can be represented by pointer changes near the crossed boundary cycle.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The box is a storage device, not a mathematical restriction</span><span>DCEL turns topology into updateable records</span></div>
+      <aside class="speaker-notes">The arrangement is easier to store when it is clipped to a large box, because every face boundary becomes finite. The DCEL records directed half-edges with twin, next, previous, incident face, and origin links. Printed pages 179-182 use this structure so local edits can update topology without rebuilding the whole subdivision.</aside>
+    </section>
+
+    <section class="slide" data-label="Incremental Walk">
+      <div class="topline"><div class="eyebrow">Construction</div><div class="badge">insert one line, walk crossed faces</div></div>
+      <h2>Incremental Construction Walk</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="panel blue"><h3>1. Existing Arrangement</h3><p>Maintain the clipped subdivision after several inserted lines.</p></div>
+          <div class="panel amber"><h3>2. New Line</h3><p>Compute where the next line enters, crosses, and exits the current subdivision.</p></div>
+          <div class="panel teal"><h3>3. Walk And Split</h3><p>Traverse crossed faces in order and split each one along the new segment.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Incremental line insertion through faces">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow12" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#b45309"/></marker></defs>
+            <rect x="100" y="72" width="660" height="460" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <g stroke="#2563eb" stroke-width="5"><line x1="100" y1="428" x2="760" y2="142"/><line x1="100" y1="176" x2="760" y2="430"/><line x1="250" y1="532" x2="604" y2="72"/></g>
+            <line x1="82" y1="498" x2="786" y2="214" stroke="#b45309" stroke-width="8" marker-end="url(#arrow12)"/>
+            <g fill="#b45309"><circle cx="144" cy="472" r="10"/><circle cx="310" cy="405" r="10"/><circle cx="438" cy="354" r="10"/><circle cx="608" cy="286" r="10"/><circle cx="742" cy="232" r="10"/></g>
+            <text x="148" y="566" class="svg-label">walk order through crossed faces</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Incremental construction is local along the new line</span><span>The zone determines how much topology is touched</span></div>
+      <aside class="speaker-notes">Explain the incremental construction from printed pages 179-182. Insert lines one by one. For the new line, find its intersections with the existing subdivision in order, walk through the sequence of crossed faces, and split those faces as the line segment inside the bounding box is added.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Face Split">
+      <div class="topline"><div class="eyebrow">DCEL Update</div><div class="badge">one face becomes two face cycles</div></div>
+      <h2>Face Split Operation</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Face split by new half-edge pair">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow13a" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <polygon points="118,154 360,96 476,250 392,458 148,424 70,276" fill="#fff" stroke="#94a3b8" stroke-width="6"/>
+            <text x="170" y="290" class="svg-label">old face f</text>
+            <path d="M502 300 L574 300" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow13a)"/>
+            <polygon points="620,154 862,96 978,250 894,458 650,424 572,276" fill="#fff" stroke="#94a3b8" stroke-width="6"/>
+            <line x1="594" y1="392" x2="934" y2="162" stroke="#2563eb" stroke-width="8"/>
+            <polygon points="620,154 862,96 934,162 594,392 572,276" fill="#eff6ff" opacity=".9"/>
+            <polygon points="594,392 934,162 978,250 894,458 650,424" fill="#f0fdfa" opacity=".9"/>
+            <text x="672" y="214" class="svg-label">f1</text><text x="780" y="392" class="svg-label">f2</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--proof"><div class="math-box-label">Pointer Update</div><p>Create a twin half-edge pair along the cutting segment, then splice each half-edge into one boundary cycle.</p></div>
+          <div class="panel blue"><h3>Before</h3><p>One face record owns one boundary cycle around the polygonal cell.</p></div>
+          <div class="panel teal"><h3>After</h3><p>Two face records own two cycles, sharing the new edge pair as twins.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The geometric split is a topological record edit</span><span>Only the crossed face neighborhood changes</span></div>
+      <aside class="speaker-notes">Zoom in on the DCEL operation behind the previous slide. When a new line cuts through a face, two new half-edges separate the old boundary cycle into two face cycles. The important teaching point is local topology: only pointers around the crossed face and the new edge pieces change.</aside>
+    </section>
+
+    <section class="slide" data-label="Zone Theorem">
+      <div class="topline"><div class="eyebrow">Runtime Lens</div><div class="badge">zone complexity is linear</div></div>
+      <h2>Zone Theorem As The Runtime Lens</h2>
+      <div class="content wide-left">
+        <figure class="diagram" aria-label="Zone of a line in an arrangement">
+          <svg viewBox="0 0 980 620" role="img">
+            <rect x="90" y="72" width="720" height="460" fill="#fff" stroke="#111827" stroke-width="5"/>
+            <g stroke="#cbd5e1" stroke-width="5"><line x1="90" y1="430" x2="810" y2="140"/><line x1="90" y1="182" x2="810" y2="426"/><line x1="232" y1="532" x2="610" y2="72"/><line x1="158" y1="72" x2="714" y2="532"/><line x1="90" y1="300" x2="810" y2="238"/></g>
+            <path d="M106 494 L810 202 L810 286 L118 532 Z" fill="#fffbeb" stroke="#b45309" stroke-width="4" opacity=".9"/>
+            <line x1="86" y1="508" x2="830" y2="200" stroke="#b45309" stroke-width="8"/>
+            <text x="170" y="128" class="svg-label">zone of the inserted line</text>
+            <text x="188" y="570" class="svg-small">only crossed faces are charged during insertion</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box math-box--theorem"><div class="math-box-label">Zone Theorem</div><p>For a line crossing an arrangement of \(n\) lines, the total complexity of the crossed faces is \(O(n)\).</p></div>
+          <div class="panel amber"><h3>Why It Matters</h3><p>The whole arrangement can be quadratic, but one insertion touches only the zone of the inserted line.</p></div>
+          <div class="panel teal"><h3>Runtime View</h3><p>Analyze the crossed strip, not every face in the subdivision.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>The zone is the cost footprint of insertion</span><span>Local complexity controls the incremental construction</span></div>
+      <aside class="speaker-notes">Printed pages 183-185 introduce the zone theorem as the lens for runtime. The zone of a line is the collection of arrangement faces the line crosses. Even though the whole arrangement may be quadratic, the total complexity of this crossed strip is linear in the number of existing lines, so one insertion can be charged locally.</aside>
+    </section>
+
+    <section class="slide" data-label="Level Walk">
+      <div class="topline"><div class="eyebrow">Levels</div><div class="badge">count lines below as the walk crosses vertices</div></div>
+      <h2>Level Walk Along A Line</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box math-box--definition"><div class="math-box-label">k-Level</div><p>The \(k\)-level is the set of points in the arrangement with exactly \(k\) lines strictly below them.</p></div>
+          <div class="panel blue"><h3>Walk Rule</h3><p>Move left to right along a query line; at each crossing, the count changes by one.</p></div>
+          <div class="panel teal"><h3>Discrepancy Link</h3><p>Those counts are the dual form of primal sample side counts.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Level walk in a line arrangement">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arrow15" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#6d28d9"/></marker></defs>
+            <line x1="80" y1="500" x2="820" y2="500" stroke="#111827" stroke-width="4"/><line x1="120" y1="540" x2="120" y2="80" stroke="#111827" stroke-width="4"/>
+            <g stroke="#94a3b8" stroke-width="5"><line x1="80" y1="420" x2="820" y2="130"/><line x1="80" y1="170" x2="820" y2="440"/><line x1="210" y1="540" x2="640" y2="80"/><line x1="80" y1="302" x2="820" y2="250"/></g>
+            <polyline points="104,390 238,338 360,282 494,274 620,244 796,176" fill="none" stroke="#6d28d9" stroke-width="8" marker-end="url(#arrow15)"/>
+            <g fill="#6d28d9"><circle cx="238" cy="338" r="11"/><circle cx="360" cy="282" r="11"/><circle cx="494" cy="274" r="11"/><circle cx="620" cy="244" r="11"/></g>
+            <text x="144" y="438" class="svg-label">k=1</text><text x="288" y="348" class="svg-label">k=2</text><text x="432" y="232" class="svg-label">k=3</text><text x="620" y="202" class="svg-label">k=2</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Levels turn vertical order into a traversable object</span><span>Every crossing updates the side count by one</span></div>
+      <aside class="speaker-notes">Use printed pages 185-186 to connect arrangements to levels. The k-level consists of points that have exactly k lines strictly below them. Walking along a line from left to right, the level changes by one at every crossing, so the arrangement supplies the sequence of counts needed for discrepancy.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Takeaways">
+      <div class="topline"><div class="eyebrow">Synthesis</div><div class="badge">half-planes -> candidates -> dual levels</div></div>
+      <h2>Discrepancy From Levels And Takeaways</h2>
+      <div class="content">
+        <figure class="diagram" aria-label="Final pipeline from supersampling to arrangement levels">
+          <svg viewBox="0 0 1550 520" role="img">
+            <defs><marker id="arrow16" markerWidth="15" markerHeight="15" refX="13" refY="7.5" orient="auto"><path d="M0,0 L15,7.5 L0,15 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="44" y="142" width="250" height="150" rx="16" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/><text x="92" y="202" class="svg-label">Pixel samples</text><text x="80" y="240" class="svg-small">area vs count</text>
+            <rect x="374" y="142" width="250" height="150" rx="16" fill="#fffbeb" stroke="#b45309" stroke-width="5"/><text x="432" y="202" class="svg-label">Candidates</text><text x="418" y="240" class="svg-small">finite events</text>
+            <rect x="704" y="142" width="250" height="150" rx="16" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/><text x="770" y="202" class="svg-label">Duality</text><text x="744" y="240" class="svg-small">points become lines</text>
+            <rect x="1034" y="142" width="250" height="150" rx="16" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"/><text x="1096" y="202" class="svg-label">Arrangement</text><text x="1098" y="240" class="svg-small">DCEL + zone</text>
+            <rect x="1364" y="142" width="150" height="150" rx="16" fill="#f5f3ff" stroke="#6d28d9" stroke-width="5"/><text x="1400" y="202" class="svg-label">Levels</text><text x="1392" y="240" class="svg-small">counts</text>
+            <line x1="294" y1="217" x2="364" y2="217" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow16)"/>
+            <line x1="624" y1="217" x2="694" y2="217" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow16)"/>
+            <line x1="954" y1="217" x2="1024" y2="217" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow16)"/>
+            <line x1="1284" y1="217" x2="1354" y2="217" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow16)"/>
+            <text x="360" y="408" class="svg-big">The same transformation pattern appears again: reduce an infinite geometric question to finite events, then choose a structure that exposes the needed counts.</text>
+          </svg>
+        </figure>
+        <div class="content four">
+          <div class="panel blue"><h3>Model</h3><p>Half-planes approximate local pixel edges.</p></div>
+          <div class="panel amber"><h3>Reduce</h3><p>Only event boundaries can change the combinatorial count.</p></div>
+          <div class="panel teal"><h3>Dualize</h3><p>Side counts become above/below counts for dual lines.</p></div>
+          <div class="panel violet"><h3>Compute</h3><p>Arrangements, zones, and levels make the counts accessible.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Chapter 8 connects sampling quality to arrangement algorithms</span><span>Exercises extend the same themes: degeneracy, levels, and data structures</span></div>
+      <aside class="speaker-notes">Close by summarizing the pipeline from printed pages 186-190. Supersampling asks for area versus count agreement over all half-planes. Candidate reduction makes the search finite, duality converts side counts into line levels, and arrangements with DCEL and zone analysis make those levels algorithmically accessible.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

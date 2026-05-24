@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Directional Statistics">
+  <meta name="chapter_id" content="chapter-05">
+  <meta name="notebook_path" content="Directional-Statistics/part-01-circular-statistics/chapter-05-point-estimation/05-point-estimation.ipynb">
+  <meta name="source_span" content="printed pages 83-92; PDF pages 100-109.">
+  <meta name="source_pdf" content="Directional-Statistics/Directional Statistics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 05: Point Estimation</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Directional Statistics",
+  "chapter_id": "chapter-05",
+  "notebook_path": "Directional-Statistics/part-01-circular-statistics/chapter-05-point-estimation/05-point-estimation.ipynb",
+  "source_span": "printed pages 83-92; PDF pages 100-109.",
+  "source_pdf": "Directional-Statistics/Directional Statistics.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23",
+  "provenance_note": "Authored from the assigned chapter notebook and source span with original inline SVGs and chapter-local notebook artifacts."
+}
+  </script>
+  <script type="application/json" id="speaker-notes">[
+  {
+    "slide": 1,
+    "title": "Point Estimation On The Circle",
+    "notes": "Open by saying that point estimation on a circle starts with a contract, not with a formula. The zero angle is arbitrary, so any estimator worth using must rotate with the data. This chapter asks how that contract shapes von Mises location, concentration, wrapped Cauchy weighting, and mixture fitting."
+  },
+  {
+    "slide": 2,
+    "title": "The Estimator Must Respect Rotation",
+    "notes": "Use the commutative diagram as the guiding rule for the whole lecture. Rotating the sample before fitting should give the same result as fitting first and then rotating the fitted direction. Concentration is different: it measures clustering strength, so it should remain unchanged under a common rotation."
+  },
+  {
+    "slide": 3,
+    "title": "The Resultant Is The Data Geometry",
+    "notes": "Explain that the sample is first moved to unit vectors, then summarized by the average complex vector. Its direction is the natural circular mean, and its length is the concentration signal. The diagram intentionally avoids an angle line, because the circle, not the cut coordinate, carries the statistic."
+  },
+  {
+    "slide": 4,
+    "title": "Von Mises Likelihood Splits The Job",
+    "notes": "Walk through the log likelihood as two linked problems. For a fixed concentration, maximizing over direction means aligning with the resultant vector. After that alignment, the concentration score asks for the model mean resultant length A(kappa) to match the observed Rbar."
+  },
+  {
+    "slide": 5,
+    "title": "Concentration Comes From Inverting A",
+    "notes": "Make the Bessel-ratio curve the main object. Students often expect concentration to be a sample variance formula, but the von Mises model uses the monotone relationship between kappa and expected resultant length. Numerical inversion is not a nuisance here; it is the statistical definition made executable."
+  },
+  {
+    "slide": 6,
+    "title": "The Likelihood Surface Confirms The Split",
+    "notes": "Use the notebook artifact as evidence that the estimating equations are not just symbolic. The peak sits where the resultant direction and the A-inverse concentration agree. The surface is drawn in mu and kappa coordinates so a later rotation test can literally slide the peak sideways."
+  },
+  {
+    "slide": 7,
+    "title": "Small Samples Inflate Concentration",
+    "notes": "Emphasize that Rbar itself is a length and the inverse A transform is nonlinear. This is why raw kappa estimates can be optimistic for small samples. The notebook simulation gives a concrete scale: at n equals 8 and true kappa equals 2, the raw bias is large while the correction nearly removes it."
+  },
+  {
+    "slide": 8,
+    "title": "Circular Unbiasedness Is Not Linear Unbiasedness",
+    "notes": "Pause on the sine-error diagnostic because it prevents a common mistake. A signed angle error depends on where the branch cut is placed, so it is not a stable criterion. Taking the sine of the wrapped error asks whether the estimator is centered on the circle without pretending angles form a line."
+  },
+  {
+    "slide": 9,
+    "title": "Wrapped Cauchy Estimation Reweights Vectors",
+    "notes": "Frame wrapped Cauchy fitting as another version of the same geometry. The current parameter sits inside the unit disk, and the observations receive weights determined by their circular relationship to it. The update is a weighted vector average, so the computation stays on circular objects."
+  },
+  {
+    "slide": 10,
+    "title": "Mixtures Replace Hard Assignment With Responsibilities",
+    "notes": "Describe the EM loop without reducing it to generic clustering. Each component has a circular density, and each observation receives responsibilities that sum to one. The M step then performs weighted circular estimation for each component, which keeps the fit invariant to the angular cut."
+  },
+  {
+    "slide": 11,
+    "title": "Responsibility Geometry Is Visible",
+    "notes": "Use the second notebook artifact to connect the wrapped Cauchy and mixture stories. On the left, weights pull a disk parameter along a path; on the right, responsibilities color observations by component membership. Both panels show that estimation is mediated by circular weights, not by raw linear residuals."
+  },
+  {
+    "slide": 12,
+    "title": "Rotation Lab: The Origin Should Disappear",
+    "notes": "Show this as the practical acceptance test for the implementation. The sample is rotated by several deltas, then refit. The fitted direction changes by exactly the same delta, while concentration and corresponding likelihood values stay fixed up to numerical precision."
+  },
+  {
+    "slide": 13,
+    "title": "Estimator Pipeline",
+    "notes": "Turn the chapter into a reproducible workflow. Wrap angles before comparing, compute the resultant, solve the concentration equation, apply small-sample corrections when needed, and use weighted circular updates for wrapped Cauchy or mixtures. Each step has a geometry check attached to it."
+  },
+  {
+    "slide": 14,
+    "title": "Diagnostics That Guard The Fit",
+    "notes": "The checks are part of the lecture evidence. They verify that the score is small at the fit, that A(kappa hat) matches Rbar, that mixture responsibilities normalize, that wrapped Cauchy weights remain valid, and that generated artifacts are nonblank. These are mathematical tests, not only software tests."
+  },
+  {
+    "slide": 15,
+    "title": "Mistakes To Catch Early",
+    "notes": "Use this warning slide to make students skeptical of familiar linear shortcuts. Averaging degree values across a branch cut, plugging a line variance into concentration, forgetting to wrap residuals, or treating mixture labels as fixed can all give plausible-looking but geometrically wrong estimates."
+  },
+  {
+    "slide": 16,
+    "title": "What The Chapter Adds",
+    "notes": "Close by tying the lecture back to the course arc. Earlier chapters built circular summaries and model families; this chapter turns them into estimators. The unifying principle is that parameters should be fitted through unit-vector geometry and checked by equivariance, score equations, and responsibility normalization."
+  }
+]</script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: var(--slide-ink);
+    }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 58px 92px 52px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        radial-gradient(circle at 16% 18%, rgba(37, 99, 235, 0.08), transparent 24%),
+        radial-gradient(circle at 84% 22%, rgba(15, 118, 110, 0.08), transparent 22%),
+        linear-gradient(to right, rgba(203, 213, 225, 0.35) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.26) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: auto, auto, 80px 80px, 80px 80px;
+    }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 66px; line-height: 1.02; font-weight: 700; max-width: 1180px; }
+    h2 { font-size: 52px; line-height: 1.08; font-weight: 700; color: var(--slide-ink); }
+    h3 { font-size: 30px; line-height: 1.18; font-weight: 700; color: var(--slide-accent); margin-bottom: 10px; }
+    p, li { font-size: 27px; line-height: 1.32; }
+    ul, ol { margin: 0; padding-left: 30px; }
+    li + li { margin-top: 8px; }
+    a { color: var(--slide-blue); text-decoration: none; border-bottom: 2px solid rgba(37, 99, 235, 0.25); }
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      color: var(--slide-muted);
+      font-size: 22px;
+      line-height: 1.2;
+      flex: 0 0 auto;
+    }
+    .eyebrow {
+      color: var(--slide-teal);
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .source { color: var(--slide-dimmed); font-size: 22px; font-weight: 600; }
+    .rule { width: 110px; height: 6px; background: var(--slide-accent); border-radius: 4px; margin: 24px 0 8px; }
+    .subhead { max-width: 1260px; color: var(--slide-muted); font-size: 31px; line-height: 1.26; }
+    .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 22px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+    .cols.left-wide { grid-template-columns: 1.16fr 0.84fr; }
+    .cols.right-wide { grid-template-columns: 0.88fr 1.12fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .panel {
+      background: #fff;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel.slate { background: var(--slide-bg-alt); border-left: 6px solid var(--slide-border); }
+    .panel p, .panel li { font-size: 25px; line-height: 1.32; }
+    .mini {
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 35px;
+      line-height: 1.26;
+      text-align: center;
+      padding: 18px 20px;
+      border-radius: 8px;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border);
+    }
+    .formula.compact { font-size: 30px; padding: 14px 18px; }
+    .stat { font-family: var(--font-mono); color: var(--slide-accent); font-weight: 600; }
+    .caption { font-size: 21px; line-height: 1.3; color: var(--slide-dimmed); margin-top: 8px; }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 30px;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      line-height: 1.25;
+      flex: 0 0 auto;
+    }
+    .route {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 30px;
+    }
+    .route .panel { min-height: 160px; }
+    .visual {
+      min-height: 0;
+      background: #fff;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .visual svg, .visual img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .img-frame img { width: 100%; height: 100%; object-fit: contain; }
+    .check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .check {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 16px 18px;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .checkmark {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--slide-teal);
+      color: #fff;
+      font-size: 24px;
+      line-height: 34px;
+      text-align: center;
+      font-weight: 700;
+    }
+    .step-list { display: flex; flex-direction: column; gap: 12px; }
+    .step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 15px 18px;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .num {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--slide-accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 22px;
+    }
+    .small { font-size: 23px; line-height: 1.34; color: var(--slide-muted); }
+    .tight p, .tight li { font-size: 24px; }
+    .svg-label { font-family: var(--font-sans); font-size: 24px; fill: #475569; font-weight: 600; }
+    .svg-math { font-family: "STIX Two Text", Georgia, serif; font-size: 28px; fill: #111827; }
+    .axis-label { font-family: var(--font-sans); font-size: 22px; fill: #64748B; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Point Estimation">
+      <div class="slide alt">
+        <div class="topline">
+          <div class="eyebrow">Directional Statistics</div>
+          <div class="source">Chapter 05. Printed pages 83-92; PDF pages 100-109.</div>
+        </div>
+        <h1>Point Estimation On The Circle</h1>
+        <div class="rule"></div>
+        <p class="subhead">Estimate directions and concentration without pretending angles live on a line.</p>
+        <div class="route">
+          <div class="panel blue">
+            <h3>Contract</h3>
+            <p>Rotating every observation rotates \( \hat\mu \) and leaves \( \hat\kappa \) unchanged.</p>
+          </div>
+          <div class="panel teal">
+            <h3>Von Mises</h3>
+            <p>\( \hat\mu = \arg \bar z \), then solve \( A(\hat\kappa)=\bar R \).</p>
+          </div>
+          <div class="panel amber">
+            <h3>Finite \(n\)</h3>
+            <p>Inverse-\(A\) amplifies small-sample resultant length noise.</p>
+          </div>
+          <div class="panel violet">
+            <h3>Weights</h3>
+            <p>Wrapped Cauchy and mixtures fit by weighted circular updates.</p>
+          </div>
+        </div>
+        <div class="footer">
+          <span>Notebook: Directional-Statistics/part-01-circular-statistics/chapter-05-point-estimation/05-point-estimation.ipynb</span>
+          <span>lecture-design-system-2026-05-23</span>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open by saying that point estimation on a circle starts with a contract, not with a formula. The zero angle is arbitrary, so any estimator worth using must rotate with the data. This chapter asks how that contract shapes von Mises location, concentration, wrapped Cauchy weighting, and mixture fitting.</aside>
+    </section>
+
+    <section data-label="Estimator Contract">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Geometric Requirement</div>
+          <div class="source">A point estimate must commute with rotation.</div>
+        </div>
+        <h2>The Estimator Must Respect Rotation</h2>
+        <div class="content">
+          <div class="cols right-wide">
+            <div class="panel blue">
+              <h3>Equivariance Test</h3>
+              <p>For a common rotation \( \delta \), a circular estimator should satisfy</p>
+              <div class="formula">\( \hat\mu(\theta_1+\delta,\ldots,\theta_n+\delta) = \hat\mu(\theta_1,\ldots,\theta_n)+\delta \pmod{2\pi}. \)</div>
+              <p class="small">The concentration estimate should be invariant: \( \hat\kappa(\theta+\delta)=\hat\kappa(\theta) \).</p>
+            </div>
+            <div class="visual">
+              <svg viewBox="0 0 760 520" role="img" aria-label="Commutative rotation estimator diagram">
+                <defs>
+                  <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+                  </marker>
+                  <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"></path>
+                  </marker>
+                </defs>
+                <rect x="74" y="78" width="220" height="110" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <rect x="466" y="78" width="220" height="110" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <rect x="74" y="332" width="220" height="110" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <rect x="466" y="332" width="220" height="110" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <text class="svg-label" x="184" y="120" text-anchor="middle">sample</text>
+                <text class="svg-math" x="184" y="156" text-anchor="middle">theta</text>
+                <text class="svg-label" x="576" y="120" text-anchor="middle">rotated sample</text>
+                <text class="svg-math" x="576" y="156" text-anchor="middle">theta + delta</text>
+                <text class="svg-label" x="184" y="374" text-anchor="middle">fit</text>
+                <text class="svg-math" x="184" y="410" text-anchor="middle">mu-hat, kappa-hat</text>
+                <text class="svg-label" x="576" y="374" text-anchor="middle">rotated fit</text>
+                <text class="svg-math" x="576" y="410" text-anchor="middle">mu-hat + delta</text>
+                <line x1="304" y1="133" x2="454" y2="133" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"></line>
+                <line x1="184" y1="198" x2="184" y2="320" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-teal)"></line>
+                <line x1="576" y1="198" x2="576" y2="320" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-teal)"></line>
+                <line x1="304" y1="387" x2="454" y2="387" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"></line>
+                <text class="axis-label" x="380" y="104" text-anchor="middle">rotate data</text>
+                <text class="axis-label" x="380" y="464" text-anchor="middle">rotate fitted direction</text>
+                <text class="axis-label" x="123" y="265" text-anchor="middle">estimate</text>
+                <text class="axis-label" x="635" y="265" text-anchor="middle">estimate</text>
+              </svg>
+            </div>
+          </div>
+          <div class="panel slate">
+            <p>The whole chapter can be read as a search for estimating equations that satisfy this diagram while still learning concentration and component structure from the sample.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Estimator contract</span><span>Location equivariant; concentration invariant.</span></div>
+      </div>
+      <aside class="speaker-notes">Use the commutative diagram as the guiding rule for the whole lecture. Rotating the sample before fitting should give the same result as fitting first and then rotating the fitted direction. Concentration is different: it measures clustering strength, so it should remain unchanged under a common rotation.</aside>
+    </section>
+
+    <section data-label="Resultant">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Sample Geometry</div>
+          <div class="source">Replace angles by unit vectors before averaging.</div>
+        </div>
+        <h2>The Resultant Is The Data Geometry</h2>
+        <div class="content">
+          <div class="cols">
+            <div class="visual">
+              <svg viewBox="0 0 720 620" role="img" aria-label="Circular sample and resultant vector">
+                <circle cx="340" cy="300" r="220" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></circle>
+                <line x1="120" y1="300" x2="560" y2="300" stroke="#CBD5E1" stroke-width="2"></line>
+                <line x1="340" y1="80" x2="340" y2="520" stroke="#CBD5E1" stroke-width="2"></line>
+                <g fill="#2563EB" opacity="0.88">
+                  <circle cx="516" cy="168" r="9"></circle>
+                  <circle cx="536" cy="222" r="9"></circle>
+                  <circle cx="512" cy="373" r="9"></circle>
+                  <circle cx="464" cy="472" r="9"></circle>
+                  <circle cx="423" cy="111" r="9"></circle>
+                  <circle cx="280" cy="512" r="9"></circle>
+                  <circle cx="181" cy="450" r="9"></circle>
+                  <circle cx="150" cy="259" r="9"></circle>
+                  <circle cx="225" cy="112" r="9"></circle>
+                  <circle cx="397" cy="93" r="9"></circle>
+                  <circle cx="540" cy="316" r="9"></circle>
+                  <circle cx="487" cy="133" r="9"></circle>
+                </g>
+                <defs>
+                  <marker id="arrow-rbar" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+                    <path d="M0,0 L14,7 L0,14 Z" fill="#0F766E"></path>
+                  </marker>
+                </defs>
+                <line x1="340" y1="300" x2="476" y2="214" stroke="#0F766E" stroke-width="9" stroke-linecap="round" marker-end="url(#arrow-rbar)"></line>
+                <path d="M390 300 A50 50 0 0 0 382 273" fill="none" stroke="#B45309" stroke-width="4"></path>
+                <text class="svg-math" x="498" y="202">Rbar e^{i mu-hat}</text>
+                <text class="svg-label" x="410" y="282">mu-hat</text>
+                <text class="axis-label" x="340" y="566" text-anchor="middle">Each observation is \(e^{i theta_j}\)</text>
+              </svg>
+            </div>
+            <div class="panel teal">
+              <h3>Statistic</h3>
+              <div class="formula compact">\( \bar z = \frac{1}{n}\sum_{j=1}^n e^{i\theta_j} = \bar C + i\bar S \)</div>
+              <div class="formula compact">\( \hat\mu = \arg(\bar z), \qquad \bar R = |\bar z| \)</div>
+              <ul>
+                <li>\( \hat\mu \) is a direction, not an arithmetic angle average.</li>
+                <li>\( \bar R \) measures how strongly the unit vectors align.</li>
+                <li>For the notebook sample: <span class="stat">n = 32</span>, <span class="stat">Rbar = 0.7797</span>, <span class="stat">mu-hat = 0.5528</span>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Unit-vector average</span><span>Resultant length becomes the concentration signal.</span></div>
+      </div>
+      <aside class="speaker-notes">Explain that the sample is first moved to unit vectors, then summarized by the average complex vector. Its direction is the natural circular mean, and its length is the concentration signal. The diagram intentionally avoids an angle line, because the circle, not the cut coordinate, carries the statistic.</aside>
+    </section>
+
+    <section data-label="Von Mises Split">
+      <div class="slide alt">
+        <div class="topline">
+          <div class="eyebrow">Von Mises MLE</div>
+          <div class="source">Location and concentration are coupled but separable.</div>
+        </div>
+        <h2>Von Mises Likelihood Splits The Job</h2>
+        <div class="content">
+          <div class="cols left-wide">
+            <div class="panel blue">
+              <h3>Log Likelihood Up To Constants</h3>
+              <div class="formula">\( \ell(\mu,\kappa) = \kappa\sum_{j=1}^n \cos(\theta_j-\mu) - n\log I_0(\kappa) \)</div>
+              <div class="three" style="margin-top:18px;">
+                <div class="panel slate tight">
+                  <div class="mini">1. Align</div>
+                  <p>For fixed \( \kappa \), maximize the cosine sum.</p>
+                </div>
+                <div class="panel teal tight">
+                  <div class="mini">2. Direction</div>
+                  <p>\( \hat\mu = \arg\sum e^{i\theta_j} \).</p>
+                </div>
+                <div class="panel amber tight">
+                  <div class="mini">3. Strength</div>
+                  <p>Solve \( A(\hat\kappa)=\bar R \).</p>
+                </div>
+              </div>
+            </div>
+            <div class="visual">
+              <svg viewBox="0 0 720 520" role="img" aria-label="Likelihood split into direction and concentration equations">
+                <defs>
+                  <marker id="arrow-flow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+                  </marker>
+                </defs>
+                <circle cx="168" cy="210" r="102" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></circle>
+                <line x1="168" y1="210" x2="248" y2="148" stroke="#0F766E" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow-flow)"></line>
+                <text class="svg-label" x="168" y="354" text-anchor="middle">direction maximizer</text>
+                <text class="svg-math" x="168" y="390" text-anchor="middle">mu-hat = arg zbar</text>
+                <path d="M322 210 C380 138, 444 138, 502 210" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-flow)"></path>
+                <rect x="514" y="114" width="150" height="192" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+                <line x1="548" y1="262" x2="642" y2="156" stroke="#B45309" stroke-width="6"></line>
+                <circle cx="613" cy="189" r="9" fill="#0F766E"></circle>
+                <text class="svg-label" x="589" y="354" text-anchor="middle">concentration score</text>
+                <text class="svg-math" x="589" y="390" text-anchor="middle">A(kappa-hat)=Rbar</text>
+                <text class="axis-label" x="370" y="178" text-anchor="middle">same resultant</text>
+              </svg>
+            </div>
+          </div>
+          <div class="panel slate">
+            <p>The notebook verifies the score at the fit: <span class="stat">score_mu = -2.35e-15</span> and <span class="stat">score_kappa = -1.42e-14</span>.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Von Mises estimating equations</span><span>\(A(\kappa)=I_1(\kappa)/I_0(\kappa)\).</span></div>
+      </div>
+      <aside class="speaker-notes">Walk through the log likelihood as two linked problems. For a fixed concentration, maximizing over direction means aligning with the resultant vector. After that alignment, the concentration score asks for the model mean resultant length A(kappa) to match the observed Rbar.</aside>
+    </section>
+
+    <section data-label="Invert A">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Concentration Equation</div>
+          <div class="source">Root finding replaces a line-variance shortcut.</div>
+        </div>
+        <h2>Concentration Comes From Inverting \(A\)</h2>
+        <div class="content">
+          <div class="cols right-wide">
+            <div class="panel amber">
+              <h3>MLE Equation</h3>
+              <div class="formula compact">\( A(\kappa)=\frac{I_1(\kappa)}{I_0(\kappa)}, \qquad A(\hat\kappa)=\bar R. \)</div>
+              <ul>
+                <li>\( A(0)=0 \), and \( A(\kappa) \) increases toward 1.</li>
+                <li>Large \( \bar R \) requires larger \( \hat\kappa \).</li>
+                <li>Notebook fit: <span class="stat">kappa-hat = 2.6430</span> and <span class="stat">A(kappa-hat) = 0.7797</span>.</li>
+              </ul>
+            </div>
+            <div class="visual">
+              <svg viewBox="0 0 790 560" role="img" aria-label="Bessel ratio inversion curve">
+                <rect x="72" y="54" width="630" height="392" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+                <g stroke="#E2E8F0" stroke-width="2">
+                  <line x1="72" y1="367" x2="702" y2="367"></line>
+                  <line x1="72" y1="289" x2="702" y2="289"></line>
+                  <line x1="72" y1="211" x2="702" y2="211"></line>
+                  <line x1="72" y1="133" x2="702" y2="133"></line>
+                  <line x1="198" y1="54" x2="198" y2="446"></line>
+                  <line x1="324" y1="54" x2="324" y2="446"></line>
+                  <line x1="450" y1="54" x2="450" y2="446"></line>
+                  <line x1="576" y1="54" x2="576" y2="446"></line>
+                </g>
+                <polyline points="72,446 103,405 135,367 166,333 198,303 229,276 261,252 292,231 324,212 355,196 387,181 418,168 450,157 481,147 513,138 544,130 576,123 607,117 639,111 670,106 702,101" fill="none" stroke="#2563EB" stroke-width="7" stroke-linecap="round"></polyline>
+                <line x1="72" y1="141" x2="281" y2="141" stroke="#B45309" stroke-width="4" stroke-dasharray="12 10"></line>
+                <line x1="281" y1="446" x2="281" y2="141" stroke="#B45309" stroke-width="4" stroke-dasharray="12 10"></line>
+                <circle cx="281" cy="141" r="10" fill="#0F766E"></circle>
+                <text class="svg-label" x="322" y="134">observed Rbar</text>
+                <text class="svg-label" x="308" y="430">kappa-hat</text>
+                <text class="axis-label" x="387" y="500" text-anchor="middle">concentration kappa</text>
+                <text class="axis-label" x="34" y="250" transform="rotate(-90 34 250)" text-anchor="middle">A(kappa)</text>
+                <text class="svg-math" x="590" y="86">A(kappa)</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Bessel-ratio inversion</span><span>Piecewise starts are useful, but the target is still \(A(\hat\kappa)=\bar R\).</span></div>
+      </div>
+      <aside class="speaker-notes">Make the Bessel-ratio curve the main object. Students often expect concentration to be a sample variance formula, but the von Mises model uses the monotone relationship between kappa and expected resultant length. Numerical inversion is not a nuisance here; it is the statistical definition made executable.</aside>
+    </section>
+
+    <section data-label="Likelihood Evidence">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Notebook Evidence</div>
+          <div class="source">Original chapter artifact, generated by the assigned notebook.</div>
+        </div>
+        <h2>The Likelihood Surface Confirms The Split</h2>
+        <div class="content">
+          <div class="cols left-wide">
+            <figure class="visual img-frame">
+              <img src="../core/von-mises-mle-diagnostics.png" alt="Von Mises MLE diagnostics with circle, A-inverse, likelihood, and bias panels">
+            </figure>
+            <div class="panel blue">
+              <h3>Inspection Targets</h3>
+              <ul>
+                <li>The circle panel and inverse-\(A\) panel use the same \( \bar R \).</li>
+                <li>The likelihood peak occurs near \( \hat\mu=0.5528 \), \( \hat\kappa=2.6430 \).</li>
+                <li>The finite-sample panel previews why concentration needs bias diagnostics.</li>
+              </ul>
+              <p class="small" style="margin-top:16px;">Interactive local artifact: <a href="../interactive/von-mises-likelihood-surface.html">von-mises-likelihood-surface.html</a>.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Artifact: ../core/von-mises-mle-diagnostics.png</span><span>Peak geometry plus score diagnostics.</span></div>
+      </div>
+      <aside class="speaker-notes">Use the notebook artifact as evidence that the estimating equations are not just symbolic. The peak sits where the resultant direction and the A-inverse concentration agree. The surface is drawn in mu and kappa coordinates so a later rotation test can literally slide the peak sideways.</aside>
+    </section>
+
+    <section data-label="Finite Samples">
+      <div class="slide alt">
+        <div class="topline">
+          <div class="eyebrow">Finite-Sample Behavior</div>
+          <div class="source">A nonlinear inverse turns length noise into concentration bias.</div>
+        </div>
+        <h2>Small Samples Inflate Concentration</h2>
+        <div class="content">
+          <div class="cols">
+            <div class="visual">
+              <svg viewBox="0 0 760 560" role="img" aria-label="Small-sample concentration bias curves">
+                <rect x="72" y="54" width="620" height="388" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+                <g stroke="#E2E8F0" stroke-width="2">
+                  <line x1="72" y1="365" x2="692" y2="365"></line>
+                  <line x1="72" y1="287" x2="692" y2="287"></line>
+                  <line x1="72" y1="209" x2="692" y2="209"></line>
+                  <line x1="72" y1="131" x2="692" y2="131"></line>
+                  <line x1="196" y1="54" x2="196" y2="442"></line>
+                  <line x1="320" y1="54" x2="320" y2="442"></line>
+                  <line x1="444" y1="54" x2="444" y2="442"></line>
+                  <line x1="568" y1="54" x2="568" y2="442"></line>
+                </g>
+                <polyline points="112,98 196,214 320,278 568,327" fill="none" stroke="#B45309" stroke-width="7" stroke-linecap="round"></polyline>
+                <polyline points="112,324 196,330 320,336 568,339" fill="none" stroke="#0F766E" stroke-width="7" stroke-linecap="round"></polyline>
+                <g fill="#B45309"><circle cx="112" cy="98" r="9"></circle><circle cx="196" cy="214" r="9"></circle><circle cx="320" cy="278" r="9"></circle><circle cx="568" cy="327" r="9"></circle></g>
+                <g fill="#0F766E"><circle cx="112" cy="324" r="9"></circle><circle cx="196" cy="330" r="9"></circle><circle cx="320" cy="336" r="9"></circle><circle cx="568" cy="339" r="9"></circle></g>
+                <line x1="72" y1="340" x2="692" y2="340" stroke="#1E3A8A" stroke-width="3" stroke-dasharray="12 8"></line>
+                <text class="svg-label" x="585" y="108">raw kappa-hat</text>
+                <text class="svg-label" x="560" y="318">corrected</text>
+                <text class="svg-label" x="588" y="366">true kappa</text>
+                <text class="axis-label" x="382" y="496" text-anchor="middle">sample size n</text>
+                <text class="axis-label" x="30" y="250" transform="rotate(-90 30 250)" text-anchor="middle">mean estimate</text>
+                <text class="axis-label" x="112" y="468" text-anchor="middle">8</text>
+                <text class="axis-label" x="196" y="468" text-anchor="middle">16</text>
+                <text class="axis-label" x="320" y="468" text-anchor="middle">32</text>
+                <text class="axis-label" x="568" y="468" text-anchor="middle">64</text>
+              </svg>
+            </div>
+            <div class="panel amber">
+              <h3>Simulation Evidence</h3>
+              <p>For \( \kappa=2 \) and \( n=8 \), the notebook reports:</p>
+              <div class="formula compact">raw bias \(=0.8381\)</div>
+              <div class="formula compact">corrected bias \(=0.0113\)</div>
+              <p class="small">The bias is not because the mean direction is off-center. The maximum absolute mean sine error for \( \hat\mu \) is <span class="stat">0.0240</span>.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Finite-sample simulation: 700 replicates per cell</span><span>Nonlinearity of inverse-\(A\) matters most at small \(n\).</span></div>
+      </div>
+      <aside class="speaker-notes">Emphasize that Rbar itself is a length and the inverse A transform is nonlinear. This is why raw kappa estimates can be optimistic for small samples. The notebook simulation gives a concrete scale: at n equals 8 and true kappa equals 2, the raw bias is large while the correction nearly removes it.</aside>
+    </section>
+
+    <section data-label="Circular Unbiasedness">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Bias On A Circle</div>
+          <div class="source">The branch cut should not decide whether an estimator is centered.</div>
+        </div>
+        <h2>Circular Unbiasedness Is Not Linear Unbiasedness</h2>
+        <div class="content">
+          <div class="cols right-wide">
+            <div class="panel blue">
+              <h3>Diagnostic</h3>
+              <div class="formula">\( E\{\sin(\hat\mu-\mu)\}=0 \)</div>
+              <p>The sine of the wrapped error records signed tangential imbalance without choosing a privileged cut point.</p>
+              <ul>
+                <li>Linear error \( \hat\mu-\mu \) can jump near \( \pm\pi \).</li>
+                <li>Wrapped error lives in a chosen interval but still respects the circle.</li>
+                <li>Sine error checks centering in the tangent direction.</li>
+              </ul>
+            </div>
+            <div class="visual">
+              <svg viewBox="0 0 780 520" role="img" aria-label="Branch cut and sine error on the circle">
+                <circle cx="300" cy="255" r="190" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></circle>
+                <line x1="300" y1="255" x2="490" y2="255" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></line>
+                <text class="svg-label" x="505" y="263">branch cut</text>
+                <line x1="300" y1="255" x2="405" y2="96" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></line>
+                <line x1="300" y1="255" x2="175" y2="112" stroke="#0F766E" stroke-width="8" stroke-linecap="round"></line>
+                <path d="M351 178 A96 96 0 0 0 230 163" fill="none" stroke="#1E3A8A" stroke-width="5"></path>
+                <text class="svg-math" x="412" y="86">mu</text>
+                <text class="svg-math" x="112" y="104">mu-hat</text>
+                <rect x="548" y="128" width="170" height="230" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <text class="svg-label" x="633" y="170" text-anchor="middle">check</text>
+                <text class="svg-math" x="633" y="222" text-anchor="middle">sin(error)</text>
+                <text class="svg-label" x="633" y="272" text-anchor="middle">not raw</text>
+                <text class="svg-math" x="633" y="318" text-anchor="middle">error</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Circular centering</span><span>Mean sine error is stable under the angular coordinate choice.</span></div>
+      </div>
+      <aside class="speaker-notes">Pause on the sine-error diagnostic because it prevents a common mistake. A signed angle error depends on where the branch cut is placed, so it is not a stable criterion. Taking the sine of the wrapped error asks whether the estimator is centered on the circle without pretending angles form a line.</aside>
+    </section>
+
+    <section data-label="Wrapped Cauchy">
+      <div class="slide alt">
+        <div class="topline">
+          <div class="eyebrow">Weighted Circular Updates</div>
+          <div class="source">Wrapped Cauchy behavior is a disk-valued reweighting problem.</div>
+        </div>
+        <h2>Wrapped Cauchy Estimation Reweights Vectors</h2>
+        <div class="content">
+          <div class="cols">
+            <div class="visual">
+              <svg viewBox="0 0 700 560" role="img" aria-label="Wrapped Cauchy reweight path inside unit disk">
+                <circle cx="330" cy="280" r="220" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+                <circle cx="330" cy="280" r="145" fill="none" stroke="#E2E8F0" stroke-width="3"></circle>
+                <line x1="110" y1="280" x2="550" y2="280" stroke="#E2E8F0" stroke-width="2"></line>
+                <line x1="330" y1="60" x2="330" y2="500" stroke="#E2E8F0" stroke-width="2"></line>
+                <g fill="#2563EB" opacity="0.55">
+                  <circle cx="496" cy="137" r="8"></circle><circle cx="535" cy="235" r="8"></circle><circle cx="503" cy="416" r="8"></circle>
+                  <circle cx="397" cy="490" r="8"></circle><circle cx="238" cy="480" r="8"></circle><circle cx="128" cy="357" r="8"></circle>
+                  <circle cx="134" cy="193" r="8"></circle><circle cx="258" cy="82" r="8"></circle><circle cx="427" cy="82" r="8"></circle>
+                </g>
+                <polyline points="346,294 365,288 385,276 405,258 425,239 444,222 463,209" fill="none" stroke="#0F766E" stroke-width="7" stroke-linecap="round"></polyline>
+                <g fill="#0F766E">
+                  <circle cx="346" cy="294" r="8"></circle><circle cx="365" cy="288" r="8"></circle><circle cx="385" cy="276" r="8"></circle>
+                  <circle cx="405" cy="258" r="8"></circle><circle cx="425" cy="239" r="8"></circle><circle cx="444" cy="222" r="8"></circle><circle cx="463" cy="209" r="10"></circle>
+                </g>
+                <text class="svg-label" x="486" y="196">p path</text>
+                <text class="axis-label" x="330" y="530" text-anchor="middle">parameter remains inside the unit disk</text>
+              </svg>
+            </div>
+            <div class="panel teal">
+              <h3>Weighted Equation</h3>
+              <p>A wrapped Cauchy location update can be read as a weighted resultant:</p>
+              <div class="formula compact">\( \bar z_w = \frac{\sum_j w_j e^{i\theta_j}}{\sum_j w_j} \)</div>
+              <ul>
+                <li>Weights depend on the current disk parameter.</li>
+                <li>The update is still a unit-vector calculation.</li>
+                <li>The notebook check keeps weights positive and the path inside the unit disk.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Wrapped Cauchy fitting</span><span>Final parameter norm in notebook check: <span class="stat">0.5549</span>.</span></div>
+      </div>
+      <aside class="speaker-notes">Frame wrapped Cauchy fitting as another version of the same geometry. The current parameter sits inside the unit disk, and the observations receive weights determined by their circular relationship to it. The update is a weighted vector average, so the computation stays on circular objects.</aside>
+    </section>
+
+    <section data-label="Mixtures">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Mixture Estimation</div>
+          <div class="source">Responsibilities turn each component fit into a weighted circular MLE.</div>
+        </div>
+        <h2>Mixtures Replace Hard Assignment With Responsibilities</h2>
+        <div class="content">
+          <div class="cols right-wide">
+            <div class="panel violet">
+              <h3>EM Responsibilities</h3>
+              <div class="formula compact">\( r_{ij} = \frac{\pi_j f_{\mathrm{vM}}(\theta_i;\mu_j,\kappa_j)}{\sum_m \pi_m f_{\mathrm{vM}}(\theta_i;\mu_m,\kappa_m)} \)</div>
+              <p>For each observation, the row of responsibilities sums to one. The M step then recomputes \( \mu_j \) and \( \kappa_j \) from weighted resultants.</p>
+              <p class="small">Notebook mixture weights: <span class="stat">0.526381</span> and <span class="stat">0.473619</span>.</p>
+            </div>
+            <div class="visual">
+              <svg viewBox="0 0 820 540" role="img" aria-label="Mixture density and responsibility curve">
+                <rect x="72" y="64" width="660" height="340" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+                <g stroke="#E2E8F0" stroke-width="2">
+                  <line x1="72" y1="319" x2="732" y2="319"></line>
+                  <line x1="72" y1="234" x2="732" y2="234"></line>
+                  <line x1="72" y1="149" x2="732" y2="149"></line>
+                  <line x1="204" y1="64" x2="204" y2="404"></line>
+                  <line x1="336" y1="64" x2="336" y2="404"></line>
+                  <line x1="468" y1="64" x2="468" y2="404"></line>
+                  <line x1="600" y1="64" x2="600" y2="404"></line>
+                </g>
+                <path d="M82 375 C135 366, 166 292, 214 190 C250 116, 292 118, 336 260 C360 338, 398 360, 442 354 C502 346, 520 156, 584 122 C640 92, 680 255, 722 369" fill="none" stroke="#111827" stroke-width="6"></path>
+                <path d="M82 375 C140 365, 170 288, 214 190 C250 116, 292 118, 336 260 C360 330, 384 350, 416 356" fill="none" stroke="#2563EB" stroke-width="5"></path>
+                <path d="M420 356 C494 346, 520 156, 584 122 C640 92, 680 255, 722 369" fill="none" stroke="#B45309" stroke-width="5"></path>
+                <path d="M82 384 C180 384, 270 382, 350 350 C420 320, 470 208, 536 162 C606 113, 674 118, 722 116" fill="none" stroke="#0F766E" stroke-width="5" stroke-dasharray="12 8"></path>
+                <g>
+                  <circle cx="190" cy="420" r="8" fill="#2563EB"></circle><circle cx="216" cy="420" r="8" fill="#2563EB"></circle><circle cx="246" cy="420" r="8" fill="#2563EB"></circle>
+                  <circle cx="536" cy="420" r="8" fill="#B45309"></circle><circle cx="572" cy="420" r="8" fill="#B45309"></circle><circle cx="616" cy="420" r="8" fill="#B45309"></circle>
+                  <circle cx="428" cy="420" r="8" fill="#6D28D9"></circle><circle cx="466" cy="420" r="8" fill="#6D28D9"></circle>
+                </g>
+                <text class="svg-label" x="236" y="114">component 1</text>
+                <text class="svg-label" x="586" y="96">component 2</text>
+                <text class="svg-label" x="593" y="160">responsibility</text>
+                <text class="axis-label" x="402" y="482" text-anchor="middle">angle theta from -pi to pi</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Von Mises mixture EM</span><span>Responsibility row-sum max error: <span class="stat">2.22e-16</span>.</span></div>
+      </div>
+      <aside class="speaker-notes">Describe the EM loop without reducing it to generic clustering. Each component has a circular density, and each observation receives responsibilities that sum to one. The M step then performs weighted circular estimation for each component, which keeps the fit invariant to the angular cut.</aside>
+    </section>
+
+    <section data-label="Responsibility Artifact">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Weighted Evidence</div>
+          <div class="source">Wrapped Cauchy path and mixture responsibilities.</div>
+        </div>
+        <h2>Responsibility Geometry Is Visible</h2>
+        <div class="content">
+          <div class="cols left-wide">
+            <figure class="visual img-frame">
+              <img src="../core/wrapped-cauchy-mixture-responsibilities.png" alt="Wrapped Cauchy path and von Mises mixture responsibility diagnostics">
+            </figure>
+            <div class="panel teal">
+              <h3>What To Inspect</h3>
+              <ul>
+                <li>The wrapped Cauchy update path stays inside the unit disk.</li>
+                <li>Mixture responsibilities vary smoothly along the circular coordinate.</li>
+                <li>The fitted mixture increases log likelihood by <span class="stat">24.6991</span> in the notebook run.</li>
+              </ul>
+              <p class="small">These panels are generated from the chapter notebook and are used here as evidence, not as a substitute for the estimating equations.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Artifact: ../core/wrapped-cauchy-mixture-responsibilities.png</span><span>Weights carry the circular geometry.</span></div>
+      </div>
+      <aside class="speaker-notes">Use the second notebook artifact to connect the wrapped Cauchy and mixture stories. On the left, weights pull a disk parameter along a path; on the right, responsibilities color observations by component membership. Both panels show that estimation is mediated by circular weights, not by raw linear residuals.</aside>
+    </section>
+
+    <section data-label="Rotation Lab">
+      <div class="slide alt">
+        <div class="topline">
+          <div class="eyebrow">Applied Lab</div>
+          <div class="source">Rotate the sample, refit, and compare.</div>
+        </div>
+        <h2>Rotation Lab: The Origin Should Disappear</h2>
+        <div class="content">
+          <div class="cols">
+            <div class="panel blue">
+              <h3>Numerical Contract</h3>
+              <div class="formula compact">\( \max_\delta |\hat\mu(\theta+\delta)-\hat\mu(\theta)-\delta| = 8.88\mathrm{e}{-16} \)</div>
+              <div class="formula compact">\( \max_\delta |\hat\kappa(\theta+\delta)-\hat\kappa(\theta)| = 8.88\mathrm{e}{-16} \)</div>
+              <div class="formula compact">likelihood shift error \(=1.14\mathrm{e}{-13}\)</div>
+            </div>
+            <div class="visual">
+              <svg viewBox="0 0 760 520" role="img" aria-label="Rotating the sample rotates the estimate">
+                <defs>
+                  <marker id="arrow-rotate" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+                  </marker>
+                </defs>
+                <circle cx="230" cy="250" r="145" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+                <circle cx="530" cy="250" r="145" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></circle>
+                <line x1="230" y1="250" x2="332" y2="166" stroke="#0F766E" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow-rotate)"></line>
+                <line x1="530" y1="250" x2="603" y2="137" stroke="#0F766E" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow-rotate)"></line>
+                <path d="M380 250 C420 190, 450 190, 486 240" fill="none" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-rotate)"></path>
+                <g fill="#2563EB" opacity="0.72">
+                  <circle cx="298" cy="119" r="7"></circle><circle cx="340" cy="223" r="7"></circle><circle cx="282" cy="362" r="7"></circle><circle cx="126" cy="341" r="7"></circle><circle cx="105" cy="203" r="7"></circle>
+                  <circle cx="597" cy="111" r="7"></circle><circle cx="673" cy="194" r="7"></circle><circle cx="644" cy="337" r="7"></circle><circle cx="494" cy="386" r="7"></circle><circle cx="389" cy="260" r="7"></circle>
+                </g>
+                <text class="svg-label" x="230" y="438" text-anchor="middle">original fit</text>
+                <text class="svg-label" x="530" y="438" text-anchor="middle">rotated fit</text>
+                <text class="svg-math" x="384" y="182" text-anchor="middle">+ delta</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Rotation equivariance lab</span><span>Angular origin is arbitrary; fitted evidence is not.</span></div>
+      </div>
+      <aside class="speaker-notes">Show this as the practical acceptance test for the implementation. The sample is rotated by several deltas, then refit. The fitted direction changes by exactly the same delta, while concentration and corresponding likelihood values stay fixed up to numerical precision.</aside>
+    </section>
+
+    <section data-label="Pipeline">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Implementation Pattern</div>
+          <div class="source">A geometric estimator is a sequence of invariance-preserving moves.</div>
+        </div>
+        <h2>Estimator Pipeline</h2>
+        <div class="content">
+          <div class="step-list">
+            <div class="step">
+              <div class="num">1</div>
+              <div><h3>Wrap Before Comparing</h3><p>Every angular difference is reduced modulo \(2\pi\), so the coordinate cut cannot create artificial residuals.</p></div>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <div><h3>Average Unit Vectors</h3><p>Use \(e^{i\theta_j}\) and the resultant \( \bar z \) for direction and concentration evidence.</p></div>
+            </div>
+            <div class="step">
+              <div class="num">3</div>
+              <div><h3>Solve Or Weight</h3><p>For von Mises, solve \(A(\kappa)=\bar R\). For wrapped Cauchy and mixtures, update weighted resultants.</p></div>
+            </div>
+            <div class="step">
+              <div class="num">4</div>
+              <div><h3>Check Geometry</h3><p>Verify score equations, small-sample behavior, responsibility sums, and rotation equivariance.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>From notebook functions to lecture method</span><span>Each computation has an invariant attached.</span></div>
+      </div>
+      <aside class="speaker-notes">Turn the chapter into a reproducible workflow. Wrap angles before comparing, compute the resultant, solve the concentration equation, apply small-sample corrections when needed, and use weighted circular updates for wrapped Cauchy or mixtures. Each step has a geometry check attached to it.</aside>
+    </section>
+
+    <section data-label="Diagnostics">
+      <div class="slide alt">
+        <div class="topline">
+          <div class="eyebrow">Sanity Checks</div>
+          <div class="source">The notebook writes check JSON for the chapter artifact set.</div>
+        </div>
+        <h2>Diagnostics That Guard The Fit</h2>
+        <div class="content">
+          <div class="check-grid">
+            <div class="check"><div class="checkmark">OK</div><p>\( A(\hat\kappa) \) matches \( \bar R \) with error <span class="stat">4.44e-16</span>.</p></div>
+            <div class="check"><div class="checkmark">OK</div><p>Likelihood score is small at the von Mises MLE.</p></div>
+            <div class="check"><div class="checkmark">OK</div><p>Rotation equivariance holds for direction, concentration, and likelihood shifts.</p></div>
+            <div class="check"><div class="checkmark">OK</div><p>Mixture responsibilities sum to one row by row.</p></div>
+            <div class="check"><div class="checkmark">OK</div><p>Wrapped Cauchy weights are positive and the path stays inside the disk.</p></div>
+            <div class="check"><div class="checkmark">OK</div><p>Generated PNG artifacts are nonblank and large enough to inspect.</p></div>
+          </div>
+        </div>
+        <div class="footer"><span>Check file: ../checks/point-estimation-checks.json</span><span>Diagnostics make the estimator auditable.</span></div>
+      </div>
+      <aside class="speaker-notes">The checks are part of the lecture evidence. They verify that the score is small at the fit, that A(kappa hat) matches Rbar, that mixture responsibilities normalize, that wrapped Cauchy weights remain valid, and that generated artifacts are nonblank. These are mathematical tests, not only software tests.</aside>
+    </section>
+
+    <section data-label="Mistakes">
+      <div class="slide">
+        <div class="topline">
+          <div class="eyebrow">Warning</div>
+          <div class="source">Linear instincts can quietly break circular inference.</div>
+        </div>
+        <h2>Mistakes To Catch Early</h2>
+        <div class="content">
+          <div class="four">
+            <div class="panel amber">
+              <h3>Angle Mean</h3>
+              <p>Averaging raw degrees can put the estimate across the cut from every observation.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Line Variance</h3>
+              <p>Von Mises concentration is not a plug-in sample variance on unwrapped angles.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Unwrapped Residual</h3>
+              <p>Likelihood and score calculations need wrapped angular differences.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Rigid Labels</h3>
+              <p>Mixture components are learned through responsibilities, not permanent early assignments.</p>
+            </div>
+          </div>
+          <div class="visual">
+            <svg viewBox="0 0 1440 280" role="img" aria-label="Four warning diagnostics for circular point estimation">
+              <g transform="translate(70,38)">
+                <circle cx="90" cy="90" r="70" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+                <circle cx="24" cy="90" r="8" fill="#2563EB"></circle><circle cx="156" cy="90" r="8" fill="#2563EB"></circle>
+                <line x1="90" y1="90" x2="90" y2="160" stroke="#B45309" stroke-width="7"></line>
+                <text class="svg-label" x="90" y="205" text-anchor="middle">bad raw average</text>
+              </g>
+              <g transform="translate(390,38)">
+                <rect x="0" y="28" width="188" height="126" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+                <path d="M22 134 C64 42, 116 42, 164 134" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <line x1="26" y1="118" x2="166" y2="54" stroke="#B45309" stroke-width="6"></line>
+                <text class="svg-label" x="94" y="205" text-anchor="middle">wrong variance model</text>
+              </g>
+              <g transform="translate(710,38)">
+                <circle cx="90" cy="90" r="70" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+                <path d="M32 52 A80 80 0 0 1 158 52" fill="none" stroke="#2563EB" stroke-width="6"></path>
+                <line x1="90" y1="90" x2="160" y2="90" stroke="#B45309" stroke-width="5" stroke-dasharray="10 8"></line>
+                <text class="svg-label" x="90" y="205" text-anchor="middle">forgot wrapping</text>
+              </g>
+              <g transform="translate(1030,38)">
+                <rect x="0" y="30" width="210" height="126" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+                <circle cx="48" cy="92" r="16" fill="#2563EB"></circle><circle cx="88" cy="82" r="16" fill="#6D28D9"></circle><circle cx="128" cy="104" r="16" fill="#B45309"></circle><circle cx="168" cy="86" r="16" fill="#0F766E"></circle>
+                <line x1="30" y1="134" x2="180" y2="46" stroke="#B45309" stroke-width="6"></line>
+                <text class="svg-label" x="105" y="205" text-anchor="middle">hard labels too soon</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>Common failure modes</span><span>The fix is always to return to unit-vector geometry.</span></div>
+      </div>
+      <aside class="speaker-notes">Use this warning slide to make students skeptical of familiar linear shortcuts. Averaging degree values across a branch cut, plugging a line variance into concentration, forgetting to wrap residuals, or treating mixture labels as fixed can all give plausible-looking but geometrically wrong estimates.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide alt">
+        <div class="topline">
+          <div class="eyebrow">Recap</div>
+          <div class="source">Chapter 05 turns circular summaries into estimators.</div>
+        </div>
+        <h2>What The Chapter Adds</h2>
+        <div class="content">
+          <div class="cols">
+            <div class="panel blue">
+              <h3>Core Formulas</h3>
+              <div class="formula compact">\( \hat\mu = \arg\left(\sum_j e^{i\theta_j}\right) \)</div>
+              <div class="formula compact">\( A(\hat\kappa)=\bar R \)</div>
+              <div class="formula compact">\( \bar z_w = \frac{\sum_j w_j e^{i\theta_j}}{\sum_j w_j} \)</div>
+            </div>
+            <div class="panel teal">
+              <h3>Core Checks</h3>
+              <ul>
+                <li>Score equations vanish at the fit.</li>
+                <li>Small-sample concentration bias is inspected, not ignored.</li>
+                <li>Responsibilities and wrapped Cauchy weights are valid weights.</li>
+                <li>Rotation equivariance holds numerically.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="panel slate">
+            <p>The lecture principle: estimate through the geometry of the circle, then audit the result with invariance and normalization checks.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Directional Statistics, Chapter 05</span><span>Point estimation is geometry plus diagnostics.</span></div>
+      </div>
+      <aside class="speaker-notes">Close by tying the lecture back to the course arc. Earlier chapters built circular summaries and model families; this chapter turns them into estimators. The unifying principle is that parameters should be fitted through unit-vector geometry and checked by equivariance, score equations, and responsibility normalization.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

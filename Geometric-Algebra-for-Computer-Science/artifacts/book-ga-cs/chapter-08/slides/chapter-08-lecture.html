@@ -1,0 +1,1033 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 08 Lecture - Geometric Differentiation</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="chapter-08">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/part-01-geometric-algebra/chapter-08-geometric-differentiation/08-geometric-differentiation.ipynb">
+  <meta name="source_span" content="the PDF/page audit in this notebook records the printed and PDF page span used for chapter grounding; all prose, examples, visuals, and checks here are original course material.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    :root {
+      --deck-bg: #ffffff;
+      --deck-alt: #f8fafc;
+      --deck-ink: #111827;
+      --deck-muted: #475569;
+      --deck-dimmed: #64748b;
+      --deck-accent: #1e3a8a;
+      --deck-blue: #2563eb;
+      --deck-teal: #0f766e;
+      --deck-amber: #b45309;
+      --deck-violet: #6d28d9;
+      --deck-border: #cbd5e1;
+      --deck-border-soft: #e2e8f0;
+      --font-sans-local: 'Source Sans 3', Arial, sans-serif;
+      --font-math-local: 'STIX Two Text', 'STIX Two Math', 'Cambria Math', Georgia, serif;
+      --font-mono-local: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    body {
+      margin: 0;
+      background: #000000;
+      color: var(--deck-ink);
+      font-family: var(--font-sans-local);
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      background: var(--deck-bg);
+      color: var(--deck-ink);
+      font-family: var(--font-sans-local);
+    }
+
+    .slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+    }
+
+    .pad {
+      position: relative;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 72px 96px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.08;
+      font-weight: 700;
+      color: var(--deck-ink);
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      font-weight: 700;
+      color: var(--deck-ink);
+    }
+
+    h3 {
+      font-size: 30px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--deck-accent);
+    }
+
+    .eyebrow {
+      font-size: 24px;
+      line-height: 1.25;
+      font-weight: 700;
+      color: var(--deck-accent);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      font-size: 31px;
+      line-height: 1.35;
+      color: var(--deck-muted);
+      max-width: 1180px;
+    }
+
+    .body {
+      font-size: 28px;
+      line-height: 1.42;
+      color: var(--deck-ink);
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--deck-dimmed);
+    }
+
+    .math {
+      font-family: var(--font-math-local);
+      font-style: italic;
+    }
+
+    .mono {
+      font-family: var(--font-mono-local);
+      font-size: 24px;
+    }
+
+    .title-grid {
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 58px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 42px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .wide-left {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 44px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .wide-right {
+      display: grid;
+      grid-template-columns: 0.88fr 1.12fr;
+      gap: 44px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .box {
+      border: 1px solid var(--deck-border-soft);
+      border-left: 5px solid var(--deck-blue);
+      border-radius: 8px;
+      background: rgba(248, 250, 252, 0.94);
+      padding: 22px 26px;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    }
+
+    .box.teal {
+      border-left-color: var(--deck-teal);
+      background: #f0fdfa;
+    }
+
+    .box.amber {
+      border-left-color: var(--deck-amber);
+      background: #fffbeb;
+    }
+
+    .box.violet {
+      border-left-color: var(--deck-violet);
+      background: #f5f3ff;
+    }
+
+    .box.indigo {
+      border-left-color: var(--deck-accent);
+      background: #eef2ff;
+    }
+
+    .box-title {
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--deck-accent);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .box-text {
+      font-size: 27px;
+      line-height: 1.45;
+      color: var(--deck-ink);
+    }
+
+    .formula {
+      font-size: 34px;
+      line-height: 1.35;
+      text-align: center;
+      padding: 18px 20px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid var(--deck-border-soft);
+      color: var(--deck-ink);
+    }
+
+    .formula.compact {
+      font-size: 30px;
+      padding: 14px 16px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .mini {
+      border: 1px solid var(--deck-border-soft);
+      border-radius: 8px;
+      padding: 16px;
+      background: #ffffff;
+    }
+
+    .mini strong {
+      display: block;
+      font-size: 24px;
+      color: var(--deck-accent);
+      margin-bottom: 8px;
+    }
+
+    .mini span {
+      display: block;
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--deck-muted);
+    }
+
+    ul.clean {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    ul.clean li {
+      position: relative;
+      padding-left: 32px;
+      font-size: 27px;
+      line-height: 1.42;
+      color: var(--deck-ink);
+    }
+
+    ul.clean li::before {
+      content: '>';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--deck-blue);
+      font-weight: 700;
+    }
+
+    .diagram {
+      width: 100%;
+      height: 100%;
+      min-height: 560px;
+      border: 1px solid var(--deck-border-soft);
+      border-radius: 8px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    svg {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+    }
+
+    .source-card {
+      margin-top: 28px;
+      padding: 18px 22px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--deck-border-soft);
+      font-size: 22px;
+      line-height: 1.36;
+      color: var(--deck-muted);
+    }
+
+    .footer-note {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      font-size: 22px;
+      line-height: 1.3;
+      color: var(--deck-dimmed);
+    }
+
+    .speaker-notes {
+      display: none;
+      font-size: 20px;
+    }
+  </style>
+  <script type="application/json" id="deck-metadata">
+    {
+      "course": "Geometric Algebra for Computer Science",
+      "chapter_id": "chapter-08",
+      "chapter_title": "08 Geometric Differentiation",
+      "notebook_path": "Geometric-Algebra-for-Computer-Science/part-01-geometric-algebra/chapter-08-geometric-differentiation/08-geometric-differentiation.ipynb",
+      "source_span": "the PDF/page audit in this notebook records the printed and PDF page span used for chapter grounding; all prose, examples, visuals, and checks here are original course material.",
+      "source_pdf": "Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf",
+      "design_system_version": "lecture-design-system-2026-05-23",
+      "manifest_row": 343
+    }
+  </script>
+</head>
+<body>
+  <deck-stage width="1920" height="1080" no-rail>
+    <section class="slide" data-label="Title">
+      <div class="pad">
+        <div class="title-grid">
+          <div>
+            <div class="eyebrow">Chapter 08</div>
+            <h1>Geometric Differentiation</h1>
+            <p class="subtitle">A calculus of local change for vectors, rotors, blades, and full multivectors.</p>
+            <div class="source-card">
+              <strong>Manifest source span:</strong>
+              the PDF/page audit in this notebook records the printed and PDF page span used for chapter grounding; all prose, examples, visuals, and checks here are original course material.
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 620" role="img" aria-label="Three channels of geometric differentiation">
+              <defs>
+                <marker id="arrow-title-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 Z" fill="#2563eb"></path>
+                </marker>
+                <marker id="arrow-title-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 Z" fill="#0f766e"></path>
+                </marker>
+                <marker id="arrow-title-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M 0 0 L 12 6 L 0 12 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <rect x="0" y="0" width="820" height="620" fill="#ffffff"></rect>
+              <g stroke="#e2e8f0" stroke-width="2">
+                <path d="M90 110 H740"></path>
+                <path d="M90 310 H740"></path>
+                <path d="M90 510 H740"></path>
+              </g>
+              <g>
+                <text x="90" y="72" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Scalar path</text>
+                <path d="M145 138 C250 80 348 188 455 126 C540 78 615 104 690 150" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"></path>
+                <circle cx="455" cy="126" r="12" fill="#2563eb"></circle>
+                <path d="M455 126 L535 94" stroke="#b45309" stroke-width="7" marker-end="url(#arrow-title-amber)" stroke-linecap="round"></path>
+                <text x="548" y="92" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#b45309">dX/dt</text>
+              </g>
+              <g>
+                <text x="90" y="272" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Vector direction</text>
+                <line x1="140" y1="344" x2="690" y2="344" stroke="#cbd5e1" stroke-width="4"></line>
+                <line x1="150" y1="430" x2="700" y2="242" stroke="#cbd5e1" stroke-width="4"></line>
+                <circle cx="355" cy="344" r="13" fill="#2563eb"></circle>
+                <path d="M355 344 L478 302" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-title-teal)" stroke-linecap="round"></path>
+                <path d="M355 344 C410 378 467 384 528 360" fill="none" stroke="#b45309" stroke-width="7" marker-end="url(#arrow-title-amber)" stroke-linecap="round"></path>
+                <text x="492" y="294" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#0f766e">a</text>
+                <text x="540" y="370" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#b45309">D_a F</text>
+              </g>
+              <g>
+                <text x="90" y="472" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Multivector coordinates</text>
+                <g transform="translate(150 510)">
+                  <rect x="0" y="-36" width="92" height="64" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+                  <rect x="118" y="-36" width="92" height="64" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"></rect>
+                  <rect x="236" y="-36" width="92" height="64" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"></rect>
+                  <rect x="354" y="-36" width="92" height="64" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"></rect>
+                  <text x="24" y="6" font-size="24" font-family="STIX Two Text" fill="#1e3a8a">1</text>
+                  <text x="137" y="6" font-size="24" font-family="STIX Two Text" fill="#0f766e">e_i</text>
+                  <text x="254" y="6" font-size="24" font-family="STIX Two Text" fill="#b45309">e_i e_j</text>
+                  <text x="374" y="6" font-size="24" font-family="STIX Two Text" fill="#6d28d9">I</text>
+                  <path d="M466 -4 H620" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow-title-blue)" stroke-linecap="round"></path>
+                  <text x="526" y="-22" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">dF_M(A)</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Notebook: part-01-geometric-algebra/chapter-08-geometric-differentiation</span>
+          <span>Deck contract: HTML plus mirrored speaker notes</span>
+        </div>
+        <aside class="speaker-notes">Open by naming the chapter's central move: differentiation is not a single operation until the allowed variation has been chosen. A scalar parameter, a vector direction, and a multivector perturbation all produce local change, but they probe different domains. The visual deliberately puts those three channels on one stage so students can keep the syntax tied to geometric meaning.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Domain Of Variation">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">First decision</div>
+          <h2>Choose The Domain Of Variation</h2>
+        </div>
+        <div class="wide-left">
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Definition Pattern</div>
+              <div class="box-text">A derivative in GA starts by declaring the line of perturbation, then measuring the first-order part of the output.</div>
+            </div>
+            <div class="formula">$$D_A F(X)=\lim_{h\to 0}\frac{F(X+hA)-F(X)}{h}$$</div>
+            <div class="mini-grid">
+              <div class="mini"><strong>Scalar</strong><span>\(X=X(t)\), one parameter moves through the algebra.</span></div>
+              <div class="mini"><strong>Vector</strong><span>\(X=x\), the direction \(a\) selects one tangent probe.</span></div>
+              <div class="mini"><strong>Multivector</strong><span>\(X=M\), a blade direction \(A\) can carry any grade.</span></div>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 620" role="img" aria-label="Scalar, vector, and multivector perturbation domains">
+              <defs>
+                <marker id="arrow-domain" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#2563eb"></path>
+                </marker>
+              </defs>
+              <rect width="760" height="620" fill="#ffffff"></rect>
+              <g transform="translate(74 78)">
+                <text x="0" y="0" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">1D parameter line</text>
+                <line x1="0" y1="64" x2="570" y2="64" stroke="#cbd5e1" stroke-width="5"></line>
+                <circle cx="214" cy="64" r="13" fill="#2563eb"></circle>
+                <path d="M214 64 H334" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow-domain)" stroke-linecap="round"></path>
+                <text x="190" y="114" font-size="24" font-family="STIX Two Text" font-style="italic" fill="#475569">t</text>
+                <text x="332" y="114" font-size="24" font-family="STIX Two Text" font-style="italic" fill="#475569">t+h</text>
+              </g>
+              <g transform="translate(74 254)">
+                <text x="0" y="0" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Vector domain</text>
+                <line x1="20" y1="120" x2="620" y2="120" stroke="#e2e8f0" stroke-width="4"></line>
+                <line x1="70" y1="185" x2="530" y2="38" stroke="#e2e8f0" stroke-width="4"></line>
+                <circle cx="258" cy="120" r="14" fill="#2563eb"></circle>
+                <path d="M258 120 L398 78" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-domain)" stroke-linecap="round"></path>
+                <text x="410" y="76" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#0f766e">a</text>
+                <text x="230" y="164" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">x</text>
+              </g>
+              <g transform="translate(74 482)">
+                <text x="0" y="0" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Blade-coordinate domain</text>
+                <g transform="translate(20 42)">
+                  <rect x="0" y="0" width="92" height="54" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+                  <rect x="112" y="0" width="92" height="54" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+                  <rect x="224" y="0" width="92" height="54" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="3"></rect>
+                  <rect x="336" y="0" width="92" height="54" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"></rect>
+                  <rect x="448" y="0" width="92" height="54" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"></rect>
+                  <text x="25" y="36" font-size="24" font-family="STIX Two Text" fill="#2563eb">1</text>
+                  <text x="136" y="36" font-size="24" font-family="STIX Two Text" fill="#2563eb">e1</text>
+                  <text x="247" y="36" font-size="24" font-family="STIX Two Text" fill="#0f766e">e2</text>
+                  <text x="356" y="36" font-size="24" font-family="STIX Two Text" fill="#b45309">e12</text>
+                  <text x="472" y="36" font-size="24" font-family="STIX Two Text" fill="#6d28d9">I</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Use this slide to slow down the notation before formulas multiply. The same limit expression is being reused, but the object \(A\) lives in the domain being probed. This is the conceptual safeguard against treating vector derivatives, parametric derivatives, and multivector derivatives as unrelated recipes. The class should see a derivative as the first-order coefficient along a declared perturbation line.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Rotor Derivative">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Scalar path, multivector value</div>
+          <h2>Rotor Motion Differentiates To A Commutator</h2>
+        </div>
+        <div class="wide-right">
+          <div class="diagram">
+            <svg viewBox="0 0 760 620" role="img" aria-label="Rotor path and commutator tangent">
+              <defs>
+                <marker id="arrow-rotor-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#2563eb"></path>
+                </marker>
+                <marker id="arrow-rotor-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <rect width="760" height="620" fill="#ffffff"></rect>
+              <g transform="translate(380 330)">
+                <circle cx="0" cy="0" r="212" fill="rgba(37,99,235,0.04)" stroke="#cbd5e1" stroke-width="4"></circle>
+                <line x1="-260" y1="0" x2="260" y2="0" stroke="#e2e8f0" stroke-width="4"></line>
+                <line x1="0" y1="240" x2="0" y2="-240" stroke="#e2e8f0" stroke-width="4"></line>
+                <path d="M0 0 L178 -88" stroke="#2563eb" stroke-width="10" marker-end="url(#arrow-rotor-blue)" stroke-linecap="round"></path>
+                <path d="M0 0 L118 -164" stroke="#0f766e" stroke-width="10" marker-end="url(#arrow-rotor-blue)" stroke-linecap="round"></path>
+                <path d="M178 -88 C160 -126 140 -150 118 -164" fill="none" stroke="#94a3b8" stroke-width="5" stroke-dasharray="12 12"></path>
+                <path d="M118 -164 L190 -110" stroke="#b45309" stroke-width="8" marker-end="url(#arrow-rotor-amber)" stroke-linecap="round"></path>
+                <text x="172" y="-66" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">X(t)</text>
+                <text x="44" y="-184" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#0f766e">R X R&#771;</text>
+                <text x="196" y="-106" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#b45309">X x B</text>
+                <text x="-246" y="-226" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">infinitesimal turn</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Rotor path</div>
+              <div class="box-text">For \(R(\epsilon)=\exp(-\epsilon B/2)\), the sandwich action has a first-order term controlled by the bivector generator.</div>
+            </div>
+            <div class="formula">$$R(\epsilon)X\widetilde{R(\epsilon)}=X+\epsilon\,(X\times B)+O(\epsilon^2)$$</div>
+            <ul class="clean">
+              <li>The derivative is a tangent to a rotation orbit, not a new coordinate table.</li>
+              <li>The same commutator moves vectors, bivectors, and mixed multivectors.</li>
+              <li>Finite-angle error scales quadratically when the first-order model is right.</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="speaker-notes">Present the commutator as the first major payoff of geometric algebra. A small rotor does not require separate matrix derivatives for every grade. The bivector generator tells which oriented plane is turning, and the commutator supplies the tangent velocity of the transformed object. Emphasize that the approximation is local: the quadratic remainder is evidence that the derivative captures exactly the first-order part.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Multivector Product Rule">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Parametric differentiation</div>
+          <h2>Multivector-Valued Functions Keep Their Geometry</h2>
+        </div>
+        <div class="wide-left">
+          <div class="stack">
+            <div class="box teal">
+              <div class="box-title">Area-rate example</div>
+              <div class="box-text">If \(A(t)=r(t)\wedge v(t)\), then the derivative is still a bivector: an oriented area element changing in time.</div>
+            </div>
+            <div class="formula">$$\frac{d}{dt}\bigl(r(t)\wedge v(t)\bigr)=r'(t)\wedge v(t)+r(t)\wedge v'(t)$$</div>
+            <div class="box">
+              <div class="box-title">Teaching point</div>
+              <div class="box-text">Differentiate the construction. Coordinates are an audit trail; the blade type explains what the derivative means.</div>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 620" role="img" aria-label="Parametric bivector product rule">
+              <defs>
+                <marker id="arrow-product-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#2563eb"></path>
+                </marker>
+                <marker id="arrow-product-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#0f766e"></path>
+                </marker>
+                <marker id="arrow-product-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <rect width="820" height="620" fill="#ffffff"></rect>
+              <g transform="translate(86 82)">
+                <path d="M40 360 C140 210 246 446 344 286 C442 126 542 194 650 112" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"></path>
+                <circle cx="344" cy="286" r="13" fill="#2563eb"></circle>
+                <path d="M344 286 L438 194" stroke="#2563eb" stroke-width="8" marker-end="url(#arrow-product-blue)" stroke-linecap="round"></path>
+                <path d="M344 286 L448 326" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-product-teal)" stroke-linecap="round"></path>
+                <polygon points="344,286 438,194 542,234 448,326" fill="rgba(15,118,110,0.12)" stroke="#0f766e" stroke-width="4"></polygon>
+                <path d="M438 194 L524 158" stroke="#b45309" stroke-width="7" marker-end="url(#arrow-product-amber)" stroke-linecap="round"></path>
+                <path d="M448 326 L522 388" stroke="#b45309" stroke-width="7" marker-end="url(#arrow-product-amber)" stroke-linecap="round"></path>
+                <text x="250" y="312" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">r(t)</text>
+                <text x="452" y="344" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#0f766e">v(t)</text>
+                <text x="534" y="156" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#b45309">r'(t)</text>
+                <text x="528" y="410" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#b45309">v'(t)</text>
+                <text x="58" y="40" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">curve, velocity, and area blade</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Make the product rule feel familiar and new at the same time. The algebraic rule is ordinary bilinearity, but the result is not merely a pair of component derivatives. The wedge makes the derivative an oriented area-rate, so students should inspect the parallelogram and ask how changing either edge changes the blade. This prepares them for rotor and surface calculations where the value is naturally multivector-valued.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Directional Inversion">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Directional change</div>
+          <h2>Inversion Couples Radial And Angular Motion</h2>
+        </div>
+        <div class="wide-right">
+          <div class="diagram">
+            <svg viewBox="0 0 760 620" role="img" aria-label="Directional derivative of vector inversion">
+              <defs>
+                <marker id="arrow-inv-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#2563eb"></path>
+                </marker>
+                <marker id="arrow-inv-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#0f766e"></path>
+                </marker>
+                <marker id="arrow-inv-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <rect width="760" height="620" fill="#ffffff"></rect>
+              <g transform="translate(380 318)">
+                <line x1="-290" y1="0" x2="290" y2="0" stroke="#e2e8f0" stroke-width="4"></line>
+                <line x1="0" y1="238" x2="0" y2="-238" stroke="#e2e8f0" stroke-width="4"></line>
+                <circle cx="0" cy="0" r="180" fill="none" stroke="#cbd5e1" stroke-width="4" stroke-dasharray="14 12"></circle>
+                <circle cx="0" cy="0" r="84" fill="none" stroke="#cbd5e1" stroke-width="3" stroke-dasharray="10 10"></circle>
+                <path d="M0 0 L198 -86" stroke="#2563eb" stroke-width="10" marker-end="url(#arrow-inv-blue)" stroke-linecap="round"></path>
+                <path d="M198 -86 L272 -132" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-inv-teal)" stroke-linecap="round"></path>
+                <path d="M0 0 L78 -34" stroke="#2563eb" stroke-width="7" marker-end="url(#arrow-inv-blue)" stroke-linecap="round" opacity="0.65"></path>
+                <path d="M78 -34 L42 -108" stroke="#b45309" stroke-width="8" marker-end="url(#arrow-inv-amber)" stroke-linecap="round"></path>
+                <path d="M198 -86 C154 -106 116 -102 78 -34" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 10"></path>
+                <text x="206" y="-64" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">x</text>
+                <text x="276" y="-134" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#0f766e">a</text>
+                <text x="90" y="-22" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">x^{-1}</text>
+                <text x="2" y="-124" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#b45309">D_a x^{-1}</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box amber">
+              <div class="box-title">Stress test</div>
+              <div class="box-text">Perturb \(x\) in direction \(a\). The inverse point need not move parallel to \(a\).</div>
+            </div>
+            <div class="formula">$$D_a(x^{-1})=-x^{-1} a x^{-1}$$</div>
+            <ul class="clean">
+              <li>The radial part changes the scale of the inverse.</li>
+              <li>The tangential part swings the inverse direction.</li>
+              <li>The geometric product keeps both effects in one expression.</li>
+            </ul>
+          </div>
+        </div>
+        <aside class="speaker-notes">Treat inversion as a diagnostic example because it defeats the intuition that a directional derivative should point where the input perturbation points. A small move of \(x\) decomposes into radial and angular effects after inversion. The compact formula \(-x^{-1} a x^{-1}\) is valuable because it keeps both effects in product order. Ask students to locate \(x\), \(a\), \(x^{-1}\), and the derivative arrow before reading the equation.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Vector Derivative">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Collect all coordinate probes</div>
+          <h2>The Vector Derivative Is A Basis-Summed Operator</h2>
+        </div>
+        <div class="wide-left">
+          <div class="stack">
+            <div class="formula">$$\partial_x F=\sum_i e_i\,D_{e_i}F(x)$$</div>
+            <div class="box indigo">
+              <div class="box-title">Two anchors</div>
+              <div class="box-text">\(\partial_x x=n\) in \(n\) Euclidean dimensions, while \(\partial_x(x^2)=2x\). Familiar answers emerge from a product-valued operator.</div>
+            </div>
+            <ul class="clean">
+              <li>Each \(D_{e_i}\) is an ordinary directional finite probe.</li>
+              <li>Multiplication by \(e_i\) recombines the probes geometrically.</li>
+              <li>The result can contain scalar, vector, bivector, and higher-grade parts.</li>
+            </ul>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 620" role="img" aria-label="Basis summed vector derivative">
+              <defs>
+                <marker id="arrow-vd-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#2563eb"></path>
+                </marker>
+                <marker id="arrow-vd-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#0f766e"></path>
+                </marker>
+                <marker id="arrow-vd-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <rect width="820" height="620" fill="#ffffff"></rect>
+              <g transform="translate(130 80)">
+                <line x1="0" y1="390" x2="560" y2="390" stroke="#e2e8f0" stroke-width="4"></line>
+                <line x1="100" y1="480" x2="100" y2="40" stroke="#e2e8f0" stroke-width="4"></line>
+                <circle cx="260" cy="250" r="15" fill="#2563eb"></circle>
+                <path d="M260 250 L382 250" stroke="#2563eb" stroke-width="8" marker-end="url(#arrow-vd-blue)" stroke-linecap="round"></path>
+                <path d="M260 250 L260 128" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-vd-teal)" stroke-linecap="round"></path>
+                <path d="M260 250 C322 204 390 202 456 244" fill="none" stroke="#b45309" stroke-width="8" marker-end="url(#arrow-vd-amber)" stroke-linecap="round"></path>
+                <text x="390" y="258" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">D_{e1}F</text>
+                <text x="276" y="128" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#0f766e">D_{e2}F</text>
+                <text x="464" y="252" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#b45309">recombined</text>
+                <g transform="translate(10 510)">
+                  <rect x="0" y="0" width="580" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"></rect>
+                  <text x="24" y="38" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#1e3a8a">e1 D_{e1}F + e2 D_{e2}F + e3 D_{e3}F + ...</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">The purpose here is to demystify the vector derivative by building it from directional derivatives the students already understand. In an orthonormal basis, each coordinate direction gets probed, then the basis vector is multiplied on the left before summing. That last multiplication is why the operator can return several grades. The identity and squared-length examples are familiar landmarks, but the grade-rich output is the new geometric feature.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Grad Div Curl">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Classical operators inside one product</div>
+          <h2>Gradient, Divergence, And Curl Are Grade Selections</h2>
+        </div>
+        <div class="wide-right">
+          <div class="diagram">
+            <svg viewBox="0 0 760 620" role="img" aria-label="Grade split for gradient divergence and curl">
+              <defs>
+                <marker id="arrow-gdc-blue" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#2563eb"></path>
+                </marker>
+                <marker id="arrow-gdc-teal" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#0f766e"></path>
+                </marker>
+              </defs>
+              <rect width="760" height="620" fill="#ffffff"></rect>
+              <g transform="translate(72 78)">
+                <text x="0" y="0" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Scalar field: gradient</text>
+                <g transform="translate(0 30)">
+                  <ellipse cx="150" cy="120" rx="128" ry="54" fill="none" stroke="#cbd5e1" stroke-width="4"></ellipse>
+                  <ellipse cx="150" cy="120" rx="78" ry="32" fill="none" stroke="#cbd5e1" stroke-width="4"></ellipse>
+                  <ellipse cx="150" cy="120" rx="34" ry="14" fill="none" stroke="#cbd5e1" stroke-width="4"></ellipse>
+                  <path d="M150 120 L238 74" stroke="#2563eb" stroke-width="8" marker-end="url(#arrow-gdc-blue)" stroke-linecap="round"></path>
+                  <text x="250" y="76" font-size="25" font-family="STIX Two Text" font-style="italic" fill="#2563eb">&#8706;f</text>
+                </g>
+              </g>
+              <g transform="translate(430 78)">
+                <text x="0" y="0" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Vector field: divergence</text>
+                <g transform="translate(36 44)" stroke="#2563eb" stroke-width="6" stroke-linecap="round" marker-end="url(#arrow-gdc-blue)">
+                  <path d="M120 100 L120 18"></path>
+                  <path d="M120 100 L190 54"></path>
+                  <path d="M120 100 L202 132"></path>
+                  <path d="M120 100 L120 182"></path>
+                  <path d="M120 100 L48 146"></path>
+                  <path d="M120 100 L38 68"></path>
+                </g>
+                <circle cx="156" cy="144" r="12" fill="#2563eb"></circle>
+                <text x="74" y="270" font-size="25" font-family="STIX Two Text" font-style="italic" fill="#2563eb">&lt;&#8706;F&gt;_0</text>
+              </g>
+              <g transform="translate(72 374)">
+                <text x="0" y="0" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Vector field: curl bivector</text>
+                <g transform="translate(38 30)">
+                  <circle cx="130" cy="112" r="92" fill="rgba(15,118,110,0.06)" stroke="#cbd5e1" stroke-width="4"></circle>
+                  <path d="M130 20 C218 32 232 138 164 190" fill="none" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-gdc-teal)" stroke-linecap="round"></path>
+                  <path d="M130 204 C42 190 30 84 96 32" fill="none" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-gdc-teal)" stroke-linecap="round"></path>
+                  <text x="258" y="118" font-size="25" font-family="STIX Two Text" font-style="italic" fill="#0f766e">&lt;&#8706;F&gt;_2</text>
+                </g>
+              </g>
+              <g transform="translate(438 394)">
+                <rect x="0" y="0" width="256" height="116" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"></rect>
+                <text x="24" y="42" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#1e3a8a">&#8706;F = &#8706;&#183;F + &#8706;&#8743;F</text>
+                <text x="24" y="82" font-size="24" font-family="Source Sans 3" fill="#475569">scalar plus bivector</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box">
+              <div class="box-title">Scalar-valued input</div>
+              <div class="box-text">For \(f(x)\), the vector derivative \(\partial f\) is the gradient vector.</div>
+            </div>
+            <div class="box teal">
+              <div class="box-title">Vector-valued input</div>
+              <div class="box-text">For \(F(x)\), the scalar part \(\langle \partial F\rangle_0\) records divergence, while the bivector part \(\langle \partial F\rangle_2\) records oriented circulation.</div>
+            </div>
+            <div class="formula compact">$$\partial F=\partial\cdot F+\partial\wedge F$$</div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Connect the GA operator to vocabulary students already know. The gradient is not a separate symbol system when the function is scalar-valued. For a vector field, the geometric product of \(\partial\) and \(F\) separates into a scalar part and a bivector part. The scalar part measures local expansion or compression, while the bivector part measures oriented circulation in coordinate planes. This is the clean GA replacement for switching between grad, div, and curl notations.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Multivector Differentiation">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Full algebra perturbations</div>
+          <h2>Multivector Differentiation Follows The Object</h2>
+        </div>
+        <div class="wide-left">
+          <div class="stack">
+            <div class="box violet">
+              <div class="box-title">Blade-coordinate view</div>
+              <div class="box-text">A multivector is a point in the vector space with basis \(1,e_1,e_2,e_3,e_{12},e_{13},e_{23},I\). Perturbing one blade coordinate is a directional derivative.</div>
+            </div>
+            <div class="formula">$$F(M)=MC,\qquad D_A F(M)=AC$$</div>
+            <ul class="clean">
+              <li>Rotors move in even-grade directions.</li>
+              <li>Planes move in bivector directions.</li>
+              <li>Volume elements move in pseudoscalar directions.</li>
+            </ul>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 820 620" role="img" aria-label="Multivector basis blade perturbation atlas">
+              <defs>
+                <marker id="arrow-mv" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#6d28d9"></path>
+                </marker>
+              </defs>
+              <rect width="820" height="620" fill="#ffffff"></rect>
+              <g transform="translate(76 74)">
+                <text x="0" y="0" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">basis-blade atlas</text>
+                <g transform="translate(0 44)">
+                  <rect x="0" y="0" width="146" height="74" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+                  <rect x="166" y="0" width="146" height="74" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+                  <rect x="332" y="0" width="146" height="74" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+                  <rect x="498" y="0" width="146" height="74" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+                  <rect x="0" y="100" width="146" height="74" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"></rect>
+                  <rect x="166" y="100" width="146" height="74" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"></rect>
+                  <rect x="332" y="100" width="146" height="74" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="3"></rect>
+                  <rect x="498" y="100" width="146" height="74" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="3"></rect>
+                  <text x="52" y="46" font-size="26" font-family="STIX Two Text" fill="#2563eb">1</text>
+                  <text x="212" y="46" font-size="26" font-family="STIX Two Text" fill="#2563eb">e1</text>
+                  <text x="378" y="46" font-size="26" font-family="STIX Two Text" fill="#2563eb">e2</text>
+                  <text x="544" y="46" font-size="26" font-family="STIX Two Text" fill="#2563eb">e3</text>
+                  <text x="42" y="146" font-size="26" font-family="STIX Two Text" fill="#b45309">e12</text>
+                  <text x="208" y="146" font-size="26" font-family="STIX Two Text" fill="#b45309">e13</text>
+                  <text x="374" y="146" font-size="26" font-family="STIX Two Text" fill="#b45309">e23</text>
+                  <text x="548" y="146" font-size="26" font-family="STIX Two Text" fill="#6d28d9">I</text>
+                </g>
+                <g transform="translate(42 300)">
+                  <circle cx="135" cy="96" r="68" fill="rgba(109,40,217,0.08)" stroke="#6d28d9" stroke-width="4"></circle>
+                  <circle cx="135" cy="96" r="13" fill="#6d28d9"></circle>
+                  <path d="M135 96 L244 48" stroke="#6d28d9" stroke-width="8" marker-end="url(#arrow-mv)" stroke-linecap="round"></path>
+                  <text x="116" y="182" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#6d28d9">M</text>
+                  <text x="258" y="52" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#6d28d9">A</text>
+                  <path d="M344 96 H520" stroke="#2563eb" stroke-width="8" marker-end="url(#arrow-mv)" stroke-linecap="round"></path>
+                  <rect x="538" y="34" width="136" height="124" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"></rect>
+                  <text x="568" y="88" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#1e3a8a">AC</text>
+                  <text x="558" y="126" font-size="24" font-family="Source Sans 3" fill="#475569">linear check</text>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">This slide broadens the domain beyond vectors. Students often meet rotors, bivectors, and pseudoscalars as special objects, then unconsciously differentiate only vector coordinates. The blade atlas makes the domain explicit: the full algebra is a vector space, so every basis blade gives a legitimate perturbation direction. The linear check \(F(M)=MC\) is deliberately simple because it isolates the idea that the derivative along \(A\) is \(AC\).</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Local Linearization">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">First-order model</div>
+          <h2>Local Linearization Is The Shared Payoff</h2>
+        </div>
+        <div class="wide-right">
+          <div class="diagram">
+            <svg viewBox="0 0 760 620" role="img" aria-label="Local linearization and spherical projection tangent plane">
+              <defs>
+                <marker id="arrow-lin-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#2563eb"></path>
+                </marker>
+                <marker id="arrow-lin-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#0f766e"></path>
+                </marker>
+                <marker id="arrow-lin-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <rect width="760" height="620" fill="#ffffff"></rect>
+              <g transform="translate(380 318)">
+                <ellipse cx="0" cy="20" rx="220" ry="148" fill="rgba(37,99,235,0.05)" stroke="#cbd5e1" stroke-width="4"></ellipse>
+                <path d="M-208 20 C-110 -70 112 -74 208 20" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 10"></path>
+                <path d="M-198 84 C-96 154 102 154 198 84" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 10"></path>
+                <polygon points="-178,0 176,-58 250,82 -106,142" fill="rgba(15,118,110,0.10)" stroke="#0f766e" stroke-width="4"></polygon>
+                <circle cx="34" cy="34" r="14" fill="#2563eb"></circle>
+                <path d="M-252 228 L34 34" stroke="#2563eb" stroke-width="8" marker-end="url(#arrow-lin-blue)" stroke-linecap="round"></path>
+                <path d="M34 34 L156 -6" stroke="#0f766e" stroke-width="8" marker-end="url(#arrow-lin-teal)" stroke-linecap="round"></path>
+                <path d="M34 34 L34 -108" stroke="#b45309" stroke-width="7" marker-end="url(#arrow-lin-amber)" stroke-linecap="round"></path>
+                <text x="-250" y="258" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#2563eb">x</text>
+                <text x="168" y="-8" font-size="26" font-family="STIX Two Text" font-style="italic" fill="#0f766e">D_a P</text>
+                <text x="48" y="-112" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#b45309">radial change rejected</text>
+                <text x="-170" y="178" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#0f766e">tangent plane</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">$$F(X+hA)=F(X)+h\,D_A F(X)+O(h^2)$$</div>
+            <div class="box teal">
+              <div class="box-title">Spherical projection</div>
+              <div class="box-text">For \(P(x)=x/\|x\|\), local change lives in the tangent plane. The radial component is invisible to first order.</div>
+            </div>
+            <div class="formula compact">$$D_aP(x)=\frac{(a\wedge x)x^{-1}}{\|x\|}$$</div>
+            <div class="box">
+              <div class="box-title">Course memory</div>
+              <div class="box-text">Every section of the chapter is a way to build this local linear model for the correct geometric domain.</div>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Close the technical arc by returning to first-order approximation. Whether the variable is a scalar parameter, a vector, or a multivector, the derivative is the coefficient that makes \(F(X+hA)\) locally predictable. Spherical projection is a strong final picture because it visibly rejects radial motion and keeps only the tangent component. That is the chapter's habit in miniature: identify the meaningful local direction, compute its first-order effect, and then check that the remainder is second order.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Synthesis">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Instructor synthesis</div>
+          <h2>What Students Should Carry Forward</h2>
+        </div>
+        <div class="two-col">
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">One calculus, several domains</div>
+              <div class="box-text">Scalar paths, vector directions, and blade-coordinate perturbations share the same local-linear logic.</div>
+            </div>
+            <div class="box teal">
+              <div class="box-title">Products explain geometry</div>
+              <div class="box-text">Commutators describe infinitesimal turns; wedges describe oriented area and tangent rejection; geometric products combine scale and direction.</div>
+            </div>
+            <div class="box amber">
+              <div class="box-title">Grade selection is interpretation</div>
+              <div class="box-text">The vector derivative contains the classical gradient, divergence, and curl information without changing languages.</div>
+            </div>
+          </div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 620" role="img" aria-label="Chapter synthesis map">
+              <defs>
+                <marker id="arrow-synth" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0 0 L12 6 L0 12 Z" fill="#1e3a8a"></path>
+                </marker>
+              </defs>
+              <rect width="760" height="620" fill="#ffffff"></rect>
+              <g transform="translate(104 74)">
+                <rect x="198" y="0" width="196" height="78" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"></rect>
+                <text x="236" y="50" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">choose variation</text>
+                <rect x="0" y="178" width="196" height="78" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="4"></rect>
+                <text x="38" y="228" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#2563eb">directional limit</text>
+                <rect x="396" y="178" width="196" height="78" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"></rect>
+                <text x="428" y="228" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#0f766e">product rule</text>
+                <rect x="0" y="356" width="196" height="78" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="4"></rect>
+                <text x="34" y="406" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#b45309">grade selection</text>
+                <rect x="396" y="356" width="196" height="78" rx="8" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"></rect>
+                <text x="430" y="406" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#6d28d9">linearization</text>
+                <path d="M296 78 L116 178" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-synth)"></path>
+                <path d="M296 78 L476 178" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-synth)"></path>
+                <path d="M98 256 L98 356" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-synth)"></path>
+                <path d="M494 256 L494 356" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-synth)"></path>
+                <path d="M196 395 H396" fill="none" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-synth)"></path>
+                <text x="108" y="510" font-size="28" font-family="STIX Two Text" font-style="italic" fill="#1e3a8a">F(X+hA) \approx F(X)+hD_AF(X)</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Suggested closing prompt: identify the domain of variation before computing any derivative.</span>
+          <span>Chapter 08 / 08 Geometric Differentiation</span>
+        </div>
+        <aside class="speaker-notes">Use the final map as a quick oral review rather than another derivation. Ask students to place each example from the chapter on the map: rotor motion at commutator and product order, inversion at directional limit, vector derivative at grade selection, multivector functions at blade-coordinate variation, and spherical projection at local linearization. The durable habit is simple: before differentiating, name the geometric object that is allowed to move.</aside>
+      </div>
+    </section>
+  </deck-stage>
+
+  <script type="application/json" id="speaker-notes">
+    [
+      {
+        "slide": 1,
+        "title": "Geometric Differentiation",
+        "notes": "Open by naming the chapter's central move: differentiation is not a single operation until the allowed variation has been chosen. A scalar parameter, a vector direction, and a multivector perturbation all produce local change, but they probe different domains. The visual deliberately puts those three channels on one stage so students can keep the syntax tied to geometric meaning."
+      },
+      {
+        "slide": 2,
+        "title": "Choose The Domain Of Variation",
+        "notes": "Use this slide to slow down the notation before formulas multiply. The same limit expression is being reused, but the object \\(A\\) lives in the domain being probed. This is the conceptual safeguard against treating vector derivatives, parametric derivatives, and multivector derivatives as unrelated recipes. The class should see a derivative as the first-order coefficient along a declared perturbation line."
+      },
+      {
+        "slide": 3,
+        "title": "Rotor Motion Differentiates To A Commutator",
+        "notes": "Present the commutator as the first major payoff of geometric algebra. A small rotor does not require separate matrix derivatives for every grade. The bivector generator tells which oriented plane is turning, and the commutator supplies the tangent velocity of the transformed object. Emphasize that the approximation is local: the quadratic remainder is evidence that the derivative captures exactly the first-order part."
+      },
+      {
+        "slide": 4,
+        "title": "Multivector-Valued Functions Keep Their Geometry",
+        "notes": "Make the product rule feel familiar and new at the same time. The algebraic rule is ordinary bilinearity, but the result is not merely a pair of component derivatives. The wedge makes the derivative an oriented area-rate, so students should inspect the parallelogram and ask how changing either edge changes the blade. This prepares them for rotor and surface calculations where the value is naturally multivector-valued."
+      },
+      {
+        "slide": 5,
+        "title": "Inversion Couples Radial And Angular Motion",
+        "notes": "Treat inversion as a diagnostic example because it defeats the intuition that a directional derivative should point where the input perturbation points. A small move of \\(x\\) decomposes into radial and angular effects after inversion. The compact formula \\(-x^{-1} a x^{-1}\\) is valuable because it keeps both effects in product order. Ask students to locate \\(x\\), \\(a\\), \\(x^{-1}\\), and the derivative arrow before reading the equation."
+      },
+      {
+        "slide": 6,
+        "title": "The Vector Derivative Is A Basis-Summed Operator",
+        "notes": "The purpose here is to demystify the vector derivative by building it from directional derivatives the students already understand. In an orthonormal basis, each coordinate direction gets probed, then the basis vector is multiplied on the left before summing. That last multiplication is why the operator can return several grades. The identity and squared-length examples are familiar landmarks, but the grade-rich output is the new geometric feature."
+      },
+      {
+        "slide": 7,
+        "title": "Gradient, Divergence, And Curl Are Grade Selections",
+        "notes": "Connect the GA operator to vocabulary students already know. The gradient is not a separate symbol system when the function is scalar-valued. For a vector field, the geometric product of \\(\\partial\\) and \\(F\\) separates into a scalar part and a bivector part. The scalar part measures local expansion or compression, while the bivector part measures oriented circulation in coordinate planes. This is the clean GA replacement for switching between grad, div, and curl notations."
+      },
+      {
+        "slide": 8,
+        "title": "Multivector Differentiation Follows The Object",
+        "notes": "This slide broadens the domain beyond vectors. Students often meet rotors, bivectors, and pseudoscalars as special objects, then unconsciously differentiate only vector coordinates. The blade atlas makes the domain explicit: the full algebra is a vector space, so every basis blade gives a legitimate perturbation direction. The linear check \\(F(M)=MC\\) is deliberately simple because it isolates the idea that the derivative along \\(A\\) is \\(AC\\)."
+      },
+      {
+        "slide": 9,
+        "title": "Local Linearization Is The Shared Payoff",
+        "notes": "Close the technical arc by returning to first-order approximation. Whether the variable is a scalar parameter, a vector, or a multivector, the derivative is the coefficient that makes \\(F(X+hA)\\) locally predictable. Spherical projection is a strong final picture because it visibly rejects radial motion and keeps only the tangent component. That is the chapter's habit in miniature: identify the meaningful local direction, compute its first-order effect, and then check that the remainder is second order."
+      },
+      {
+        "slide": 10,
+        "title": "What Students Should Carry Forward",
+        "notes": "Use the final map as a quick oral review rather than another derivation. Ask students to place each example from the chapter on the map: rotor motion at commutator and product order, inversion at directional limit, vector derivative at grade selection, multivector functions at blade-coordinate variation, and spherical projection at local linearization. The durable habit is simple: before differentiating, name the geometric object that is allowed to move."
+      }
+    ]
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof renderMathInElement === "function") {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+</body>
+</html>
