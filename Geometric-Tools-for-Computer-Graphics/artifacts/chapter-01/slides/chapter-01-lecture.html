@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-01">
+  <meta name="chapter_title" content="Chapter 01: Introduction">
+  <meta name="manifest_index" content="385">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-01-foundations/chapter-01-introduction/01-introduction.ipynb">
+  <meta name="source_span" content="printed pages 1-8; PDF pages 48-55">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 01: Introduction - Robust Geometric Queries</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    deck-stage:not(:defined) { visibility: hidden; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; background: #000; }
+    body { font-family: var(--font-sans); color: var(--slide-ink); }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      background: var(--slide-bg);
+    }
+    .slide-pad {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 76px 96px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .grid-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 58, 138, 0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+    }
+    .mesh-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(125deg, rgba(15, 118, 110, 0.05), transparent 38%),
+        linear-gradient(35deg, transparent 62%, rgba(180, 83, 9, 0.05));
+      pointer-events: none;
+    }
+    .kicker {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 62px;
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+    h3 {
+      font-size: 30px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+    .subtitle {
+      max-width: 1180px;
+      font-size: 31px;
+      line-height: 1.42;
+      color: var(--slide-muted);
+    }
+    .title-rule {
+      width: 88px;
+      height: 5px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 46px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 26px 30px;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel.soft { background: var(--slide-bg-alt); }
+    .math-box {
+      border-radius: 8px;
+      border-left: 5px solid var(--slide-blue);
+      background: var(--math-definition-bg);
+      padding: 24px 30px;
+    }
+    .math-box.theorem {
+      border-left-color: var(--slide-accent);
+      background: var(--math-theorem-bg);
+    }
+    .math-box.example {
+      border-left-color: var(--slide-teal);
+      background: var(--math-example-bg);
+    }
+    .math-box.warning {
+      border-left-color: var(--slide-amber);
+      background: var(--math-warning-bg);
+    }
+    .math-box.exercise {
+      border-left-color: var(--slide-violet);
+      background: var(--math-exercise-bg);
+    }
+    .box-label {
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+    }
+    .box-body {
+      font-size: 29px;
+      line-height: 1.45;
+      color: var(--slide-ink);
+    }
+    .body {
+      font-size: 28px;
+      line-height: 1.46;
+      color: var(--slide-ink);
+    }
+    .muted { color: var(--slide-muted); }
+    .dimmed { color: var(--slide-dimmed); }
+    .accent { color: var(--slide-accent); }
+    .blue { color: var(--slide-blue); }
+    .teal { color: var(--slide-teal); }
+    .amber { color: var(--slide-amber); }
+    .violet { color: var(--slide-violet); }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 14px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #EEF2FF;
+      border: 1px solid rgba(30, 58, 138, 0.16);
+    }
+    .bullets {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .bullets li {
+      position: relative;
+      padding-left: 30px;
+      font-size: 28px;
+      line-height: 1.42;
+      color: var(--slide-ink);
+    }
+    .bullets li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 16px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--slide-accent);
+    }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 35px;
+      line-height: 1.45;
+      text-align: center;
+      color: var(--slide-ink);
+    }
+    .formula.big { font-size: 42px; }
+    .small-note {
+      font-size: 24px;
+      line-height: 1.36;
+      color: var(--slide-muted);
+    }
+    .table {
+      display: grid;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 25px;
+      line-height: 1.3;
+    }
+    .th {
+      padding: 14px 18px;
+      font-weight: 700;
+      background: var(--slide-bg-alt);
+      border-bottom: 1px solid var(--slide-border);
+      color: var(--slide-accent);
+    }
+    .td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--slide-border-light);
+      color: var(--slide-ink);
+    }
+    .td.no-border { border-bottom: 0; }
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      margin-top: 8px;
+    }
+    .pipe-step {
+      border-radius: 8px;
+      border: 1px solid var(--slide-border-light);
+      background: #fff;
+      padding: 22px 20px;
+      min-height: 150px;
+    }
+    .pipe-step strong {
+      display: block;
+      font-size: 27px;
+      color: var(--slide-accent);
+      margin-bottom: 8px;
+    }
+    .pipe-step span {
+      display: block;
+      font-size: 23px;
+      line-height: 1.34;
+      color: var(--slide-muted);
+    }
+    .footer {
+      position: absolute;
+      left: 96px;
+      right: 96px;
+      bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 20px;
+      color: var(--slide-dimmed);
+    }
+    .brand {
+      position: absolute;
+      right: 96px;
+      top: 72px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+    .brand img { width: 52px; height: 52px; }
+    svg.diagram {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .speaker-notes { display: none; }
+  </style>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Geometric Tools for Computer Graphics",
+  "chapter_id": "chapter-01",
+  "chapter_title": "Chapter 01: Introduction",
+  "manifest_index": 385,
+  "notebook_path": "D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-01-foundations/chapter-01-introduction/01-introduction.ipynb",
+  "source_span": "printed pages 1-8; PDF pages 48-55",
+  "source_pdf": "D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script type="application/json" id="speaker-notes">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Robust Geometric Queries",
+      "notes": "Open by framing the introduction as the course contract. The book is not only a catalog of formulas; it teaches a way to turn geometry into representations, parameter domains, numerical tests, and residual checks. Emphasize that every later distance, intersection, fitting, and containment routine will reuse this same pattern."
+    },
+    {
+      "slide": 2,
+      "title": "A Graphics Query Has A Shape",
+      "notes": "Use this map to connect the source orientation with the notebook route. A geometry program receives primitives, chooses parameters, searches a feasible domain, and then reports both an answer and evidence that the answer is trustworthy. The important habit is to inspect the domain and the residual, not just the final Boolean or distance."
+    },
+    {
+      "slide": 3,
+      "title": "Parameter Domains Unify Many Queries",
+      "notes": "The chapter's first major idea is that different objects can share the same analytic skeleton. Points, segments, triangles, rectangles, tetrahedra, and boxes differ in dimension and constraints, but closest point queries often minimize one squared-distance function over a bounded parameter set. That viewpoint explains why a single method can transfer across many primitives."
+    },
+    {
+      "slide": 4,
+      "title": "Floating Point Is A Model, Not The Reals",
+      "notes": "Pause on the notation because it separates mathematical intent from machine representation. The real number r is not stored directly; the implementation stores a nearby floating point value. Once arithmetic also rounds, familiar identities such as associativity can fail, so tests must be written for the machine model rather than for ideal real arithmetic."
+    },
+    {
+      "slide": 5,
+      "title": "Cancellation And The Quadratic Example",
+      "notes": "This slide turns the classic quadratic formula warning into a graphics habit. When two nearly equal large quantities are subtracted, significant digits disappear. The stable form chooses the root formula according to the sign of b and then checks the polynomial residual, which is exactly the notebook's final sanity check."
+    },
+    {
+      "slide": 6,
+      "title": "Boolean Logic Needs Tolerance Bands",
+      "notes": "Use the diagonal split as a small version of mesh point location. In exact arithmetic, a point near the shared edge belongs to one triangle or the edge case. In floating point, two triangle tests can both reject it unless the implementation records a tolerance band and reports the near-boundary state explicitly."
+    },
+    {
+      "slide": 7,
+      "title": "Degenerate Inputs Are Ordinary Inputs",
+      "notes": "This is the high-level warning slide. Collinear, coplanar, cocircular, tangent, and almost singular cases are not rare exceptions in graphics pipelines; they occur through modeling, animation, imported data, and finite precision. The implementation plan should name the degeneracy and choose a policy before the downstream routine depends on the answer."
+    },
+    {
+      "slide": 8,
+      "title": "Tangency Changes The Numerical Problem",
+      "notes": "Explain that root finding is geometric, not only algebraic. A transverse intersection usually produces a sign change, so bracketing methods can see it. Tangential first contact has even multiplicity, so the sign may not change at all. Collision detection must therefore look for contact structure, not only sign reversal."
+    },
+    {
+      "slide": 9,
+      "title": "Symmetry Is A Debugging Invariant",
+      "notes": "Order dependence is a practical test for algorithm design. If a segment intersection predicate changes when the two input segments are swapped, either the mathematical cases were split asymmetrically or floating point tolerances were applied inconsistently. Treat this as a unit test because later algorithms silently assume such predicates are stable."
+    },
+    {
+      "slide": 10,
+      "title": "Chapter Contract For The Course",
+      "notes": "Close by making the contract operational. For each later chapter, students should ask what representation is used, which parameter domain is searched, what invariant is preserved, what residual is checked, and which failure mode must be surfaced. This gives the whole course a consistent debugging vocabulary."
+    }
+  ]
+}
+  </script>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Robust Geometric Queries">
+      <div class="slide grid-bg">
+        <div class="brand">
+          <img src="../../../../lecture-design-system/assets/icon.svg" alt="Geometry Atlas">
+          <span>Geometry Atlas</span>
+        </div>
+        <div class="slide-pad" style="justify-content: center;">
+          <div class="kicker">Geometric Tools for Computer Graphics - Chapter 01</div>
+          <h1>Introduction:<br>Robust Geometric Queries</h1>
+          <div class="title-rule"></div>
+          <p class="subtitle">A first lecture on the shared pattern behind graphics geometry: representation, parameter-domain search, floating-point evidence, and explicit failure modes.</p>
+          <div class="badge-row">
+            <span class="badge">Manifest index 385</span>
+            <span class="badge">Source span: printed pages 1-8; PDF pages 48-55</span>
+            <span class="badge">Notebook: 01-introduction.ipynb</span>
+          </div>
+        </div>
+        <div class="footer"><span>Chapter 01: Introduction</span><span>Static HTML source deck</span></div>
+      </div>
+      <aside class="speaker-notes">Open by framing the introduction as the course contract. The book is not only a catalog of formulas; it teaches a way to turn geometry into representations, parameter domains, numerical tests, and residual checks. Emphasize that every later distance, intersection, fitting, and containment routine will reuse this same pattern.</aside>
+    </section>
+
+    <section data-label="A Graphics Query Has A Shape">
+      <div class="slide mesh-bg">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">From Reference Formula To Implemented Tool</div>
+            <h2>A Graphics Query Has A Shape</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="pipeline">
+            <div class="pipe-step"><strong>Representation</strong><span>Choose points, frames, equations, arrays, meshes, or graphs.</span></div>
+            <div class="pipe-step"><strong>Domain</strong><span>Identify free, clamped, periodic, barycentric, or simplex parameters.</span></div>
+            <div class="pipe-step"><strong>Invariant</strong><span>State what translation, rotation, input order, or reparameterization must preserve.</span></div>
+            <div class="pipe-step"><strong>Residual</strong><span>Turn the invariant into a computed number that can be asserted.</span></div>
+            <div class="pipe-step"><strong>Failure Mode</strong><span>Name near-zero denominators, degeneracy, tangency, and boundary cases.</span></div>
+          </div>
+          <div class="two-col">
+            <div class="panel soft">
+              <h3>Notebook Route</h3>
+              <ul class="bullets" style="margin-top: 18px;">
+                <li>Floating-point cancellation and stable quadratic roots.</li>
+                <li>Parameter-domain search for closest points.</li>
+                <li>Near-boundary classification under tolerance changes.</li>
+                <li>A query pipeline from primitive model to numeric verdict.</li>
+              </ul>
+            </div>
+            <div class="math-box theorem">
+              <div class="box-label">Course Contract</div>
+              <div class="box-body">A geometric algorithm is not finished when it returns an answer. It is finished when the answer comes with enough state to inspect the representation, domain, invariant, residual, and failure policy.</div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Original teaching synthesis from notebook and source orientation</span><span>1 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">Use this map to connect the source orientation with the notebook route. A geometry program receives primitives, chooses parameters, searches a feasible domain, and then reports both an answer and evidence that the answer is trustworthy. The important habit is to inspect the domain and the residual, not just the final Boolean or distance.</aside>
+    </section>
+
+    <section data-label="Parameter Domains Unify Many Queries">
+      <div class="slide">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">Common Analytic Skeleton</div>
+            <h2>Parameter Domains Unify Many Queries</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel soft">
+              <svg class="diagram" viewBox="0 0 820 610" role="img" aria-label="Two parameterized primitives with a closest point segment">
+                <defs>
+                  <marker id="arrow-domain" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#1E3A8A"></path>
+                  </marker>
+                </defs>
+                <rect x="58" y="72" width="290" height="188" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <text x="84" y="116" font-size="28" font-weight="700" fill="#1E3A8A">Object A</text>
+                <path d="M96 208 C154 110, 235 112, 308 204" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <circle cx="221" cy="148" r="9" fill="#2563EB"></circle>
+                <text x="232" y="140" font-size="26" fill="#111827">p(u*)</text>
+                <rect x="472" y="332" width="290" height="188" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <text x="498" y="376" font-size="28" font-weight="700" fill="#0F766E">Object B</text>
+                <polygon points="545,468 680,405 714,487" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="6"></polygon>
+                <circle cx="641" cy="453" r="9" fill="#0F766E"></circle>
+                <text x="653" y="448" font-size="26" fill="#111827">q(v*)</text>
+                <line x1="221" y1="148" x2="641" y2="453" stroke="#B45309" stroke-width="6" stroke-dasharray="15 13"></line>
+                <text x="332" y="260" font-size="28" font-weight="700" fill="#B45309">minimum distance</text>
+                <line x1="104" y1="555" x2="720" y2="555" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-domain)"></line>
+                <text x="120" y="592" font-size="27" fill="#475569">search over feasible parameters rather than over pictures</text>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box">
+                <div class="box-label">Distance Query Template</div>
+                <div class="box-body">For parameterized primitives \(p(u)\) and \(q(v)\), minimize
+                  $$D(u,v)=\|p(u)-q(v)\|^2 \quad \text{over } (u,v)\in \Omega.$$</div>
+              </div>
+              <div class="table" style="grid-template-columns: 1fr 1fr 1.25fr;">
+                <div class="th">Object</div><div class="th">Dimension</div><div class="th">Typical Domain</div>
+                <div class="td">Point</div><div class="td">0</div><div class="td">single parameter value</div>
+                <div class="td">Segment</div><div class="td">1</div><div class="td">clamped interval</div>
+                <div class="td">Triangle</div><div class="td">2</div><div class="td">barycentric simplex</div>
+                <div class="td no-border">Box or tetrahedron</div><div class="td no-border">3</div><div class="td no-border">bounded product or simplex</div>
+              </div>
+              <p class="small-note">The same idea supports many closest-point routines and motivates convex distance algorithms such as GJK.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Parameterization turns geometry into constrained optimization</span><span>2 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">The chapter's first major idea is that different objects can share the same analytic skeleton. Points, segments, triangles, rectangles, tetrahedra, and boxes differ in dimension and constraints, but closest point queries often minimize one squared-distance function over a bounded parameter set. That viewpoint explains why a single method can transfer across many primitives.</aside>
+    </section>
+
+    <section data-label="Floating Point Is A Model">
+      <div class="slide grid-bg">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">Low-Level Numerical Issues</div>
+            <h2>Floating Point Is A Model, Not The Reals</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel">
+              <svg class="diagram" viewBox="0 0 820 560" role="img" aria-label="Real line with rounded floating point samples">
+                <line x1="90" y1="270" x2="735" y2="270" stroke="#CBD5E1" stroke-width="5"></line>
+                <g fill="#2563EB">
+                  <circle cx="140" cy="270" r="9"></circle>
+                  <circle cx="245" cy="270" r="9"></circle>
+                  <circle cx="350" cy="270" r="9"></circle>
+                  <circle cx="455" cy="270" r="9"></circle>
+                  <circle cx="560" cy="270" r="9"></circle>
+                  <circle cx="665" cy="270" r="9"></circle>
+                </g>
+                <g stroke="#94A3B8" stroke-width="3">
+                  <line x1="140" y1="252" x2="140" y2="288"></line>
+                  <line x1="245" y1="252" x2="245" y2="288"></line>
+                  <line x1="350" y1="252" x2="350" y2="288"></line>
+                  <line x1="455" y1="252" x2="455" y2="288"></line>
+                  <line x1="560" y1="252" x2="560" y2="288"></line>
+                  <line x1="665" y1="252" x2="665" y2="288"></line>
+                </g>
+                <circle cx="414" cy="270" r="11" fill="#B45309"></circle>
+                <line x1="414" y1="270" x2="455" y2="270" stroke="#B45309" stroke-width="5" stroke-dasharray="10 9"></line>
+                <text x="382" y="230" font-size="28" font-weight="700" fill="#B45309">r</text>
+                <text x="426" y="326" font-size="28" font-weight="700" fill="#1E3A8A">f(r)</text>
+                <text x="104" y="150" font-size="30" font-weight="700" fill="#111827">Real value is rounded to a representable sample</text>
+                <text x="116" y="395" font-size="27" fill="#475569">absolute error: |f(r)-r|</text>
+                <text x="116" y="438" font-size="27" fill="#475569">relative error: |f(r)-r| / |r|, when r is not zero</text>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box theorem">
+                <div class="box-label">Implementation Reality</div>
+                <div class="box-body">Real-number formulas enter code through a representation map \(f(r)\). Arithmetic then rounds again, so the result of a computation is not the same object as the exact formula.</div>
+              </div>
+              <div class="math-box warning">
+                <div class="box-label">A Failing Identity</div>
+                <div class="box-body">Floating-point addition can satisfy
+                  $$\bigl(f(r)\oplus f(s)\bigr)\oplus f(t) \ne f(r)\oplus\bigl(f(s)\oplus f(t)\bigr).$$
+                  Sum small nonnegative terms before large ones when accuracy matters.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Roundoff is part of the algorithm's environment</span><span>3 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">Pause on the notation because it separates mathematical intent from machine representation. The real number r is not stored directly; the implementation stores a nearby floating point value. Once arithmetic also rounds, familiar identities such as associativity can fail, so tests must be written for the machine model rather than for ideal real arithmetic.</aside>
+    </section>
+
+    <section data-label="Cancellation And The Quadratic Example">
+      <div class="slide">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">Stable Algebra Is A Geometric Tool</div>
+            <h2>Cancellation And The Quadratic Example</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box warning">
+                <div class="box-label">Unstable Pattern</div>
+                <div class="box-body">For \(a x^2+b x+c=0\), the expression
+                  $$\frac{-b+\sqrt{b^2-4ac}}{2a}$$
+                  loses digits when \(b>0\) and \(\sqrt{b^2-4ac}\) is close to \(b\).</div>
+              </div>
+              <div class="math-box example">
+                <div class="box-label">Stable Root Pair</div>
+                <div class="box-body">Use
+                  $$q=-\frac12\left(b+\operatorname{sign}(b)\sqrt{\max(0,b^2-4ac)}\right),\qquad x_1=\frac{q}{a},\quad x_2=\frac{c}{q}.$$
+                </div>
+              </div>
+              <p class="small-note">Notebook sanity check: the stable quadratic residual has max error \(5.55\cdot 10^{-17}\) against tolerance \(10^{-12}\).</p>
+            </div>
+            <div class="panel soft">
+              <svg class="diagram" viewBox="0 0 820 650" role="img" aria-label="Cancellation geometry and residual check">
+                <rect x="72" y="72" width="676" height="150" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+                <text x="100" y="125" font-size="30" font-weight="700" fill="#B45309">subtract nearly equal magnitudes</text>
+                <line x1="130" y1="178" x2="520" y2="178" stroke="#B45309" stroke-width="12"></line>
+                <line x1="132" y1="178" x2="498" y2="178" stroke="#F59E0B" stroke-width="12"></line>
+                <text x="548" y="188" font-size="27" fill="#111827">tiny difference</text>
+                <path d="M410 245 C405 335, 258 334, 250 425" fill="none" stroke="#CBD5E1" stroke-width="5" stroke-dasharray="13 11"></path>
+                <rect x="72" y="426" width="676" height="150" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <text x="100" y="480" font-size="30" font-weight="700" fill="#0F766E">choose an algebraically equivalent form</text>
+                <text x="100" y="532" font-size="27" fill="#111827">then measure |a x^2 + b x + c|</text>
+                <circle cx="622" cy="509" r="39" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="5"></circle>
+                <path d="M600 509 L617 526 L648 486" fill="none" stroke="#0F766E" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Stable formulas are selected, then checked</span><span>4 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">This slide turns the classic quadratic formula warning into a graphics habit. When two nearly equal large quantities are subtracted, significant digits disappear. The stable form chooses the root formula according to the sign of b and then checks the polynomial residual, which is exactly the notebook's final sanity check.</aside>
+    </section>
+
+    <section data-label="Boolean Logic Needs Tolerance Bands">
+      <div class="slide grid-bg">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">High-Level Numerical Issues</div>
+            <h2>Boolean Logic Needs Tolerance Bands</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel">
+              <svg class="diagram" viewBox="0 0 820 650" role="img" aria-label="Quadrilateral split into two triangles and tolerance band">
+                <polygon points="120,500 224,130 660,160 712,510" fill="#FFFFFF" stroke="#111827" stroke-width="5"></polygon>
+                <polygon points="120,500 224,130 712,510" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="4"></polygon>
+                <polygon points="224,130 660,160 712,510" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="4"></polygon>
+                <line x1="224" y1="130" x2="712" y2="510" stroke="#1E3A8A" stroke-width="7"></line>
+                <line x1="214" y1="142" x2="702" y2="522" stroke="#B45309" stroke-width="5" stroke-dasharray="14 12" opacity="0.75"></line>
+                <line x1="234" y1="118" x2="722" y2="498" stroke="#B45309" stroke-width="5" stroke-dasharray="14 12" opacity="0.75"></line>
+                <circle cx="470" cy="323" r="11" fill="#B45309"></circle>
+                <text x="490" y="320" font-size="29" font-weight="700" fill="#B45309">P near shared edge</text>
+                <text x="96" y="560" font-size="27" fill="#475569">Exact arithmetic: inside one triangle or on the edge</text>
+                <text x="96" y="602" font-size="27" fill="#475569">Floating point: both strict tests may reject P</text>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box warning">
+                <div class="box-label">Excluded Middle Trap</div>
+                <div class="box-body">A predicate may be theoretically true or false, yet the implemented tests can produce a third practical state: numerically unresolved near a boundary.</div>
+              </div>
+              <div class="math-box">
+                <div class="box-label">Barycentric Inspection</div>
+                <div class="box-body">For a triangle, classify with
+                  $$\lambda_0+\lambda_1+\lambda_2=1,\qquad \lambda_i \ge -\varepsilon.$$
+                  Report the tolerance band when some \(\lambda_i\) is close to zero.</div>
+              </div>
+              <div class="panel soft">
+                <h3>Production Habit</h3>
+                <p class="body muted" style="margin-top: 12px;">Return more than a Boolean: include the closest feature, barycentric coordinates, tolerance, and whether the decision was strict or near-boundary.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Containment needs state, not only true or false</span><span>5 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">Use the diagonal split as a small version of mesh point location. In exact arithmetic, a point near the shared edge belongs to one triangle or the edge case. In floating point, two triangle tests can both reject it unless the implementation records a tolerance band and reports the near-boundary state explicitly.</aside>
+    </section>
+
+    <section data-label="Degenerate Inputs Are Ordinary Inputs">
+      <div class="slide">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">Robustness Policy</div>
+            <h2>Degenerate Inputs Are Ordinary Inputs</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="three-col">
+            <div class="panel soft">
+              <h3 class="blue">Collinear And Coplanar</h3>
+              <svg class="diagram" viewBox="0 0 500 280" role="img" aria-label="Nearly collinear points">
+                <line x1="60" y1="154" x2="440" y2="128" stroke="#CBD5E1" stroke-width="5"></line>
+                <circle cx="112" cy="150" r="10" fill="#2563EB"></circle>
+                <circle cx="250" cy="140" r="10" fill="#2563EB"></circle>
+                <circle cx="386" cy="131" r="10" fill="#B45309"></circle>
+                <text x="78" y="214" font-size="25" fill="#475569">orientation determinant near zero</text>
+              </svg>
+              <p class="body muted">Hull and intersection code must decide whether nearly aligned samples become a line, a face, or a rejected degeneracy.</p>
+            </div>
+            <div class="panel soft">
+              <h3 class="teal">Cocircular</h3>
+              <svg class="diagram" viewBox="0 0 500 280" role="img" aria-label="Four nearly cocircular points">
+                <circle cx="250" cy="142" r="94" fill="rgba(15,118,110,0.08)" stroke="#0F766E" stroke-width="5"></circle>
+                <circle cx="250" cy="48" r="10" fill="#0F766E"></circle>
+                <circle cx="344" cy="142" r="10" fill="#0F766E"></circle>
+                <circle cx="250" cy="236" r="10" fill="#0F766E"></circle>
+                <circle cx="158" cy="140" r="10" fill="#B45309"></circle>
+                <line x1="250" y1="48" x2="250" y2="236" stroke="#CBD5E1" stroke-width="4"></line>
+                <line x1="158" y1="140" x2="344" y2="142" stroke="#CBD5E1" stroke-width="4"></line>
+                <text x="66" y="266" font-size="25" fill="#475569">Delaunay choice may be non-unique</text>
+              </svg>
+              <p class="body muted">The theoretical simplification that no four points are cocircular is rarely a safe production assumption.</p>
+            </div>
+            <div class="panel soft">
+              <h3 class="amber">Rank Loss</h3>
+              <svg class="diagram" viewBox="0 0 500 280" role="img" aria-label="Nearly parallel constraints">
+                <line x1="80" y1="95" x2="430" y2="175" stroke="#B45309" stroke-width="6"></line>
+                <line x1="82" y1="119" x2="432" y2="195" stroke="#2563EB" stroke-width="6"></line>
+                <line x1="255" y1="54" x2="255" y2="238" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="12 10"></line>
+                <text x="62" y="258" font-size="25" fill="#475569">near-zero denominator or determinant</text>
+              </svg>
+              <p class="body muted">If a coefficient or determinant is almost zero, the algorithm needs a fallback branch, not wishful division.</p>
+            </div>
+          </div>
+          <div class="math-box theorem">
+            <div class="box-label">Design Rule</div>
+            <div class="box-body">State the degeneracy policy before using the predicate downstream: exact, tolerant, symbolic perturbation, interval check, or explicit unresolved status.</div>
+          </div>
+        </div>
+        <div class="footer"><span>Degeneracy is an input class, not an exception afterthought</span><span>6 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">This is the high-level warning slide. Collinear, coplanar, cocircular, tangent, and almost singular cases are not rare exceptions in graphics pipelines; they occur through modeling, animation, imported data, and finite precision. The implementation plan should name the degeneracy and choose a policy before the downstream routine depends on the answer.</aside>
+    </section>
+
+    <section data-label="Tangency Changes The Numerical Problem">
+      <div class="slide grid-bg">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">Root Finding And Contact Geometry</div>
+            <h2>Tangency Changes The Numerical Problem</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel">
+              <svg class="diagram" viewBox="0 0 820 620" role="img" aria-label="Transverse crossing and tangential contact">
+                <text x="92" y="74" font-size="30" font-weight="700" fill="#1E3A8A">Transverse crossing</text>
+                <path d="M88 218 C210 96, 348 100, 454 222" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <path d="M92 114 C220 250, 344 256, 456 124" fill="none" stroke="#0F766E" stroke-width="7"></path>
+                <circle cx="272" cy="172" r="11" fill="#B45309"></circle>
+                <text x="110" y="295" font-size="27" fill="#475569">odd multiplicity: sign changes</text>
+                <text x="92" y="400" font-size="30" font-weight="700" fill="#1E3A8A">Tangential contact</text>
+                <path d="M90 516 C230 392, 344 392, 458 516" fill="none" stroke="#2563EB" stroke-width="7"></path>
+                <path d="M90 516 C230 612, 344 612, 458 516" fill="none" stroke="#0F766E" stroke-width="7"></path>
+                <circle cx="274" cy="456" r="11" fill="#B45309"></circle>
+                <text x="110" y="584" font-size="27" fill="#475569">even multiplicity: sign may not change</text>
+                <line x1="560" y1="110" x2="760" y2="110" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M562 174 C610 116, 696 116, 758 174" fill="none" stroke="#B45309" stroke-width="6"></path>
+                <line x1="560" y1="368" x2="760" y2="368" stroke="#CBD5E1" stroke-width="4"></line>
+                <path d="M562 450 C622 304, 700 304, 758 450" fill="none" stroke="#B45309" stroke-width="6"></path>
+                <text x="558" y="226" font-size="25" fill="#475569">bracket sees a crossing</text>
+                <text x="552" y="506" font-size="25" fill="#475569">minimum touches zero</text>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box warning">
+                <div class="box-label">Why Bisection Can Miss Contact</div>
+                <div class="box-body">A sign-changing root is easy to bracket. A tangency can produce an even-multiplicity root, where values on both sides have the same sign.</div>
+              </div>
+              <div class="math-box">
+                <div class="box-label">Geometric Interpretation</div>
+                <div class="box-body">Transverse intersections have different tangent directions at contact. Tangential first contact has parallel tangents, so the polynomial model changes multiplicity.</div>
+              </div>
+              <p class="body muted">The source orientation points to moving-object collision detection: the first contact time is often exactly the numerically delicate case.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Root multiplicity is contact geometry in algebraic form</span><span>7 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">Explain that root finding is geometric, not only algebraic. A transverse intersection usually produces a sign change, so bracketing methods can see it. Tangential first contact has even multiplicity, so the sign may not change at all. Collision detection must therefore look for contact structure, not only sign reversal.</aside>
+    </section>
+
+    <section data-label="Symmetry Is A Debugging Invariant">
+      <div class="slide">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">Implementation Invariant</div>
+            <h2>Symmetry Is A Debugging Invariant</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="two-col">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box theorem">
+                <div class="box-label">Segment Predicate Contract</div>
+                <div class="box-body">A well-designed intersection test should satisfy
+                  $$\operatorname{TestIntersection}(S_0,S_1)=\operatorname{TestIntersection}(S_1,S_0).$$</div>
+              </div>
+              <div class="panel soft">
+                <h3>What To Log</h3>
+                <ul class="bullets" style="margin-top: 18px;">
+                  <li>Raw orientation values before thresholding.</li>
+                  <li>The tolerance used for zero classification.</li>
+                  <li>Endpoint, overlap, proper crossing, or disjoint case label.</li>
+                  <li>Whether reversing the input order changes any intermediate sign.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="panel">
+              <svg class="diagram" viewBox="0 0 820 620" role="img" aria-label="Symmetric segment intersection test">
+                <defs>
+                  <marker id="arrow-sym" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#1E3A8A"></path>
+                  </marker>
+                </defs>
+                <line x1="130" y1="162" x2="610" y2="402" stroke="#2563EB" stroke-width="9" stroke-linecap="round"></line>
+                <line x1="172" y1="430" x2="646" y2="142" stroke="#0F766E" stroke-width="9" stroke-linecap="round"></line>
+                <circle cx="390" cy="292" r="13" fill="#B45309"></circle>
+                <text x="96" y="112" font-size="29" font-weight="700" fill="#2563EB">S0</text>
+                <text x="666" y="118" font-size="29" font-weight="700" fill="#0F766E">S1</text>
+                <path d="M214 510 C332 582, 492 582, 610 510" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-sym)"></path>
+                <path d="M610 82 C492 24, 332 24, 214 82" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-sym)"></path>
+                <text x="178" y="570" font-size="27" fill="#475569">swap inputs, preserve answer and case label</text>
+                <rect x="96" y="464" width="620" height="54" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+                <text x="124" y="501" font-size="27" fill="#111827">same geometry, same predicate outcome</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Input order should not change the geometric verdict</span><span>8 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">Order dependence is a practical test for algorithm design. If a segment intersection predicate changes when the two input segments are swapped, either the mathematical cases were split asymmetrically or floating point tolerances were applied inconsistently. Treat this as a unit test because later algorithms silently assume such predicates are stable.</aside>
+    </section>
+
+    <section data-label="Chapter Contract For The Course">
+      <div class="slide mesh-bg">
+        <div class="slide-pad">
+          <div>
+            <div class="kicker">Reusable Checklist</div>
+            <h2>Chapter Contract For The Course</h2>
+            <div class="title-rule"></div>
+          </div>
+          <div class="two-col">
+            <div class="panel soft">
+              <h3>Ask These Five Questions</h3>
+              <ul class="bullets" style="margin-top: 20px;">
+                <li>What primitive representation makes the operation inspectable?</li>
+                <li>Which parameters define the feasible domain?</li>
+                <li>What invariant should survive coordinate changes or input swaps?</li>
+                <li>Which residual proves the answer is numerically plausible?</li>
+                <li>Which degeneracy should be surfaced rather than hidden?</li>
+              </ul>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="table" style="grid-template-columns: 1.05fr 1.45fr;">
+                <div class="th">Course Region</div><div class="th">How This Contract Reappears</div>
+                <div class="td">Chapters 2-4</div><div class="td">linear algebra, frames, transformations, and coordinate checks</div>
+                <div class="td">Chapters 5-8</div><div class="td">2D primitives, distance, intersection, and construction cases</div>
+                <div class="td">Chapters 9-12</div><div class="td">3D primitives, surfaces, meshes, and spatial queries</div>
+                <div class="td no-border">Chapter 13 and appendices</div><div class="td no-border">computational geometry topics plus numerical methods for robustness</div>
+              </div>
+              <div class="math-box exercise">
+                <div class="box-label">Short Lab Prompt</div>
+                <div class="box-body">Choose one predicate from your own graphics pipeline. Record the representation, domain, invariant, residual, and failure mode. Then test a near-degenerate input and its input-order reversal.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Takeaway: robust geometry is a reporting discipline</span><span>9 / 10</span></div>
+      </div>
+      <aside class="speaker-notes">Close by making the contract operational. For each later chapter, students should ask what representation is used, which parameter domain is searched, what invariant is preserved, what residual is checked, and which failure mode must be surfaced. This gives the whole course a consistent debugging vocabulary.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometry I: Euclidean Affine Spaces</title>
+  <meta name="course" content="Geometry I">
+  <meta name="chapter_id" content="chapter-09">
+  <meta name="notebook_path" content="D:/Geometry/Geometry-I/chapter-09-euclidean-affine-spaces/09-euclidean-affine-spaces.ipynb">
+  <meta name="source_span" content="printed 200-278, PDF 212-290">
+  <meta name="source_pdf" content="D:/Geometry/Geometry-I/Geometry-I.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="speaker-notes">{"slides":["Open by separating affine location from vector measurement. Students often bring a hidden origin into every problem, so make the first move conceptual: the chapter studies points first, then differences of points, and only then lengths, angles, rigid motions, compact-set distances, and symmetrization.","Use this map to prevent the lecture from feeling like five unrelated topics. The common test is always the same: identify what object is being moved or compared, identify the measurement attached to it, and name the invariant that survives the construction.","Spend time on the grammar of the formula rather than racing to computations. P and Q are points, Q minus P is a vector, and the norm is applied only after subtraction. This slide is the place to correct the quiet habit of treating every point as already a vector from the origin.","Emphasize that the coordinate expression is a diagnostic, not the definition of the geometry. The linear part controls metric preservation, while the translation only changes placement. The determinant and the fixed-set equation then become compact tests for the four plane motion types.","Make the classification feel earned from invariants rather than memorized from pictures. Every panel preserves internal distances, so the difference among the motions comes from orientation and fixed-set behavior. Ask students which checks would fail if a tiny anisotropic scale were hidden inside the matrix.","Use this slide as the algebraic bridge into reflection geometry. The formula H equals two u u transpose minus I is short, but it carries three important facts: lengths are preserved, applying the reflection twice returns the starting vector, and orientation changes sign.","Frame the billiard construction as a proof technique rather than a simulation trick. The folded path is locally governed by equal-angle reflection, while the unfolded path reveals the global straight line. Students should inspect how reversing the normal component is the same operation in both views.","Slow down on the two directed distances. Hausdorff distance is not asking for one closest pair; it asks whether every point of each compact set lies near the other set. The worse directed witness supplies the symmetric distance and explains the maximum in the formula.","Use the threshold view to make the supremum operational. At small epsilon, only part of each sample is covered by the opposite neighborhood. At the Hausdorff value, both directed coverage fractions finally reach one, so the metric becomes a containment certificate.","Present Steiner symmetrization as a fiberwise operation, not as a vague smoothing process. Each vertical slice keeps its one-dimensional length but is recentered about the symmetry axis. Area is preserved because the fibers keep their lengths, while perimeter and shape can change noticeably.","This diagnostic slide is useful because visual plausibility is not enough for Euclidean rigidity. The near motion looks close to a rotation and translation, but A.T A is not the identity and pairwise distances drift. The chapter's computational habit is to reject such motions by invariant checks.","Close by tying the chapter back to a reusable reading practice. In Euclidean affine geometry, every picture should answer three questions: what are the points, what vectors or set distances are being measured, and which invariant certifies the claimed construction or theorem."]}</script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 72px 96px 54px;
+      border-top: 10px solid var(--slide-accent);
+      overflow: hidden;
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(30, 58, 138, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 58, 138, 0.045) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      font-size: 32px;
+      line-height: 1.18;
+      color: var(--slide-accent);
+      margin-bottom: 12px;
+    }
+
+    p,
+    li {
+      font-size: 28px;
+      line-height: 1.34;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 34px;
+    }
+
+    strong {
+      font-weight: 700;
+    }
+
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+    }
+
+    .rule {
+      width: 92px;
+      height: 6px;
+      background: var(--slide-accent);
+      border-radius: 4px;
+      margin: 22px 0 28px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 44px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .wide-right {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .four {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 24px;
+      background: #fff;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+
+    .panel.blue {
+      background: var(--math-definition-bg);
+      border-left: 6px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: var(--math-example-bg);
+      border-left: 6px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: var(--math-warning-bg);
+      border-left: 6px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: var(--math-exercise-bg);
+      border-left: 6px solid var(--slide-violet);
+    }
+
+    .label {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 8px;
+    }
+
+    .compact p,
+    .compact li {
+      font-size: 25px;
+      line-height: 1.28;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.3;
+      text-align: center;
+      padding: 18px 22px;
+      border-radius: 8px;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      margin: 14px 0;
+    }
+
+    .formula.big {
+      font-size: 44px;
+      padding: 24px 28px;
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.28;
+      color: var(--slide-dimmed);
+      margin-top: 10px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      color: var(--slide-dimmed);
+      font-size: 22px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.1;
+      background: #EEF2FF;
+      color: var(--slide-accent);
+    }
+
+    .tag.teal {
+      background: var(--math-example-bg);
+      color: var(--slide-teal);
+    }
+
+    .tag.amber {
+      background: var(--math-warning-bg);
+      color: var(--slide-amber);
+    }
+
+    .tag.violet {
+      background: var(--math-exercise-bg);
+      color: var(--slide-violet);
+    }
+
+    .figure-frame {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .figure-frame img {
+      max-width: 100%;
+      max-height: 680px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .mathline {
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.32;
+    }
+
+    .smallmath {
+      font-family: var(--font-math);
+      font-size: 28px;
+      line-height: 1.3;
+    }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .matrix-table th {
+      text-align: left;
+      padding: 11px 12px;
+      border-bottom: 2px solid var(--slide-border);
+      color: var(--slide-accent);
+      background: var(--slide-bg-alt);
+      font-size: 24px;
+    }
+
+    .matrix-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--slide-border-light);
+      font-size: 24px;
+      vertical-align: top;
+    }
+
+    .matrix-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .callout {
+      padding: 22px 26px;
+      border-radius: 8px;
+      background: var(--math-theorem-bg);
+      border-left: 6px solid var(--slide-accent);
+      font-size: 28px;
+      line-height: 1.32;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .mini {
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid var(--slide-border-light);
+      background: #fff;
+    }
+
+    .mini .value {
+      font-size: 30px;
+      color: var(--slide-accent);
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .mini .name {
+      font-size: 22px;
+      color: var(--slide-muted);
+      margin-top: 8px;
+      line-height: 1.22;
+    }
+
+    svg text {
+      font-family: var(--font-sans);
+      font-size: 26px;
+      fill: var(--slide-ink);
+    }
+
+    svg .math-svg {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="cols wide-left">
+          <div style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="eyebrow">Geometry I - Manifest 421 - Chapter 9</div>
+            <h1>Euclidean Affine Spaces</h1>
+            <div class="rule"></div>
+            <p style="max-width: 980px; font-size: 32px; color: var(--slide-muted);">Points first, vectors by subtraction, and metric structure through invariants: rigid motions, reflections, Hausdorff distance, and Steiner symmetrization.</p>
+            <div style="display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap;">
+              <span class="tag">printed 200-278</span>
+              <span class="tag teal">PDF 212-290</span>
+              <span class="tag amber">HTML source deck</span>
+            </div>
+          </div>
+          <div class="figure-frame" style="align-self: center;">
+            <svg viewBox="0 0 760 560" role="img" aria-label="Affine points and free vectors" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"></path>
+                </marker>
+                <marker id="arrow-ink" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#111827"></path>
+                </marker>
+              </defs>
+              <rect x="34" y="34" width="692" height="492" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+              <path d="M72 454 H690 M122 506 V80" stroke="#CBD5E1" stroke-width="2"></path>
+              <path d="M122 454 L270 338" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-blue)" fill="none"></path>
+              <path d="M122 454 L522 190" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-blue)" fill="none"></path>
+              <path d="M86 356 L270 338" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-teal)" fill="none" stroke-dasharray="13 11"></path>
+              <path d="M86 356 L522 190" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-teal)" fill="none" stroke-dasharray="13 11"></path>
+              <path d="M270 338 L522 190" stroke="#111827" stroke-width="7" marker-end="url(#arrow-ink)" fill="none"></path>
+              <circle cx="122" cy="454" r="10" fill="#2563EB"></circle>
+              <circle cx="86" cy="356" r="10" fill="#0F766E"></circle>
+              <circle cx="270" cy="338" r="12" fill="#111827"></circle>
+              <circle cx="522" cy="190" r="12" fill="#111827"></circle>
+              <text x="136" y="480">origin O</text>
+              <text x="102" y="348">origin O'</text>
+              <text x="286" y="332" class="math-svg">P</text>
+              <text x="536" y="184" class="math-svg">Q</text>
+              <text x="330" y="236" class="math-svg">Q - P</text>
+              <text x="72" y="76" fill="#475569">same point pair, different coordinate origins</text>
+              <text x="210" y="502" fill="#1E3A8A">coordinate labels change</text>
+              <text x="410" y="142" fill="#111827">free vector stays fixed</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>D:/Geometry/Geometry-I/chapter-09-euclidean-affine-spaces/09-euclidean-affine-spaces.ipynb</span><span>Euclidean affine spaces</span></div>
+      </div>
+      <aside class="speaker-notes">Open by separating affine location from vector measurement. Students often bring a hidden origin into every problem, so make the first move conceptual: the chapter studies points first, then differences of points, and only then lengths, angles, rigid motions, compact-set distances, and symmetrization.</aside>
+    </section>
+
+    <section data-label="Route">
+      <div class="slide">
+        <div class="eyebrow">Chapter Route</div>
+        <h2>One Invariant Habit Across Five Objects</h2>
+        <div class="rule"></div>
+        <div class="content">
+          <div class="four compact">
+            <div class="panel blue">
+              <div class="label">1. Affine Layer</div>
+              <p>Points are primitive; vectors appear as differences. The metric sees \(Q-P\), not an arbitrary origin.</p>
+            </div>
+            <div class="panel teal">
+              <div class="label">2. Rigid Motions</div>
+              <p>Affine maps \(x \mapsto Ax+b\) are isometries exactly when \(A^T A=I\).</p>
+            </div>
+            <div class="panel amber">
+              <div class="label">3. Reflection Tools</div>
+              <p>Plane isometries and billiard paths are organized by reflection identities and unfolding.</p>
+            </div>
+            <div class="panel violet">
+              <div class="label">4. Sets And Measure</div>
+              <p>Hausdorff distance compares compact sets; Steiner symmetrization preserves fibers and area.</p>
+            </div>
+          </div>
+          <div class="cols wide-right">
+            <div class="panel">
+              <h3>Lecture Question</h3>
+              <p>When a Euclidean construction changes coordinates, positions, paths, or shapes, which measurement certifies that the intended geometry survived?</p>
+            </div>
+            <div class="panel">
+              <h3>Notebook Checks Used As Anchors</h3>
+              <ul>
+                <li>origin-independent difference vectors and distances</li>
+                <li>orthogonal linear parts and fixed-set classification</li>
+                <li>reflection involution, determinant, and billiard residuals</li>
+                <li>directed Hausdorff witnesses and sampled fiber lengths</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Source span: printed 200-278, PDF 212-290</span><span>All visuals are notebook-generated artifacts or original SVG</span></div>
+      </div>
+      <aside class="speaker-notes">Use this map to prevent the lecture from feeling like five unrelated topics. The common test is always the same: identify what object is being moved or compared, identify the measurement attached to it, and name the invariant that survives the construction.</aside>
+    </section>
+
+    <section data-label="Affine Bookkeeping">
+      <div class="slide alt">
+        <div class="eyebrow">Affine Bookkeeping</div>
+        <h2>Coordinates Are Labels; Differences Carry the Metric</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="figure-frame">
+            <img src="../figures/affine-point-vector-coordinate-guide.png" alt="Affine point-vector coordinate guide generated from the notebook">
+            <p class="caption">The same points have different coordinate arrows from \(O\) and \(O'\), but the black vector \(Q-P\), midpoint, and distance are invariant.</p>
+          </div>
+          <div class="content">
+            <div class="panel blue">
+              <div class="label">Definition Pattern</div>
+              <p>A Euclidean affine space has points, free vectors between points, and a Euclidean norm on those vectors.</p>
+              <div class="formula">$$d(P,Q)=\|Q-P\|$$</div>
+            </div>
+            <div class="panel">
+              <h3>Origin Change Test</h3>
+              <ul>
+                <li>new coordinate labels: \(P-O'\), \(Q-O'\)</li>
+                <li>same difference: \((Q-O')-(P-O')=Q-P\)</li>
+                <li>same metric: \(\|Q-P\|\)</li>
+              </ul>
+            </div>
+            <div class="callout">The affine warning: a point is not a vector until a comparison point has been chosen.</div>
+          </div>
+        </div>
+        <div class="footer"><span>Artifact: affine-point-vector-coordinate-guide.png</span><span>Check: max coordinate-disagreement residual 0</span></div>
+      </div>
+      <aside class="speaker-notes">Spend time on the grammar of the formula rather than racing to computations. P and Q are points, Q minus P is a vector, and the norm is applied only after subtraction. This slide is the place to correct the quiet habit of treating every point as already a vector from the origin.</aside>
+    </section>
+
+    <section data-label="Affine Isometries">
+      <div class="slide">
+        <div class="eyebrow">Affine Isometries</div>
+        <h2>The Metric Lives in the Linear Part</h2>
+        <div class="rule"></div>
+        <div class="cols wide-right">
+          <div class="content">
+            <div class="panel blue">
+              <div class="label">Coordinate Model</div>
+              <div class="formula big">$$f(x)=Ax+b,\qquad A^T A=I$$</div>
+              <p>Translation \(b\) repositions the map. Orthogonality of \(A\) preserves all pairwise distances.</p>
+            </div>
+            <div class="panel">
+              <h3>Fixed-Set Equation</h3>
+              <div class="formula">$$(I-A)x=b$$</div>
+              <p>Solvability distinguishes rotations and reflections from translations and glide reflections.</p>
+            </div>
+          </div>
+          <div class="panel compact">
+            <h3>Plane Motion Diagnostics</h3>
+            <table class="matrix-table">
+              <thead>
+                <tr><th>Motion</th><th>\(\det A\)</th><th>Fixed set</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>translation</td><td>\(+1\)</td><td>none, unless identity</td></tr>
+                <tr><td>rotation</td><td>\(+1\)</td><td>one point</td></tr>
+                <tr><td>reflection</td><td>\(-1\)</td><td>a line</td></tr>
+                <tr><td>glide reflection</td><td>\(-1\)</td><td>none</td></tr>
+              </tbody>
+            </table>
+            <div class="mini-grid" style="margin-top: 22px;">
+              <div class="mini">
+                <div class="value">4.4e-16</div>
+                <div class="name">largest notebook distance residual across classified rigid motions</div>
+              </div>
+              <div class="mini">
+                <div class="value">O(2)</div>
+                <div class="name">orthogonal linear part splits orientation by determinant sign</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Rigid motion model: affine map plus orthogonal matrix</span><span>Notebook check: rigid-motion-classification-checks.json</span></div>
+      </div>
+      <aside class="speaker-notes">Emphasize that the coordinate expression is a diagnostic, not the definition of the geometry. The linear part controls metric preservation, while the translation only changes placement. The determinant and the fixed-set equation then become compact tests for the four plane motion types.</aside>
+    </section>
+
+    <section data-label="Classification Panel">
+      <div class="slide alt">
+        <div class="eyebrow">Rigid Motion Classification</div>
+        <h2>Distance Preservation Is Shared; Orientation And Fixed Sets Separate Types</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="figure-frame">
+            <img src="../figures/rigid-motion-classification-panel.png" alt="Four plane rigid motions applied to an asymmetric quadrilateral">
+            <p class="caption">Each panel moves one asymmetric quadrilateral. The visible classification cues are determinant sign, fixed-set data, and preserved internal distances.</p>
+          </div>
+          <div class="content compact">
+            <div class="panel teal">
+              <div class="label">Reading The Four Panels</div>
+              <ol>
+                <li>Check the pairwise distances inside the shape.</li>
+                <li>Record orientation: \(\det A=+1\) or \(\det A=-1\).</li>
+                <li>Solve \((I-A)x=b\) to find the fixed set.</li>
+              </ol>
+            </div>
+            <div class="panel amber">
+              <div class="label">Common Misread</div>
+              <p>A map can look almost rigid in a picture. The invariant test is not visual similarity; it is \(A^T A=I\) and exact distance preservation.</p>
+            </div>
+            <div class="panel">
+              <h3>Group View</h3>
+              <p>Plane isometries form the semidirect product \(E(2)=\mathbb{R}^2 \rtimes O(2)\). The determinant records whether orientation survives.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Artifact: rigid-motion-classification-panel.png</span><span>Translation, rotation, reflection, glide reflection</span></div>
+      </div>
+      <aside class="speaker-notes">Make the classification feel earned from invariants rather than memorized from pictures. Every panel preserves internal distances, so the difference among the motions comes from orientation and fixed-set behavior. Ask students which checks would fail if a tiny anisotropic scale were hidden inside the matrix.</aside>
+    </section>
+
+    <section data-label="Reflection Identities">
+      <div class="slide">
+        <div class="eyebrow">Reflection Algebra</div>
+        <h2>One Formula Explains Mirrors, Orientation, And Billiards</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="content">
+            <div class="panel blue">
+              <div class="label">Reflection Through a Line</div>
+              <p>For a unit direction \(u\), the reflection matrix is</p>
+              <div class="formula big">$$H=2uu^T-I.$$</div>
+            </div>
+            <div class="panel">
+              <h3>Exact Identities</h3>
+              <div class="formula">$$H^T H=I,\qquad H^2=I,\qquad \det H=-1.$$</div>
+              <p>These three checks say: preserve lengths, undo itself, reverse orientation.</p>
+            </div>
+          </div>
+          <div class="figure-frame">
+            <svg viewBox="0 0 800 620" role="img" aria-label="Reflection of vector across a line" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="ref-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="ref-arrow2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <rect x="44" y="46" width="704" height="520" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+              <line x1="96" y1="444" x2="704" y2="170" stroke="#0F766E" stroke-width="7"></line>
+              <text x="610" y="186" fill="#0F766E">mirror line</text>
+              <circle cx="382" cy="315" r="9" fill="#111827"></circle>
+              <path d="M382 315 L548 104" stroke="#2563EB" stroke-width="7" marker-end="url(#ref-arrow)" fill="none"></path>
+              <path d="M382 315 L658 354" stroke="#B45309" stroke-width="7" marker-end="url(#ref-arrow2)" fill="none"></path>
+              <path d="M548 104 C610 154 652 236 658 354" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10" fill="none"></path>
+              <path d="M492 266 L538 365" stroke="#94A3B8" stroke-width="3" stroke-dasharray="10 9"></path>
+              <text x="504" y="92" fill="#2563EB" class="math-svg">v</text>
+              <text x="670" y="370" fill="#B45309" class="math-svg">Hv</text>
+              <text x="210" y="520" fill="#475569">tangent component fixed</text>
+              <text x="452" y="420" fill="#475569">normal component changes sign</text>
+              <text x="74" y="88" fill="#1E3A8A">orthogonal involution with determinant -1</text>
+            </svg>
+            <p class="caption">Reflection decomposes a vector into tangent and normal components, then changes only the sign of the normal component.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Check: reflection-symbolic-identities.json</span><span>Bridge to billiard reflection law</span></div>
+      </div>
+      <aside class="speaker-notes">Use this slide as the algebraic bridge into reflection geometry. The formula H equals two u u transpose minus I is short, but it carries three important facts: lengths are preserved, applying the reflection twice returns the starting vector, and orientation changes sign.</aside>
+    </section>
+
+    <section data-label="Billiards">
+      <div class="slide alt">
+        <div class="eyebrow">Billiard Reflection</div>
+        <h2>Unfold the Table, Turn Reflections Into a Straight Line</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="figure-frame">
+            <img src="../figures/billiard-reflection-diagnostics.png" alt="Folded and unfolded rectangular billiard path diagnostics">
+            <p class="caption">The folded rectangle path obeys equal-angle reflection. The unfolded copies turn the same motion into a straight Euclidean segment.</p>
+          </div>
+          <div class="content compact">
+            <div class="panel teal">
+              <div class="label">Reflection Law As Vector Algebra</div>
+              <p>If \(n\) is a unit wall normal, the post-collision velocity is</p>
+              <div class="formula">$$v_{\mathrm{out}}=v_{\mathrm{in}}-2(v_{\mathrm{in}}\cdot n)n.$$</div>
+            </div>
+            <div class="panel">
+              <h3>What The Diagnostic Checks</h3>
+              <ul>
+                <li>tangential component is preserved at every wall</li>
+                <li>normal components sum to zero before and after reflection</li>
+                <li>folded and unfolded constructions land on the same path</li>
+              </ul>
+            </div>
+            <div class="mini-grid">
+              <div class="mini">
+                <div class="value">0</div>
+                <div class="name">maximum equal-angle residual in the notebook run</div>
+              </div>
+              <div class="mini">
+                <div class="value">7</div>
+                <div class="name">sampled wall hits in the displayed diagnostic</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Artifact: billiard-reflection-diagnostics.png</span><span>Reflection identity made geometric</span></div>
+      </div>
+      <aside class="speaker-notes">Frame the billiard construction as a proof technique rather than a simulation trick. The folded path is locally governed by equal-angle reflection, while the unfolded path reveals the global straight line. Students should inspect how reversing the normal component is the same operation in both views.</aside>
+    </section>
+
+    <section data-label="Hausdorff Metric">
+      <div class="slide">
+        <div class="eyebrow">Metric On Compact Sets</div>
+        <h2>Hausdorff Distance Uses The Worse Directed Witness</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="figure-frame">
+            <img src="../figures/hausdorff-distance-experiment.png" alt="Directed Hausdorff witnesses between two compact sampled sets">
+            <p class="caption">Each direction has its own worst point. The Hausdorff distance is the larger of those two directed distances.</p>
+          </div>
+          <div class="content">
+            <div class="panel blue">
+              <div class="label">Point To Set, Then Set To Set</div>
+              <div class="formula">$$d(x,B)=\inf_{b\in B} d(x,b)$$</div>
+              <div class="formula">$$h(A,B)=\sup_{a\in A} d(a,B)$$</div>
+            </div>
+            <div class="panel teal">
+              <div class="label">Symmetric Metric</div>
+              <div class="formula big">$$d_H(A,B)=\max\{h(A,B),h(B,A)\}$$</div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini">
+                <div class="value">0.8236</div>
+                <div class="name">directed \(A\) to \(B\), controlling the maximum</div>
+              </div>
+              <div class="mini">
+                <div class="value">0.5879</div>
+                <div class="name">directed \(B\) to \(A\), smaller in this sample</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Artifact: hausdorff-distance-experiment.png</span><span>Compact-set metric, not closest-pair distance</span></div>
+      </div>
+      <aside class="speaker-notes">Slow down on the two directed distances. Hausdorff distance is not asking for one closest pair; it asks whether every point of each compact set lies near the other set. The worse directed witness supplies the symmetric distance and explains the maximum in the formula.</aside>
+    </section>
+
+    <section data-label="Hausdorff Threshold">
+      <div class="slide alt">
+        <div class="eyebrow">Hausdorff Neighborhood Test</div>
+        <h2>The First Full-Coverage Threshold Is \(d_H\)</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="content">
+            <div class="panel teal">
+              <div class="label">Neighborhood Form</div>
+              <p>\(d_H(A,B)\le \epsilon\) exactly when both containments hold:</p>
+              <div class="formula">$$A\subseteq N_\epsilon(B),\qquad B\subseteq N_\epsilon(A).$$</div>
+            </div>
+            <div class="panel">
+              <h3>Threshold Sweep Reading</h3>
+              <ul>
+                <li>At \(\epsilon=0.6177\), all sampled \(B\) is covered, but \(A\) is not.</li>
+                <li>At \(\epsilon=0.8648\), both sampled coverages reach one.</li>
+                <li>The exact sampled Hausdorff witness is \(0.8236\), between those sweep steps.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="figure-frame">
+            <svg viewBox="0 0 820 620" role="img" aria-label="Hausdorff directed coverage curves" xmlns="http://www.w3.org/2000/svg">
+              <rect x="56" y="44" width="712" height="520" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+              <line x1="116" y1="500" x2="724" y2="500" stroke="#475569" stroke-width="4"></line>
+              <line x1="116" y1="500" x2="116" y2="92" stroke="#475569" stroke-width="4"></line>
+              <text x="360" y="552">epsilon threshold</text>
+              <text x="42" y="120" transform="rotate(-90 42 120)">coverage fraction</text>
+              <polyline points="116,500 188,408 260,298 332,246 404,206 476,164 548,139 620,92 692,92" fill="none" stroke="#2563EB" stroke-width="7"></polyline>
+              <polyline points="116,500 188,418 260,282 332,230 404,170 476,92 548,92 620,92 692,92" fill="none" stroke="#0F766E" stroke-width="7"></polyline>
+              <line x1="600" y1="500" x2="600" y2="92" stroke="#B45309" stroke-width="4" stroke-dasharray="12 10"></line>
+              <text x="610" y="124" fill="#B45309">d_H</text>
+              <text x="218" y="300" fill="#2563EB">A within B-neighborhood</text>
+              <text x="286" y="182" fill="#0F766E">B within A-neighborhood</text>
+              <text x="126" y="94">1.0</text>
+              <text x="92" y="506">0</text>
+              <text x="564" y="532" fill="#B45309">first mutual containment</text>
+            </svg>
+            <p class="caption">The static plot summarizes the notebook's interactive HTML sweep without linking to a separate runtime artifact.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Check: coverage_at_H = 1 for both directions</span><span>Notebook HTML artifact remains outside the deck source</span></div>
+      </div>
+      <aside class="speaker-notes">Use the threshold view to make the supremum operational. At small epsilon, only part of each sample is covered by the opposite neighborhood. At the Hausdorff value, both directed coverage fractions finally reach one, so the metric becomes a containment certificate.</aside>
+    </section>
+
+    <section data-label="Steiner Symmetrization">
+      <div class="slide">
+        <div class="eyebrow">Measure And Symmetry</div>
+        <h2>Steiner Symmetrization Preserves Fiber Lengths</h2>
+        <div class="rule"></div>
+        <div class="cols wide-left">
+          <div class="figure-frame">
+            <img src="../figures/steiner-symmetrization-measure-panel.png" alt="Original polygon fibers and Steiner-centered replacement fibers">
+            <p class="caption">For each vertical line, the original fiber is replaced by a centered interval of the same one-dimensional length.</p>
+          </div>
+          <div class="content compact">
+            <div class="panel blue">
+              <div class="label">Fiber Operation</div>
+              <p>For vertical symmetrization, each slice \(K_x=K\cap(\{x\}\times\mathbb{R})\) is replaced by a centered interval \(K_x^*\) with the same length.</p>
+            </div>
+            <div class="panel teal">
+              <div class="label">Measure Consequence</div>
+              <div class="formula">$$|K^*|=\int |K_x^*|\,dx=\int |K_x|\,dx=|K|.$$</div>
+              <p>Area stays fixed because fiber lengths stay fixed.</p>
+            </div>
+            <div class="mini-grid">
+              <div class="mini">
+                <div class="value">4.53e-6</div>
+                <div class="name">sampled relative area error from the notebook check</div>
+              </div>
+              <div class="mini">
+                <div class="value">0.876</div>
+                <div class="name">perimeter decrease in the displayed sampled polygon</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>Artifact: steiner-symmetrization-measure-panel.png</span><span>Measure preserved, shape reorganized</span></div>
+      </div>
+      <aside class="speaker-notes">Present Steiner symmetrization as a fiberwise operation, not as a vague smoothing process. Each vertical slice keeps its one-dimensional length but is recentered about the symmetry axis. Area is preserved because the fibers keep their lengths, while perimeter and shape can change noticeably.</aside>
+    </section>
+
+    <section data-label="Near Isometry Lab">
+      <div class="slide alt">
+        <div class="eyebrow">Applied Lab</div>
+        <h2>A Nearly Rigid Picture Can Fail The Metric Test</h2>
+        <div class="rule"></div>
+        <div class="cols">
+          <div class="content">
+            <div class="panel amber">
+              <div class="label">Hidden Perturbation</div>
+              <div class="formula">$$A=R_\theta
+              \begin{bmatrix}
+              1.015 & 0\\
+              0 & 0.985
+              \end{bmatrix}$$</div>
+              <p>The map resembles a rotation followed by a translation, but the anisotropic scale breaks orthogonality.</p>
+            </div>
+            <div class="panel">
+              <h3>Invariant Rejection</h3>
+              <ul>
+                <li>\(A^T A-I\) has a nonzero residual.</li>
+                <li>pairwise distances inside the shape drift</li>
+                <li>classification as a Euclidean isometry is rejected</li>
+              </ul>
+            </div>
+          </div>
+          <div class="figure-frame">
+            <svg viewBox="0 0 820 620" role="img" aria-label="Near isometry rejection diagram" xmlns="http://www.w3.org/2000/svg">
+              <rect x="52" y="48" width="716" height="518" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"></rect>
+              <path d="M170 420 L312 344 L360 250 L238 188 L132 284 Z" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="6"></path>
+              <path d="M410 404 L548 302 L584 206 L450 170 L350 288 Z" fill="rgba(180,83,9,0.12)" stroke="#B45309" stroke-width="6"></path>
+              <line x1="170" y1="420" x2="410" y2="404" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10"></line>
+              <line x1="312" y1="344" x2="548" y2="302" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10"></line>
+              <line x1="360" y1="250" x2="584" y2="206" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10"></line>
+              <text x="128" y="160" fill="#2563EB">original distances</text>
+              <text x="432" y="140" fill="#B45309">visually close image</text>
+              <text x="110" y="510" fill="#475569">metric certificate:</text>
+              <text x="340" y="510" fill="#B45309">A^T A not equal I</text>
+              <text x="110" y="548" fill="#475569">therefore not an isometry</text>
+            </svg>
+            <p class="caption">The lab reinforces the chapter rule: visual resemblance does not replace an invariant check.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Check: applied-lab-near-isometry-rejection.json</span><span>Near isometry rejected by metric residuals</span></div>
+      </div>
+      <aside class="speaker-notes">This diagnostic slide is useful because visual plausibility is not enough for Euclidean rigidity. The near motion looks close to a rotation and translation, but A.T A is not the identity and pairwise distances drift. The chapter's computational habit is to reject such motions by invariant checks.</aside>
+    </section>
+
+    <section data-label="Synthesis">
+      <div class="slide">
+        <div class="eyebrow">Synthesis</div>
+        <h2>The Euclidean Affine Reading Habit</h2>
+        <div class="rule"></div>
+        <div class="content">
+          <div class="three">
+            <div class="panel blue">
+              <div class="label">1. Name The Object</div>
+              <p>Is the construction acting on points, free vectors, paths, compact sets, or fibers of a set?</p>
+            </div>
+            <div class="panel teal">
+              <div class="label">2. Name The Measurement</div>
+              <p>Distances and angles live on vectors; Hausdorff distance lives on compact sets; area is assembled from slice lengths.</p>
+            </div>
+            <div class="panel violet">
+              <div class="label">3. Name The Invariant</div>
+              <p>Orthogonality, determinant, fixed set, equal-angle reflection, directed witness, or preserved fiber length.</p>
+            </div>
+          </div>
+          <div class="callout">A Euclidean affine proof is convincing when the picture says what moves, what is measured, and which invariant makes the claim stable.</div>
+          <div class="panel compact">
+            <h3>Chapter Takeaway</h3>
+            <p>The chapter is not merely a list of classical constructions. It is a disciplined way to keep affine bookkeeping and Euclidean measurement together: subtract points to get vectors, use orthogonal affine maps for rigidity, unfold reflections when paths bounce, compare compact sets by directed containment, and preserve area by preserving fiber lengths.</p>
+          </div>
+        </div>
+        <div class="footer"><span>Chapter 9 complete</span><span>Next deck in course sequence: Chapter 10</span></div>
+      </div>
+      <aside class="speaker-notes">Close by tying the chapter back to a reusable reading practice. In Euclidean affine geometry, every picture should answer three questions: what are the points, what vectors or set distances are being measured, and which invariant certifies the claimed construction or theorem.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 05 Lecture - Geometric Primitives in 2D</title>
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-05">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-02-2d-geometric-tools/chapter-05-geometric-primitives-in-2d/05-geometric-primitives-in-2d.ipynb">
+  <meta name="source_span" content="printed pages 171-188; PDF pages 218-235.">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text for inline mathematics and KaTeX 0.16.11 for rendered formulas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    deck-stage:not(:defined) { visibility: hidden; }
+    * { box-sizing: border-box; }
+
+    section {
+      width: 1920px;
+      height: 1080px;
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.032) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 80px 80px;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+      padding: 72px 96px 58px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    section.alt {
+      background:
+        radial-gradient(circle at 120px 96px, rgba(37, 99, 235, 0.07) 0 3px, transparent 4px),
+        linear-gradient(to right, rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(100, 116, 139, 0.04) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 84px 84px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 62px;
+      line-height: 1.04;
+      font-weight: 700;
+      color: var(--slide-ink);
+      letter-spacing: 0;
+      max-width: 1320px;
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.1;
+      font-weight: 700;
+      color: var(--slide-ink);
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.12;
+      font-weight: 700;
+      color: var(--slide-accent);
+      letter-spacing: 0;
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.31;
+      color: var(--slide-ink);
+    }
+
+    ul, ol {
+      margin: 0;
+      padding-left: 34px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .speaker-notes { display: none; }
+
+    .eyebrow {
+      color: var(--slide-teal);
+      font-size: 23px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 10px;
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 28px;
+      border-bottom: 1px solid var(--slide-border);
+      padding-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--slide-muted);
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .brand img {
+      width: 56px;
+      height: 56px;
+    }
+
+    .subhead {
+      color: var(--slide-muted);
+      font-size: 30px;
+      line-height: 1.24;
+      max-width: 1160px;
+    }
+
+    .meta-line {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .rule {
+      width: 120px;
+      height: 6px;
+      background: var(--slide-accent);
+      border-radius: 6px;
+      margin: 22px 0 26px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 28px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid.two { grid-template-columns: 1fr 1fr; }
+    .grid.wide-left { grid-template-columns: 1.12fr 0.88fr; }
+    .grid.wide-right { grid-template-columns: 0.88fr 1.12fr; }
+    .grid.three { grid-template-columns: repeat(3, 1fr); }
+    .grid.four { grid-template-columns: repeat(4, 1fr); }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel.slate { background: var(--slide-bg-alt); border-left: 6px solid var(--slide-border); }
+
+    .panel h3 { margin-bottom: 12px; }
+    .panel p + p { margin-top: 10px; }
+
+    .tag {
+      display: inline-block;
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 5px 11px;
+      font-size: 21px;
+      line-height: 1.1;
+      color: var(--slide-muted);
+      background: #fff;
+      font-weight: 700;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.24;
+      padding: 16px 18px;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      text-align: center;
+    }
+
+    .formula.large { font-size: 39px; }
+    .math-inline { font-family: var(--font-math); font-size: 30px; }
+    .code {
+      font-family: var(--font-code);
+      font-size: 23px;
+      line-height: 1.34;
+      color: var(--slide-ink);
+    }
+
+    .diagram {
+      background: #fff;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 18px;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .diagram.clear {
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    svg text {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      fill: var(--slide-ink);
+    }
+
+    svg text.math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+
+    .caption {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      line-height: 1.28;
+      margin-top: 10px;
+    }
+
+    .ledger {
+      display: grid;
+      grid-template-columns: 0.86fr 1.14fr;
+      gap: 10px 18px;
+      align-items: center;
+    }
+
+    .ledger div {
+      font-size: 25px;
+      line-height: 1.24;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--slide-border);
+    }
+
+    .ledger .key {
+      color: var(--slide-accent);
+      font-weight: 700;
+    }
+
+    .mini {
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      line-height: 1.25;
+    }
+
+    .callout {
+      display: grid;
+      gap: 12px;
+      padding: 20px 24px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid var(--slide-border);
+    }
+
+    .callout strong {
+      color: var(--slide-accent);
+      font-size: 28px;
+    }
+
+    .katex { font-size: 1em; }
+    .katex-display { margin: 0; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="alt" data-label="Title">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Geometric Tools for Computer Graphics</div>
+        <h1>Geometric Primitives in 2D</h1>
+      </div>
+      <div class="brand">
+        <img src="../../../../lecture-design-system/assets/icon.svg" alt="Geometry Atlas">
+        <span>Geometry Atlas</span>
+      </div>
+    </div>
+    <div class="grid wide-left">
+      <div class="stack">
+        <p class="subhead">A primitive is not only a shape; it is a representation, a parameter domain, and a small set of invariants that later queries rely on.</p>
+        <div class="rule"></div>
+        <div class="panel blue">
+          <h3>Lecture Contract</h3>
+          <ul>
+            <li>Choose implicit, parametric, barycentric, or control-point data to match the query.</li>
+            <li>Track boundary conventions: infinite, half-infinite, closed, solid, or sampled.</li>
+            <li>Attach checks: side tests, signed area, residuals, support intervals, and bounding boxes.</li>
+          </ul>
+        </div>
+        <div class="meta-line">
+          <span>Chapter 05</span>
+          <span>printed pages 171-188</span>
+          <span>PDF pages 218-235</span>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 680 520" role="img" aria-label="Primitive families organized by domain">
+          <defs>
+            <marker id="arrow-title" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="70" y="72" width="540" height="370" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+          <text x="340" y="118" text-anchor="middle" font-size="29" font-weight="700" fill="#1E3A8A">2D Primitive Ledger</text>
+          <line x1="340" y1="150" x2="340" y2="408" stroke="#CBD5E1" stroke-width="3"></line>
+          <line x1="100" y1="236" x2="580" y2="236" stroke="#CBD5E1" stroke-width="3"></line>
+          <line x1="100" y1="322" x2="580" y2="322" stroke="#CBD5E1" stroke-width="3"></line>
+          <text x="154" y="198" font-size="27" font-weight="700" fill="#2563EB">Lines</text>
+          <text x="388" y="198" font-size="27" font-weight="700" fill="#0F766E">Regions</text>
+          <text x="142" y="284" font-size="27" font-weight="700" fill="#B45309">Conics</text>
+          <text x="382" y="284" font-size="27" font-weight="700" fill="#6D28D9">Polygons</text>
+          <text x="148" y="370" font-size="27" font-weight="700" fill="#2563EB">Curves</text>
+          <text x="378" y="370" font-size="27" font-weight="700" fill="#0F766E">Checks</text>
+          <path d="M118 422 C210 478, 474 478, 560 422" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-title)"></path>
+          <text x="340" y="492" text-anchor="middle" font-size="25" fill="#475569">query choice determines useful representation</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Open by framing the chapter as a catalog of representation contracts rather than a list of shapes. Every later distance, intersection, and containment routine assumes that a primitive carries a domain, orientation convention, and invariant checks, so this lecture keeps those software decisions visible from the start.</aside>
+  </section>
+
+  <section data-label="Representation Contracts">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Representation First</div>
+        <h2>A Primitive Is A Data Contract Plus A Geometry Promise</h2>
+      </div>
+      <span class="tag">Notebook route</span>
+    </div>
+    <div class="grid two">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Contract Fields</h3>
+          <div class="ledger">
+            <div class="key">Representation</div><div>equation, point plus direction, vertices, matrix form, or control net</div>
+            <div class="key">Domain</div><div>all real values, interval, simplex, square, knot span, or periodic parameter</div>
+            <div class="key">Boundary</div><div>open curve, closed perimeter, solid region, endpoint convention, or repeated vertex</div>
+            <div class="key">Invariant</div><div>residual zero, signed area sign, unit direction, convexity, partition of unity</div>
+          </div>
+        </div>
+        <div class="panel amber">
+          <h3>Query-Driven Choice</h3>
+          <p>A side test wants an implicit residual. A closest point on a segment wants a clamped parameter. A curve editor wants control data and basis functions.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 740 520" role="img" aria-label="Four representation questions">
+          <defs>
+            <marker id="arrow-contract" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#475569"></path>
+            </marker>
+          </defs>
+          <circle cx="370" cy="258" r="92" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+          <text x="370" y="246" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">Primitive</text>
+          <text x="370" y="282" text-anchor="middle" font-size="24" fill="#475569">usable object</text>
+          <rect x="62" y="72" width="218" height="96" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <rect x="460" y="72" width="218" height="96" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+          <rect x="62" y="352" width="218" height="96" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <rect x="460" y="352" width="218" height="96" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="171" y="113" text-anchor="middle" font-size="26" font-weight="700">What is stored?</text>
+          <text x="569" y="113" text-anchor="middle" font-size="26" font-weight="700">What can vary?</text>
+          <text x="171" y="393" text-anchor="middle" font-size="26" font-weight="700">What is inside?</text>
+          <text x="569" y="393" text-anchor="middle" font-size="26" font-weight="700">What is checked?</text>
+          <text x="171" y="146" text-anchor="middle" font-size="22" fill="#475569">coefficients or points</text>
+          <text x="569" y="146" text-anchor="middle" font-size="22" fill="#475569">parameter domain</text>
+          <text x="171" y="426" text-anchor="middle" font-size="22" fill="#475569">perimeter or solid</text>
+          <text x="569" y="426" text-anchor="middle" font-size="22" fill="#475569">sign, residual, bounds</text>
+          <line x1="280" y1="120" x2="308" y2="188" stroke="#475569" stroke-width="4" marker-end="url(#arrow-contract)"></line>
+          <line x1="460" y1="120" x2="432" y2="188" stroke="#475569" stroke-width="4" marker-end="url(#arrow-contract)"></line>
+          <line x1="280" y1="400" x2="308" y2="328" stroke="#475569" stroke-width="4" marker-end="url(#arrow-contract)"></line>
+          <line x1="460" y1="400" x2="432" y2="328" stroke="#475569" stroke-width="4" marker-end="url(#arrow-contract)"></line>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide to establish the recurring vocabulary before formulas appear. Ask students to identify the stored data, legal parameter values, boundary interpretation, and invariant for each primitive. That vocabulary turns the chapter into a set of design decisions that a graphics engine can test.</aside>
+  </section>
+
+  <section class="alt" data-label="Linear Components">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Lines, Rays, Segments</div>
+        <h2>Implicit Form Classifies Space; Parametric Form Enumerates Points</h2>
+      </div>
+      <span class="tag">linear components</span>
+    </div>
+    <div class="grid wide-left">
+      <div class="diagram">
+        <svg viewBox="0 0 900 560" role="img" aria-label="Implicit and parametric line representations">
+          <defs>
+            <marker id="arrow-line" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#2563EB"></path>
+            </marker>
+            <marker id="arrow-normal" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#B45309"></path>
+            </marker>
+          </defs>
+          <rect x="58" y="48" width="784" height="438" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+          <path d="M94 402 L812 110" stroke="#2563EB" stroke-width="7" fill="none" marker-end="url(#arrow-line)"></path>
+          <path d="M812 110 L94 402" stroke="#2563EB" stroke-width="7" fill="none" marker-end="url(#arrow-line)"></path>
+          <circle cx="400" cy="278" r="9" fill="#111827"></circle>
+          <text x="410" y="310" class="math" font-size="27">P</text>
+          <line x1="400" y1="278" x2="535" y2="223" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-line)"></line>
+          <text x="556" y="220" class="math" font-size="27">d</text>
+          <line x1="400" y1="278" x2="347" y2="148" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-normal)"></line>
+          <text x="315" y="134" class="math" font-size="27">n</text>
+          <circle cx="618" cy="190" r="8" fill="#0F766E"></circle>
+          <text x="636" y="184" font-size="25" fill="#0F766E">residual = 0</text>
+          <circle cx="244" cy="155" r="8" fill="#B45309"></circle>
+          <text x="105" y="138" font-size="25" fill="#B45309">positive side</text>
+          <circle cx="664" cy="404" r="8" fill="#64748B"></circle>
+          <text x="684" y="420" font-size="25" fill="#64748B">negative side</text>
+          <text x="450" y="526" text-anchor="middle" font-size="25" fill="#475569">same geometric line, different computational affordances</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Implicit Residual</h3>
+          <p class="formula">\(f(X)=\vec n\cdot X-d\)</p>
+          <ul>
+            <li>\(f(X)=0\): on the line.</li>
+            <li>\(f(X)>0\): side pointed to by \(\vec n\).</li>
+            <li>\(f(X)<0\): opposite side.</li>
+          </ul>
+        </div>
+        <div class="panel teal">
+          <h3>Parametric Enumerator</h3>
+          <p class="formula">\(X(t)=P+t\vec d,\quad t\in\mathbb R\)</p>
+          <p>A parameter value is a coordinate along the line direction. Later, restricting that coordinate creates rays and segments.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Contrast the two line forms by what each makes cheap. The implicit residual immediately answers sidedness and signed distance after normalization. The parametric expression gives a point generator along a direction, so it is natural for sampling, projection, and later clamping to ray or segment domains.</aside>
+  </section>
+
+  <section data-label="Parameter Domains">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Domain Restrictions</div>
+        <h2>A Ray Or Segment Is A Line With A Smaller Legal Parameter Set</h2>
+      </div>
+      <span class="tag">boundary convention</span>
+    </div>
+    <div class="grid two">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Three Linear Components</h3>
+          <ul>
+            <li>Line: \(t\in\mathbb R\).</li>
+            <li>Ray: \(t\ge 0\), with origin \(P\).</li>
+            <li>Segment: \(t\in[0,1]\) for \(X(t)=(1-t)P_0+tP_1\).</li>
+          </ul>
+        </div>
+        <div class="panel amber">
+          <h3>Conversion Pattern</h3>
+          <p>Given \(x=P_x+t d_x\) and \(y=P_y+t d_y\), one implicit residual is</p>
+          <p class="formula">\(-d_y x+d_x y+(P_xd_y-P_yd_x)=0\)</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 760 540" role="img" aria-label="Line ray and segment parameter domains">
+          <defs>
+            <marker id="arrow-domain" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#2563EB"></path>
+            </marker>
+          </defs>
+          <text x="40" y="60" font-size="28" font-weight="700" fill="#1E3A8A">Parameter domains</text>
+          <line x1="98" y1="126" x2="668" y2="126" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-domain)"></line>
+          <line x1="668" y1="126" x2="98" y2="126" stroke="#2563EB" stroke-width="6" marker-end="url(#arrow-domain)"></line>
+          <text x="42" y="134" font-size="25">line</text>
+          <text x="334" y="164" class="math" font-size="24">t in R</text>
+          <line x1="98" y1="256" x2="668" y2="256" stroke="#0F766E" stroke-width="6" marker-end="url(#arrow-domain)"></line>
+          <circle cx="98" cy="256" r="12" fill="#0F766E"></circle>
+          <text x="42" y="264" font-size="25">ray</text>
+          <text x="88" y="302" class="math" font-size="24">P</text>
+          <text x="322" y="302" class="math" font-size="24">t >= 0</text>
+          <line x1="154" y1="396" x2="596" y2="396" stroke="#6D28D9" stroke-width="6"></line>
+          <circle cx="154" cy="396" r="13" fill="#6D28D9"></circle>
+          <circle cx="596" cy="396" r="13" fill="#6D28D9"></circle>
+          <text x="42" y="404" font-size="25">segment</text>
+          <text x="132" y="442" class="math" font-size="24">P0</text>
+          <text x="574" y="442" class="math" font-size="24">P1</text>
+          <text x="318" y="442" class="math" font-size="24">0 <= t <= 1</text>
+          <rect x="252" y="82" width="252" height="358" rx="8" fill="none" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="10 8"></rect>
+          <text x="378" y="498" text-anchor="middle" font-size="24" fill="#475569">closest-point queries become clamp operations on t</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Treat domain restriction as the whole point of the ray and segment representations. Many algorithms first compute the unconstrained line parameter, then project it back into the legal set. That clamping view prepares students for distance formulas and intersection tests in the following chapters.</aside>
+  </section>
+
+  <section class="alt" data-label="Triangles">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Triangles</div>
+        <h2>Orientation And Barycentric Coordinates Turn Three Vertices Into A Region</h2>
+      </div>
+      <span class="tag">simplex domain</span>
+    </div>
+    <div class="grid wide-right">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Signed Area Test</h3>
+          <p class="formula large">\(\Delta= (P_1-P_0)^\perp\cdot(P_2-P_0)\)</p>
+          <p>Positive sign records counterclockwise order, negative sign records clockwise order, and zero indicates collinearity.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Barycentric Contract</h3>
+          <p class="formula">\(X=c_0P_0+c_1P_1+c_2P_2\)</p>
+          <p>\(c_i\ge0\) and \(c_0+c_1+c_2=1\) describe exactly the solid triangle.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="Triangle orientation and barycentric domain">
+          <defs>
+            <marker id="arrow-tri" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#2563EB"></path>
+            </marker>
+          </defs>
+          <polygon points="96,420 360,370 234,118" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="6"></polygon>
+          <circle cx="96" cy="420" r="10" fill="#111827"></circle>
+          <circle cx="360" cy="370" r="10" fill="#111827"></circle>
+          <circle cx="234" cy="118" r="10" fill="#111827"></circle>
+          <text x="70" y="456" class="math" font-size="25">P0</text>
+          <text x="372" y="400" class="math" font-size="25">P1</text>
+          <text x="238" y="96" class="math" font-size="25">P2</text>
+          <path d="M126 408 C208 386, 278 374, 332 371" fill="none" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-tri)"></path>
+          <path d="M344 342 C320 270, 280 192, 246 142" fill="none" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-tri)"></path>
+          <path d="M218 138 C160 218, 118 320, 100 392" fill="none" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-tri)"></path>
+          <text x="220" y="502" text-anchor="middle" font-size="25" fill="#475569">counterclockwise traversal keeps the solid on the left</text>
+          <polygon points="578,430 762,430 578,246" fill="rgba(15,118,110,0.10)" stroke="#0F766E" stroke-width="5"></polygon>
+          <line x1="578" y1="246" x2="578" y2="430" stroke="#CBD5E1" stroke-width="3"></line>
+          <line x1="578" y1="430" x2="762" y2="430" stroke="#CBD5E1" stroke-width="3"></line>
+          <circle cx="638" cy="372" r="9" fill="#0F766E"></circle>
+          <text x="648" y="362" class="math" font-size="24">c</text>
+          <text x="546" y="464" class="math" font-size="24">c0</text>
+          <text x="762" y="464" class="math" font-size="24">c1</text>
+          <text x="548" y="236" class="math" font-size="24">c2</text>
+          <text x="670" y="512" text-anchor="middle" font-size="25" fill="#475569">simplex domain: nonnegative weights summing to one</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Emphasize that vertex order is not cosmetic. It supplies orientation, normals by convention, and a sign for area-like predicates. Then connect barycentric coordinates to containment: if all weights are nonnegative and sum to one, the point is inside the solid triangle with no separate drawing needed.</aside>
+  </section>
+
+  <section data-label="Rectangles">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Rectangles</div>
+        <h2>Axis Alignment Is A Special Case; The Primitive Is A Frame With Extents</h2>
+      </div>
+      <span class="tag">oriented boxes in 2D</span>
+    </div>
+    <div class="grid two">
+      <div class="diagram">
+        <svg viewBox="0 0 760 540" role="img" aria-label="Oriented rectangle with center axes and extents">
+          <defs>
+            <marker id="arrow-rect" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g transform="translate(372 268) rotate(-24)">
+            <rect x="-220" y="-118" width="440" height="236" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="6"></rect>
+            <line x1="0" y1="0" x2="220" y2="0" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-rect)"></line>
+            <line x1="0" y1="0" x2="0" y2="-118" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-rect)"></line>
+            <circle cx="0" cy="0" r="9" fill="#111827"></circle>
+            <line x1="-220" y1="136" x2="220" y2="136" stroke="#B45309" stroke-width="4"></line>
+            <line x1="-220" y1="126" x2="-220" y2="146" stroke="#B45309" stroke-width="4"></line>
+            <line x1="220" y1="126" x2="220" y2="146" stroke="#B45309" stroke-width="4"></line>
+          </g>
+          <text x="388" y="292" class="math" font-size="25">C</text>
+          <text x="586" y="214" class="math" font-size="25">u0</text>
+          <text x="340" y="116" class="math" font-size="25">u1</text>
+          <text x="380" y="488" text-anchor="middle" font-size="25" fill="#475569">symmetric form stores center, orthonormal axes, and half-lengths</text>
+          <rect x="78" y="64" width="604" height="390" rx="8" fill="none" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="10 8"></rect>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Vertex-Edge Form</h3>
+          <p class="formula">\(X(t_0,t_1)=P+t_0e_0+t_1e_1\)</p>
+          <p>\(t_0,t_1\in[0,1]\), with perpendicular edge vectors.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Symmetric Form</h3>
+          <p class="formula">\(X=C+t_0u_0+t_1u_1\)</p>
+          <p>\(|t_0|\le e_0\), \(|t_1|\le e_1\). This form makes containment a pair of coordinate bounds.</p>
+        </div>
+        <div class="panel slate">
+          <h3>Area Check</h3>
+          <p>Parametric area is \(\|e_0\|\,\|e_1\|\). Symmetric area is \(4e_0e_1\).</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use rectangles to reinforce the frame idea from the line slide. An axis-aligned rectangle is only the easiest coordinate frame. The more general oriented rectangle is still simple because points can be expressed in its local axes, where containment and area checks become coordinate tests.</aside>
+  </section>
+
+  <section class="alt" data-label="Polygons">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Polylines And Polygons</div>
+        <h2>Topology Metadata Matters Before Any Numeric Query Runs</h2>
+      </div>
+      <span class="tag">classification gallery</span>
+    </div>
+    <div class="grid four">
+      <div class="panel blue">
+        <h3>Open Chain</h3>
+        <div class="diagram clear">
+          <svg viewBox="0 0 340 220" role="img" aria-label="Open polyline">
+            <polyline points="42,166 98,72 162,124 220,58 294,150" fill="none" stroke="#2563EB" stroke-width="7"></polyline>
+            <circle cx="42" cy="166" r="9" fill="#2563EB"></circle>
+            <circle cx="294" cy="150" r="9" fill="#2563EB"></circle>
+          </svg>
+        </div>
+        <p class="mini">Adjacent segments share endpoints; the chain has distinct start and end.</p>
+      </div>
+      <div class="panel teal">
+        <h3>Simple Convex</h3>
+        <div class="diagram clear">
+          <svg viewBox="0 0 340 220" role="img" aria-label="Convex polygon">
+            <polygon points="64,162 102,70 232,52 292,134 196,184" fill="rgba(15,118,110,0.13)" stroke="#0F766E" stroke-width="7"></polygon>
+            <line x1="96" y1="146" x2="248" y2="108" stroke="#0F766E" stroke-width="5" stroke-dasharray="12 9"></line>
+          </svg>
+        </div>
+        <p class="mini">Every segment between interior points stays in the solid polygon.</p>
+      </div>
+      <div class="panel amber">
+        <h3>Simple Concave</h3>
+        <div class="diagram clear">
+          <svg viewBox="0 0 340 220" role="img" aria-label="Concave polygon">
+            <polygon points="52,172 88,58 172,118 264,58 292,174" fill="rgba(180,83,9,0.13)" stroke="#B45309" stroke-width="7"></polygon>
+            <line x1="92" y1="150" x2="252" y2="146" stroke="#B45309" stroke-width="5" stroke-dasharray="12 9"></line>
+          </svg>
+        </div>
+        <p class="mini">A chord between interior points can leave the region, so convex tests fail.</p>
+      </div>
+      <div class="panel violet">
+        <h3>Nonsimple</h3>
+        <div class="diagram clear">
+          <svg viewBox="0 0 340 220" role="img" aria-label="Self-intersecting polygon">
+            <polygon points="56,168 158,52 278,172 64,76 272,72" fill="rgba(109,40,217,0.10)" stroke="#6D28D9" stroke-width="7"></polygon>
+            <circle cx="160" cy="111" r="10" fill="#6D28D9"></circle>
+          </svg>
+        </div>
+        <p class="mini">Nonadjacent edges intersect, changing what inside and traversal mean.</p>
+      </div>
+    </div>
+    <div class="panel slate">
+      <p><strong>Monotone polygon idea:</strong> a simple polygon can often be split into two chains that each meet lines orthogonal to a chosen direction in at most one connected set.</p>
+    </div>
+    <aside class="speaker-notes">Pause on the taxonomy rather than racing to formulas. The same vertex array can be open, closed, simple, concave, convex, or self-intersecting depending on its edge relationships. Those labels decide whether area, point containment, triangulation, and monotone decomposition routines have valid preconditions.</aside>
+  </section>
+
+  <section data-label="Conics">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Quadratic Curves</div>
+        <h2>A Change Of Basis Makes Conic Classification Inspectable</h2>
+      </div>
+      <span class="tag">matrix form</span>
+    </div>
+    <div class="grid wide-left">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>General Quadratic</h3>
+          <p class="formula large">\(X^TAX+B^TX+c=0\)</p>
+          <p>With \(A=A^T\), rotate into an eigenbasis: \(A=R^TDR\), \(Y=RX\), and \(E=RB\).</p>
+        </div>
+        <div class="panel teal">
+          <h3>Classification Inputs</h3>
+          <ul>
+            <li>Signs and zero entries of \(d_0,d_1\).</li>
+            <li>The completed-square residual \(r\).</li>
+            <li>Degenerate cases: point, line pair, no real locus, or all space.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 900 560" role="img" aria-label="Conic classification map">
+          <line x1="450" y1="76" x2="450" y2="478" stroke="#CBD5E1" stroke-width="4"></line>
+          <line x1="92" y1="278" x2="808" y2="278" stroke="#CBD5E1" stroke-width="4"></line>
+          <text x="450" y="36" text-anchor="middle" font-size="26" font-weight="700" fill="#1E3A8A">eigenvalue sign pattern</text>
+          <ellipse cx="224" cy="160" rx="92" ry="52" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="5"></ellipse>
+          <text x="224" y="166" text-anchor="middle" font-size="25">ellipse</text>
+          <circle cx="450" cy="160" r="48" fill="rgba(15,118,110,0.13)" stroke="#0F766E" stroke-width="5"></circle>
+          <text x="450" y="166" text-anchor="middle" font-size="25">circle</text>
+          <path d="M620 112 C718 112, 718 208, 620 208 M708 112 C610 112, 610 208, 708 208" fill="none" stroke="#B45309" stroke-width="5"></path>
+          <text x="664" y="242" text-anchor="middle" font-size="25">hyperbola</text>
+          <path d="M170 410 C230 318, 328 318, 388 410" fill="none" stroke="#6D28D9" stroke-width="6"></path>
+          <text x="280" y="454" text-anchor="middle" font-size="25">parabola</text>
+          <line x1="560" y1="392" x2="752" y2="392" stroke="#64748B" stroke-width="6"></line>
+          <line x1="560" y1="434" x2="752" y2="434" stroke="#64748B" stroke-width="6"></line>
+          <text x="656" y="478" text-anchor="middle" font-size="25">degenerate lines</text>
+          <text x="450" y="536" text-anchor="middle" font-size="24" fill="#475569">classification follows algebra after rotation and square completion</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Present conic classification as a linear algebra story. The raw coefficients are hard to read, but diagonalizing the symmetric quadratic part reveals principal directions. Completing squares then separates genuine ellipses and hyperbolas from degenerate outcomes such as points, lines, or an empty real set.</aside>
+  </section>
+
+  <section class="alt" data-label="Circles And Ellipses">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Circle And Ellipse Forms</div>
+        <h2>Metric, Parametric, And Quadratic Views Are The Same Shape From Different Queries</h2>
+      </div>
+      <span class="tag">special conics</span>
+    </div>
+    <div class="grid two">
+      <div class="diagram">
+        <svg viewBox="0 0 760 540" role="img" aria-label="Circle and oriented ellipse">
+          <defs>
+            <marker id="arrow-ellipse" markerWidth="14" markerHeight="14" refX="11" refY="5" orient="auto">
+              <path d="M0,0 L12,5 L0,10 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <circle cx="210" cy="268" r="108" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="6"></circle>
+          <circle cx="210" cy="268" r="8" fill="#111827"></circle>
+          <line x1="210" y1="268" x2="318" y2="268" stroke="#2563EB" stroke-width="5"></line>
+          <text x="247" y="252" class="math" font-size="25">r</text>
+          <text x="190" y="304" class="math" font-size="25">C</text>
+          <g transform="translate(540 268) rotate(-28)">
+            <ellipse cx="0" cy="0" rx="148" ry="72" fill="rgba(15,118,110,0.11)" stroke="#0F766E" stroke-width="6"></ellipse>
+            <line x1="-148" y1="0" x2="148" y2="0" stroke="#0F766E" stroke-width="4" marker-end="url(#arrow-ellipse)"></line>
+            <line x1="0" y1="0" x2="0" y2="-72" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-ellipse)"></line>
+            <circle cx="0" cy="0" r="8" fill="#111827"></circle>
+          </g>
+          <text x="640" y="210" class="math" font-size="25">l0</text>
+          <text x="504" y="178" class="math" font-size="25">l1</text>
+          <text x="520" y="304" class="math" font-size="25">C</text>
+          <text x="210" y="452" text-anchor="middle" font-size="25" fill="#475569">circle: one scale</text>
+          <text x="540" y="452" text-anchor="middle" font-size="25" fill="#475569">ellipse: axes plus orientation</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Circle Equivalences</h3>
+          <p class="formula">\(\|X-C\|=r,\quad X(t)=C+r(\cos t,\sin t)\)</p>
+          <p>Quadratic coefficients satisfy \(B=-2C\) and \(c=C^TC-r^2\).</p>
+        </div>
+        <div class="panel teal">
+          <h3>Ellipse Equivalences</h3>
+          <p class="formula">\((X-C)^TR^TDR(X-C)=1\)</p>
+          <p>Half-lengths live in \(D\), orientation lives in \(R\), and parameterization uses the unit circle as the source domain.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use circles and ellipses as a friendly bridge from the general conic equation back to geometry. Distance form is best for membership intuition, parametric form is best for sampling, and quadratic form is best when a larger algorithm already stores coefficients or applies affine transformations.</aside>
+  </section>
+
+  <section data-label="Bezier Curves">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Polynomial Curves</div>
+        <h2>Bezier Curves Trade Coefficients For A Geometric Control Polygon</h2>
+      </div>
+      <span class="tag">Bernstein basis</span>
+    </div>
+    <div class="grid wide-right">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>Vector Polynomial View</h3>
+          <p class="formula">\(X(t)=\sum_{j=0}^{n}A_jt^j,\quad t\in[0,1]\)</p>
+          <p>Good for algebra, but coefficient changes are not visually local.</p>
+        </div>
+        <div class="panel teal">
+          <h3>Bezier Blend</h3>
+          <p class="formula">\(X(t)=\sum_{i=0}^{n}{n\choose i}t^i(1-t)^{n-i}P_i\)</p>
+          <p>The basis functions are nonnegative and sum to one, so the curve is organized by its control points.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 860 560" role="img" aria-label="Cubic Bezier curve and control polygon">
+          <polyline points="92,420 252,86 514,118 732,388" fill="none" stroke="#CBD5E1" stroke-width="5" stroke-dasharray="12 9"></polyline>
+          <path d="M92 420 C252 86, 514 118, 732 388" fill="none" stroke="#2563EB" stroke-width="8"></path>
+          <circle cx="92" cy="420" r="11" fill="#111827"></circle>
+          <circle cx="252" cy="86" r="11" fill="#64748B"></circle>
+          <circle cx="514" cy="118" r="11" fill="#64748B"></circle>
+          <circle cx="732" cy="388" r="11" fill="#111827"></circle>
+          <text x="62" y="456" class="math" font-size="25">P0</text>
+          <text x="230" y="62" class="math" font-size="25">P1</text>
+          <text x="518" y="92" class="math" font-size="25">P2</text>
+          <text x="740" y="424" class="math" font-size="25">P3</text>
+          <circle cx="333" cy="223" r="9" fill="#B45309"></circle>
+          <text x="348" y="214" class="math" font-size="24">X(t)</text>
+          <rect x="58" y="58" width="744" height="424" rx="8" fill="none" stroke="#CBD5E1" stroke-width="3"></rect>
+          <text x="430" y="526" text-anchor="middle" font-size="25" fill="#475569">endpoints interpolate, interior controls shape the tangent and bend</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Explain why graphics courses prefer the control polygon story for Bezier curves. The curve is still a polynomial, but the Bernstein basis makes endpoints, tangent intuition, and convex-hull behavior visible. That geometric handle is more useful to an editor than raw monomial coefficients.</aside>
+  </section>
+
+  <section class="alt" data-label="B-Splines And NURBS">
+    <div class="header">
+      <div>
+        <div class="eyebrow">B-Splines And NURBS</div>
+        <h2>Knots Localize Polynomial Pieces; Weights Add Rational Projection</h2>
+      </div>
+      <span class="tag">free-form curves</span>
+    </div>
+    <div class="grid two">
+      <div class="diagram">
+        <svg viewBox="0 0 780 540" role="img" aria-label="B-spline local basis and NURBS weight">
+          <line x1="86" y1="410" x2="706" y2="410" stroke="#CBD5E1" stroke-width="4"></line>
+          <line x1="86" y1="410" x2="86" y2="98" stroke="#CBD5E1" stroke-width="4"></line>
+          <path d="M110 410 C160 354, 190 292, 246 410" fill="none" stroke="#2563EB" stroke-width="6"></path>
+          <path d="M210 410 C282 230, 358 230, 430 410" fill="none" stroke="#0F766E" stroke-width="6"></path>
+          <path d="M394 410 C448 306, 520 306, 592 410" fill="none" stroke="#B45309" stroke-width="6"></path>
+          <path d="M540 410 C588 348, 644 336, 690 410" fill="none" stroke="#6D28D9" stroke-width="6"></path>
+          <g stroke="#64748B" stroke-width="4">
+            <line x1="110" y1="410" x2="110" y2="438"></line>
+            <line x1="246" y1="410" x2="246" y2="438"></line>
+            <line x1="430" y1="410" x2="430" y2="438"></line>
+            <line x1="592" y1="410" x2="592" y2="438"></line>
+            <line x1="690" y1="410" x2="690" y2="438"></line>
+          </g>
+          <text x="110" y="472" text-anchor="middle" class="math" font-size="23">t0</text>
+          <text x="246" y="472" text-anchor="middle" class="math" font-size="23">t1</text>
+          <text x="430" y="472" text-anchor="middle" class="math" font-size="23">t2</text>
+          <text x="592" y="472" text-anchor="middle" class="math" font-size="23">t3</text>
+          <text x="690" y="472" text-anchor="middle" class="math" font-size="23">t4</text>
+          <text x="398" y="68" text-anchor="middle" font-size="27" font-weight="700" fill="#1E3A8A">local basis functions over knot spans</text>
+          <circle cx="552" cy="164" r="46" fill="rgba(180,83,9,0.12)" stroke="#B45309" stroke-width="5"></circle>
+          <text x="552" y="171" text-anchor="middle" class="math" font-size="26">wi</text>
+          <text x="552" y="226" text-anchor="middle" font-size="23" fill="#475569">weight changes pull</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel blue">
+          <h3>B-Spline Curve</h3>
+          <p class="formula">\(X(t)=\sum_i B_{i,j}(t)P_i\)</p>
+          <p>Degree \(j\), knot vector \((t_0,\ldots,t_n)\), and piecewise polynomial basis functions control local support.</p>
+        </div>
+        <div class="panel violet">
+          <h3>NURBS Curve</h3>
+          <p class="formula">\(X(t)=\sum_i R_{i,j}(t)P_i,\quad R_{i,j}=\frac{w_iB_{i,j}}{\sum_k w_kB_{k,j}}\)</p>
+          <p>Positive weights create a rational curve by homogeneous projection, giving conic-like precision inside the same control framework.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Separate three ideas that students often merge. B-splines are piecewise polynomial curves controlled by knots and local basis support. Nonuniform knots change the parameter spacing. NURBS adds positive weights and a homogeneous division, which lets rational curves represent shapes unavailable to ordinary polynomial splines.</aside>
+  </section>
+
+  <section data-label="Query Design">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Worked Query Design</div>
+        <h2>Pick The Representation That Makes The Predicate A Small Residual</h2>
+      </div>
+      <span class="tag">implementation lens</span>
+    </div>
+    <div class="grid two">
+      <div class="panel blue">
+        <h3>Representation Checklist</h3>
+        <ol>
+          <li>State the query as a predicate, projection, distance, sampler, or editor operation.</li>
+          <li>Choose the coordinate domain where legal points are easiest to characterize.</li>
+          <li>Compute a residual or certificate that can be tested against tolerance.</li>
+          <li>Attach a geometric invariant to catch scaling, orientation, or endpoint mistakes.</li>
+        </ol>
+      </div>
+      <div class="stack">
+        <div class="callout">
+          <strong>Side of a line</strong>
+          <p>Use \(f(X)=\vec n\cdot X-d\). Normalize \(\vec n\) when signed distance magnitude matters.</p>
+        </div>
+        <div class="callout">
+          <strong>Inside a triangle</strong>
+          <p>Use barycentric weights and require nonnegative coordinates whose sum is one.</p>
+        </div>
+        <div class="callout">
+          <strong>Sample a curve</strong>
+          <p>Use a parametric curve basis and verify endpoints or bounding boxes from sampled points.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make this the bridge from definitions to algorithms. Students should not memorize one representation per primitive; they should ask which representation turns the current query into a simple residual, parameter clamp, or domain membership test. That habit will pay off immediately in distance and intersection chapters.</aside>
+  </section>
+
+  <section class="alt" data-label="Lab">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Applied Lab</div>
+        <h2>Stress-Test A Primitive By Varying One Domain, One Tolerance, And One Frame</h2>
+      </div>
+      <span class="tag">student exercise</span>
+    </div>
+    <div class="grid three">
+      <div class="panel blue">
+        <h3>1. Choose A Primitive</h3>
+        <p>Line component, triangle, rectangle, polygon, conic, Bezier, B-spline, or NURBS curve.</p>
+        <p class="mini">Record its stored data and legal parameter domain.</p>
+      </div>
+      <div class="panel teal">
+        <h3>2. Perturb A Contract</h3>
+        <p>Move one vertex, rotate one frame, change one knot, or adjust one NURBS weight.</p>
+        <p class="mini">Keep all other choices fixed so the effect is attributable.</p>
+      </div>
+      <div class="panel amber">
+        <h3>3. Check A Certificate</h3>
+        <p>Use residual zero, signed area, containment bounds, support intervals, or sampled bounding boxes.</p>
+        <p class="mini">Distinguish geometry changes from representation artifacts.</p>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 1500 220" role="img" aria-label="Lab flow from primitive to perturbation to invariant">
+        <defs>
+          <marker id="arrow-lab" markerWidth="16" markerHeight="16" refX="12" refY="6" orient="auto">
+            <path d="M0,0 L14,6 L0,12 Z" fill="#1E3A8A"></path>
+          </marker>
+        </defs>
+        <rect x="80" y="52" width="300" height="116" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+        <rect x="600" y="52" width="300" height="116" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+        <rect x="1120" y="52" width="300" height="116" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+        <text x="230" y="102" text-anchor="middle" font-size="28" font-weight="700">Primitive</text>
+        <text x="750" y="102" text-anchor="middle" font-size="28" font-weight="700">Perturbation</text>
+        <text x="1270" y="102" text-anchor="middle" font-size="28" font-weight="700">Invariant Check</text>
+        <text x="230" y="138" text-anchor="middle" font-size="23" fill="#475569">stored data and domain</text>
+        <text x="750" y="138" text-anchor="middle" font-size="23" fill="#475569">one controlled change</text>
+        <text x="1270" y="138" text-anchor="middle" font-size="23" fill="#475569">numeric certificate</text>
+        <line x1="392" y1="110" x2="586" y2="110" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-lab)"></line>
+        <line x1="912" y1="110" x2="1106" y2="110" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-lab)"></line>
+      </svg>
+    </div>
+    <aside class="speaker-notes">Assign the lab as controlled variation, not as free drawing. Students should change one aspect of the primitive contract and predict which invariant will move. For example, moving a triangle vertex changes signed area, while merely rotating an oriented rectangle frame should preserve its area.</aside>
+  </section>
+
+  <section data-label="Recap">
+    <div class="header">
+      <div>
+        <div class="eyebrow">Recap</div>
+        <h2>The Chapter Is A Representation Atlas For Later Geometry Queries</h2>
+      </div>
+      <span class="tag">takeaways</span>
+    </div>
+    <div class="grid two">
+      <div class="stack">
+        <div class="panel blue">
+          <h3>What To Remember</h3>
+          <ul>
+            <li>Implicit equations give residuals, signs, and algebraic classification.</li>
+            <li>Parametric domains turn infinite objects into rays, segments, regions, and curve samples.</li>
+            <li>Orientation, simplicity, convexity, and monotonicity are preconditions, not decorations.</li>
+            <li>Control-point curves encode shape through basis functions, knots, and weights.</li>
+          </ul>
+        </div>
+        <div class="panel violet">
+          <h3>Sanity Checks</h3>
+          <p>Line residuals vanish on samples, polygon area reports orientation, Bezier endpoints match controls, and sampled curve boxes contain every sample.</p>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 780 540" role="img" aria-label="Primitive representation summary wheel">
+          <circle cx="390" cy="270" r="146" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></circle>
+          <circle cx="390" cy="270" r="70" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></circle>
+          <text x="390" y="260" text-anchor="middle" font-size="28" font-weight="700" fill="#1E3A8A">Query</text>
+          <text x="390" y="296" text-anchor="middle" font-size="24" fill="#475569">chooses form</text>
+          <g>
+            <circle cx="390" cy="74" r="54" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="5"></circle>
+            <text x="390" y="82" text-anchor="middle" font-size="24" font-weight="700">implicit</text>
+          </g>
+          <g>
+            <circle cx="584" cy="186" r="54" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="5"></circle>
+            <text x="584" y="194" text-anchor="middle" font-size="24" font-weight="700">domain</text>
+          </g>
+          <g>
+            <circle cx="584" cy="406" r="54" fill="rgba(180,83,9,0.12)" stroke="#B45309" stroke-width="5"></circle>
+            <text x="584" y="414" text-anchor="middle" font-size="24" font-weight="700">invariant</text>
+          </g>
+          <g>
+            <circle cx="196" cy="406" r="54" fill="rgba(109,40,217,0.12)" stroke="#6D28D9" stroke-width="5"></circle>
+            <text x="196" y="414" text-anchor="middle" font-size="24" font-weight="700">control</text>
+          </g>
+          <g>
+            <circle cx="196" cy="186" r="54" fill="rgba(100,116,139,0.12)" stroke="#64748B" stroke-width="5"></circle>
+            <text x="196" y="194" text-anchor="middle" font-size="24" font-weight="700">orientation</text>
+          </g>
+          <line x1="390" y1="200" x2="390" y2="128" stroke="#CBD5E1" stroke-width="4"></line>
+          <line x1="456" y1="246" x2="533" y2="203" stroke="#CBD5E1" stroke-width="4"></line>
+          <line x1="456" y1="294" x2="533" y2="389" stroke="#CBD5E1" stroke-width="4"></line>
+          <line x1="324" y1="294" x2="247" y2="389" stroke="#CBD5E1" stroke-width="4"></line>
+          <line x1="324" y1="246" x2="247" y2="203" stroke="#CBD5E1" stroke-width="4"></line>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close by naming the transfer to later chapters. Distance and intersection algorithms will look less mysterious once students recognize which primitive contract they consume. The useful habit is to keep representation, domain, boundary convention, and invariant together whenever a new geometric object enters code.</aside>
+  </section>
+</deck-stage>
+
+<script type="application/json" id="speaker-notes">
+{"slides":["Open by framing the chapter as a catalog of representation contracts rather than a list of shapes. Every later distance, intersection, and containment routine assumes that a primitive carries a domain, orientation convention, and invariant checks, so this lecture keeps those software decisions visible from the start.","Use this slide to establish the recurring vocabulary before formulas appear. Ask students to identify the stored data, legal parameter values, boundary interpretation, and invariant for each primitive. That vocabulary turns the chapter into a set of design decisions that a graphics engine can test.","Contrast the two line forms by what each makes cheap. The implicit residual immediately answers sidedness and signed distance after normalization. The parametric expression gives a point generator along a direction, so it is natural for sampling, projection, and later clamping to ray or segment domains.","Treat domain restriction as the whole point of the ray and segment representations. Many algorithms first compute the unconstrained line parameter, then project it back into the legal set. That clamping view prepares students for distance formulas and intersection tests in the following chapters.","Emphasize that vertex order is not cosmetic. It supplies orientation, normals by convention, and a sign for area-like predicates. Then connect barycentric coordinates to containment: if all weights are nonnegative and sum to one, the point is inside the solid triangle with no separate drawing needed.","Use rectangles to reinforce the frame idea from the line slide. An axis-aligned rectangle is only the easiest coordinate frame. The more general oriented rectangle is still simple because points can be expressed in its local axes, where containment and area checks become coordinate tests.","Pause on the taxonomy rather than racing to formulas. The same vertex array can be open, closed, simple, concave, convex, or self-intersecting depending on its edge relationships. Those labels decide whether area, point containment, triangulation, and monotone decomposition routines have valid preconditions.","Present conic classification as a linear algebra story. The raw coefficients are hard to read, but diagonalizing the symmetric quadratic part reveals principal directions. Completing squares then separates genuine ellipses and hyperbolas from degenerate outcomes such as points, lines, or an empty real set.","Use circles and ellipses as a friendly bridge from the general conic equation back to geometry. Distance form is best for membership intuition, parametric form is best for sampling, and quadratic form is best when a larger algorithm already stores coefficients or applies affine transformations.","Explain why graphics courses prefer the control polygon story for Bezier curves. The curve is still a polynomial, but the Bernstein basis makes endpoints, tangent intuition, and convex-hull behavior visible. That geometric handle is more useful to an editor than raw monomial coefficients.","Separate three ideas that students often merge. B-splines are piecewise polynomial curves controlled by knots and local basis support. Nonuniform knots change the parameter spacing. NURBS adds positive weights and a homogeneous division, which lets rational curves represent shapes unavailable to ordinary polynomial splines.","Make this the bridge from definitions to algorithms. Students should not memorize one representation per primitive; they should ask which representation turns the current query into a simple residual, parameter clamp, or domain membership test. That habit will pay off immediately in distance and intersection chapters.","Assign the lab as controlled variation, not as free drawing. Students should change one aspect of the primitive contract and predict which invariant will move. For example, moving a triangle vertex changes signed area, while merely rotating an oriented rectangle frame should preserve its area.","Close by naming the transfer to later chapters. Distance and intersection algorithms will look less mysterious once students recognize which primitive contract they consume. The useful habit is to keep representation, domain, boundary convention, and invariant together whenever a new geometric object enters code."]}
+</script>
+</body>
+</html>

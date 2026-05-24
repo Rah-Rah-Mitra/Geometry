@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometric Algebra for Computer Science - Chapter 12</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="chapter-12">
+  <meta name="chapter_title" content="Chapter 12: Applications of the Homogeneous Model">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/part-02-models-of-geometry/chapter-12-applications-of-the-homogeneous-model/12-applications-of-the-homogeneous-model.ipynb">
+  <meta name="source_span" content="the PDF/page audit in this notebook records the printed and PDF page span used for chapter grounding; all prose, examples, visuals, and checks here are original course material.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script id="deck-metadata" type="application/json">{"course":"Geometric Algebra for Computer Science","chapter_id":"chapter-12","chapter_title":"Chapter 12: Applications of the Homogeneous Model","notebook_path":"Geometric-Algebra-for-Computer-Science/part-02-models-of-geometry/chapter-12-applications-of-the-homogeneous-model/12-applications-of-the-homogeneous-model.ipynb","source_span":"the PDF/page audit in this notebook records the printed and PDF page span used for chapter grounding; all prose, examples, visuals, and checks here are original course material.","source_pdf":"Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf","design_system_version":"lecture-design-system-2026-05-23"}</script>
+  <script id="speaker-notes" type="application/json">{"slides":[{"slide":1,"title":"Application Grammar","notes":"Open the lecture by stressing that Chapter 12 is not a new algebraic universe; it is the homogeneous model being used as a programming language for incidence, projection, camera geometry, and diagnostics. The title slide previews the recurring pattern: choose representatives, apply a linear map or product, then test an invariant."},{"slide":2,"title":"Join And Meet Grammar","notes":"Use this slide to fix the grammar. A join builds the smallest projective object containing the given ingredients, while a meet recovers their common part. Keep the language concrete: two points generate a line, two planes meet in a line, and every later camera construction is just this grammar with matrices attached."},{"slide":3,"title":"Plucker Lines","notes":"Explain Plucker coordinates as the line blade seen through an implementation lens. The direction tells how the line points, and the moment tells how it misses the origin. The two checks on the slide are small but decisive: shifting along the line preserves the moment, and d dot m remains zero."},{"slide":4,"title":"Incidence As Tests","notes":"Incidence is where the algebra starts paying rent. Rather than branching over many special cases, the code asks whether a line direction is tangent to the plane and whether one point on the line satisfies the plane equation. The blade statement and the dot-product statement are two interfaces to the same test."},{"slide":5,"title":"Line Pair Taxonomy","notes":"Frame the four line relationships as outputs of one representation rather than separate recipes. Intersecting and coincident lines are exact incidence cases, parallel lines expose a degenerate direction bivector, and skew lines produce a shortest connector. The connector being orthogonal to both directions is the computational certificate."},{"slide":6,"title":"Projective Transform Adapter","notes":"Describe a homogeneous matrix as an adapter between algebra and graphics APIs. Points move by direct multiplication, planes move by inverse transpose, and lines may be rebuilt from transformed endpoints. The practical invariant is simple: incidence before the transform must still be incidence after the transform."},{"slide":7,"title":"Vanishing Points","notes":"Vanishing points are a good sanity check for projective thinking because nothing mystical happens at infinity. A family of parallel world lines shares an ideal direction; the camera maps that direction to a finite image point when it is not parallel to the image plane. The diagram asks students to see the point as an image of a direction."},{"slide":8,"title":"Pinhole Projection","notes":"Emphasize that the image coordinate is only a representative of a ray. Scaling the homogeneous image vector does not change the observation, and dividing by the last coordinate is a display step. The projection matrix, its null-space camera center, and the back-projected ray are the same data organized three ways."},{"slide":9,"title":"Epipolar Incidence","notes":"Use the epipolar slide to replace search intuition with incidence. A point in the left image chooses a ray, the right camera center joins that ray into a plane, and the right image sees a line. The displayed near-zero residual comes from the notebook check and confirms the exact synthetic correspondences."},{"slide":10,"title":"Line-Based Stereo","notes":"Line-based stereo is the dual version of point stereo. An observed image line back-projects to a whole plane of rays, so two views recover a spatial line by meeting planes. The alignment and endpoint residuals give students a numerical target: the recovered line is not just drawn, it is certified."},{"slide":11,"title":"Interpolation With Representatives","notes":"Interpolation is included to keep the lecture honest about animation and calibration workflows. Homogeneous representatives can be blended only after a convention is chosen and must be normalized before interpretation. For rigid or camera transforms, interpolate meaningful parameters or a group logarithm, then recheck incidence instead of trusting the picture."},{"slide":12,"title":"Computational Check Board","notes":"Close with the check board, not a generic summary. Each application has a measurable invariant: Plucker orthogonality, epipolar residuals, ray-plane containment, reconstruction error, view-matrix convention, and skew-line perpendicularity. The final message is that homogeneous modeling is useful because it gives both constructions and tests."}]}</script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    deck-stage > section {
+      width: 1920px;
+      height: 1080px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      display: flex;
+      flex-direction: column;
+      padding: 60px 92px 60px;
+      border-top: 10px solid var(--slide-accent);
+      background:
+        linear-gradient(90deg, rgba(30, 58, 138, 0.030) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.024) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 76px 76px, 76px 76px, auto;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(109, 40, 217, 0.026) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px, 72px 72px, auto;
+    }
+
+    h1,
+    h2,
+    h3,
+    p,
+    ul,
+    ol,
+    figure {
+      margin-top: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin-bottom: 18px;
+      font-size: 66px;
+      line-height: 1.04;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: 50px;
+      line-height: 1.08;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: 30px;
+      line-height: 1.14;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    p,
+    li {
+      font-size: 26px;
+      line-height: 1.30;
+    }
+
+    ul,
+    ol {
+      margin-bottom: 0;
+      padding-left: 31px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      color: var(--slide-ink);
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 2px 7px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 24px;
+      min-height: 52px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--slide-muted);
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: #087568;
+      display: grid;
+      place-items: center;
+    }
+
+    .brand-mark svg {
+      width: 34px;
+      height: 34px;
+    }
+
+    .source-chip {
+      max-width: 760px;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.82);
+      padding: 8px 14px;
+      font-size: 22px;
+      line-height: 1.18;
+      font-weight: 600;
+      color: var(--slide-muted);
+      text-align: right;
+    }
+
+    .subtitle {
+      max-width: 1120px;
+      color: var(--slide-muted);
+      font-size: 30px;
+      line-height: 1.24;
+    }
+
+    .layout-two {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.04fr 0.96fr;
+      gap: 38px;
+      align-items: stretch;
+    }
+
+    .layout-wide {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.82fr 1.18fr;
+      gap: 40px;
+      align-items: stretch;
+    }
+
+    .panel,
+    .math-box-lite,
+    .svg-frame,
+    .metric-card {
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+    }
+
+    .panel {
+      padding: 24px 26px;
+    }
+
+    .panel.teal {
+      border-left: 5px solid #0F766E;
+      background: #F0FDFA;
+    }
+
+    .panel.blue {
+      border-left: 5px solid #2563EB;
+      background: #EFF6FF;
+    }
+
+    .panel.amber {
+      border-left: 5px solid #B45309;
+      background: #FFFBEB;
+    }
+
+    .panel.violet {
+      border-left: 5px solid #6D28D9;
+      background: #F5F3FF;
+    }
+
+    .math-box-lite {
+      padding: 20px 24px;
+      border-left: 5px solid #1E3A8A;
+      background: #EEF2FF;
+    }
+
+    .math-box-lite + .math-box-lite,
+    .panel + .panel,
+    .metric-card + .metric-card {
+      margin-top: 18px;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.20;
+      color: var(--slide-ink);
+    }
+
+    .formula.small {
+      font-size: 27px;
+    }
+
+    .caption {
+      margin-top: 12px;
+      font-size: 22px;
+      line-height: 1.24;
+      color: var(--slide-dimmed);
+      font-weight: 600;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      border-radius: 6px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: var(--slide-muted);
+      font-size: 21px;
+      line-height: 1.16;
+      font-weight: 700;
+      padding: 7px 10px;
+    }
+
+    .svg-frame {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background:
+        linear-gradient(90deg, rgba(203, 213, 225, 0.36) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(203, 213, 225, 0.32) 1px, transparent 1px),
+        #FFFFFF;
+      background-size: 42px 42px, 42px 42px, auto;
+    }
+
+    .svg-frame svg {
+      width: 100%;
+      max-height: 650px;
+    }
+
+    .diagram text {
+      font-family: "Source Sans 3", Arial, sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .diagram text.math-label {
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: 24px;
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    .section-kicker {
+      margin-bottom: 10px;
+      color: var(--slide-accent);
+      font-size: 25px;
+      line-height: 1.12;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .stack.gap {
+      gap: 18px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .mini-cell {
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 16px;
+      min-height: 210px;
+    }
+
+    .mini-cell h3 {
+      font-size: 25px;
+      margin-bottom: 7px;
+    }
+
+    .mini-cell p {
+      font-size: 22px;
+      line-height: 1.22;
+      color: var(--slide-muted);
+      margin-bottom: 0;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .metric-card {
+      padding: 18px;
+      min-height: 142px;
+    }
+
+    .metric-label {
+      margin-bottom: 8px;
+      font-size: 22px;
+      line-height: 1.14;
+      color: var(--slide-muted);
+      font-weight: 700;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      line-height: 1.18;
+      color: var(--slide-accent);
+      font-weight: 600;
+    }
+
+    .callout {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 8px;
+      border: 1px solid #CBD5E1;
+      background: #F8FAFC;
+      font-size: 24px;
+      line-height: 1.25;
+      color: var(--slide-muted);
+      font-weight: 600;
+    }
+
+    .title-main {
+      display: grid;
+      grid-template-columns: 0.98fr 1.02fr;
+      gap: 44px;
+      align-items: center;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .large-number {
+      color: rgba(30, 58, 138, 0.12);
+      font-size: 214px;
+      line-height: 0.86;
+      font-weight: 700;
+    }
+
+    .route-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 26px;
+    }
+
+    .route-item {
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      padding: 14px 16px;
+      color: var(--slide-muted);
+      font-size: 23px;
+      line-height: 1.22;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="01 Application Grammar">
+      <div class="slide alt">
+        <div class="topbar">
+          <div class="brand">
+            <div class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 48 48" role="img" aria-label="Geometry Atlas mark">
+                <path d="M12 12h10c5 0 8 3 8 8v16H20c-5 0-8-3-8-8V12Z" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+                <path d="M26 12h10v24H26c-4 0-7-3-7-7V19c0-4 3-7 7-7Z" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.9"/>
+                <path d="M18 19h14M18 25h14M18 31h10" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span>Geometry Atlas Lecture Deck</span>
+          </div>
+          <div class="source-chip">Row 347 only: manifest source span is the notebook PDF/page audit text.</div>
+        </div>
+        <div class="title-main">
+          <div>
+            <div class="large-number">12</div>
+            <h1>Applications of the Homogeneous Model</h1>
+            <p class="subtitle">Use homogeneous representatives as a practical grammar for joins, meets, projective transforms, cameras, line geometry, interpolation, and executable checks.</p>
+            <div class="route-list">
+              <div class="route-item">Representatives: points, planes, lines</div>
+              <div class="route-item">Products: join, meet, incidence</div>
+              <div class="route-item">Matrices: projection and transforms</div>
+              <div class="route-item">Diagnostics: residuals and invariants</div>
+            </div>
+          </div>
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 780 560" aria-label="Application route through homogeneous model">
+              <defs>
+                <marker id="arrow-s1" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <rect x="62" y="58" width="188" height="96" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <rect x="296" y="58" width="188" height="96" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <rect x="530" y="58" width="188" height="96" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"/>
+              <rect x="106" y="278" width="188" height="96" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"/>
+              <rect x="344" y="278" width="188" height="96" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"/>
+              <rect x="512" y="414" width="188" height="96" rx="8" fill="#F8FAFC" stroke="#475569" stroke-width="3"/>
+              <path d="M250 106 H294" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-s1)"/>
+              <path d="M484 106 H528" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-s1)"/>
+              <path d="M622 154 C622 222 250 218 206 278" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-s1)"/>
+              <path d="M294 326 H342" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-s1)"/>
+              <path d="M532 374 C590 386 612 392 618 414" fill="none" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-s1)"/>
+              <text x="156" y="96" text-anchor="middle" fill="#2563EB">Represent</text>
+              <text x="156" y="128" text-anchor="middle" fill="#475569">X, pi, L</text>
+              <text x="390" y="96" text-anchor="middle" fill="#0F766E">Construct</text>
+              <text x="390" y="128" text-anchor="middle" fill="#475569">join / meet</text>
+              <text x="624" y="96" text-anchor="middle" fill="#B45309">Transform</text>
+              <text x="624" y="128" text-anchor="middle" fill="#475569">4-by-4 maps</text>
+              <text x="200" y="316" text-anchor="middle" fill="#6D28D9">Project</text>
+              <text x="200" y="348" text-anchor="middle" fill="#475569">camera rays</text>
+              <text x="438" y="316" text-anchor="middle" fill="#1E3A8A">Estimate</text>
+              <text x="438" y="348" text-anchor="middle" fill="#475569">stereo / lines</text>
+              <text x="606" y="452" text-anchor="middle" fill="#475569">Check</text>
+              <text x="606" y="484" text-anchor="middle" fill="#475569">residuals</text>
+              <circle cx="156" cy="206" r="9" fill="#2563EB"/>
+              <circle cx="390" cy="206" r="9" fill="#0F766E"/>
+              <circle cx="624" cy="206" r="9" fill="#B45309"/>
+              <path d="M156 206 H624" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="9 9"/>
+              <text x="390" y="244" text-anchor="middle" fill="#64748B">one algebra, several programming surfaces</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open the lecture by stressing that Chapter 12 is not a new algebraic universe; it is the homogeneous model being used as a programming language for incidence, projection, camera geometry, and diagnostics. The title slide previews the recurring pattern: choose representatives, apply a linear map or product, then test an invariant.</aside>
+    </section>
+
+    <section data-label="02 Join And Meet Grammar">
+      <div class="slide">
+        <div class="topbar">
+          <div class="brand">Geometric Algebra for Computer Science</div>
+          <div class="source-chip">Chapter 12: Applications of the Homogeneous Model</div>
+        </div>
+        <h2>Join And Meet Are The Application Grammar</h2>
+        <div class="layout-two">
+          <div class="stack gap">
+            <div class="math-box-lite">
+              <div class="formula">Join: \(A \wedge B\) builds the smallest projective object containing both inputs.</div>
+            </div>
+            <div class="math-box-lite">
+              <div class="formula">Meet: \(A \vee B\) recovers the shared part, often by dualizing a join.</div>
+            </div>
+            <div class="panel teal">
+              <h3>Programming Translation</h3>
+              <ul>
+                <li>Two finite points join to a homogeneous line.</li>
+                <li>Two planes meet in a line when their normals are not parallel.</li>
+                <li>A camera image line back-projects to a ray plane.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 820 560" aria-label="Join of points and meet of planes">
+              <defs>
+                <marker id="arrow-s2" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <rect x="52" y="46" width="324" height="448" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+              <rect x="444" y="46" width="324" height="448" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+              <text x="214" y="92" text-anchor="middle" fill="#2563EB">Join</text>
+              <text x="606" y="92" text-anchor="middle" fill="#0F766E">Meet</text>
+              <line x1="104" y1="330" x2="326" y2="180" stroke="#2563EB" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="142" cy="304" r="12" fill="#2563EB"/>
+              <circle cx="286" cy="207" r="12" fill="#B45309"/>
+              <text x="120" y="292" text-anchor="end" fill="#2563EB">P</text>
+              <text x="306" y="200" fill="#B45309">Q</text>
+              <path d="M154 296 C194 250 242 224 278 211" fill="none" stroke="#94A3B8" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#arrow-s2)"/>
+              <text x="214" y="386" text-anchor="middle" class="math-label" fill="#111827">L = P wedge Q</text>
+              <polygon points="500,318 700,246 720,378 522,450" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <polygon points="520,190 722,260 688,438 486,370" fill="#F0FDFA" stroke="#0F766E" stroke-width="4" opacity="0.92"/>
+              <line x1="548" y1="310" x2="690" y2="382" stroke="#B45309" stroke-width="7" stroke-linecap="round"/>
+              <text x="520" y="214" fill="#2563EB">pi1</text>
+              <text x="704" y="252" fill="#0F766E">pi2</text>
+              <text x="606" y="464" text-anchor="middle" class="math-label" fill="#111827">line = pi1 meet pi2</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use this slide to fix the grammar. A join builds the smallest projective object containing the given ingredients, while a meet recovers their common part. Keep the language concrete: two points generate a line, two planes meet in a line, and every later camera construction is just this grammar with matrices attached.</aside>
+    </section>
+
+    <section data-label="03 Plucker Lines">
+      <div class="slide alt">
+        <div class="topbar">
+          <div class="brand">Homogeneous Plucker Coordinates</div>
+          <div class="source-chip">Notebook check: direction, moment, and Grassmann-Plucker residual.</div>
+        </div>
+        <h2>A 3-D Line Stores Direction Plus Moment</h2>
+        <div class="layout-wide">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Line Blade Split</h3>
+              <p class="formula small">For affine points \(p,q\): \(d=q-p\), \(m=p \times d\), and \(L=(d,m)\).</p>
+              <div class="tag-row">
+                <span class="tag">d = (2.5, 1.3, 1.3)</span>
+                <span class="tag">m = (-0.65, 0.10, 1.15)</span>
+                <span class="tag">d dot m = -2.22e-16</span>
+              </div>
+            </div>
+            <div class="panel teal">
+              <h3>Implementation Checks</h3>
+              <ul>
+                <li>Moving \(p\) along the same line leaves \(m\) unchanged.</li>
+                <li>The direction is perpendicular to the moment.</li>
+                <li>The nearest point to the origin is perpendicular to \(d\).</li>
+              </ul>
+            </div>
+          </div>
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 900 560" aria-label="Plucker direction and moment">
+              <defs>
+                <marker id="arrow-s3-blue" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#2563EB"/>
+                </marker>
+                <marker id="arrow-s3-amber" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#B45309"/>
+                </marker>
+              </defs>
+              <path d="M130 420 L780 420 M190 490 L320 180 M112 412 L270 322" stroke="#CBD5E1" stroke-width="3"/>
+              <text x="785" y="448" fill="#64748B">x</text>
+              <text x="326" y="184" fill="#64748B">z</text>
+              <text x="103" y="404" fill="#64748B">y</text>
+              <circle cx="220" cy="420" r="10" fill="#111827"/>
+              <text x="202" y="452" fill="#111827">O</text>
+              <line x1="288" y1="350" x2="740" y2="206" stroke="#2563EB" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow-s3-blue)"/>
+              <circle cx="344" cy="332" r="12" fill="#2563EB"/>
+              <circle cx="628" cy="242" r="12" fill="#0F766E"/>
+              <text x="320" y="314" fill="#2563EB">p</text>
+              <text x="648" y="232" fill="#0F766E">q</text>
+              <path d="M220 420 C310 358 382 332 476 314" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="10 8" marker-end="url(#arrow-s3-amber)"/>
+              <text x="394" y="398" fill="#B45309">moment m = p x d</text>
+              <line x1="344" y1="332" x2="536" y2="271" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s3-blue)"/>
+              <text x="458" y="276" fill="#1E3A8A">direction d</text>
+              <path d="M486 314 L450 210 L584 252 Z" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3" opacity="0.88"/>
+              <text x="574" y="204" fill="#1E3A8A">line blade</text>
+              <text x="450" y="504" text-anchor="middle" class="math-label" fill="#111827">Grassmann-Plucker: d dot m = 0</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Explain Plucker coordinates as the line blade seen through an implementation lens. The direction tells how the line points, and the moment tells how it misses the origin. The two checks on the slide are small but decisive: shifting along the line preserves the moment, and d dot m remains zero.</aside>
+    </section>
+
+    <section data-label="04 Incidence As Tests">
+      <div class="slide">
+        <div class="topbar">
+          <div class="brand">Line And Plane Incidence</div>
+          <div class="source-chip">Coordinate tests are shadows of blade incidence.</div>
+        </div>
+        <h2>Incidence Becomes A Small Number Of Dot Products</h2>
+        <div class="layout-two">
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 820 560" aria-label="Line and plane incidence">
+              <defs>
+                <marker id="arrow-s4" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#B45309"/>
+                </marker>
+              </defs>
+              <polygon points="142,370 548,206 710,336 304,500" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <line x1="188" y1="350" x2="624" y2="282" stroke="#0F766E" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="338" cy="326" r="11" fill="#0F766E"/>
+              <circle cx="526" cy="296" r="11" fill="#0F766E"/>
+              <text x="380" y="306" fill="#0F766E">contained line</text>
+              <line x1="214" y1="136" x2="648" y2="494" stroke="#B45309" stroke-width="6" stroke-linecap="round" marker-end="url(#arrow-s4)"/>
+              <circle cx="424" cy="309" r="13" fill="#B45309"/>
+              <text x="448" y="302" fill="#B45309">single meet point</text>
+              <path d="M500 268 L552 166" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s4)"/>
+              <text x="560" y="166" fill="#1E3A8A">normal n</text>
+              <text x="506" y="526" text-anchor="middle" class="math-label" fill="#111827">plane: n dot x - delta = 0</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Containment Test</h3>
+              <p class="formula small">For \(x(t)=p+t\,d\), the whole line lies in the plane when \(n\cdot d=0\) and \(n\cdot p-\delta=0\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Meet Test</h3>
+              <p>If \(n\cdot d\neq 0\), the parameter \(t=(\delta-n\cdot p)/(n\cdot d)\) gives the intersection point.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Why Homogeneous?</h3>
+              <p>Blade products keep the same incidence story when points become image rays, planes become camera back-projections, and lines are represented by Plucker coordinates.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Incidence is where the algebra starts paying rent. Rather than branching over many special cases, the code asks whether a line direction is tangent to the plane and whether one point on the line satisfies the plane equation. The blade statement and the dot-product statement are two interfaces to the same test.</aside>
+    </section>
+
+    <section data-label="05 Line Pair Taxonomy">
+      <div class="slide alt">
+        <div class="topbar">
+          <div class="brand">Combining Plucker Lines</div>
+          <div class="source-chip">Skew-line certificate: closest connector is perpendicular to both directions.</div>
+        </div>
+        <h2>One Representation, Four Line Relationships</h2>
+        <div class="mini-grid">
+          <div class="mini-cell">
+            <h3>Intersecting</h3>
+            <svg class="diagram" viewBox="0 0 360 180" aria-label="Intersecting lines">
+              <line x1="50" y1="145" x2="305" y2="36" stroke="#2563EB" stroke-width="8" stroke-linecap="round"/>
+              <line x1="62" y1="42" x2="310" y2="142" stroke="#0F766E" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="181" cy="89" r="11" fill="#B45309"/>
+              <text x="194" y="82" fill="#B45309">meet point</text>
+            </svg>
+            <p>Reciprocal product gives an exact side value of zero for the notebook intersecting example.</p>
+          </div>
+          <div class="mini-cell">
+            <h3>Parallel</h3>
+            <svg class="diagram" viewBox="0 0 360 180" aria-label="Parallel lines">
+              <line x1="52" y1="70" x2="308" y2="70" stroke="#2563EB" stroke-width="8" stroke-linecap="round"/>
+              <line x1="52" y1="120" x2="308" y2="120" stroke="#0F766E" stroke-width="8" stroke-linecap="round"/>
+              <text x="180" y="42" text-anchor="middle" fill="#64748B">direction bivector degenerates</text>
+            </svg>
+            <p>Near-parallel input is reported as parallel instead of forcing unstable scalar parameters.</p>
+          </div>
+          <div class="mini-cell">
+            <h3>Skew</h3>
+            <svg class="diagram" viewBox="0 0 360 180" aria-label="Skew lines with connector">
+              <line x1="50" y1="132" x2="306" y2="60" stroke="#2563EB" stroke-width="8" stroke-linecap="round"/>
+              <line x1="82" y1="48" x2="285" y2="150" stroke="#0F766E" stroke-width="8" stroke-linecap="round" opacity="0.82"/>
+              <line x1="169" y1="98" x2="198" y2="106" stroke="#B45309" stroke-width="6" stroke-dasharray="8 6"/>
+              <text x="184" y="38" text-anchor="middle" fill="#B45309">shortest connector</text>
+            </svg>
+            <p>Notebook crossing-line lab distance: 0.245930, with both connector dot products near zero.</p>
+          </div>
+          <div class="mini-cell">
+            <h3>Coincident</h3>
+            <svg class="diagram" viewBox="0 0 360 180" aria-label="Coincident lines">
+              <line x1="52" y1="108" x2="310" y2="68" stroke="#CBD5E1" stroke-width="14" stroke-linecap="round"/>
+              <line x1="52" y1="108" x2="310" y2="68" stroke="#6D28D9" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="132" cy="96" r="9" fill="#2563EB"/>
+              <circle cx="238" cy="80" r="9" fill="#0F766E"/>
+              <text x="184" y="142" text-anchor="middle" fill="#6D28D9">many shared points</text>
+            </svg>
+            <p>Same direction and same moment identify a single geometric line, even with different chosen points.</p>
+          </div>
+        </div>
+        <div class="callout">Computational habit: classify the degeneracy before interpreting a scalar distance or a meet result.</div>
+      </div>
+      <aside class="speaker-notes">Frame the four line relationships as outputs of one representation rather than separate recipes. Intersecting and coincident lines are exact incidence cases, parallel lines expose a degenerate direction bivector, and skew lines produce a shortest connector. The connector being orthogonal to both directions is the computational certificate.</aside>
+    </section>
+
+    <section data-label="06 Projective Transform Adapter">
+      <div class="slide">
+        <div class="topbar">
+          <div class="brand">Projective Transforms</div>
+          <div class="source-chip">OpenGL-style matrix checks: view center maps to the origin.</div>
+        </div>
+        <h2>4-By-4 Matrices Move Incidence, Not Just Coordinates</h2>
+        <div class="layout-two">
+          <div class="stack gap">
+            <div class="math-box-lite">
+              <div class="formula">Point: \(X' \sim M X\)</div>
+            </div>
+            <div class="math-box-lite">
+              <div class="formula">Plane: \(\pi' \sim M^{-T}\pi\)</div>
+            </div>
+            <div class="math-box-lite">
+              <div class="formula">Line: \(L'= (M P)\wedge(M Q)\)</div>
+            </div>
+            <div class="panel teal">
+              <p>Invariant check: if \(P\) lies on \(\pi\), then \(M P\) lies on \(M^{-T}\pi\). A graphics matrix convention is correct only if the incidence survives.</p>
+            </div>
+          </div>
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 820 560" aria-label="Homogeneous projective transform adapter">
+              <defs>
+                <marker id="arrow-s6" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <rect x="70" y="110" width="200" height="200" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <path d="M70 110 L116 74 H316 L270 110 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"/>
+              <path d="M270 110 L316 74 V274 L270 310 Z" fill="#BFDBFE" stroke="#2563EB" stroke-width="4"/>
+              <circle cx="150" cy="210" r="10" fill="#B45309"/>
+              <text x="134" y="244" fill="#B45309">X</text>
+              <rect x="350" y="166" width="120" height="154" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+              <text x="410" y="218" text-anchor="middle" class="math-label" fill="#1E3A8A">M</text>
+              <text x="410" y="260" text-anchor="middle" fill="#475569">projective</text>
+              <path d="M278 210 H344" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s6)"/>
+              <path d="M476 210 H542" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s6)"/>
+              <g transform="translate(560 62) skewY(-10) rotate(8 100 100)">
+                <rect x="0" y="90" width="210" height="190" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+                <path d="M0 90 L52 50 H262 L210 90 Z" fill="#CCFBF1" stroke="#0F766E" stroke-width="4"/>
+                <path d="M210 90 L262 50 V240 L210 280 Z" fill="#99F6E4" stroke="#0F766E" stroke-width="4"/>
+                <circle cx="92" cy="178" r="10" fill="#B45309"/>
+              </g>
+              <text x="655" y="380" text-anchor="middle" fill="#0F766E">transformed point, line, plane</text>
+              <line x1="118" y1="390" x2="704" y2="390" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="9 8"/>
+              <text x="410" y="432" text-anchor="middle" fill="#64748B">view matrix sends camera center to (0,0,0,1)</text>
+              <text x="410" y="474" text-anchor="middle" class="math-label" fill="#111827">C_view = (5.55e-17, -2.78e-17, -4.44e-16, 1)</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Describe a homogeneous matrix as an adapter between algebra and graphics APIs. Points move by direct multiplication, planes move by inverse transpose, and lines may be rebuilt from transformed endpoints. The practical invariant is simple: incidence before the transform must still be incidence after the transform.</aside>
+    </section>
+
+    <section data-label="07 Vanishing Points">
+      <div class="slide alt">
+        <div class="topbar">
+          <div class="brand">Vanishing Points</div>
+          <div class="source-chip">Parallel 3-D directions become projective image points.</div>
+        </div>
+        <h2>A Vanishing Point Is The Image Of A Direction</h2>
+        <div class="layout-two">
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 820 560" aria-label="Parallel lines converging to vanishing point">
+              <defs>
+                <marker id="arrow-s7" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#B45309"/>
+                </marker>
+              </defs>
+              <rect x="92" y="74" width="636" height="392" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="132" y1="432" x2="410" y2="196" stroke="#2563EB" stroke-width="6"/>
+              <line x1="688" y1="432" x2="410" y2="196" stroke="#2563EB" stroke-width="6"/>
+              <line x1="198" y1="432" x2="410" y2="196" stroke="#0F766E" stroke-width="5" opacity="0.80"/>
+              <line x1="622" y1="432" x2="410" y2="196" stroke="#0F766E" stroke-width="5" opacity="0.80"/>
+              <line x1="92" y1="196" x2="728" y2="196" stroke="#B45309" stroke-width="4" stroke-dasharray="12 8"/>
+              <circle cx="410" cy="196" r="13" fill="#B45309"/>
+              <text x="428" y="186" fill="#B45309">v</text>
+              <text x="410" y="160" text-anchor="middle" fill="#64748B">horizon line</text>
+              <path d="M550 102 C606 124 642 154 672 194" fill="none" stroke="#B45309" stroke-width="4" marker-end="url(#arrow-s7)"/>
+              <text x="605" y="94" fill="#B45309">ideal direction maps here</text>
+              <line x1="160" y1="482" x2="294" y2="482" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s7)"/>
+              <text x="230" y="524" text-anchor="middle" fill="#1E3A8A">parallel world direction D</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Projective Rule</h3>
+              <p class="formula small">A direction is an ideal point \(D=(d_x,d_y,d_z,0)\). Under a camera, \(v \sim P D\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Why It Matters</h3>
+              <p>All 3-D lines sharing direction \(D\) project to image lines that pass through the same vanishing point \(v\), unless the direction lies parallel to the image plane.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Checkable Insight</h3>
+              <p>Vanishing points are not artifacts of drawing perspective. They are ordinary projective images of homogeneous representatives with final coordinate zero.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Vanishing points are a good sanity check for projective thinking because nothing mystical happens at infinity. A family of parallel world lines shares an ideal direction; the camera maps that direction to a finite image point when it is not parallel to the image plane. The diagram asks students to see the point as an image of a direction.</aside>
+    </section>
+
+    <section data-label="08 Pinhole Projection">
+      <div class="slide">
+        <div class="topbar">
+          <div class="brand">Pinhole Camera Geometry</div>
+          <div class="source-chip">Image coordinates are homogeneous ray representatives.</div>
+        </div>
+        <h2>Projection Is Linear Before The Final Division</h2>
+        <div class="layout-wide">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Camera Map</h3>
+              <p class="formula small">World point \(X\) maps to image point \(x \sim P X\). Any \(\lambda x\) with \(\lambda \neq 0\) is the same ray.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Back-Projection</h3>
+              <p>An image point and the camera center join to a 3-D ray. An image line back-projects to a plane of rays.</p>
+            </div>
+            <div class="tag-row">
+              <span class="tag">left image marker: (-0.247, -0.346, 1)</span>
+              <span class="tag">camera center = null(P)</span>
+            </div>
+          </div>
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 900 560" aria-label="Pinhole camera projection">
+              <defs>
+                <marker id="arrow-s8" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <circle cx="168" cy="306" r="18" fill="#111827"/>
+              <text x="142" y="352" fill="#111827">C</text>
+              <polygon points="462,126 742,212 694,452 410,366" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <text x="604" y="170" fill="#2563EB">image plane</text>
+              <circle cx="610" cy="300" r="11" fill="#B45309"/>
+              <text x="628" y="294" fill="#B45309">x</text>
+              <circle cx="772" cy="98" r="13" fill="#0F766E"/>
+              <circle cx="786" cy="476" r="13" fill="#0F766E"/>
+              <circle cx="812" cy="280" r="13" fill="#0F766E"/>
+              <text x="760" y="72" fill="#0F766E">X1</text>
+              <text x="798" y="512" fill="#0F766E">X2</text>
+              <text x="830" y="282" fill="#0F766E">X3</text>
+              <line x1="168" y1="306" x2="772" y2="98" stroke="#94A3B8" stroke-width="4" stroke-dasharray="9 8"/>
+              <line x1="168" y1="306" x2="786" y2="476" stroke="#94A3B8" stroke-width="4" stroke-dasharray="9 8"/>
+              <line x1="168" y1="306" x2="812" y2="280" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s8)"/>
+              <line x1="168" y1="306" x2="610" y2="300" stroke="#B45309" stroke-width="5"/>
+              <rect x="72" y="74" width="194" height="72" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <text x="169" y="118" text-anchor="middle" class="math-label" fill="#111827">x ~ P X</text>
+              <text x="518" y="510" class="math-label" fill="#111827">display: (x1/x3, x2/x3)</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Emphasize that the image coordinate is only a representative of a ray. Scaling the homogeneous image vector does not change the observation, and dividing by the last coordinate is a display step. The projection matrix, its null-space camera center, and the back-projected ray are the same data organized three ways.</aside>
+    </section>
+
+    <section data-label="09 Epipolar Incidence">
+      <div class="slide alt">
+        <div class="topbar">
+          <div class="brand">Stereo Vision</div>
+          <div class="source-chip">Fundamental matrix residual: max abs 2.22e-16.</div>
+        </div>
+        <h2>The Epipolar Constraint Is A Meet Statement</h2>
+        <div class="layout-two">
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 820 560" aria-label="Epipolar plane and image line">
+              <defs>
+                <marker id="arrow-s9" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <circle cx="138" cy="398" r="15" fill="#111827"/>
+              <circle cx="650" cy="398" r="15" fill="#111827"/>
+              <text x="110" y="432" fill="#111827">C_L</text>
+              <text x="672" y="432" fill="#111827">C_R</text>
+              <circle cx="392" cy="122" r="13" fill="#0F766E"/>
+              <text x="412" y="116" fill="#0F766E">X</text>
+              <polygon points="138,398 650,398 392,122" fill="#EFF6FF" stroke="#2563EB" stroke-width="3" opacity="0.78"/>
+              <rect x="78" y="258" width="120" height="98" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+              <rect x="590" y="258" width="120" height="98" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="138" y1="398" x2="392" y2="122" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s9)"/>
+              <line x1="650" y1="398" x2="392" y2="122" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s9)"/>
+              <circle cx="130" cy="306" r="9" fill="#B45309"/>
+              <line x1="604" y1="286" x2="696" y2="334" stroke="#B45309" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="650" cy="310" r="9" fill="#0F766E"/>
+              <text x="108" y="246" fill="#B45309">x_L</text>
+              <text x="612" y="246" fill="#B45309">epipolar line</text>
+              <text x="410" y="454" text-anchor="middle" class="math-label" fill="#111827">x_R^T F x_L = 0</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Incidence Chain</h3>
+              <ol>
+                <li>Left image point chooses a left camera ray.</li>
+                <li>Right camera center joins that ray into a plane.</li>
+                <li>The right image sees the plane as a line.</li>
+              </ol>
+            </div>
+            <div class="panel teal">
+              <h3>Numeric Audit</h3>
+              <p class="formula small">\(\max_i |x_{R,i}^{T}F x_{L,i}| = 2.22\times 10^{-16}\)</p>
+            </div>
+            <div class="panel amber">
+              <h3>Search Consequence</h3>
+              <p>The matching right point is not searched across the whole image; it is constrained to the projective line delivered by the meet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the epipolar slide to replace search intuition with incidence. A point in the left image chooses a ray, the right camera center joins that ray into a plane, and the right image sees a line. The displayed near-zero residual comes from the notebook check and confirms the exact synthetic correspondences.</aside>
+    </section>
+
+    <section data-label="10 Line-Based Stereo">
+      <div class="slide">
+        <div class="topbar">
+          <div class="brand">Line Observations</div>
+          <div class="source-chip">Ray-plane meet recovers the 3-D line direction exactly in the synthetic audit.</div>
+        </div>
+        <h2>An Image Line Back-Projects To A Plane Of Rays</h2>
+        <div class="layout-wide">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Dual Camera Move</h3>
+              <p class="formula small">Image line \(\ell\) gives world ray plane \(\Pi=P^T\ell\). Two views give \(L=\Pi_L\vee \Pi_R\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Notebook Certificates</h3>
+              <ul>
+                <li>Absolute direction alignment with original: 1.0.</li>
+                <li>Endpoint plane residuals are at floating-point zero.</li>
+                <li>Recovered point on line: (-0.0879, 0.3741, 0.0569).</li>
+              </ul>
+            </div>
+          </div>
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 900 560" aria-label="Line-based stereo ray planes">
+              <polygon points="120,426 390,126 778,380 506,496" fill="#EFF6FF" stroke="#2563EB" stroke-width="4" opacity="0.76"/>
+              <polygon points="170,112 700,134 746,452 224,430" fill="#F0FDFA" stroke="#0F766E" stroke-width="4" opacity="0.76"/>
+              <line x1="282" y1="318" x2="668" y2="348" stroke="#B45309" stroke-width="8" stroke-linecap="round"/>
+              <circle cx="282" cy="318" r="11" fill="#B45309"/>
+              <circle cx="668" cy="348" r="11" fill="#B45309"/>
+              <text x="472" y="302" text-anchor="middle" fill="#B45309">reconstructed 3-D line</text>
+              <circle cx="114" cy="468" r="14" fill="#111827"/>
+              <circle cx="772" cy="114" r="14" fill="#111827"/>
+              <text x="84" y="504" fill="#111827">C_L</text>
+              <text x="792" y="112" fill="#111827">C_R</text>
+              <rect x="64" y="238" width="118" height="86" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+              <rect x="728" y="232" width="118" height="86" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="82" y1="286" x2="164" y2="276" stroke="#2563EB" stroke-width="5"/>
+              <line x1="746" y1="262" x2="828" y2="292" stroke="#0F766E" stroke-width="5"/>
+              <text x="124" y="220" text-anchor="middle" fill="#2563EB">left image line</text>
+              <text x="786" y="220" text-anchor="middle" fill="#0F766E">right image line</text>
+              <text x="450" y="522" text-anchor="middle" class="math-label" fill="#111827">meet of ray planes = spatial line</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Line-based stereo is the dual version of point stereo. An observed image line back-projects to a whole plane of rays, so two views recover a spatial line by meeting planes. The alignment and endpoint residuals give students a numerical target: the recovered line is not just drawn, it is certified.</aside>
+    </section>
+
+    <section data-label="11 Interpolation With Representatives">
+      <div class="slide alt">
+        <div class="topbar">
+          <div class="brand">Interpolation</div>
+          <div class="source-chip">Blend representatives only after choosing a convention, then normalize and recheck.</div>
+        </div>
+        <h2>Interpolation Must Respect Homogeneous Representatives</h2>
+        <div class="layout-two">
+          <div class="stack">
+            <div class="panel blue">
+              <h3>Point Representative Path</h3>
+              <p class="formula small">A projective point path can be sampled as \(X(t)\sim (1-t)X_0+tX_1\), followed by normalization when \(w(t)\neq 0\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Transform Path</h3>
+              <p>For camera or rigid-object motion, interpolate meaningful parameters or a group logarithm. Then test that transformed incidences and matrix conventions still hold.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Failure Mode</h3>
+              <p>Averaging already divided image coordinates can hide a crossing through \(w=0\), where a finite point becomes an ideal direction.</p>
+            </div>
+          </div>
+          <div class="svg-frame">
+            <svg class="diagram" viewBox="0 0 820 560" aria-label="Homogeneous interpolation path">
+              <defs>
+                <marker id="arrow-s11" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 Z" fill="#1E3A8A"/>
+                </marker>
+              </defs>
+              <line x1="110" y1="446" x2="710" y2="446" stroke="#CBD5E1" stroke-width="4"/>
+              <line x1="110" y1="446" x2="110" y2="96" stroke="#CBD5E1" stroke-width="4"/>
+              <text x="718" y="478" fill="#64748B">t</text>
+              <text x="78" y="102" fill="#64748B">w</text>
+              <path d="M122 368 C230 252 354 220 462 262 C568 302 624 190 700 126" fill="none" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow-s11)"/>
+              <circle cx="122" cy="368" r="12" fill="#2563EB"/>
+              <circle cx="700" cy="126" r="12" fill="#0F766E"/>
+              <circle cx="420" cy="252" r="11" fill="#B45309"/>
+              <text x="126" y="410" fill="#2563EB">X0</text>
+              <text x="716" y="128" fill="#0F766E">X1</text>
+              <text x="438" y="248" fill="#B45309">normalize</text>
+              <line x1="110" y1="284" x2="710" y2="284" stroke="#B45309" stroke-width="4" stroke-dasharray="10 8"/>
+              <text x="612" y="270" fill="#B45309">w = 0 boundary</text>
+              <rect x="152" y="70" width="168" height="90" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"/>
+              <rect x="500" y="370" width="180" height="92" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"/>
+              <text x="236" y="108" text-anchor="middle" fill="#2563EB">blend reps</text>
+              <text x="236" y="140" text-anchor="middle" fill="#475569">then divide</text>
+              <text x="590" y="410" text-anchor="middle" fill="#0F766E">recheck</text>
+              <text x="590" y="442" text-anchor="middle" fill="#475569">incidence</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Interpolation is included to keep the lecture honest about animation and calibration workflows. Homogeneous representatives can be blended only after a convention is chosen and must be normalized before interpretation. For rigid or camera transforms, interpolate meaningful parameters or a group logarithm, then recheck incidence instead of trusting the picture.</aside>
+    </section>
+
+    <section data-label="12 Computational Check Board">
+      <div class="slide">
+        <div class="topbar">
+          <div class="brand">Computational Checks</div>
+          <div class="source-chip">Every visual construction is paired with a measurable invariant.</div>
+        </div>
+        <h2>The Homogeneous Model Is Useful Because It Tests Itself</h2>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-label">Plucker Constraint</div>
+            <div class="metric-value">d dot m = -2.22e-16</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Epipolar Residual</div>
+            <div class="metric-value">max = 2.22e-16</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Ray-Plane Alignment</div>
+            <div class="metric-value">direction = 1.0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Motion-Capture Error</div>
+            <div class="metric-value">mean = 0.00236</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">View Matrix Convention</div>
+            <div class="metric-value">C maps to origin</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Skew-Line Connector</div>
+            <div class="metric-value">dot products near 0</div>
+          </div>
+        </div>
+        <div class="svg-frame" style="margin-top: 24px; min-height: 318px;">
+          <svg class="diagram" viewBox="0 0 1500 270" aria-label="Computational check pipeline">
+            <defs>
+              <marker id="arrow-s12" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+                <path d="M0 0 L10 5 L0 10 Z" fill="#1E3A8A"/>
+              </marker>
+            </defs>
+            <rect x="42" y="70" width="188" height="104" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+            <rect x="290" y="70" width="188" height="104" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+            <rect x="538" y="70" width="188" height="104" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+            <rect x="786" y="70" width="188" height="104" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+            <rect x="1034" y="70" width="188" height="104" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"/>
+            <rect x="1282" y="70" width="176" height="104" rx="8" fill="#F8FAFC" stroke="#475569" stroke-width="4"/>
+            <path d="M230 122 H288" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s12)"/>
+            <path d="M478 122 H536" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s12)"/>
+            <path d="M726 122 H784" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s12)"/>
+            <path d="M974 122 H1032" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s12)"/>
+            <path d="M1222 122 H1280" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-s12)"/>
+            <text x="136" y="112" text-anchor="middle" fill="#2563EB">construct</text>
+            <text x="136" y="144" text-anchor="middle" fill="#475569">representatives</text>
+            <text x="384" y="112" text-anchor="middle" fill="#0F766E">apply</text>
+            <text x="384" y="144" text-anchor="middle" fill="#475569">join / meet</text>
+            <text x="632" y="112" text-anchor="middle" fill="#B45309">transform</text>
+            <text x="632" y="144" text-anchor="middle" fill="#475569">matrix map</text>
+            <text x="880" y="112" text-anchor="middle" fill="#6D28D9">estimate</text>
+            <text x="880" y="144" text-anchor="middle" fill="#475569">least squares</text>
+            <text x="1128" y="112" text-anchor="middle" fill="#1E3A8A">audit</text>
+            <text x="1128" y="144" text-anchor="middle" fill="#475569">residuals</text>
+            <text x="1370" y="112" text-anchor="middle" fill="#475569">decide</text>
+            <text x="1370" y="144" text-anchor="middle" fill="#475569">OK / reject</text>
+            <text x="750" y="230" text-anchor="middle" class="math-label" fill="#111827">application workflow: algebraic construction plus numeric certificate</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close with the check board, not a generic summary. Each application has a measurable invariant: Plucker orthogonality, epipolar residuals, ray-plane containment, reconstruction error, view-matrix convention, and skew-line perpendicularity. The final message is that homogeneous modeling is useful because it gives both constructions and tests.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

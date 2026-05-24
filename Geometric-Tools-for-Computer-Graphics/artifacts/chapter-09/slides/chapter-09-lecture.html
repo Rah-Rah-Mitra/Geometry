@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-09">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-03-3d-geometric-tools/chapter-09-geometric-primitives-in-3d/09-geometric-primitives-in-3d.ipynb">
+  <meta name="source_span" content="printed pages 325-364; PDF pages 372-411.">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 09 Lecture - Geometric Primitives in 3D</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    deck-stage:not(:defined) { visibility: hidden; }
+    body { margin: 0; background: #000; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      font-family: var(--font-sans);
+      color: var(--slide-ink);
+      background: var(--slide-bg);
+    }
+    .slide-pad {
+      height: 100%;
+      box-sizing: border-box;
+      padding: 72px 96px 64px;
+      display: flex;
+      flex-direction: column;
+    }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(to right, rgba(30, 58, 138, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.03) 1px, transparent 1px);
+      background-size: 80px 80px;
+    }
+    .tri-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.055;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 62px;
+      line-height: 1.04;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+    h2 {
+      font-size: 48px;
+      line-height: 1.14;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+    h3 {
+      font-size: 32px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--slide-dimmed);
+    }
+    .subtitle {
+      margin-top: 24px;
+      font-size: 30px;
+      line-height: 1.42;
+      color: var(--slide-muted);
+      max-width: 980px;
+    }
+    .rule {
+      width: 88px;
+      height: 5px;
+      margin-top: 18px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+    }
+    .content {
+      flex: 1;
+      min-height: 0;
+      margin-top: 34px;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      height: 100%;
+      align-items: stretch;
+    }
+    .wide-left {
+      display: grid;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 48px;
+      height: 100%;
+      align-items: stretch;
+    }
+    .wide-right {
+      display: grid;
+      grid-template-columns: 0.84fr 1.16fr;
+      gap: 48px;
+      height: 100%;
+      align-items: stretch;
+    }
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    .card {
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 24px 28px;
+      box-sizing: border-box;
+    }
+    .card-white {
+      background: #fff;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 24px 28px;
+      box-sizing: border-box;
+    }
+    .math-box {
+      border-left: 5px solid var(--slide-blue);
+      background: var(--math-definition-bg);
+      border-radius: 8px;
+      padding: 24px 30px 24px 34px;
+      box-sizing: border-box;
+    }
+    .math-box.theorem {
+      border-left-color: var(--slide-accent);
+      background: var(--math-theorem-bg);
+    }
+    .math-box.example {
+      border-left-color: var(--slide-teal);
+      background: var(--math-example-bg);
+    }
+    .math-box.warning {
+      border-left-color: var(--slide-amber);
+      background: var(--math-warning-bg);
+    }
+    .math-box.exercise {
+      border-left-color: var(--slide-violet);
+      background: var(--math-exercise-bg);
+    }
+    .box-label {
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slide-accent);
+      margin-bottom: 10px;
+    }
+    .box-body {
+      font-size: 28px;
+      line-height: 1.44;
+      color: var(--slide-ink);
+    }
+    .body-copy {
+      font-size: 28px;
+      line-height: 1.46;
+      color: var(--slide-ink);
+    }
+    .muted {
+      color: var(--slide-muted);
+    }
+    .small {
+      font-size: 22px;
+      line-height: 1.42;
+      color: var(--slide-muted);
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 22px;
+      font-weight: 700;
+      background: #fff;
+      border: 1px solid var(--slide-border-light);
+      color: var(--slide-muted);
+    }
+    .list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .list li {
+      position: relative;
+      padding-left: 30px;
+      font-size: 28px;
+      line-height: 1.38;
+      color: var(--slide-ink);
+    }
+    .list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 15px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--slide-accent);
+    }
+    .compact-list li {
+      font-size: 25px;
+      line-height: 1.34;
+    }
+    .formula {
+      font-size: 34px;
+      line-height: 1.4;
+      font-family: var(--font-math);
+      color: var(--slide-ink);
+    }
+    .formula-display {
+      font-size: 40px;
+      line-height: 1.38;
+      font-family: var(--font-math);
+      text-align: center;
+      color: var(--slide-ink);
+    }
+    .figure-shell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 20px;
+      box-sizing: border-box;
+      min-height: 0;
+    }
+    .figure-shell img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .footer {
+      position: absolute;
+      left: 96px;
+      right: 96px;
+      bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      font-size: 20px;
+      color: var(--slide-dimmed);
+    }
+    .speaker-notes {
+      display: none;
+    }
+    .note-strip {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .note-strip div {
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--slide-border-light);
+      background: #fff;
+      font-size: 23px;
+      line-height: 1.28;
+      color: var(--slide-muted);
+    }
+    .metric {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 16px;
+      align-items: baseline;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--slide-border-light);
+      font-size: 26px;
+      line-height: 1.35;
+    }
+    .metric strong {
+      color: var(--slide-accent);
+      font-size: 30px;
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .mini {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+    .mini-title {
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+      margin-bottom: 8px;
+    }
+    svg text {
+      font-family: var(--font-sans);
+    }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="speaker-notes">{"slides":["Use the title slide to set the frame: this chapter is not a catalog of shapes, but a contract between geometry and code. Emphasize that every primitive carries representation, parameter domain, invariants, residual checks, and failure modes, which is exactly the notebook loop used for the chapter artifacts.","Walk through the taxonomy from low-dimensional components to surfaces. The point is that dimensionality and domain restrictions change the algorithms: a line with unrestricted parameter, a segment with endpoints, a mesh with incidence data, and a surface with a two-parameter chart all require different checks.","Treat the parameter interval as part of the primitive, not a later clipping detail. A line, ray, and segment can share the same formula, yet the domain determines closest-point, intersection, and containment behavior. The normal form is useful when a line is the intersection of two planes.","Slow down on the frame construction because many later algorithms depend on it. The robust choice of an in-plane vector avoids dividing by a nearly zero normal component. After choosing u, the cross product produces v, and the dot-product checks confirm that the basis is usable.","The key teaching move is to let two-dimensional algorithms work in a three-dimensional scene without pretending the object is flat in world coordinates. The embedding map builds points in space, while the recovery map projects them back into local coordinates where polygon, circle, or triangulation routines are simpler.","Meshes are not just arrays of triangles. They are incidence structures with assumptions about which vertices, edges, and faces are allowed to meet. Ask students to distinguish a drawable triangle soup from a valid mesh, then connect the distinction to manifoldness, closure, orientation, and Euler checks.","For quadrics, the matrix representation is the useful abstraction. Diagonalization rotates the coordinate system to expose the surface type, and completing the square locates centers or degeneracies. The residual is the practical check: sampled points should drive the implicit equation close to zero.","Use the torus to compare representations of the same object. The parametric grid is ideal for rendering and normals, while the implicit equation is ideal for residual checks and containment-style tests. Major and minor radii also provide a clean way to discuss ring, horn, and spindle cases.","The curve and surface families share a pattern: control data, basis functions, parameter domains, and sometimes homogeneous weights. Keep the focus on representation choices rather than memorizing every formula. Bezier, B-spline, and NURBS objects differ mainly in locality, knot structure, and rational weighting.","Close by returning to the notebook workflow. A strong implementation records the primitive representation, the domain restriction, the invariant being tested, and the failure mode that would invalidate the result. The lab prompt asks students to perturb a frame, mesh, or surface until the residual reveals instability."]}</script>
+
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide">
+        <div class="grid-bg"></div>
+        <svg class="tri-bg" viewBox="0 0 1920 1080" aria-hidden="true">
+          <path d="M1120 170 L1720 290 L1390 760 Z" fill="#2563EB"/>
+          <path d="M1230 850 L1640 620 L1780 960 Z" fill="#0F766E"/>
+          <path d="M980 720 L1230 220 L1540 820 Z" fill="none" stroke="#1E3A8A" stroke-width="8"/>
+        </svg>
+        <div class="slide-pad">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="eyebrow">Geometric Tools for Computer Graphics</div>
+            <img src="../../../../lecture-design-system/assets/icon.svg" alt="Geometry Atlas" style="width: 54px; height: 54px;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 52px; align-items: center; flex: 1;">
+            <div>
+              <h1>Geometric Primitives in 3D</h1>
+              <div class="rule"></div>
+              <p class="subtitle">Representation contracts for lines, planes, embedded planar objects, meshes, quadrics, torus geometry, polynomial curves, and polynomial surfaces.</p>
+              <div class="tag-row">
+                <span class="tag">printed pages 325-364</span>
+                <span class="tag">PDF pages 372-411</span>
+                <span class="tag">chapter-09</span>
+              </div>
+            </div>
+            <div class="figure-shell" style="height: 700px;">
+              <svg viewBox="0 0 820 620" width="100%" height="100%" role="img" aria-label="3D primitive overview">
+                <defs>
+                  <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#1E3A8A"/>
+                  </marker>
+                  <linearGradient id="plane-fill" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0" stop-color="#DBEAFE"/>
+                    <stop offset="1" stop-color="#CCFBF1"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="130,410 430,250 700,350 400,520" fill="url(#plane-fill)" stroke="#2563EB" stroke-width="5"/>
+                <path d="M145 430 C290 360 520 310 690 360" fill="none" stroke="#0F766E" stroke-width="7"/>
+                <circle cx="290" cy="360" r="11" fill="#B45309"/>
+                <line x1="290" y1="360" x2="610" y2="140" stroke="#1E3A8A" stroke-width="6" marker-end="url(#arrow-title)"/>
+                <line x1="290" y1="360" x2="620" y2="360" stroke="#0F766E" stroke-width="6" marker-end="url(#arrow-title)"/>
+                <line x1="290" y1="360" x2="170" y2="525" stroke="#6D28D9" stroke-width="6" marker-end="url(#arrow-title)"/>
+                <ellipse cx="585" cy="188" rx="106" ry="44" fill="none" stroke="#0F766E" stroke-width="10"/>
+                <ellipse cx="585" cy="188" rx="52" ry="20" fill="#FFFFFF" stroke="#0F766E" stroke-width="5"/>
+                <path d="M510 500 L610 440 L715 485 L610 550 Z" fill="#FEF3C7" stroke="#B45309" stroke-width="5"/>
+                <path d="M510 500 L610 550 M610 440 L610 550 M715 485 L610 550" stroke="#B45309" stroke-width="4"/>
+                <text x="105" y="470" font-size="28" fill="#1E3A8A" font-weight="700">plane frame</text>
+                <text x="555" y="108" font-size="28" fill="#0F766E" font-weight="700">torus</text>
+                <text x="540" y="595" font-size="28" fill="#B45309" font-weight="700">mesh</text>
+                <text x="625" y="372" font-size="28" fill="#0F766E" font-weight="700">curve</text>
+                <text x="620" y="156" font-size="25" fill="#1E3A8A">n</text>
+                <text x="630" y="386" font-size="25" fill="#0F766E">u</text>
+                <text x="150" y="540" font-size="25" fill="#6D28D9">v</text>
+              </svg>
+            </div>
+          </div>
+          <div class="footer"><span>Chapter 09</span><span>HTML lecture deck source of record</span></div>
+        </div>
+        <aside class="speaker-notes">Use the title slide to set the frame: this chapter is not a catalog of shapes, but a contract between geometry and code. Emphasize that every primitive carries representation, parameter domain, invariants, residual checks, and failure modes, which is exactly the notebook loop used for the chapter artifacts.</aside>
+      </div>
+    </section>
+
+    <section data-label="Primitive Taxonomy">
+      <div class="slide">
+        <div class="grid-bg"></div>
+        <div class="slide-pad">
+          <div class="eyebrow">Route Through The Chapter</div>
+          <h2>Dimension, Domain, Incidence, and Residual</h2>
+          <div class="rule"></div>
+          <div class="content">
+            <div class="three-col">
+              <div class="card-white">
+                <h3>0D to 1D</h3>
+                <ul class="list compact-list" style="margin-top: 20px;">
+                  <li>Points are coordinates plus tolerance policy.</li>
+                  <li>Lines, rays, and segments share \(X(t)=P+t d\).</li>
+                  <li>The parameter domain changes every query.</li>
+                </ul>
+              </div>
+              <div class="card-white">
+                <h3>2D in Space</h3>
+                <ul class="list compact-list" style="margin-top: 20px;">
+                  <li>Planes admit normal, implicit, and frame forms.</li>
+                  <li>Planar polygons and circles need local coordinates.</li>
+                  <li>Projection can be cheaper than congruent mapping.</li>
+                </ul>
+              </div>
+              <div class="card-white">
+                <h3>2D to 3D Objects</h3>
+                <ul class="list compact-list" style="margin-top: 20px;">
+                  <li>Meshes store vertices, edges, faces, and orientation.</li>
+                  <li>Quadrics expose type through matrix structure.</li>
+                  <li>Curves and surfaces store basis functions over domains.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="note-strip">
+              <div><strong style="color: var(--slide-blue);">Representation</strong><br>arrays, frames, equations, graphs, or meshes</div>
+              <div><strong style="color: var(--slide-teal);">Domain</strong><br>free, clamped, periodic, barycentric, bounded</div>
+              <div><strong style="color: var(--slide-amber);">Invariant</strong><br>distance, incidence, residual, orientation, normality</div>
+              <div><strong style="color: var(--slide-violet);">Failure Mode</strong><br>rank loss, tangency, boundary cases, near-zero denominators</div>
+            </div>
+          </div>
+          <div class="footer"><span>Notebook route: model, draw, perturb, measure, check</span><span>2D tools now live in 3D frames</span></div>
+        </div>
+        <aside class="speaker-notes">Walk through the taxonomy from low-dimensional components to surfaces. The point is that dimensionality and domain restrictions change the algorithms: a line with unrestricted parameter, a segment with endpoints, a mesh with incidence data, and a surface with a two-parameter chart all require different checks.</aside>
+      </div>
+    </section>
+
+    <section data-label="Linear Components">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">Linear Components</div>
+          <h2>One Formula, Three Domains</h2>
+          <div class="rule"></div>
+          <div class="content wide-left">
+            <div class="figure-shell">
+              <svg viewBox="0 0 940 660" width="100%" height="100%" role="img" aria-label="Line ray and segment domains">
+                <defs>
+                  <marker id="arrow-linear" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#2563EB"/>
+                  </marker>
+                  <marker id="arrow-linear-start" markerWidth="12" markerHeight="12" refX="2" refY="6" orient="auto">
+                    <path d="M12 0 L0 6 L12 12 Z" fill="#2563EB"/>
+                  </marker>
+                </defs>
+                <line x1="155" y1="130" x2="815" y2="130" stroke="#2563EB" stroke-width="7" marker-start="url(#arrow-linear-start)" marker-end="url(#arrow-linear)"/>
+                <line x1="155" y1="310" x2="815" y2="310" stroke="#0F766E" stroke-width="7" marker-end="url(#arrow-linear)"/>
+                <circle cx="155" cy="310" r="13" fill="#0F766E"/>
+                <line x1="225" y1="490" x2="690" y2="490" stroke="#B45309" stroke-width="7"/>
+                <circle cx="225" cy="490" r="13" fill="#B45309"/>
+                <circle cx="690" cy="490" r="13" fill="#B45309"/>
+                <text x="48" y="139" font-size="30" fill="#1E3A8A" font-weight="700">Line</text>
+                <text x="48" y="319" font-size="30" fill="#0F766E" font-weight="700">Ray</text>
+                <text x="48" y="499" font-size="30" fill="#B45309" font-weight="700">Segment</text>
+                <text x="340" y="94" font-size="28" fill="#475569">t in R</text>
+                <text x="342" y="274" font-size="28" fill="#475569">t &gt;= 0</text>
+                <text x="344" y="454" font-size="28" fill="#475569">t in [0, 1]</text>
+                <text x="445" y="372" font-size="28" fill="#0F766E">P</text>
+                <text x="225" y="548" font-size="28" fill="#B45309">P0</text>
+                <text x="668" y="548" font-size="28" fill="#B45309">P1</text>
+                <path d="M470 610 C555 570 605 560 690 560" stroke="#94A3B8" stroke-width="4" fill="none" stroke-dasharray="10 9"/>
+                <text x="360" y="624" font-size="25" fill="#64748B">same carrier, different query contract</text>
+              </svg>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <div class="math-box">
+                <div class="box-label">Definition Pattern</div>
+                <div class="box-body">
+                  \(X(t)=P+t d\), where \(d\ne 0\).<br>
+                  The primitive is incomplete until the admissible values of \(t\) are recorded.
+                </div>
+              </div>
+              <div class="math-box example">
+                <div class="box-label">Normal Form View</div>
+                <div class="box-body">
+                  A 3D line can also be described as the intersection of two nonparallel planes:
+                  \(n_0\cdot X=c_0\) and \(n_1\cdot X=c_1\).
+                </div>
+              </div>
+              <div class="card">
+                <div class="body-copy"><strong>Implementation check.</strong> Store the domain with the representation. Otherwise a segment endpoint, a ray origin, and a whole line can be silently treated as the same object.</div>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Source orientation: Section 9.1</span><span>Parameter restrictions are geometric data</span></div>
+        </div>
+        <aside class="speaker-notes">Treat the parameter interval as part of the primitive, not a later clipping detail. A line, ray, and segment can share the same formula, yet the domain determines closest-point, intersection, and containment behavior. The normal form is useful when a line is the intersection of two planes.</aside>
+      </div>
+    </section>
+
+    <section data-label="Plane Frames">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">Planar Components</div>
+          <h2>Plane Equations Become Local Coordinate Frames</h2>
+          <div class="rule"></div>
+          <div class="content wide-right">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box theorem">
+                <div class="box-label">Frame Contract</div>
+                <div class="box-body">
+                  Given \(P\) and unit normal \(n\), choose unit vectors \(u,v\) so that
+                  \(u\cdot n=0\), \(v=n\times u\), and \(R=[u\ v\ n]\) is orthonormal.
+                </div>
+              </div>
+              <div class="card">
+                <div class="metric"><strong>normal</strong><span>\(n\cdot(X-P)=0\)</span></div>
+                <div class="metric"><strong>implicit</strong><span>\(a x+b y+c z+d=0\)</span></div>
+                <div class="metric" style="border-bottom: 0;"><strong>parametric</strong><span>\(X(s,t)=P+s u+t v\)</span></div>
+              </div>
+              <div class="math-box warning">
+                <div class="box-label">Numerical Habit</div>
+                <div class="box-body">Choose the zero component of \(u\) using the largest safe normal components, then normalize once and assert the dot products.</div>
+              </div>
+            </div>
+            <div class="figure-shell">
+              <svg viewBox="0 0 900 640" width="100%" height="100%" role="img" aria-label="Plane basis with normal">
+                <defs>
+                  <marker id="arrow-plane" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#1E3A8A"/>
+                  </marker>
+                  <marker id="arrow-plane-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#0F766E"/>
+                  </marker>
+                  <marker id="arrow-plane-violet" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#6D28D9"/>
+                  </marker>
+                </defs>
+                <polygon points="115,420 455,230 790,360 445,555" fill="#EFF6FF" stroke="#2563EB" stroke-width="6"/>
+                <line x1="455" y1="385" x2="680" y2="314" stroke="#0F766E" stroke-width="8" marker-end="url(#arrow-plane-teal)"/>
+                <line x1="455" y1="385" x2="325" y2="500" stroke="#6D28D9" stroke-width="8" marker-end="url(#arrow-plane-violet)"/>
+                <line x1="455" y1="385" x2="455" y2="112" stroke="#1E3A8A" stroke-width="8" marker-end="url(#arrow-plane)"/>
+                <circle cx="455" cy="385" r="13" fill="#B45309"/>
+                <text x="476" y="410" font-size="30" fill="#B45309" font-weight="700">P</text>
+                <text x="688" y="312" font-size="30" fill="#0F766E" font-weight="700">u</text>
+                <text x="294" y="530" font-size="30" fill="#6D28D9" font-weight="700">v</text>
+                <text x="470" y="104" font-size="30" fill="#1E3A8A" font-weight="700">n</text>
+                <path d="M190 438 L528 248" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10"/>
+                <path d="M330 520 L675 325" stroke="#94A3B8" stroke-width="3" stroke-dasharray="12 10"/>
+                <text x="150" y="586" font-size="26" fill="#64748B">local st-plane embedded in world coordinates</text>
+              </svg>
+            </div>
+          </div>
+          <div class="footer"><span>Notebook check: basis vectors are orthonormal and perpendicular to normal</span><span>Plane frames support every planar object</span></div>
+        </div>
+        <aside class="speaker-notes">Slow down on the frame construction because many later algorithms depend on it. The robust choice of an in-plane vector avoids dividing by a nearly zero normal component. After choosing u, the cross product produces v, and the dot-product checks confirm that the basis is usable.</aside>
+      </div>
+    </section>
+
+    <section data-label="Plane Local Objects">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">2D Objects Embedded in 3D</div>
+          <h2>Use a Plane Basis as an Adapter</h2>
+          <div class="rule"></div>
+          <div class="content wide-left">
+            <div class="figure-shell">
+              <img src="../figures/storyboard-gallery.png" alt="Storyboard gallery for plane basis, mesh incidence, quadrics, and torus coordinates">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <div class="math-box">
+                <div class="box-label">Embedding Map</div>
+                <div class="box-body">
+                  For a planar set \(S\subset\mathbb{R}^2\), place it in 3D by
+                  \[
+                    X=P+xu+yv,\qquad (x,y)\in S.
+                  \]
+                </div>
+              </div>
+              <div class="math-box example">
+                <div class="box-label">Recovery Map</div>
+                <div class="box-body">
+                  For a point \(Q\) on the plane,
+                  \[
+                    x=u\cdot(Q-P),\qquad y=v\cdot(Q-P).
+                  \]
+                  A 2D polygon algorithm can then operate on \((x,y)\).
+                </div>
+              </div>
+              <p class="body-copy muted">Projection to a coordinate plane is cheaper when congruence is not needed, but the chosen normal component must avoid collapse.</p>
+            </div>
+          </div>
+          <div class="footer"><span>Source orientation: Section 9.2.3</span><span>Local coordinates transfer mature 2D tools into 3D</span></div>
+        </div>
+        <aside class="speaker-notes">The key teaching move is to let two-dimensional algorithms work in a three-dimensional scene without pretending the object is flat in world coordinates. The embedding map builds points in space, while the recovery map projects them back into local coordinates where polygon, circle, or triangulation routines are simpler.</aside>
+      </div>
+    </section>
+
+    <section data-label="Mesh Validity">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">Polymeshes, Polyhedra, and Polytopes</div>
+          <h2>Meshes Are Incidence Structures, Not Just Pictures</h2>
+          <div class="rule"></div>
+          <div class="content two-col">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box theorem">
+                <div class="box-label">Validity Invariants</div>
+                <div class="box-body">A graphics mesh records which vertices form edges, which edges bound faces, how face order orients normals, and whether the surface is closed or has boundary.</div>
+              </div>
+              <div class="card">
+                <ul class="list">
+                  <li>No isolated vertices in the active mesh.</li>
+                  <li>No edges unused by faces when a surface mesh is expected.</li>
+                  <li>Face intersections must be represented by shared vertices or edges.</li>
+                  <li>Closed polyhedra support inside/outside and volume queries.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="figure-shell">
+              <svg viewBox="0 0 880 660" width="100%" height="100%" role="img" aria-label="Triangle fan and mesh incidence">
+                <defs>
+                  <marker id="mesh-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0 0 L12 6 L0 12 Z" fill="#1E3A8A"/>
+                  </marker>
+                </defs>
+                <polygon points="170,115 420,90 620,205 590,430 365,515 145,390" fill="#EFF6FF" stroke="#2563EB" stroke-width="6"/>
+                <line x1="170" y1="115" x2="620" y2="205" stroke="#CBD5E1" stroke-width="5"/>
+                <line x1="170" y1="115" x2="590" y2="430" stroke="#CBD5E1" stroke-width="5"/>
+                <line x1="170" y1="115" x2="365" y2="515" stroke="#CBD5E1" stroke-width="5"/>
+                <circle cx="170" cy="115" r="12" fill="#1E3A8A"/>
+                <circle cx="420" cy="90" r="10" fill="#2563EB"/>
+                <circle cx="620" cy="205" r="10" fill="#2563EB"/>
+                <circle cx="590" cy="430" r="10" fill="#2563EB"/>
+                <circle cx="365" cy="515" r="10" fill="#2563EB"/>
+                <circle cx="145" cy="390" r="10" fill="#2563EB"/>
+                <path d="M705 175 L800 245 L760 365 L640 380 L600 260 Z" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+                <path d="M705 175 L760 365 M800 245 L640 380 M600 260 L760 365" stroke="#0F766E" stroke-width="4" opacity="0.72"/>
+                <line x1="618" y1="462" x2="703" y2="410" stroke="#1E3A8A" stroke-width="5" marker-end="url(#mesh-arrow)"/>
+                <text x="220" y="600" font-size="28" fill="#1E3A8A" font-weight="700">triangle fan from ordered face vertices</text>
+                <text x="605" y="456" font-size="26" fill="#0F766E" font-weight="700">incidence graph</text>
+                <text x="48" y="98" font-size="25" fill="#64748B">V0</text>
+                <text x="405" y="62" font-size="25" fill="#64748B">V1</text>
+                <text x="635" y="205" font-size="25" fill="#64748B">V2</text>
+              </svg>
+            </div>
+          </div>
+          <div class="footer"><span>Notebook check: mesh Euler counts match the constructed example</span><span>Triangle soup is not automatically a polyhedron</span></div>
+        </div>
+        <aside class="speaker-notes">Meshes are not just arrays of triangles. They are incidence structures with assumptions about which vertices, edges, and faces are allowed to meet. Ask students to distinguish a drawable triangle soup from a valid mesh, then connect the distinction to manifoldness, closure, orientation, and Euler checks.</aside>
+      </div>
+    </section>
+
+    <section data-label="Quadric Surfaces">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">Quadric Surfaces</div>
+          <h2>Diagonalize the Equation, Then Check the Residual</h2>
+          <div class="rule"></div>
+          <div class="content wide-right">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box theorem">
+                <div class="box-label">Matrix Form</div>
+                <div class="box-body">
+                  \[
+                    X^T A X+B^T X+c=0,\qquad A=A^T\ne 0.
+                  \]
+                  With \(A=R^T D R\), rotated coordinates reveal the principal axes.
+                </div>
+              </div>
+              <div class="card">
+                <div class="metric"><strong>3 eig.</strong><span>ellipsoid, cone, one-sheet or two-sheet hyperboloid</span></div>
+                <div class="metric"><strong>2 eig.</strong><span>cylinders, intersecting planes, elliptic or hyperbolic paraboloid</span></div>
+                <div class="metric" style="border-bottom: 0;"><strong>1 eig.</strong><span>parabolic cylinder or lower-dimensional degeneracy</span></div>
+              </div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini">
+                <div class="mini-title">Ellipsoid</div>
+                <svg viewBox="0 0 330 210" width="100%" height="178" role="img" aria-label="Ellipsoid">
+                  <ellipse cx="165" cy="105" rx="118" ry="68" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"/>
+                  <ellipse cx="165" cy="105" rx="118" ry="22" fill="none" stroke="#2563EB" stroke-width="4" stroke-dasharray="10 8"/>
+                  <text x="62" y="194" font-size="24" fill="#475569">all signs aligned</text>
+                </svg>
+              </div>
+              <div class="mini">
+                <div class="mini-title">Cone</div>
+                <svg viewBox="0 0 330 210" width="100%" height="178" role="img" aria-label="Cone">
+                  <path d="M165 35 L70 174 L260 174 Z" fill="#FEF3C7" stroke="#B45309" stroke-width="5"/>
+                  <ellipse cx="165" cy="174" rx="95" ry="24" fill="none" stroke="#B45309" stroke-width="4"/>
+                  <text x="72" y="194" font-size="24" fill="#475569">mixed signs, f = 0</text>
+                </svg>
+              </div>
+              <div class="mini">
+                <div class="mini-title">Cylinder</div>
+                <svg viewBox="0 0 330 210" width="100%" height="178" role="img" aria-label="Cylinder">
+                  <ellipse cx="165" cy="56" rx="92" ry="26" fill="#CCFBF1" stroke="#0F766E" stroke-width="5"/>
+                  <path d="M73 56 L73 162 M257 56 L257 162" stroke="#0F766E" stroke-width="5"/>
+                  <ellipse cx="165" cy="162" rx="92" ry="26" fill="none" stroke="#0F766E" stroke-width="5"/>
+                  <text x="56" y="202" font-size="24" fill="#475569">one free direction</text>
+                </svg>
+              </div>
+              <div class="mini">
+                <div class="mini-title">Saddle</div>
+                <svg viewBox="0 0 330 210" width="100%" height="178" role="img" aria-label="Hyperbolic paraboloid">
+                  <path d="M45 126 C112 52 218 52 285 126" fill="none" stroke="#6D28D9" stroke-width="6"/>
+                  <path d="M45 86 C112 160 218 160 285 86" fill="none" stroke="#6D28D9" stroke-width="6"/>
+                  <line x1="62" y1="106" x2="270" y2="106" stroke="#CBD5E1" stroke-width="4"/>
+                  <text x="40" y="194" font-size="24" fill="#475569">opposite curvature</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Notebook check: quadric samples satisfy their implicit equation</span><span>Classification becomes a residual-aware computation</span></div>
+        </div>
+        <aside class="speaker-notes">For quadrics, the matrix representation is the useful abstraction. Diagonalization rotates the coordinate system to expose the surface type, and completing the square locates centers or degeneracies. The residual is the practical check: sampled points should drive the implicit equation close to zero.</aside>
+      </div>
+    </section>
+
+    <section data-label="Torus Representations">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">Torus</div>
+          <h2>Parametric Grid for Rendering, Implicit Equation for Checking</h2>
+          <div class="rule"></div>
+          <div class="content wide-left">
+            <div class="figure-shell">
+              <img src="../figures/geometric-primitives-in-3d-construction-scene.png" alt="Parametric torus and spatial frame">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box example">
+                <div class="box-label">Parameterization</div>
+                <div class="box-body">
+                  \[
+                    x=(r_0+r_1\cos v)\cos u,\quad
+                    y=(r_0+r_1\cos v)\sin u,\quad
+                    z=r_1\sin v.
+                  \]
+                </div>
+              </div>
+              <div class="math-box theorem">
+                <div class="box-label">Implicit Residual</div>
+                <div class="box-body">
+                  \[
+                    \rho(X)=\left(r_0-\sqrt{x^2+y^2}\right)^2+z^2-r_1^2.
+                  \]
+                  A sampled torus should make \(|\rho(X)|\) numerically tiny.
+                </div>
+              </div>
+              <div class="card">
+                <p class="body-copy"><strong>Shape regimes.</strong> Ring, horn, and spindle cases are controlled by the ratio \(r_0/r_1\); the same code path should expose the regime instead of hiding it.</p>
+              </div>
+            </div>
+          </div>
+          <div class="footer"><span>Source orientation: Section 9.5</span><span>Notebook final sanity: max residual below tolerance</span></div>
+        </div>
+        <aside class="speaker-notes">Use the torus to compare representations of the same object. The parametric grid is ideal for rendering and normals, while the implicit equation is ideal for residual checks and containment-style tests. Major and minor radii also provide a clean way to discuss ring, horn, and spindle cases.</aside>
+      </div>
+    </section>
+
+    <section data-label="Curves and Surfaces">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">Polynomial Curves and Surfaces</div>
+          <h2>Control Data Plus Basis Functions Over a Domain</h2>
+          <div class="rule"></div>
+          <div class="content two-col">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box">
+                <div class="box-label">Curve Template</div>
+                <div class="box-body">
+                  \[
+                    X(t)=\sum_i b_i(t) P_i,\qquad t\in D.
+                  \]
+                  Bezier curves use Bernstein bases; B-splines add knots and locality; NURBS add weights and homogeneous projection.
+                </div>
+              </div>
+              <div class="math-box example">
+                <div class="box-label">Surface Template</div>
+                <div class="box-body">
+                  \[
+                    X(s,t)=\sum_i\sum_j b_i(s)c_j(t)P_{ij}
+                  \]
+                  for rectangular patches; triangular patches use barycentric coordinates.
+                </div>
+              </div>
+              <p class="body-copy muted">The representation records domain shape, control lattice topology, basis support, and whether rational weights are present.</p>
+            </div>
+            <div class="figure-shell">
+              <svg viewBox="0 0 860 640" width="100%" height="100%" role="img" aria-label="Control polygon and surface patch domains">
+                <path d="M80 410 C170 180 290 520 430 250 C510 120 620 205 750 110" fill="none" stroke="#2563EB" stroke-width="8"/>
+                <polyline points="80,410 230,170 410,330 570,190 750,110" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="12 10"/>
+                <circle cx="80" cy="410" r="11" fill="#B45309"/>
+                <circle cx="230" cy="170" r="11" fill="#B45309"/>
+                <circle cx="410" cy="330" r="11" fill="#B45309"/>
+                <circle cx="570" cy="190" r="11" fill="#B45309"/>
+                <circle cx="750" cy="110" r="11" fill="#B45309"/>
+                <text x="96" y="470" font-size="28" fill="#1E3A8A" font-weight="700">curve from weighted control data</text>
+                <path d="M150 540 L405 500 L585 580 L330 620 Z" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+                <line x1="235" y1="527" x2="413" y2="603" stroke="#0F766E" stroke-width="4" opacity="0.72"/>
+                <line x1="320" y1="514" x2="499" y2="596" stroke="#0F766E" stroke-width="4" opacity="0.72"/>
+                <line x1="232" y1="590" x2="493" y2="550" stroke="#0F766E" stroke-width="4" opacity="0.72"/>
+                <polygon points="635,430 780,555 560,575" fill="#F5F3FF" stroke="#6D28D9" stroke-width="5"/>
+                <line x1="635" y1="430" x2="668" y2="560" stroke="#6D28D9" stroke-width="4" opacity="0.65"/>
+                <line x1="780" y1="555" x2="668" y2="560" stroke="#6D28D9" stroke-width="4" opacity="0.65"/>
+                <text x="170" y="500" font-size="25" fill="#0F766E" font-weight="700">rectangle domain</text>
+                <text x="605" y="610" font-size="25" fill="#6D28D9" font-weight="700">triangle domain</text>
+              </svg>
+            </div>
+          </div>
+          <div class="footer"><span>Source orientation: Sections 9.6 and 9.7</span><span>Basis, knots, weights, and domains are part of the primitive</span></div>
+        </div>
+        <aside class="speaker-notes">The curve and surface families share a pattern: control data, basis functions, parameter domains, and sometimes homogeneous weights. Keep the focus on representation choices rather than memorizing every formula. Bezier, B-spline, and NURBS objects differ mainly in locality, knot structure, and rational weighting.</aside>
+      </div>
+    </section>
+
+    <section data-label="Lab and Recap">
+      <div class="slide">
+        <div class="slide-pad">
+          <div class="eyebrow">Applied Lab</div>
+          <h2>Make the Primitive Auditable</h2>
+          <div class="rule"></div>
+          <div class="content wide-right">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div class="math-box exercise">
+                <div class="box-label">Lab Prompt</div>
+                <div class="box-body">Choose one primitive, perturb one coordinate frame or tolerance, and report which visual changes are geometric and which are representation artifacts.</div>
+              </div>
+              <div class="card">
+                <ul class="list">
+                  <li>Record the representation and parameter domain.</li>
+                  <li>Name the invariant before computing it.</li>
+                  <li>Draw the active geometric features.</li>
+                  <li>Assert a residual and explain what failure means.</li>
+                </ul>
+              </div>
+              <div class="math-box theorem">
+                <div class="box-label">Chapter Takeaway</div>
+                <div class="box-body">A primitive is production-ready only when its data contract, admissible domain, and numerical checks are all visible.</div>
+              </div>
+            </div>
+            <div class="figure-shell">
+              <img src="../figures/numeric-diagnostic.png" alt="Numeric diagnostic showing residual decreasing with sample count">
+            </div>
+          </div>
+          <div class="footer"><span>Notebook sanity file: artifacts/chapter-09/checks/final-sanity.json</span><span>Representation plus residual beats plausible rendering</span></div>
+        </div>
+        <aside class="speaker-notes">Close by returning to the notebook workflow. A strong implementation records the primitive representation, the domain restriction, the invariant being tested, and the failure mode that would invalidate the result. The lab prompt asks students to perturb a frame, mesh, or surface until the residual reveals instability.</aside>
+      </div>
+    </section>
+  </deck-stage>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\[', right: '\\]', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>

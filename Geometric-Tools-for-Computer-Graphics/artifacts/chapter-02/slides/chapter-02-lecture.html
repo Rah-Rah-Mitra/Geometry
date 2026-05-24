@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-02">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-01-foundations/chapter-02-matrices-and-linear-systems/02-matrices-and-linear-systems.ipynb">
+  <meta name="source_span" content="printed pages 9-62; PDF pages 56-109.">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 02 Lecture - Matrices and Linear Systems</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    deck-stage:not(:defined) { visibility: hidden; }
+    body {
+      margin: 0;
+      background: #000000;
+      font-family: var(--font-sans);
+    }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding: 72px 96px 64px;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      position: relative;
+    }
+    .slide.alt { background: var(--slide-bg-alt); }
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(37, 99, 235, 0.045) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.045) 2px, transparent 2px);
+      background-size: 96px 96px;
+      pointer-events: none;
+    }
+    .slide > * { position: relative; z-index: 1; }
+    .title-row {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 48px;
+      margin-bottom: 30px;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 60px;
+      line-height: 1.04;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+    h2 {
+      font-size: 50px;
+      line-height: 1.12;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+    h3 {
+      font-size: 30px;
+      line-height: 1.18;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-accent);
+    }
+    .eyebrow {
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--slide-accent);
+      margin-bottom: 14px;
+    }
+    .subtitle {
+      font-size: 32px;
+      line-height: 1.35;
+      color: var(--slide-muted);
+      max-width: 1160px;
+      margin-top: 18px;
+    }
+    .source-line {
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--slide-dimmed);
+      margin-top: 22px;
+    }
+    .content {
+      display: grid;
+      gap: 34px;
+      height: calc(100% - 118px);
+    }
+    .two-col { grid-template-columns: 1.02fr 0.98fr; }
+    .wide-left { grid-template-columns: 1.22fr 0.78fr; }
+    .wide-right { grid-template-columns: 0.82fr 1.18fr; }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+    .math-box {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.45;
+    }
+    .math-box-label { font-size: 22px; }
+    .math-box-title { font-size: 28px; }
+    .body {
+      font-size: 28px;
+      line-height: 1.45;
+      color: var(--slide-ink);
+    }
+    .body strong { color: var(--slide-accent); }
+    .muted {
+      color: var(--slide-muted);
+      font-size: 25px;
+      line-height: 1.42;
+    }
+    .small {
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--slide-dimmed);
+    }
+    ul.clean {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    ul.clean li {
+      font-size: 28px;
+      line-height: 1.38;
+      padding-left: 26px;
+      border-left: 4px solid var(--slide-border);
+    }
+    .pill-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .pill {
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 38px;
+      line-height: 1.35;
+      text-align: center;
+      color: var(--slide-ink);
+      padding: 14px 0;
+    }
+    .formula.large { font-size: 46px; }
+    .diagram-card {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      box-shadow: var(--shadow-sm);
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+    }
+    svg text {
+      font-family: var(--font-sans);
+      font-size: 26px;
+      fill: var(--slide-ink);
+    }
+    svg .svg-math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      height: 100%;
+    }
+    .mini-panel {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .mini-panel h3 { font-size: 28px; }
+    .mini-panel p {
+      font-size: 24px;
+      line-height: 1.32;
+      color: var(--slide-muted);
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 25px;
+      line-height: 1.3;
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .matrix-table th {
+      text-align: left;
+      color: var(--slide-accent);
+      background: #EEF2FF;
+      padding: 16px 18px;
+      font-size: 24px;
+      border-bottom: 1px solid var(--slide-border);
+    }
+    .matrix-table td {
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--slide-border-light);
+      vertical-align: top;
+    }
+    .matrix-table tr:last-child td { border-bottom: 0; }
+    .artifact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .artifact-grid figure {
+      margin: 0;
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .artifact-grid img {
+      width: 100%;
+      height: 215px;
+      object-fit: contain;
+      display: block;
+    }
+    .artifact-grid figcaption {
+      font-size: 22px;
+      line-height: 1.22;
+      color: var(--slide-muted);
+      font-weight: 700;
+    }
+    .footer-note {
+      position: absolute;
+      left: 96px;
+      right: 96px;
+      bottom: 32px;
+      font-size: 22px;
+      line-height: 1.25;
+      color: var(--slide-dimmed);
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    aside.speaker-notes { display: none; }
+  </style>
+</head>
+<body>
+<script id="speaker-notes" type="application/json">{"slides":["Use the opening to set the contract for the lecture. The chapter is not a formula inventory; it is a set of habits for turning matrix computations into inspectable graphics behavior. Point out the page span and notebook path so students know the source boundary, then preview the four checks that will keep coming back: representation, invariant, residual, and failure mode.","Emphasize that the same numeric array can encode three different operations, so code must carry intent as well as data. Ask students what stays fixed in each panel: the point, the coordinate frame, or the target space. The point of the slide is to make ambiguity feel practical before any theorem appears.","Present a matrix by its action on a basis. The grid deformation is a visual way to see all vectors move at once, while the two colored columns are enough to reconstruct the whole map by linearity. Make the determinant teaser concrete: area scale and orientation are visible before the symbolic formula is introduced.","Use this slide to slow down the notation. Tuples, rows, columns, and transposes are not just shapes on paper; in a graphics program they are type contracts. The product rule prevents impossible compositions, and the row-column dot product explains why matrix multiplication records many coupled linear measurements at once.","Frame a linear system as a question about whether several constraints agree on a common object. The three panels distinguish a unique intersection, inconsistent constraints, and a whole family of solutions. This prepares the rank discussion by making solution count a geometric property rather than a purely algebraic classification.","Describe row reduction as a controlled rewrite of the same solution set. Pivots identify independent constraints; free columns identify degrees of freedom. The staircase diagram is deliberately schematic, because the invariant is not the numerical values in intermediate rows but the number and placement of pivots after elimination.","Connect determinant to a visible area or volume scale. A positive value preserves orientation, a negative value reverses it, and a near-zero value signals that the inverse problem may amplify error. Stress that the determinant is both a geometric measurement and a diagnostic for code paths that assume invertibility.","Treat the inverse and Cramer's rule as part of the square-system toolkit, not as universal numerical advice. Students should hear that nonzero determinant, full rank, and unique solution are equivalent in the exact setting. Then add the graphics warning: near singular can be more dangerous than singular because it may still produce a number.","Use span, independence, and basis to separate the abstract space from the coordinates used to store it. The plane diagram makes a subspace tangible, but the important statement is that a basis lets every vector receive a unique coordinate description. This is the bridge toward coordinate-free vector reasoning in the next chapter.","Make linear mappings feel structural. A map can stretch, collapse, rotate, or shear a space, and a matrix is only its basis-dependent record. Rank-nullity is the bookkeeping statement behind that picture: output dimension gained through the image is balanced by input directions lost in the kernel.","Introduce eigenvectors as directions that survive the map as directions. They may stretch, shrink, or flip, but they do not turn away from their line. In graphics, this gives a compact language for principal axes, stable directions, repeated transforms, and deformation modes, while also warning that not every real matrix has enough real eigenvectors.","Euclidean structure adds measurements to a vector space. Inner products give length, distance, and perpendicularity, which are exactly the notions used by projections and fitting. Use the Gram-Schmidt sketch to show that orthonormal frames are constructed objects, not magic defaults, and that each subtraction removes an already explained direction.","Least squares should land as geometry, not just optimization. When the equations disagree, the best fit is the point in the column space closest to the data vector. The residual is perpendicular to every column direction, which is why the normal equations are the algebraic certificate rather than an arbitrary trick.","Close by turning the chapter into a production checklist. The artifact thumbnails come from the assigned notebook and model the desired workflow: draw the construction, perturb the data, compute a residual, and record checks. Encourage students to treat degeneracy and tolerance as observable states instead of surprises found after integration."]}</script>
+
+<deck-stage width="1920" height="1080" no-rail>
+  <section class="slide alt" data-label="Title">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Geometric Tools for Computer Graphics</div>
+        <h1>Chapter 02: Matrices and Linear Systems</h1>
+        <p class="subtitle">Linear algebra as an inspectable graphics toolkit: maps, constraints, rank, determinants, Euclidean measurements, and least-squares fitting.</p>
+        <p class="source-line">Source span: printed pages 9-62; PDF pages 56-109.</p>
+        <p class="source-line">Notebook: Geometric-Tools-for-Computer-Graphics/part-01-foundations/chapter-02-matrices-and-linear-systems/02-matrices-and-linear-systems.ipynb</p>
+      </div>
+      <div class="diagram-card" style="width: 560px; height: 430px;">
+        <svg viewBox="0 0 560 430" role="img" aria-label="Chapter invariant loop">
+          <defs>
+            <marker id="loop-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="50" y="42" width="180" height="76" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="78" y="88" font-weight="700">Represent</text>
+          <rect x="330" y="42" width="180" height="76" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="372" y="88" font-weight="700">Draw</text>
+          <rect x="330" y="260" width="180" height="76" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="368" y="306" font-weight="700">Measure</text>
+          <rect x="50" y="260" width="180" height="76" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="96" y="306" font-weight="700">Check</text>
+          <path d="M235 80 H318" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#loop-arrow)"></path>
+          <path d="M420 126 V248" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#loop-arrow)"></path>
+          <path d="M325 298 H242" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#loop-arrow)"></path>
+          <path d="M140 254 V132" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#loop-arrow)"></path>
+          <text x="280" y="198" text-anchor="middle" font-size="30" fill="#475569">graphics code needs</text>
+          <text x="280" y="235" text-anchor="middle" font-size="30" fill="#475569">observable invariants</text>
+        </svg>
+      </div>
+    </div>
+    <div class="pill-row">
+      <span class="pill">linear maps</span>
+      <span class="pill">row reduction</span>
+      <span class="pill">rank</span>
+      <span class="pill">determinants</span>
+      <span class="pill">eigenspaces</span>
+      <span class="pill">inner products</span>
+      <span class="pill">least squares</span>
+    </div>
+    <aside class="speaker-notes">Use the opening to set the contract for the lecture. The chapter is not a formula inventory; it is a set of habits for turning matrix computations into inspectable graphics behavior. Point out the page span and notebook path so students know the source boundary, then preview the four checks that will keep coming back: representation, invariant, residual, and failure mode.</aside>
+  </section>
+
+  <section class="slide" data-label="Three Meanings">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Motivation</div>
+        <h2>One Array, Three Geometric Contracts</h2>
+      </div>
+    </div>
+    <div class="comparison">
+      <div class="mini-panel">
+        <h3>Change coordinates</h3>
+        <svg viewBox="0 0 420 300" role="img" aria-label="Coordinate change">
+          <defs>
+            <marker id="coord-arrow-a" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#2563EB"></path>
+            </marker>
+          </defs>
+          <line x1="70" y1="240" x2="340" y2="240" stroke="#CBD5E1" stroke-width="4" marker-end="url(#coord-arrow-a)"></line>
+          <line x1="70" y1="240" x2="70" y2="40" stroke="#CBD5E1" stroke-width="4" marker-end="url(#coord-arrow-a)"></line>
+          <line x1="70" y1="240" x2="320" y2="125" stroke="#2563EB" stroke-width="4" marker-end="url(#coord-arrow-a)"></line>
+          <line x1="70" y1="240" x2="145" y2="40" stroke="#2563EB" stroke-width="4" marker-end="url(#coord-arrow-a)"></line>
+          <circle cx="210" cy="115" r="9" fill="#B45309"></circle>
+          <text x="225" y="110" fill="#B45309" font-weight="700">P fixed</text>
+          <text x="90" y="270" fill="#64748B">coordinates change</text>
+        </svg>
+        <p>The point is unchanged; only its coordinate description changes.</p>
+      </div>
+      <div class="mini-panel">
+        <h3>Act on the plane</h3>
+        <svg viewBox="0 0 420 300" role="img" aria-label="Active transform">
+          <defs>
+            <marker id="coord-arrow-b" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <path d="M70 230 L330 230 M70 180 L330 180 M70 130 L330 130 M70 80 L330 80 M90 250 L90 60 M150 250 L150 60 M210 250 L210 60 M270 250 L270 60" stroke="#E2E8F0" stroke-width="3"></path>
+          <path d="M82 230 L350 230 M95 180 L363 180 M108 130 L376 130 M121 80 L389 80 M90 250 L142 60 M150 250 L202 60 M210 250 L262 60 M270 250 L322 60" stroke="#0F766E" stroke-width="3" opacity="0.78"></path>
+          <circle cx="150" cy="180" r="8" fill="#2563EB"></circle>
+          <circle cx="205" cy="154" r="8" fill="#B45309"></circle>
+          <path d="M160 174 C178 165 184 160 196 156" fill="none" stroke="#B45309" stroke-width="4" marker-end="url(#coord-arrow-b)"></path>
+          <text x="112" y="274" fill="#64748B">coordinates fixed, point moves</text>
+        </svg>
+        <p>The frame is fixed; the map moves the geometry inside it.</p>
+      </div>
+      <div class="mini-panel">
+        <h3>Transfer spaces</h3>
+        <svg viewBox="0 0 420 300" role="img" aria-label="Map between spaces">
+          <defs>
+            <marker id="coord-arrow-c" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="40" y="72" width="126" height="146" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <rect x="254" y="55" width="126" height="180" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <circle cx="108" cy="144" r="9" fill="#2563EB"></circle>
+          <circle cx="316" cy="142" r="9" fill="#0F766E"></circle>
+          <path d="M170 145 C198 110 224 110 248 138" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#coord-arrow-c)"></path>
+          <text x="68" y="250" fill="#2563EB" font-weight="700">domain</text>
+          <text x="284" y="250" fill="#0F766E" font-weight="700">target</text>
+        </svg>
+        <p>The source and target may be different modeled spaces.</p>
+      </div>
+    </div>
+    <div class="footer-note"><span>Code should record the intended contract, not just the numbers.</span><span>\(p' = A p\) is syntax until the spaces are named.</span></div>
+    <aside class="speaker-notes">Emphasize that the same numeric array can encode three different operations, so code must carry intent as well as data. Ask students what stays fixed in each panel: the point, the coordinate frame, or the target space. The point of the slide is to make ambiguity feel practical before any theorem appears.</aside>
+  </section>
+
+  <section class="slide" data-label="Linear Map">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Linear maps</div>
+        <h2>A Matrix Records Where Basis Directions Go</h2>
+      </div>
+    </div>
+    <div class="content wide-left">
+      <div class="diagram-card">
+        <svg viewBox="0 0 980 650" role="img" aria-label="Grid deformation by a linear map">
+          <defs>
+            <marker id="basis-blue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#2563EB"></path>
+            </marker>
+            <marker id="basis-teal" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g opacity="0.95">
+            <path d="M90 560 H860 M90 490 H860 M90 420 H860 M90 350 H860 M90 280 H860 M90 210 H860 M90 140 H860 M150 600 V100 M240 600 V100 M330 600 V100 M420 600 V100 M510 600 V100 M600 600 V100 M690 600 V100 M780 600 V100" stroke="#E2E8F0" stroke-width="4"></path>
+            <path d="M150 560 H900 M170 490 H920 M190 420 H940 M210 350 H960 M230 280 H980 M250 210 H1000 M270 140 H1020 M150 600 L290 100 M240 600 L380 100 M330 600 L470 100 M420 600 L560 100 M510 600 L650 100 M600 600 L740 100 M690 600 L830 100 M780 600 L920 100" stroke="#2563EB" stroke-width="4" opacity="0.34"></path>
+            <line x1="150" y1="560" x2="270" y2="560" stroke="#0F766E" stroke-width="8" marker-end="url(#basis-teal)"></line>
+            <line x1="150" y1="560" x2="185" y2="430" stroke="#2563EB" stroke-width="8" marker-end="url(#basis-blue)"></line>
+            <text x="276" y="588" fill="#0F766E" font-weight="700">A e1</text>
+            <text x="196" y="420" fill="#2563EB" font-weight="700">A e2</text>
+          </g>
+          <text x="98" y="70" fill="#475569">The whole grid follows once the basis images are known.</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="math-box math-box--definition">
+          <div class="math-box-label">Definition</div>
+          <div class="math-box-title">Matrix Representation</div>
+          <div>A linear map \(A:\mathbb{R}^n\to\mathbb{R}^m\) is represented by the \(m\times n\) matrix whose columns are \(A e_1,\ldots,A e_n\).</div>
+        </div>
+        <div class="card body">
+          <strong>Graphics reading:</strong> the array is a compact description of a deformation, projection, frame change, or coordinate transfer.
+        </div>
+        <div class="formula">\(A(\alpha u+\beta v)=\alpha A u+\beta A v\)</div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Present a matrix by its action on a basis. The grid deformation is a visual way to see all vectors move at once, while the two colored columns are enough to reconstruct the whole map by linearity. Make the determinant teaser concrete: area scale and orientation are visible before the symbolic formula is introduced.</aside>
+  </section>
+
+  <section class="slide" data-label="Shapes And Products">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Tuples and matrices</div>
+        <h2>Shapes Are Contracts For Composition</h2>
+      </div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <table class="matrix-table">
+          <thead>
+            <tr><th>Object</th><th>Computational role</th><th>Contract</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>\(x\in\mathbb{R}^n\)</td><td>tuple or coordinate vector</td><td>ordered scalar data</td></tr>
+            <tr><td>\(A\in\mathbb{R}^{m\times n}\)</td><td>linear measurements or map</td><td>accepts \(n\) inputs, returns \(m\) outputs</td></tr>
+            <tr><td>\(A^T\)</td><td>dualized measurements</td><td>turns rows into columns</td></tr>
+            <tr><td>\(BA\)</td><td>composition</td><td>apply \(A\) first, then \(B\)</td></tr>
+          </tbody>
+        </table>
+        <div class="math-box math-box--remark">
+          <div class="math-box-label">Remark</div>
+          <div>Dimension mismatches are early warnings that two geometric spaces have been confused.</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <svg viewBox="0 0 760 620" role="img" aria-label="Matrix multiplication dimensions">
+          <rect x="72" y="120" width="170" height="300" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+          <rect x="322" y="190" width="96" height="160" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></rect>
+          <rect x="500" y="150" width="130" height="240" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></rect>
+          <text x="130" y="280" text-anchor="middle" font-size="42" class="svg-math" fill="#2563EB">A</text>
+          <text x="370" y="285" text-anchor="middle" font-size="42" class="svg-math" fill="#0F766E">x</text>
+          <text x="565" y="285" text-anchor="middle" font-size="42" class="svg-math" fill="#1E3A8A">b</text>
+          <text x="86" y="458" fill="#475569">m by n</text>
+          <text x="312" y="386" fill="#475569">n by 1</text>
+          <text x="500" y="428" fill="#475569">m by 1</text>
+          <text x="260" y="285" text-anchor="middle" font-size="44" fill="#475569">times</text>
+          <text x="458" y="285" text-anchor="middle" font-size="44" fill="#475569">equals</text>
+          <line x1="156" y1="108" x2="156" y2="72" stroke="#2563EB" stroke-width="5"></line>
+          <line x1="370" y1="178" x2="370" y2="72" stroke="#0F766E" stroke-width="5"></line>
+          <line x1="156" y1="72" x2="370" y2="72" stroke="#B45309" stroke-width="5" stroke-dasharray="14 12"></line>
+          <text x="190" y="54" fill="#B45309" font-weight="700">inner dimensions agree</text>
+          <text x="130" y="535" text-anchor="middle" fill="#64748B">rows are measurements</text>
+          <text x="520" y="535" text-anchor="middle" fill="#64748B">outputs are collected</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide to slow down the notation. Tuples, rows, columns, and transposes are not just shapes on paper; in a graphics program they are type contracts. The product rule prevents impossible compositions, and the row-column dot product explains why matrix multiplication records many coupled linear measurements at once.</aside>
+  </section>
+
+  <section class="slide alt" data-label="System Geometry">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Linear systems</div>
+        <h2>\(Ax=b\) As Agreement Among Constraints</h2>
+      </div>
+    </div>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="math-box math-box--definition">
+          <div class="math-box-label">Definition</div>
+          <div>A solution is a point \(x\) that satisfies every row equation \(a_i^T x=b_i\).</div>
+        </div>
+        <ul class="clean">
+          <li><strong>Unique:</strong> constraints meet at one point.</li>
+          <li><strong>None:</strong> constraints are inconsistent.</li>
+          <li><strong>Many:</strong> some constraints are dependent.</li>
+        </ul>
+        <div class="formula">rank decides how many independent restrictions remain</div>
+      </div>
+      <div class="comparison">
+        <div class="mini-panel">
+          <h3>Unique</h3>
+          <svg viewBox="0 0 360 260" role="img" aria-label="Unique solution lines">
+            <line x1="40" y1="216" x2="324" y2="44" stroke="#2563EB" stroke-width="6"></line>
+            <line x1="50" y1="52" x2="310" y2="220" stroke="#0F766E" stroke-width="6"></line>
+            <circle cx="184" cy="129" r="10" fill="#B45309"></circle>
+            <text x="202" y="124" fill="#B45309" font-weight="700">x*</text>
+          </svg>
+          <p>Full independent information for the unknowns.</p>
+        </div>
+        <div class="mini-panel">
+          <h3>Inconsistent</h3>
+          <svg viewBox="0 0 360 260" role="img" aria-label="No solution parallel lines">
+            <line x1="42" y1="92" x2="318" y2="180" stroke="#2563EB" stroke-width="6"></line>
+            <line x1="42" y1="142" x2="318" y2="230" stroke="#0F766E" stroke-width="6"></line>
+            <text x="82" y="58" fill="#B45309" font-weight="700">no common point</text>
+          </svg>
+          <p>Rows ask for incompatible geometry.</p>
+        </div>
+        <div class="mini-panel">
+          <h3>Many</h3>
+          <svg viewBox="0 0 360 260" role="img" aria-label="Many solutions coincident lines">
+            <line x1="42" y1="200" x2="318" y2="68" stroke="#2563EB" stroke-width="12" opacity="0.32"></line>
+            <line x1="42" y1="200" x2="318" y2="68" stroke="#0F766E" stroke-width="6"></line>
+            <circle cx="130" cy="158" r="8" fill="#6D28D9"></circle>
+            <circle cx="214" cy="118" r="8" fill="#6D28D9"></circle>
+            <text x="78" y="44" fill="#6D28D9" font-weight="700">one degree free</text>
+          </svg>
+          <p>Dependent rows leave a family of choices.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Frame a linear system as a question about whether several constraints agree on a common object. The three panels distinguish a unique intersection, inconsistent constraints, and a whole family of solutions. This prepares the rank discussion by making solution count a geometric property rather than a purely algebraic classification.</aside>
+  </section>
+
+  <section class="slide" data-label="Row Reduction">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Elimination</div>
+        <h2>Row Reduction Reveals Rank Without Changing Solutions</h2>
+      </div>
+    </div>
+    <div class="content wide-left">
+      <div class="diagram-card">
+        <svg viewBox="0 0 900 610" role="img" aria-label="Echelon form and rank">
+          <rect x="92" y="82" width="620" height="390" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="5"></rect>
+          <g fill="#EFF6FF" stroke="#2563EB" stroke-width="4">
+            <rect x="130" y="126" width="78" height="58" rx="6"></rect>
+            <rect x="258" y="204" width="78" height="58" rx="6"></rect>
+            <rect x="386" y="282" width="78" height="58" rx="6"></rect>
+          </g>
+          <g fill="#F8FAFC" stroke="#E2E8F0" stroke-width="3">
+            <rect x="258" y="126" width="78" height="58" rx="6"></rect>
+            <rect x="386" y="126" width="78" height="58" rx="6"></rect>
+            <rect x="514" y="126" width="78" height="58" rx="6"></rect>
+            <rect x="386" y="204" width="78" height="58" rx="6"></rect>
+            <rect x="514" y="204" width="78" height="58" rx="6"></rect>
+            <rect x="514" y="282" width="78" height="58" rx="6"></rect>
+          </g>
+          <line x1="626" y1="104" x2="626" y2="450" stroke="#B45309" stroke-width="5" stroke-dasharray="16 12"></line>
+          <text x="130" y="164" fill="#2563EB" font-weight="700">pivot</text>
+          <text x="258" y="242" fill="#2563EB" font-weight="700">pivot</text>
+          <text x="386" y="320" fill="#2563EB" font-weight="700">pivot</text>
+          <text x="650" y="164" fill="#B45309" font-weight="700">augmented</text>
+          <text x="650" y="202" fill="#B45309" font-weight="700">column</text>
+          <text x="126" y="532" fill="#1E3A8A" font-weight="700">rank = number of pivots = 3</text>
+          <text x="126" y="570" fill="#475569">free columns become parameters in the solution set</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="math-box math-box--theorem">
+          <div class="math-box-label">Invariant</div>
+          <div>Elementary row operations preserve the solution set of \(Ax=b\).</div>
+        </div>
+        <ul class="clean">
+          <li>Pivots count independent row constraints.</li>
+          <li>Zero rows expose redundant information.</li>
+          <li>Pivot conflicts expose inconsistent data.</li>
+        </ul>
+        <div class="card body">Rank is the algebraic name for how much independent geometry survives elimination.</div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Describe row reduction as a controlled rewrite of the same solution set. Pivots identify independent constraints; free columns identify degrees of freedom. The staircase diagram is deliberately schematic, because the invariant is not the numerical values in intermediate rows but the number and placement of pivots after elimination.</aside>
+  </section>
+
+  <section class="slide" data-label="Determinant">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Square matrices</div>
+        <h2>The Determinant Measures Oriented Scale</h2>
+      </div>
+    </div>
+    <div class="content two-col">
+      <div class="diagram-card">
+        <svg viewBox="0 0 780 610" role="img" aria-label="Determinant area scale">
+          <defs>
+            <marker id="det-blue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#2563EB"></path>
+            </marker>
+            <marker id="det-teal" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <polygon points="122,462 282,462 282,302 122,302" fill="rgba(37,99,235,0.10)" stroke="#2563EB" stroke-width="5"></polygon>
+          <line x1="122" y1="462" x2="282" y2="462" stroke="#2563EB" stroke-width="7" marker-end="url(#det-blue)"></line>
+          <line x1="122" y1="462" x2="122" y2="302" stroke="#2563EB" stroke-width="7" marker-end="url(#det-blue)"></line>
+          <text x="146" y="500" fill="#2563EB" font-weight="700">unit square</text>
+          <polygon points="470,462 660,402 600,192 410,252" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="5"></polygon>
+          <line x1="470" y1="462" x2="660" y2="402" stroke="#0F766E" stroke-width="7" marker-end="url(#det-teal)"></line>
+          <line x1="470" y1="462" x2="410" y2="252" stroke="#0F766E" stroke-width="7" marker-end="url(#det-teal)"></line>
+          <text x="448" y="510" fill="#0F766E" font-weight="700">image parallelogram</text>
+          <path d="M320 366 C356 330 384 324 426 346" fill="none" stroke="#1E3A8A" stroke-width="5" stroke-dasharray="14 10"></path>
+          <text x="326" y="308" fill="#1E3A8A" font-weight="700">apply A</text>
+          <text x="160" y="102" fill="#475569">area scale = |det A|</text>
+          <text x="160" y="144" fill="#475569">orientation sign = sign(det A)</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="formula large">\(\det \begin{bmatrix}a&b\\c&d\end{bmatrix}=ad-bc\)</div>
+        <div class="math-box math-box--warning">
+          <div class="math-box-label">Diagnostic</div>
+          <div>If \(\det A=0\), some nonzero direction collapses. If \(\det A\) is tiny, inversion may magnify noise.</div>
+        </div>
+        <ul class="clean">
+          <li>positive determinant: orientation preserved</li>
+          <li>negative determinant: orientation reversed</li>
+          <li>zero determinant: rank loss and no inverse</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="speaker-notes">Connect determinant to a visible area or volume scale. A positive value preserves orientation, a negative value reverses it, and a near-zero value signals that the inverse problem may amplify error. Stress that the determinant is both a geometric measurement and a diagnostic for code paths that assume invertibility.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Invertibility">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Square-system toolkit</div>
+        <h2>Invertibility Is A Geometric Promise</h2>
+      </div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <div class="math-box math-box--theorem">
+          <div class="math-box-label">Equivalent exact conditions</div>
+          <div>For \(A\in\mathbb{R}^{n\times n}\): \(A^{-1}\) exists, \(\det A\ne0\), rank \(A=n\), and \(Ax=b\) has one solution for every \(b\).</div>
+        </div>
+        <div class="math-box math-box--warning">
+          <div class="math-box-label">Implementation caution</div>
+          <div>Exact equivalence does not remove tolerance decisions. Near singular matrices can return unstable coordinates while still passing a nonzero test.</div>
+        </div>
+      </div>
+      <div class="diagram-card">
+        <svg viewBox="0 0 780 610" role="img" aria-label="Invertibility decision path">
+          <rect x="260" y="45" width="260" height="78" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></rect>
+          <text x="314" y="94" fill="#1E3A8A" font-weight="700">square A</text>
+          <line x1="390" y1="126" x2="390" y2="184" stroke="#1E3A8A" stroke-width="5"></line>
+          <rect x="212" y="188" width="356" height="86" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></rect>
+          <text x="248" y="242" fill="#2563EB" font-weight="700">rank A = n?</text>
+          <line x1="310" y1="278" x2="168" y2="370" stroke="#B45309" stroke-width="5"></line>
+          <line x1="470" y1="278" x2="612" y2="370" stroke="#0F766E" stroke-width="5"></line>
+          <rect x="48" y="374" width="260" height="128" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></rect>
+          <text x="80" y="424" fill="#B45309" font-weight="700">rank loss</text>
+          <text x="78" y="466" fill="#475569">no inverse or</text>
+          <text x="78" y="502" fill="#475569">nonunique behavior</text>
+          <rect x="472" y="374" width="260" height="128" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></rect>
+          <text x="510" y="424" fill="#0F766E" font-weight="700">unique solve</text>
+          <text x="510" y="466" fill="#475569">well posed in</text>
+          <text x="510" y="502" fill="#475569">the exact model</text>
+          <text x="184" y="342" fill="#B45309" font-weight="700">no</text>
+          <text x="560" y="342" fill="#0F766E" font-weight="700">yes</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Treat the inverse and Cramer's rule as part of the square-system toolkit, not as universal numerical advice. Students should hear that nonzero determinant, full rank, and unique solution are equivalent in the exact setting. Then add the graphics warning: near singular can be more dangerous than singular because it may still produce a number.</aside>
+  </section>
+
+  <section class="slide" data-label="Linear Spaces">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Linear spaces</div>
+        <h2>Span, Independence, And Basis Separate Space From Coordinates</h2>
+      </div>
+    </div>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="math-box math-box--definition">
+          <div class="math-box-label">Definition</div>
+          <div>The span of \(v_1,\ldots,v_k\) is every linear combination \(\alpha_1v_1+\cdots+\alpha_kv_k\).</div>
+        </div>
+        <ul class="clean">
+          <li><strong>Subspace:</strong> closed under vector addition and scalar multiplication.</li>
+          <li><strong>Independent:</strong> no vector is redundant.</li>
+          <li><strong>Basis:</strong> independent spanning set with unique coordinates.</li>
+        </ul>
+      </div>
+      <div class="diagram-card">
+        <svg viewBox="0 0 880 610" role="img" aria-label="Subspace plane with basis">
+          <defs>
+            <marker id="space-blue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#2563EB"></path>
+            </marker>
+            <marker id="space-teal" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <polygon points="98,430 370,190 770,282 498,520" fill="rgba(37,99,235,0.09)" stroke="#2563EB" stroke-width="5"></polygon>
+          <line x1="420" y1="358" x2="612" y2="402" stroke="#2563EB" stroke-width="8" marker-end="url(#space-blue)"></line>
+          <line x1="420" y1="358" x2="304" y2="260" stroke="#0F766E" stroke-width="8" marker-end="url(#space-teal)"></line>
+          <circle cx="420" cy="358" r="10" fill="#1E3A8A"></circle>
+          <text x="624" y="414" fill="#2563EB" font-weight="700" class="svg-math">v1</text>
+          <text x="250" y="254" fill="#0F766E" font-weight="700" class="svg-math">v2</text>
+          <text x="94" y="510" fill="#2563EB" font-weight="700">span(v1, v2)</text>
+          <text x="198" y="92" fill="#475569">A plane through the origin is a two-dimensional subspace.</text>
+          <line x1="420" y1="358" x2="510" y2="228" stroke="#B45309" stroke-width="5" stroke-dasharray="14 10"></line>
+          <text x="524" y="232" fill="#B45309" font-weight="700">outside direction</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use span, independence, and basis to separate the abstract space from the coordinates used to store it. The plane diagram makes a subspace tangible, but the important statement is that a basis lets every vector receive a unique coordinate description. This is the bridge toward coordinate-free vector reasoning in the next chapter.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Linear Mappings">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Mappings</div>
+        <h2>Rank-Nullity Bookkeeps What A Map Keeps And Loses</h2>
+      </div>
+    </div>
+    <div class="content two-col">
+      <div class="diagram-card">
+        <svg viewBox="0 0 760 610" role="img" aria-label="Linear map image and kernel">
+          <defs>
+            <marker id="map-arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <ellipse cx="210" cy="308" rx="145" ry="210" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></ellipse>
+          <ellipse cx="552" cy="308" rx="125" ry="168" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></ellipse>
+          <line x1="210" y1="420" x2="210" y2="196" stroke="#B45309" stroke-width="7" stroke-dasharray="14 10"></line>
+          <text x="118" y="450" fill="#B45309" font-weight="700">kernel</text>
+          <path d="M326 310 C392 250 430 248 492 300" fill="none" stroke="#1E3A8A" stroke-width="6" marker-end="url(#map-arrow)"></path>
+          <line x1="500" y1="342" x2="626" y2="276" stroke="#0F766E" stroke-width="7"></line>
+          <text x="516" y="250" fill="#0F766E" font-weight="700">image</text>
+          <text x="144" y="72" fill="#2563EB" font-weight="700">domain</text>
+          <text x="500" y="72" fill="#0F766E" font-weight="700">codomain</text>
+          <circle cx="210" cy="308" r="9" fill="#2563EB"></circle>
+          <circle cx="552" cy="308" r="9" fill="#0F766E"></circle>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="math-box math-box--theorem">
+          <div class="math-box-label">Rank-nullity</div>
+          <div>For \(A:\mathbb{R}^n\to\mathbb{R}^m\), \(\dim\ker A+\operatorname{rank}A=n\).</div>
+        </div>
+        <ul class="clean">
+          <li>The image is what the map can actually produce.</li>
+          <li>The kernel is what becomes invisible after mapping.</li>
+          <li>A matrix representation changes when the chosen bases change.</li>
+        </ul>
+        <div class="card body">This is the structural view behind projections, constraints, and degeneracies.</div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make linear mappings feel structural. A map can stretch, collapse, rotate, or shear a space, and a matrix is only its basis-dependent record. Rank-nullity is the bookkeeping statement behind that picture: output dimension gained through the image is balanced by input directions lost in the kernel.</aside>
+  </section>
+
+  <section class="slide" data-label="Eigenvectors">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Eigenstructure</div>
+        <h2>Eigenvectors Are Directions That The Map Does Not Turn</h2>
+      </div>
+    </div>
+    <div class="content wide-left">
+      <div class="diagram-card">
+        <svg viewBox="0 0 920 610" role="img" aria-label="Eigenlines under a linear map">
+          <defs>
+            <marker id="eig-blue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#2563EB"></path>
+            </marker>
+            <marker id="eig-amber" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#B45309"></path>
+            </marker>
+          </defs>
+          <line x1="94" y1="516" x2="826" y2="100" stroke="rgba(37,99,235,0.18)" stroke-width="36"></line>
+          <line x1="94" y1="516" x2="826" y2="100" stroke="#2563EB" stroke-width="5"></line>
+          <line x1="462" y1="308" x2="610" y2="224" stroke="#2563EB" stroke-width="8" marker-end="url(#eig-blue)"></line>
+          <line x1="462" y1="308" x2="734" y2="154" stroke="#B45309" stroke-width="7" stroke-dasharray="16 12" marker-end="url(#eig-amber)"></line>
+          <text x="620" y="218" fill="#2563EB" font-weight="700" class="svg-math">v</text>
+          <text x="748" y="150" fill="#B45309" font-weight="700" class="svg-math">Av</text>
+          <line x1="130" y1="114" x2="788" y2="468" stroke="rgba(15,118,110,0.14)" stroke-width="34"></line>
+          <line x1="130" y1="114" x2="788" y2="468" stroke="#0F766E" stroke-width="5"></line>
+          <line x1="462" y1="308" x2="585" y2="374" stroke="#0F766E" stroke-width="8" marker-end="url(#eig-blue)"></line>
+          <line x1="462" y1="308" x2="532" y2="346" stroke="#6D28D9" stroke-width="7" stroke-dasharray="16 12" marker-end="url(#eig-amber)"></line>
+          <text x="598" y="388" fill="#0F766E" font-weight="700" class="svg-math">w</text>
+          <text x="540" y="350" fill="#6D28D9" font-weight="700" class="svg-math">Aw</text>
+          <circle cx="462" cy="308" r="10" fill="#1E3A8A"></circle>
+          <text x="104" y="560" fill="#475569">Each highlighted line maps into itself.</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="formula large">\(Av=\lambda v,\quad v\ne0\)</div>
+        <div class="math-box math-box--definition">
+          <div class="math-box-label">Reading</div>
+          <div>The scalar \(\lambda\) records stretch, shrink, or flip along an invariant direction.</div>
+        </div>
+        <ul class="clean">
+          <li>principal axes of a transform</li>
+          <li>repeated transformation behavior</li>
+          <li>deformation modes and stability cues</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="speaker-notes">Introduce eigenvectors as directions that survive the map as directions. They may stretch, shrink, or flip, but they do not turn away from their line. In graphics, this gives a compact language for principal axes, stable directions, repeated transforms, and deformation modes, while also warning that not every real matrix has enough real eigenvectors.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Euclidean Structure">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Euclidean space</div>
+        <h2>Inner Products Add Length, Distance, And Orthogonality</h2>
+      </div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <div class="math-box math-box--definition">
+          <div class="math-box-label">Inner product</div>
+          <div>A positive definite symmetric bilinear measurement \( \langle u,v\rangle \) gives \( \|u\|=\sqrt{\langle u,u\rangle} \).</div>
+        </div>
+        <div class="math-box math-box--theorem">
+          <div class="math-box-label">Projection certificate</div>
+          <div>\(u-\sum_i\langle u,q_i\rangle q_i\) is orthogonal to every orthonormal \(q_i\) already removed.</div>
+        </div>
+        <div class="formula">orthogonal means \( \langle u,v\rangle=0 \)</div>
+      </div>
+      <div class="diagram-card">
+        <svg viewBox="0 0 820 610" role="img" aria-label="Orthogonal projection and Gram-Schmidt">
+          <defs>
+            <marker id="orth-blue" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#2563EB"></path>
+            </marker>
+            <marker id="orth-teal" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <line x1="92" y1="470" x2="724" y2="250" stroke="#CBD5E1" stroke-width="7"></line>
+          <line x1="176" y1="440" x2="486" y2="332" stroke="#0F766E" stroke-width="9" marker-end="url(#orth-teal)"></line>
+          <line x1="176" y1="440" x2="546" y2="128" stroke="#2563EB" stroke-width="9" marker-end="url(#orth-blue)"></line>
+          <line x1="546" y1="128" x2="486" y2="332" stroke="#B45309" stroke-width="6" stroke-dasharray="16 12"></line>
+          <path d="M475 294 L512 306 L500 342" fill="none" stroke="#B45309" stroke-width="5"></path>
+          <text x="560" y="126" fill="#2563EB" font-weight="700" class="svg-math">u</text>
+          <text x="344" y="356" fill="#0F766E" font-weight="700">projection</text>
+          <text x="558" y="248" fill="#B45309" font-weight="700">residual</text>
+          <text x="120" y="94" fill="#475569">Gram-Schmidt repeats: subtract known projections, then normalize.</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Euclidean structure adds measurements to a vector space. Inner products give length, distance, and perpendicularity, which are exactly the notions used by projections and fitting. Use the Gram-Schmidt sketch to show that orthonormal frames are constructed objects, not magic defaults, and that each subtraction removes an already explained direction.</aside>
+  </section>
+
+  <section class="slide" data-label="Least Squares">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Least squares</div>
+        <h2>When Constraints Disagree, Project Onto The Column Space</h2>
+      </div>
+    </div>
+    <div class="content wide-left">
+      <div class="diagram-card">
+        <svg viewBox="0 0 980 630" role="img" aria-label="Least squares line fit and column-space projection">
+          <defs>
+            <marker id="ls-teal" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M1 1 L11 6 L1 11 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <line x1="80" y1="520" x2="490" y2="520" stroke="#CBD5E1" stroke-width="5"></line>
+          <line x1="80" y1="520" x2="80" y2="84" stroke="#CBD5E1" stroke-width="5"></line>
+          <line x1="108" y1="456" x2="464" y2="172" stroke="#2563EB" stroke-width="7"></line>
+          <g fill="#B45309">
+            <circle cx="136" cy="428" r="9"></circle>
+            <circle cx="202" cy="382" r="9"></circle>
+            <circle cx="282" cy="300" r="9"></circle>
+            <circle cx="356" cy="286" r="9"></circle>
+            <circle cx="426" cy="198" r="9"></circle>
+          </g>
+          <g stroke="#B45309" stroke-width="4" stroke-dasharray="10 8">
+            <line x1="136" y1="428" x2="136" y2="434"></line>
+            <line x1="202" y1="382" x2="202" y2="381"></line>
+            <line x1="282" y1="300" x2="282" y2="317"></line>
+            <line x1="356" y1="286" x2="356" y2="258"></line>
+            <line x1="426" y1="198" x2="426" y2="203"></line>
+          </g>
+          <text x="116" y="74" fill="#475569">data space view</text>
+          <polygon points="600,454 758,276 904,330 746,506" fill="rgba(37,99,235,0.09)" stroke="#2563EB" stroke-width="5"></polygon>
+          <line x1="658" y1="470" x2="780" y2="334" stroke="#0F766E" stroke-width="8" marker-end="url(#ls-teal)"></line>
+          <line x1="658" y1="470" x2="820" y2="124" stroke="#B45309" stroke-width="7" marker-end="url(#ls-teal)"></line>
+          <line x1="820" y1="124" x2="780" y2="334" stroke="#B45309" stroke-width="5" stroke-dasharray="12 10"></line>
+          <text x="794" y="118" fill="#B45309" font-weight="700">y</text>
+          <text x="790" y="360" fill="#0F766E" font-weight="700">A x*</text>
+          <text x="680" y="548" fill="#2563EB" font-weight="700">column space</text>
+          <text x="832" y="248" fill="#B45309" font-weight="700">residual</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="formula large">\(A^T A x^* = A^T b\)</div>
+        <div class="math-box math-box--example">
+          <div class="math-box-label">Geometric certificate</div>
+          <div>The residual \(r=b-Ax^*\) is orthogonal to every column of \(A\), so \(A^Tr=0\).</div>
+        </div>
+        <ul class="clean">
+          <li>overdetermined systems usually cannot satisfy all rows</li>
+          <li>the best fit minimizes squared residual length</li>
+          <li>projection explains the normal equations</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="speaker-notes">Least squares should land as geometry, not just optimization. When the equations disagree, the best fit is the point in the column space closest to the data vector. The residual is perpendicular to every column direction, which is why the normal equations are the algebraic certificate rather than an arbitrary trick.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Lab Checklist">
+    <div class="title-row">
+      <div>
+        <div class="eyebrow">Applied graphics lab</div>
+        <h2>Turn Linear Algebra Into A Debuggable Geometry Workflow</h2>
+      </div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <div class="math-box math-box--exercise">
+          <div class="math-box-label">Lab pattern</div>
+          <div>Choose a primitive, draw the active map or constraint, perturb the data, compute a residual, and decide what failure would look like in production.</div>
+        </div>
+        <ul class="clean">
+          <li>matrix area scale matches determinant</li>
+          <li>least-squares residual is orthogonal to the column space</li>
+          <li>row-reduction rank matches a numerical rank routine</li>
+          <li>eigenvectors reproduce their scaled directions</li>
+        </ul>
+        <div class="card body">A reliable implementation reports enough state to debug degeneracy, tolerance, and convention errors.</div>
+      </div>
+      <div class="artifact-grid">
+        <figure>
+          <img src="../figures/matrices-and-linear-systems-concept-route-map.png" alt="Concept route map artifact">
+          <figcaption>concept route map</figcaption>
+        </figure>
+        <figure>
+          <img src="../figures/storyboard-gallery.png" alt="Storyboard gallery artifact">
+          <figcaption>visual storyboard</figcaption>
+        </figure>
+        <figure>
+          <img src="../figures/matrices-and-linear-systems-construction-scene.png" alt="Construction scene artifact">
+          <figcaption>construction scene</figcaption>
+        </figure>
+        <figure>
+          <img src="../figures/numeric-diagnostic.png" alt="Numeric diagnostic artifact">
+          <figcaption>numeric diagnostic</figcaption>
+        </figure>
+      </div>
+    </div>
+    <aside class="speaker-notes">Close by turning the chapter into a production checklist. The artifact thumbnails come from the assigned notebook and model the desired workflow: draw the construction, perturb the data, compute a residual, and record checks. Encourage students to treat degeneracy and tolerance as observable states instead of surprises found after integration.</aside>
+  </section>
+</deck-stage>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.renderMathInElement) {
+      window.renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "\\(", right: "\\)", display: false }
+        ],
+        throwOnError: false
+      });
+    }
+  });
+</script>
+</body>
+</html>

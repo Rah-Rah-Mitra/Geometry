@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Geometric Deep Learning - Chapter 06: Problems and Applications</title>
+  <meta name="course" content="Geometric Deep Learning">
+  <meta name="chapter_id" content="chapter-06">
+  <meta name="chapter_title" content="Chapter 06: Problems and Applications">
+  <meta name="notebook_path" content="Geometric-Deep-Learning/chapter-06-problems-and-applications/06-problems-and-applications.ipynb">
+  <meta name="source_span" content="printed pages 102-113; PDF pages 106-117.">
+  <meta name="source_pdf" content="Geometric-Deep-Learning/Geometric Deep Learning.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400;1,600&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script id="deck-metadata" type="application/json">
+{
+  "course": "Geometric Deep Learning",
+  "chapter_id": "chapter-06",
+  "chapter_title": "Chapter 06: Problems and Applications",
+  "notebook_path": "Geometric-Deep-Learning/chapter-06-problems-and-applications/06-problems-and-applications.ipynb",
+  "source_span": "printed pages 102-113; PDF pages 106-117.",
+  "source_pdf": "Geometric-Deep-Learning/Geometric Deep Learning.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Problems And Applications",
+      "notes": "Open the lecture as an application atlas, not as a list of success stories. The central question is how each domain chooses a data object, a symmetry group or deformation model, and a task constraint that should shape the neural architecture."
+    },
+    {
+      "slide": 2,
+      "title": "The Application Contract",
+      "notes": "Use this slide to establish the repeated design move. Before naming a model family, identify what changes are coordinate choices, what changes carry semantic information, what output type the task asks for, and what failure mode appears when the symmetry is mis-specified."
+    },
+    {
+      "slide": 3,
+      "title": "Chemistry: Molecules As Typed E(3) Graphs",
+      "notes": "Emphasize that a molecule is not merely a graph and not merely coordinates. Atom types, bonds, distances, angles, and conformers all matter. A property predictor should ignore rigid motion and atom ordering, while an equivariant generator should move coordinates consistently."
+    },
+    {
+      "slide": 4,
+      "title": "Proteins: Sequence, Contact, And Frame Geometry",
+      "notes": "Present proteins as multi-scale geometric objects. Sequence order carries local biochemical context, contact graphs express folded neighborhoods, and residue frames make orientation-dependent interactions visible. The modeling challenge is to use all three without treating arbitrary frame choices as biological signals."
+    },
+    {
+      "slide": 5,
+      "title": "Recommenders: Bipartite Symmetry With Asymmetric Goals",
+      "notes": "Point out the subtlety in recommendation systems. User and item identities can be permuted within their own types, but the two sides are not interchangeable. The task is a ranked edge prediction problem constrained by sparsity, feedback bias, and changing catalogs."
+    },
+    {
+      "slide": 6,
+      "title": "Traffic: Road Graphs Carry Time",
+      "notes": "Explain that traffic forecasting combines a fixed spatial graph with moving temporal signals. The road network restricts message passing, time shifts suggest shared temporal filters, and the task constraint is operational: predictions must be local, timely, and robust to missing sensors."
+    },
+    {
+      "slide": 7,
+      "title": "Vision And Games: Structured Grids, Different Tasks",
+      "notes": "Compare the two grid-like domains carefully. Images often ask for translation-stable classification or dense equivariant maps, while games ask for legal actions under board symmetries and strategic state transitions. Similar locality does not mean identical readouts or constraints."
+    },
+    {
+      "slide": 8,
+      "title": "Language And Audio: Order, Causality, And Soft Graphs",
+      "notes": "Use language and audio to separate sequence geometry from grid geometry. Tokens and samples have order, attention builds a data-dependent graph, and many tasks impose causality. Translation-like shifts may matter for audio, while word position can change meaning."
+    },
+    {
+      "slide": 9,
+      "title": "Healthcare: Heterogeneous Graphs Under Constraints",
+      "notes": "Keep the healthcare slide grounded in task constraints rather than hype. Patient histories, diagnoses, procedures, labs, and medications form heterogeneous temporal graphs. Useful models must respect type structure, irregular sampling, privacy boundaries, missingness, and calibrated uncertainty."
+    },
+    {
+      "slide": 10,
+      "title": "Physics: Particles, Fields, And Conservation",
+      "notes": "Frame physical prediction as the strictest symmetry test in the deck. Particles and fields live in coordinate systems chosen by observers, so rotations, translations, permutations, and sometimes Lorentz structure are not optional details. Conservation laws add constraints beyond equivariance."
+    },
+    {
+      "slide": 11,
+      "title": "VR And AR: Pose Graphs In A Moving World",
+      "notes": "Describe VR and AR as online geometry under latency. The system estimates cameras, hands, surfaces, and anchors while the user moves. SE(3) consistency, temporal filtering, occlusion reasoning, and mesh updates matter because visual errors become embodied errors."
+    },
+    {
+      "slide": 12,
+      "title": "Task Constraints Select The Readout",
+      "notes": "Use the matrix to prevent a common overgeneralization. The same domain can support invariant classification, equivariant localization, structured generation, or counterfactual control. A good architecture matches the output behavior, not only the input domain, and it should say so explicitly."
+    },
+    {
+      "slide": 13,
+      "title": "Notebook Residuals As Sanity Checks",
+      "notes": "Connect the lecture to the executable notebook. The molecule check verifies distance preservation under rigid motion, the attention check verifies stochastic rows, the traffic graph records edge structure, and the particle event count guards the point-cloud construction."
+    },
+    {
+      "slide": 14,
+      "title": "Common Symmetry Mismatches",
+      "notes": "Warn that geometric language can become decorative when the task is not specified. Invariance can erase important orientation, equivariance can be wasted on scalar decisions, locality can miss long-range constraints, and augmentation can hide rather than fix a wrong representation."
+    },
+    {
+      "slide": 15,
+      "title": "Takeaways",
+      "notes": "Close by returning to the chapter question. Chemistry, proteins, recommenders, traffic, vision, games, language, audio, healthcare, physics, and VR or AR are unified by the same discipline: name the domain, name the transformations, then test the task behavior."
+    }
+  ]
+}
+  </script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #475569;
+      --dim: #64748B;
+      --accent: #1E3A8A;
+      --blue: #2563EB;
+      --teal: #0F766E;
+      --amber: #B45309;
+      --violet: #6D28D9;
+      --line: #CBD5E1;
+      --soft-line: #E2E8F0;
+      --soft: #F8FAFC;
+      --blue-soft: #EFF6FF;
+      --teal-soft: #F0FDFA;
+      --amber-soft: #FFFBEB;
+      --violet-soft: #F5F3FF;
+    }
+
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: #FFFFFF;
+      color: var(--ink);
+      font-family: var(--font-sans, 'Source Sans 3', Arial, sans-serif);
+      display: flex;
+      flex-direction: column;
+      padding: 70px 96px 56px;
+      border-top: 10px solid var(--accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--soft);
+      background-size: 76px 76px;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 68px;
+      line-height: 1.06;
+      letter-spacing: 0;
+      max-width: 1120px;
+    }
+
+    h2 {
+      font-size: 54px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 30px;
+      line-height: 1.16;
+      letter-spacing: 0;
+    }
+
+    p, li {
+      font-size: 28px;
+      line-height: 1.34;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 32px;
+    }
+
+    .kicker {
+      color: var(--dim);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      margin-top: 24px;
+      max-width: 1040px;
+      color: var(--muted);
+      font-size: 31px;
+      line-height: 1.34;
+    }
+
+    .rule {
+      width: 92px;
+      height: 5px;
+      border-radius: 4px;
+      background: var(--accent);
+      margin: 26px 0 24px;
+    }
+
+    .meta-row {
+      margin-top: auto;
+      display: flex;
+      gap: 28px;
+      color: var(--dim);
+      font-size: 23px;
+      font-weight: 600;
+    }
+
+    .layout-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 42px;
+      align-items: stretch;
+      flex: 1;
+      margin-top: 34px;
+    }
+
+    .layout-55 {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 42px;
+      align-items: stretch;
+      flex: 1;
+      margin-top: 34px;
+    }
+
+    .panel {
+      border: 1px solid var(--soft-line);
+      background: #FFFFFF;
+      border-radius: 8px;
+      padding: 28px;
+      box-sizing: border-box;
+    }
+
+    .panel.soft {
+      background: var(--soft);
+    }
+
+    .box {
+      border-left: 5px solid var(--blue);
+      background: var(--blue-soft);
+      border-radius: 8px;
+      padding: 22px 26px;
+      margin-top: 22px;
+    }
+
+    .box.teal {
+      border-left-color: var(--teal);
+      background: var(--teal-soft);
+    }
+
+    .box.amber {
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .box.violet {
+      border-left-color: var(--violet);
+      background: var(--violet-soft);
+    }
+
+    .box-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 8px;
+    }
+
+    .box p, .box li {
+      font-size: 25px;
+      color: var(--muted);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .chip {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      background: #FFFFFF;
+      border: 1px solid var(--soft-line);
+      border-radius: 999px;
+      padding: 8px 16px;
+    }
+
+    .formula {
+      font-family: var(--font-math, 'STIX Two Text', Georgia, serif);
+      font-size: 34px;
+      line-height: 1.25;
+    }
+
+    .caption {
+      color: var(--dim);
+      font-size: 22px;
+      line-height: 1.3;
+      margin-top: 14px;
+    }
+
+    .svg-frame {
+      width: 100%;
+      height: 100%;
+      min-height: 520px;
+      background: var(--soft);
+      border: 1px solid var(--soft-line);
+      border-radius: 8px;
+    }
+
+    .domain-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      margin-top: 34px;
+      flex: 1;
+      align-content: stretch;
+    }
+
+    .domain-card {
+      border: 1px solid var(--soft-line);
+      border-radius: 8px;
+      padding: 20px;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 166px;
+    }
+
+    .domain-card strong {
+      color: var(--accent);
+      font-size: 25px;
+      line-height: 1.1;
+    }
+
+    .domain-card span {
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.24;
+    }
+
+    .table {
+      display: grid;
+      grid-template-columns: 1.05fr 1.1fr 1.1fr 1fr;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: clip;
+      margin-top: 32px;
+      flex: 1;
+    }
+
+    .th, .td {
+      padding: 17px 20px;
+      border-right: 1px solid var(--soft-line);
+      border-bottom: 1px solid var(--soft-line);
+      font-size: 24px;
+      line-height: 1.24;
+    }
+
+    .th {
+      background: var(--soft);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .td {
+      color: var(--muted);
+      background: #FFFFFF;
+    }
+
+    .td strong {
+      color: var(--ink);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      color: var(--dim);
+      font-size: 21px;
+      margin-top: 22px;
+    }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="slide alt" data-label="Problems And Applications">
+    <div class="kicker">Geometric Deep Learning - Chapter 06</div>
+    <h1>Problems And Applications</h1>
+    <div class="rule"></div>
+    <p class="subtitle">A domain-first tour: chemistry, proteins, recommenders, traffic, vision, games, language/audio, healthcare, physics, and VR/AR through symmetries and task constraints.</p>
+    <div class="domain-grid" style="max-height: 410px;">
+      <div class="domain-card"><strong>Chemistry</strong><span>Typed molecular graphs plus E(3) coordinates.</span></div>
+      <div class="domain-card"><strong>Proteins</strong><span>Sequence, folded contacts, residue frames.</span></div>
+      <div class="domain-card"><strong>Recommenders</strong><span>Bipartite interactions and ranked edges.</span></div>
+      <div class="domain-card"><strong>Traffic</strong><span>Road graph signals through time.</span></div>
+      <div class="domain-card"><strong>Vision</strong><span>Grid signals, masks, views, geometry.</span></div>
+      <div class="domain-card"><strong>Games</strong><span>Board symmetries and legal actions.</span></div>
+      <div class="domain-card"><strong>Language/audio</strong><span>Sequences, causality, attention graphs.</span></div>
+      <div class="domain-card"><strong>Healthcare</strong><span>Typed temporal patient graphs.</span></div>
+      <div class="domain-card"><strong>Physics</strong><span>Particles, fields, conservation laws.</span></div>
+      <div class="domain-card"><strong>VR/AR</strong><span>Pose graphs and changing surfaces.</span></div>
+    </div>
+    <div class="meta-row">
+      <span>Notebook: Geometric-Deep-Learning/chapter-06-problems-and-applications/06-problems-and-applications.ipynb</span>
+      <span>Printed pages 102-113; PDF pages 106-117</span>
+    </div>
+    <aside class="speaker-notes">Open the lecture as an application atlas, not as a list of success stories. The central question is how each domain chooses a data object, a symmetry group or deformation model, and a task constraint that should shape the neural architecture.</aside>
+  </section>
+
+  <section class="slide" data-label="The Application Contract">
+    <div class="kicker">Design lens</div>
+    <h2>The Application Contract</h2>
+    <div class="layout-55">
+      <div class="panel soft">
+        <svg class="svg-frame" viewBox="0 0 920 590" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-contract" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="42" y="78" width="172" height="116" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+          <text x="128" y="126" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">Domain</text>
+          <text x="128" y="160" text-anchor="middle" font-size="22" fill="#475569">graph, grid, field</text>
+          <rect x="292" y="78" width="200" height="116" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+          <text x="392" y="126" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">Action</text>
+          <text x="392" y="160" text-anchor="middle" font-size="22" fill="#475569">permutation, E(3)</text>
+          <rect x="570" y="78" width="200" height="116" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+          <text x="670" y="126" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">Features</text>
+          <text x="670" y="160" text-anchor="middle" font-size="22" fill="#475569">equivariant layers</text>
+          <path d="M220 136 H282" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-contract)"></path>
+          <path d="M500 136 H560" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-contract)"></path>
+          <rect x="256" y="296" width="384" height="128" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="448" y="346" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">Task constraint</text>
+          <text x="448" y="384" text-anchor="middle" font-size="24" fill="#475569">classification, field, ranking, control</text>
+          <path d="M670 204 C670 268 612 304 560 322" fill="none" stroke="#B45309" stroke-width="4" marker-end="url(#arrow-contract)"></path>
+          <path d="M128 204 C128 294 256 324 300 338" fill="none" stroke="#B45309" stroke-width="4" marker-end="url(#arrow-contract)"></path>
+          <text x="448" y="510" text-anchor="middle" font-size="34" font-family="STIX Two Text, Georgia, serif" fill="#111827">f(g . x) = rho(g) f(x)</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box">
+          <div class="box-title">What must be named?</div>
+          <ul>
+            <li>The mathematical object carrying data.</li>
+            <li>The transformations that should not change meaning.</li>
+            <li>The output behavior demanded by the task.</li>
+          </ul>
+        </div>
+        <div class="box teal">
+          <div class="box-title">What gets tested?</div>
+          <p>Invariance, equivariance, stability, locality, causality, conservation, calibration, or legality become finite checks before they become full-scale training claims.</p>
+        </div>
+        <div class="chips">
+          <span class="chip">domain</span>
+          <span class="chip">action</span>
+          <span class="chip">representation</span>
+          <span class="chip">readout</span>
+          <span class="chip">constraint</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Geometry Atlas</span><span>Chapter 06</span></div>
+    <aside class="speaker-notes">Use this slide to establish the repeated design move. Before naming a model family, identify what changes are coordinate choices, what changes carry semantic information, what output type the task asks for, and what failure mode appears when the symmetry is mis-specified.</aside>
+  </section>
+
+  <section class="slide" data-label="Chemistry: Molecules As Typed E(3) Graphs">
+    <div class="kicker">Application 1 - Chemistry</div>
+    <h2>Chemistry: Molecules As Typed E(3) Graphs</h2>
+    <div class="layout-2">
+      <div class="panel soft">
+        <svg class="svg-frame" viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-chem" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <line x1="190" y1="260" x2="330" y2="180" stroke="#94A3B8" stroke-width="8"></line>
+          <line x1="330" y1="180" x2="470" y2="260" stroke="#94A3B8" stroke-width="8"></line>
+          <line x1="470" y1="260" x2="340" y2="370" stroke="#94A3B8" stroke-width="8"></line>
+          <line x1="340" y1="370" x2="190" y2="260" stroke="#94A3B8" stroke-width="8"></line>
+          <line x1="330" y1="180" x2="340" y2="370" stroke="#94A3B8" stroke-width="5" stroke-dasharray="12 12"></line>
+          <circle cx="190" cy="260" r="42" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+          <circle cx="330" cy="180" r="42" fill="#FEF3C7" stroke="#B45309" stroke-width="4"></circle>
+          <circle cx="470" cy="260" r="42" fill="#DCFCE7" stroke="#0F766E" stroke-width="4"></circle>
+          <circle cx="340" cy="370" r="42" fill="#EDE9FE" stroke="#6D28D9" stroke-width="4"></circle>
+          <text x="190" y="270" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">C</text>
+          <text x="330" y="190" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">O</text>
+          <text x="470" y="270" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">N</text>
+          <text x="340" y="380" text-anchor="middle" font-size="31" font-weight="700" fill="#111827">H</text>
+          <path d="M575 154 C650 202 670 308 612 392" fill="none" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-chem)"></path>
+          <g transform="translate(636 186) rotate(22)">
+            <line x1="0" y1="90" x2="128" y2="34" stroke="#94A3B8" stroke-width="8"></line>
+            <line x1="128" y1="34" x2="206" y2="132" stroke="#94A3B8" stroke-width="8"></line>
+            <line x1="206" y1="132" x2="76" y2="210" stroke="#94A3B8" stroke-width="8"></line>
+            <circle cx="0" cy="90" r="32" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+            <circle cx="128" cy="34" r="32" fill="#FEF3C7" stroke="#B45309" stroke-width="4"></circle>
+            <circle cx="206" cy="132" r="32" fill="#DCFCE7" stroke="#0F766E" stroke-width="4"></circle>
+            <circle cx="76" cy="210" r="32" fill="#EDE9FE" stroke="#6D28D9" stroke-width="4"></circle>
+          </g>
+          <text x="430" y="502" text-anchor="middle" font-size="28" fill="#475569">Rigid motion changes coordinates, not pairwise distances or atom identities.</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box">
+          <div class="box-title">Symmetry</div>
+          <p>Atom relabeling is a graph permutation. Coordinates transform under translations and rotations in E(3).</p>
+        </div>
+        <div class="box teal">
+          <div class="box-title">Task constraints</div>
+          <p>Property prediction usually wants invariant scalars; conformer generation or force prediction wants equivariant coordinates or vectors.</p>
+        </div>
+        <div class="box amber">
+          <div class="box-title">Sanity check</div>
+          <p class="formula">D(X) = D(RX + t)</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Molecular graphs plus coordinates</span><span>E(3) and permutations</span></div>
+    <aside class="speaker-notes">Emphasize that a molecule is not merely a graph and not merely coordinates. Atom types, bonds, distances, angles, and conformers all matter. A property predictor should ignore rigid motion and atom ordering, while an equivariant generator should move coordinates consistently.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Proteins: Sequence, Contact, And Frame Geometry">
+    <div class="kicker">Application 2 - Proteins</div>
+    <h2>Proteins: Sequence, Contact, And Frame Geometry</h2>
+    <div class="layout-55">
+      <div class="panel">
+        <svg class="svg-frame" viewBox="0 0 940 580" xmlns="http://www.w3.org/2000/svg">
+          <path d="M120 260 C190 112 320 150 352 260 C382 366 498 408 590 300 C672 204 762 246 806 362" fill="none" stroke="#2563EB" stroke-width="16" stroke-linecap="round"></path>
+          <path d="M160 255 C245 292 288 202 352 260" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="10 10"></path>
+          <path d="M352 260 C466 226 510 352 590 300" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="10 10"></path>
+          <path d="M590 300 C674 352 734 304 806 362" fill="none" stroke="#94A3B8" stroke-width="5" stroke-dasharray="10 10"></path>
+          <g fill="#F0FDFA" stroke="#0F766E" stroke-width="4">
+            <circle cx="120" cy="260" r="22"></circle>
+            <circle cx="202" cy="174" r="22"></circle>
+            <circle cx="292" cy="176" r="22"></circle>
+            <circle cx="352" cy="260" r="22"></circle>
+            <circle cx="430" cy="352" r="22"></circle>
+            <circle cx="520" cy="360" r="22"></circle>
+            <circle cx="590" cy="300" r="22"></circle>
+            <circle cx="688" cy="252" r="22"></circle>
+            <circle cx="806" cy="362" r="22"></circle>
+          </g>
+          <g stroke-width="4" stroke-linecap="round">
+            <line x1="352" y1="260" x2="414" y2="226" stroke="#B45309"></line>
+            <line x1="352" y1="260" x2="366" y2="328" stroke="#6D28D9"></line>
+            <line x1="352" y1="260" x2="296" y2="230" stroke="#0F766E"></line>
+            <line x1="590" y1="300" x2="648" y2="254" stroke="#B45309"></line>
+            <line x1="590" y1="300" x2="626" y2="360" stroke="#6D28D9"></line>
+            <line x1="590" y1="300" x2="526" y2="302" stroke="#0F766E"></line>
+          </g>
+          <text x="352" y="214" font-size="24" text-anchor="middle" fill="#B45309" font-weight="700">local frame</text>
+          <text x="170" y="492" font-size="26" fill="#1E3A8A" font-weight="700">sequence order</text>
+          <text x="392" y="492" font-size="26" fill="#0F766E" font-weight="700">contact graph</text>
+          <text x="636" y="492" font-size="26" fill="#6D28D9" font-weight="700">orientation features</text>
+          <rect x="110" y="506" width="720" height="34" rx="17" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+          <text x="470" y="531" font-size="24" text-anchor="middle" fill="#475569">one residue signal, several geometric neighborhoods</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box teal">
+          <div class="box-title">Representations</div>
+          <ul>
+            <li>Residue sequence for local biochemical context.</li>
+            <li>Contact graph for folded spatial neighborhoods.</li>
+            <li>Frames and gauges for directional interactions.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <div class="box-title">Constraint</div>
+          <p>Predicted structures should rotate and translate with the protein, while labels such as function or binding class should be invariant.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Sequence is not the whole geometry</span><span>Gauge choices must not leak labels</span></div>
+    <aside class="speaker-notes">Present proteins as multi-scale geometric objects. Sequence order carries local biochemical context, contact graphs express folded neighborhoods, and residue frames make orientation-dependent interactions visible. The modeling challenge is to use all three without treating arbitrary frame choices as biological signals.</aside>
+  </section>
+
+  <section class="slide" data-label="Recommenders: Bipartite Symmetry With Asymmetric Goals">
+    <div class="kicker">Application 3 - Recommenders</div>
+    <h2>Recommenders: Bipartite Symmetry With Asymmetric Goals</h2>
+    <div class="layout-2">
+      <div class="panel soft">
+        <svg class="svg-frame" viewBox="0 0 820 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-rec" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <text x="160" y="70" font-size="29" font-weight="700" text-anchor="middle" fill="#1E3A8A">users</text>
+          <text x="660" y="70" font-size="29" font-weight="700" text-anchor="middle" fill="#0F766E">items</text>
+          <g fill="#DBEAFE" stroke="#2563EB" stroke-width="4">
+            <circle cx="160" cy="150" r="36"></circle>
+            <circle cx="160" cy="260" r="36"></circle>
+            <circle cx="160" cy="370" r="36"></circle>
+            <circle cx="160" cy="480" r="36"></circle>
+          </g>
+          <g fill="#DCFCE7" stroke="#0F766E" stroke-width="4">
+            <rect x="624" y="116" width="72" height="72" rx="12"></rect>
+            <rect x="624" y="226" width="72" height="72" rx="12"></rect>
+            <rect x="624" y="336" width="72" height="72" rx="12"></rect>
+            <rect x="624" y="446" width="72" height="72" rx="12"></rect>
+          </g>
+          <g stroke="#94A3B8" stroke-width="5">
+            <line x1="196" y1="150" x2="624" y2="152"></line>
+            <line x1="196" y1="150" x2="624" y2="262"></line>
+            <line x1="196" y1="260" x2="624" y2="262"></line>
+            <line x1="196" y1="260" x2="624" y2="372"></line>
+            <line x1="196" y1="370" x2="624" y2="152"></line>
+            <line x1="196" y1="480" x2="624" y2="482"></line>
+          </g>
+          <path d="M340 420 C424 334 472 304 578 274" fill="none" stroke="#B45309" stroke-width="6" stroke-dasharray="12 10" marker-end="url(#arrow-rec)"></path>
+          <text x="424" y="452" font-size="28" font-weight="700" text-anchor="middle" fill="#B45309">ranked missing edge</text>
+          <text x="160" y="158" text-anchor="middle" font-size="24" fill="#111827">u1</text>
+          <text x="160" y="268" text-anchor="middle" font-size="24" fill="#111827">u2</text>
+          <text x="160" y="378" text-anchor="middle" font-size="24" fill="#111827">u3</text>
+          <text x="160" y="488" text-anchor="middle" font-size="24" fill="#111827">u4</text>
+          <text x="660" y="160" text-anchor="middle" font-size="24" fill="#111827">i1</text>
+          <text x="660" y="270" text-anchor="middle" font-size="24" fill="#111827">i2</text>
+          <text x="660" y="380" text-anchor="middle" font-size="24" fill="#111827">i3</text>
+          <text x="660" y="490" text-anchor="middle" font-size="24" fill="#111827">i4</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box">
+          <div class="box-title">Symmetry</div>
+          <p>Users may be permuted among users and items among items, but swapping the two node types changes the problem.</p>
+        </div>
+        <div class="box violet">
+          <div class="box-title">Task</div>
+          <p>Predict and rank likely edges, often with implicit feedback and sparse observations rather than clean labels.</p>
+        </div>
+        <div class="box amber">
+          <div class="box-title">Constraint pressure</div>
+          <p>Cold start, popularity bias, temporal drift, and exposure bias determine whether a geometric prior is useful.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Bipartite graph</span><span>Permutation within type, not across type</span></div>
+    <aside class="speaker-notes">Point out the subtlety in recommendation systems. User and item identities can be permuted within their own types, but the two sides are not interchangeable. The task is a ranked edge prediction problem constrained by sparsity, feedback bias, and changing catalogs.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Traffic: Road Graphs Carry Time">
+    <div class="kicker">Application 4 - Traffic</div>
+    <h2>Traffic: Road Graphs Carry Time</h2>
+    <div class="layout-2">
+      <div class="panel">
+        <svg class="svg-frame" viewBox="0 0 840 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-traffic" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#0F766E"></path>
+            </marker>
+          </defs>
+          <g stroke="#94A3B8" stroke-width="8" stroke-linecap="round">
+            <line x1="130" y1="120" x2="350" y2="120"></line>
+            <line x1="350" y1="120" x2="570" y2="120"></line>
+            <line x1="130" y1="260" x2="350" y2="260"></line>
+            <line x1="350" y1="260" x2="570" y2="260"></line>
+            <line x1="130" y1="400" x2="350" y2="400"></line>
+            <line x1="350" y1="400" x2="570" y2="400"></line>
+            <line x1="130" y1="120" x2="130" y2="260"></line>
+            <line x1="130" y1="260" x2="130" y2="400"></line>
+            <line x1="350" y1="120" x2="350" y2="260"></line>
+            <line x1="350" y1="260" x2="350" y2="400"></line>
+            <line x1="570" y1="120" x2="570" y2="260"></line>
+            <line x1="570" y1="260" x2="570" y2="400"></line>
+          </g>
+          <g fill="#DBEAFE" stroke="#2563EB" stroke-width="4">
+            <circle cx="130" cy="120" r="24"></circle><circle cx="350" cy="120" r="24"></circle><circle cx="570" cy="120" r="24"></circle>
+            <circle cx="130" cy="260" r="24"></circle><circle cx="350" cy="260" r="24"></circle><circle cx="570" cy="260" r="24"></circle>
+            <circle cx="130" cy="400" r="24"></circle><circle cx="350" cy="400" r="24"></circle><circle cx="570" cy="400" r="24"></circle>
+          </g>
+          <path d="M650 126 C722 160 742 264 690 342" fill="none" stroke="#0F766E" stroke-width="6" marker-end="url(#arrow-traffic)"></path>
+          <g transform="translate(626 358)">
+            <path d="M0 72 C36 30 62 28 96 58 C134 92 170 30 218 20" fill="none" stroke="#2563EB" stroke-width="5"></path>
+            <path d="M0 104 C38 86 76 82 112 102 C148 124 180 92 218 82" fill="none" stroke="#B45309" stroke-width="5"></path>
+            <line x1="0" y1="130" x2="232" y2="130" stroke="#CBD5E1" stroke-width="3"></line>
+            <text x="116" y="166" text-anchor="middle" font-size="24" fill="#475569">edge speeds over time</text>
+          </g>
+          <text x="350" y="500" font-size="27" text-anchor="middle" fill="#475569">forecasting depends on graph locality and temporal phase</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box teal">
+          <div class="box-title">Domain</div>
+          <p>A road network with sensor readings or edge speeds attached at each time step.</p>
+        </div>
+        <div class="box">
+          <div class="box-title">Symmetry and stability</div>
+          <p>Node labels are arbitrary; short time shifts suggest shared filters; small sensor gaps should not break the forecast.</p>
+        </div>
+        <div class="box amber">
+          <div class="box-title">Task constraint</div>
+          <p>ETA and congestion prediction are latency-sensitive, so useful locality is both mathematical and operational.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Spatiotemporal graph</span><span>Local predictions under missing data</span></div>
+    <aside class="speaker-notes">Explain that traffic forecasting combines a fixed spatial graph with moving temporal signals. The road network restricts message passing, time shifts suggest shared temporal filters, and the task constraint is operational: predictions must be local, timely, and robust to missing sensors.</aside>
+  </section>
+
+  <section class="slide" data-label="Vision And Games: Structured Grids, Different Tasks">
+    <div class="kicker">Applications 5 and 6 - Vision and games</div>
+    <h2>Vision And Games: Structured Grids, Different Tasks</h2>
+    <div class="layout-2">
+      <div class="panel soft">
+        <h3 style="color: var(--accent);">Vision: grid signal</h3>
+        <svg viewBox="0 0 760 360" style="width:100%; height:360px; margin-top:20px;" xmlns="http://www.w3.org/2000/svg">
+          <rect x="42" y="42" width="280" height="280" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <g stroke="#E2E8F0" stroke-width="3">
+            <line x1="98" y1="42" x2="98" y2="322"></line><line x1="154" y1="42" x2="154" y2="322"></line><line x1="210" y1="42" x2="210" y2="322"></line><line x1="266" y1="42" x2="266" y2="322"></line>
+            <line x1="42" y1="98" x2="322" y2="98"></line><line x1="42" y1="154" x2="322" y2="154"></line><line x1="42" y1="210" x2="322" y2="210"></line><line x1="42" y1="266" x2="322" y2="266"></line>
+          </g>
+          <rect x="154" y="98" width="112" height="112" fill="#DBEAFE" stroke="#2563EB" stroke-width="5"></rect>
+          <path d="M428 110 H668 M428 180 H668 M428 250 H668" stroke="#94A3B8" stroke-width="5"></path>
+          <circle cx="494" cy="110" r="26" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></circle>
+          <circle cx="574" cy="180" r="26" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+          <circle cx="494" cy="250" r="26" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></circle>
+          <text x="548" y="324" text-anchor="middle" font-size="25" fill="#475569">classification, detection, segmentation</text>
+        </svg>
+        <p class="caption">Local filters and translation sharing are useful, but viewpoint, scale, and object geometry decide the readout.</p>
+      </div>
+      <div class="panel soft">
+        <h3 style="color: var(--teal);">Games: state and legal moves</h3>
+        <svg viewBox="0 0 760 360" style="width:100%; height:360px; margin-top:20px;" xmlns="http://www.w3.org/2000/svg">
+          <rect x="72" y="42" width="280" height="280" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <g stroke="#CBD5E1" stroke-width="3">
+            <line x1="142" y1="42" x2="142" y2="322"></line><line x1="212" y1="42" x2="212" y2="322"></line><line x1="282" y1="42" x2="282" y2="322"></line>
+            <line x1="72" y1="112" x2="352" y2="112"></line><line x1="72" y1="182" x2="352" y2="182"></line><line x1="72" y1="252" x2="352" y2="252"></line>
+          </g>
+          <circle cx="107" cy="77" r="24" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+          <circle cx="247" cy="147" r="24" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+          <circle cx="317" cy="287" r="24" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+          <rect x="182" y="217" width="48" height="48" rx="7" fill="#FDE68A" stroke="#B45309" stroke-width="4"></rect>
+          <path d="M456 76 C540 78 610 126 636 206" fill="none" stroke="#0F766E" stroke-width="6"></path>
+          <path d="M456 182 C532 142 610 188 642 282" fill="none" stroke="#6D28D9" stroke-width="6"></path>
+          <text x="548" y="90" text-anchor="middle" font-size="25" fill="#0F766E" font-weight="700">policy</text>
+          <text x="558" y="274" text-anchor="middle" font-size="25" fill="#6D28D9" font-weight="700">value</text>
+          <text x="548" y="324" text-anchor="middle" font-size="25" fill="#475569">legal action mask plus transition model</text>
+        </svg>
+        <p class="caption">Board symmetries can share evidence, but action legality and strategic dynamics define the output.</p>
+      </div>
+    </div>
+    <div class="footer"><span>Same grid habit, different task behavior</span><span>Invariant score versus equivariant action map</span></div>
+    <aside class="speaker-notes">Compare the two grid-like domains carefully. Images often ask for translation-stable classification or dense equivariant maps, while games ask for legal actions under board symmetries and strategic state transitions. Similar locality does not mean identical readouts or constraints.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Language And Audio: Order, Causality, And Soft Graphs">
+    <div class="kicker">Application 7 - Language and audio</div>
+    <h2>Language And Audio: Order, Causality, And Soft Graphs</h2>
+    <div class="layout-55">
+      <div class="panel">
+        <svg class="svg-frame" viewBox="0 0 940 570" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-seq" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g>
+            <rect x="82" y="82" width="86" height="58" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="3"></rect>
+            <rect x="196" y="82" width="86" height="58" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="3"></rect>
+            <rect x="310" y="82" width="86" height="58" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="3"></rect>
+            <rect x="424" y="82" width="86" height="58" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="3"></rect>
+            <rect x="538" y="82" width="86" height="58" rx="10" fill="#DBEAFE" stroke="#2563EB" stroke-width="3"></rect>
+            <text x="125" y="119" font-size="24" text-anchor="middle" fill="#111827">x1</text>
+            <text x="239" y="119" font-size="24" text-anchor="middle" fill="#111827">x2</text>
+            <text x="353" y="119" font-size="24" text-anchor="middle" fill="#111827">x3</text>
+            <text x="467" y="119" font-size="24" text-anchor="middle" fill="#111827">x4</text>
+            <text x="581" y="119" font-size="24" text-anchor="middle" fill="#111827">x5</text>
+          </g>
+          <g stroke="#94A3B8" stroke-width="4" fill="none">
+            <path d="M125 154 C210 236 300 236 353 154"></path>
+            <path d="M239 154 C336 282 478 282 581 154"></path>
+            <path d="M353 154 C430 214 504 214 581 154"></path>
+          </g>
+          <path d="M86 330 C122 260 164 408 204 340 C250 260 292 414 338 338 C384 252 434 400 482 334 C530 270 578 394 626 330" fill="none" stroke="#0F766E" stroke-width="5"></path>
+          <line x1="82" y1="440" x2="650" y2="440" stroke="#CBD5E1" stroke-width="4"></line>
+          <path d="M82 440 L650 440" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-seq)"></path>
+          <rect x="704" y="70" width="150" height="388" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <text x="779" y="124" text-anchor="middle" font-size="26" font-weight="700" fill="#1E3A8A">constraints</text>
+          <text x="779" y="184" text-anchor="middle" font-size="24" fill="#475569">order</text>
+          <text x="779" y="238" text-anchor="middle" font-size="24" fill="#475569">causality</text>
+          <text x="779" y="292" text-anchor="middle" font-size="24" fill="#475569">attention</text>
+          <text x="779" y="346" text-anchor="middle" font-size="24" fill="#475569">bandwidth</text>
+          <text x="779" y="400" text-anchor="middle" font-size="24" fill="#475569">phase</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box">
+          <div class="box-title">Soft graph view</div>
+          <p>Attention creates edges from content, but the sequence still carries position, order, and sometimes causality.</p>
+        </div>
+        <div class="box teal">
+          <div class="box-title">Audio view</div>
+          <p>Waveforms and spectrograms carry shift, scale, and phase structure; stable features often matter more than exact alignment.</p>
+        </div>
+        <div class="box amber">
+          <div class="box-title">Warning</div>
+          <p>A permutation-invariant set model can destroy syntax, rhythm, or causal information that the task needs.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Sequence is a geometry</span><span>Attention is not permission to ignore order</span></div>
+    <aside class="speaker-notes">Use language and audio to separate sequence geometry from grid geometry. Tokens and samples have order, attention builds a data-dependent graph, and many tasks impose causality. Translation-like shifts may matter for audio, while word position can change meaning.</aside>
+  </section>
+
+  <section class="slide" data-label="Healthcare: Heterogeneous Graphs Under Constraints">
+    <div class="kicker">Application 8 - Healthcare</div>
+    <h2>Healthcare: Heterogeneous Graphs Under Constraints</h2>
+    <div class="layout-2">
+      <div class="panel soft">
+        <svg class="svg-frame" viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#94A3B8" stroke-width="4">
+            <line x1="170" y1="152" x2="350" y2="152"></line>
+            <line x1="350" y1="152" x2="530" y2="152"></line>
+            <line x1="170" y1="282" x2="350" y2="282"></line>
+            <line x1="350" y1="282" x2="530" y2="282"></line>
+            <line x1="170" y1="412" x2="350" y2="412"></line>
+            <line x1="350" y1="412" x2="530" y2="412"></line>
+            <line x1="170" y1="152" x2="170" y2="282"></line>
+            <line x1="350" y1="152" x2="350" y2="282"></line>
+            <line x1="530" y1="152" x2="530" y2="282"></line>
+            <line x1="170" y1="282" x2="170" y2="412"></line>
+            <line x1="350" y1="282" x2="350" y2="412"></line>
+            <line x1="530" y1="282" x2="530" y2="412"></line>
+          </g>
+          <g fill="#DBEAFE" stroke="#2563EB" stroke-width="4">
+            <circle cx="170" cy="152" r="42"></circle>
+            <circle cx="350" cy="152" r="42"></circle>
+            <circle cx="530" cy="152" r="42"></circle>
+          </g>
+          <g fill="#F0FDFA" stroke="#0F766E" stroke-width="4">
+            <rect x="128" y="240" width="84" height="84" rx="12"></rect>
+            <rect x="308" y="240" width="84" height="84" rx="12"></rect>
+            <rect x="488" y="240" width="84" height="84" rx="12"></rect>
+          </g>
+          <g fill="#FFFBEB" stroke="#B45309" stroke-width="4">
+            <path d="M170 370 L214 448 H126 Z"></path>
+            <path d="M350 370 L394 448 H306 Z"></path>
+            <path d="M530 370 L574 448 H486 Z"></path>
+          </g>
+          <text x="170" y="162" text-anchor="middle" font-size="24" fill="#111827">Dx</text>
+          <text x="350" y="162" text-anchor="middle" font-size="24" fill="#111827">Lab</text>
+          <text x="530" y="162" text-anchor="middle" font-size="24" fill="#111827">Rx</text>
+          <text x="170" y="292" text-anchor="middle" font-size="24" fill="#111827">visit 1</text>
+          <text x="350" y="292" text-anchor="middle" font-size="24" fill="#111827">visit 2</text>
+          <text x="530" y="292" text-anchor="middle" font-size="24" fill="#111827">visit 3</text>
+          <text x="170" y="424" text-anchor="middle" font-size="24" fill="#111827">risk</text>
+          <text x="350" y="424" text-anchor="middle" font-size="24" fill="#111827">plan</text>
+          <text x="530" y="424" text-anchor="middle" font-size="24" fill="#111827">alert</text>
+          <rect x="646" y="118" width="134" height="316" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <text x="713" y="168" text-anchor="middle" font-size="25" font-weight="700" fill="#1E3A8A">must track</text>
+          <text x="713" y="226" text-anchor="middle" font-size="23" fill="#475569">type</text>
+          <text x="713" y="282" text-anchor="middle" font-size="23" fill="#475569">time</text>
+          <text x="713" y="338" text-anchor="middle" font-size="23" fill="#475569">missingness</text>
+          <text x="713" y="394" text-anchor="middle" font-size="23" fill="#475569">privacy</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box">
+          <div class="box-title">Domain</div>
+          <p>Patients, visits, diagnoses, procedures, labs, medications, clinicians, and devices form typed temporal relations.</p>
+        </div>
+        <div class="box teal">
+          <div class="box-title">Symmetry</div>
+          <p>Codes can be permuted within a vocabulary, but type, time, and causal order cannot be ignored.</p>
+        </div>
+        <div class="box violet">
+          <div class="box-title">Task constraints</div>
+          <p>Risk scores and recommendations need calibration, uncertainty, privacy boundaries, and robustness to sparse records.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Typed temporal graph</span><span>Geometry plus governance constraints</span></div>
+    <aside class="speaker-notes">Keep the healthcare slide grounded in task constraints rather than hype. Patient histories, diagnoses, procedures, labs, and medications form heterogeneous temporal graphs. Useful models must respect type structure, irregular sampling, privacy boundaries, missingness, and calibrated uncertainty.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Physics: Particles, Fields, And Conservation">
+    <div class="kicker">Application 9 - Physics</div>
+    <h2>Physics: Particles, Fields, And Conservation</h2>
+    <div class="layout-55">
+      <div class="panel">
+        <svg class="svg-frame" viewBox="0 0 940 580" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-phys" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#B45309"></path>
+            </marker>
+          </defs>
+          <rect x="70" y="70" width="432" height="350" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <g stroke="#E2E8F0" stroke-width="3">
+            <line x1="142" y1="70" x2="142" y2="420"></line><line x1="214" y1="70" x2="214" y2="420"></line><line x1="286" y1="70" x2="286" y2="420"></line><line x1="358" y1="70" x2="358" y2="420"></line><line x1="430" y1="70" x2="430" y2="420"></line>
+            <line x1="70" y1="140" x2="502" y2="140"></line><line x1="70" y1="210" x2="502" y2="210"></line><line x1="70" y1="280" x2="502" y2="280"></line><line x1="70" y1="350" x2="502" y2="350"></line>
+          </g>
+          <g>
+            <circle cx="170" cy="168" r="22" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+            <circle cx="314" cy="238" r="22" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></circle>
+            <circle cx="412" cy="332" r="22" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+            <path d="M170 168 L314 238 L412 332" fill="none" stroke="#94A3B8" stroke-width="5"></path>
+          </g>
+          <path d="M616 142 C710 178 754 258 724 354" fill="none" stroke="#B45309" stroke-width="6" marker-end="url(#arrow-phys)"></path>
+          <g transform="translate(612 252) rotate(26)">
+            <rect x="-70" y="-70" width="286" height="206" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+            <circle cx="-10" cy="-18" r="22" fill="#DBEAFE" stroke="#2563EB" stroke-width="4"></circle>
+            <circle cx="92" cy="28" r="22" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></circle>
+            <circle cx="166" cy="86" r="22" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+            <path d="M-10 -18 L92 28 L166 86" fill="none" stroke="#94A3B8" stroke-width="5"></path>
+          </g>
+          <text x="286" y="500" text-anchor="middle" font-size="28" fill="#475569">observer coordinates can change</text>
+          <text x="704" y="500" text-anchor="middle" font-size="28" fill="#475569">laws and conserved totals should not</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box amber">
+          <div class="box-title">Strict invariances</div>
+          <p>Translations, rotations, permutations, and physical frame choices are usually not data augmentation conveniences; they are part of the law.</p>
+        </div>
+        <div class="box">
+          <div class="box-title">Task outputs</div>
+          <p>Scalar energies are invariant, vector forces are equivariant, and field updates must respect coordinate changes.</p>
+        </div>
+        <div class="box teal">
+          <div class="box-title">Extra constraints</div>
+          <p>Conservation of energy, momentum, charge, or mass may impose structure that symmetry alone does not express.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Particles and fields</span><span>Conservation narrows the admissible maps</span></div>
+    <aside class="speaker-notes">Frame physical prediction as the strictest symmetry test in the deck. Particles and fields live in coordinate systems chosen by observers, so rotations, translations, permutations, and sometimes Lorentz structure are not optional details. Conservation laws add constraints beyond equivariance.</aside>
+  </section>
+
+  <section class="slide" data-label="VR And AR: Pose Graphs In A Moving World">
+    <div class="kicker">Application 10 - VR and AR</div>
+    <h2>VR And AR: Pose Graphs In A Moving World</h2>
+    <div class="layout-2">
+      <div class="panel soft">
+        <svg class="svg-frame" viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-vr" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <polygon points="116,398 248,282 422,328 590,224 730,334 566,452 346,430" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></polygon>
+          <g stroke="#CBD5E1" stroke-width="3">
+            <line x1="116" y1="398" x2="422" y2="328"></line>
+            <line x1="248" y1="282" x2="346" y2="430"></line>
+            <line x1="422" y1="328" x2="566" y2="452"></line>
+            <line x1="590" y1="224" x2="346" y2="430"></line>
+            <line x1="730" y1="334" x2="422" y2="328"></line>
+          </g>
+          <g fill="#FFFFFF" stroke="#0F766E" stroke-width="4">
+            <rect x="206" y="124" width="86" height="60" rx="12"></rect>
+            <rect x="466" y="114" width="86" height="60" rx="12"></rect>
+            <rect x="596" y="206" width="86" height="60" rx="12"></rect>
+          </g>
+          <g stroke="#0F766E" stroke-width="4" fill="none">
+            <path d="M249 184 L248 282"></path>
+            <path d="M509 174 L590 224"></path>
+            <path d="M639 266 L730 334"></path>
+          </g>
+          <circle cx="422" cy="328" r="24" fill="#FDE68A" stroke="#B45309" stroke-width="4"></circle>
+          <path d="M250 154 C330 96 456 94 508 144" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-vr)"></path>
+          <path d="M508 144 C576 150 616 176 638 236" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-vr)"></path>
+          <text x="250" y="160" text-anchor="middle" font-size="23" fill="#111827">camera</text>
+          <text x="509" y="150" text-anchor="middle" font-size="23" fill="#111827">hand</text>
+          <text x="639" y="242" text-anchor="middle" font-size="23" fill="#111827">anchor</text>
+          <text x="424" y="520" text-anchor="middle" font-size="28" fill="#475569">pose graph + surface mesh + temporal updates</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box">
+          <div class="box-title">Symmetry</div>
+          <p>World and device coordinates are linked by SE(3) transformations; anchors should remain consistent as the user moves.</p>
+        </div>
+        <div class="box teal">
+          <div class="box-title">Task constraints</div>
+          <p>Low latency, temporal smoothing, occlusion handling, and stable surface maps determine whether geometry feels correct.</p>
+        </div>
+        <div class="box amber">
+          <div class="box-title">Failure mode</div>
+          <p>A small pose inconsistency becomes visible as sliding objects, incorrect depth, or misregistered hands.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Online pose and mesh estimation</span><span>SE(3) consistency under latency</span></div>
+    <aside class="speaker-notes">Describe VR and AR as online geometry under latency. The system estimates cameras, hands, surfaces, and anchors while the user moves. SE(3) consistency, temporal filtering, occlusion reasoning, and mesh updates matter because visual errors become embodied errors.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Task Constraints Select The Readout">
+    <div class="kicker">Cross-domain synthesis</div>
+    <h2>Task Constraints Select The Readout</h2>
+    <div class="table">
+      <div class="th">Domain</div><div class="th">Object</div><div class="th">Symmetry or deformation</div><div class="th">Typical readout</div>
+      <div class="td"><strong>Chemistry</strong></div><div class="td">Typed atoms, bonds, coordinates</div><div class="td">Permutation and E(3)</div><div class="td">Invariant property or equivariant force</div>
+      <div class="td"><strong>Proteins</strong></div><div class="td">Sequence, contacts, frames</div><div class="td">SE(3), gauges, locality</div><div class="td">Fold, function, binding field</div>
+      <div class="td"><strong>Recommenders</strong></div><div class="td">Typed bipartite graph</div><div class="td">Within-type permutation</div><div class="td">Ranked missing edges</div>
+      <div class="td"><strong>Traffic</strong></div><div class="td">Road graph time series</div><div class="td">Node labels, time shifts</div><div class="td">ETA or congestion forecast</div>
+      <div class="td"><strong>Vision/games</strong></div><div class="td">Grid or board state</div><div class="td">Translations, rotations, legal moves</div><div class="td">Mask, class, policy, value</div>
+      <div class="td"><strong>Language/audio</strong></div><div class="td">Ordered samples or tokens</div><div class="td">Causality, shifts, attention graph</div><div class="td">Next token, transcript, event</div>
+      <div class="td"><strong>Healthcare/physics/VR</strong></div><div class="td">Typed histories, particles, poses</div><div class="td">Type, time, E(n), SE(3)</div><div class="td">Risk, conserved update, anchor map</div>
+    </div>
+    <div class="footer"><span>Architecture follows task behavior</span><span>Same input object, different readout contract</span></div>
+    <aside class="speaker-notes">Use the matrix to prevent a common overgeneralization. The same domain can support invariant classification, equivariant localization, structured generation, or counterfactual control. A good architecture matches the output behavior, not only the input domain, and it should say so explicitly.</aside>
+  </section>
+
+  <section class="slide" data-label="Notebook Residuals As Sanity Checks">
+    <div class="kicker">Executable evidence</div>
+    <h2>Notebook Residuals As Sanity Checks</h2>
+    <div class="layout-55">
+      <div class="panel soft">
+        <svg class="svg-frame" viewBox="0 0 920 570" xmlns="http://www.w3.org/2000/svg">
+          <rect x="74" y="76" width="320" height="92" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="234" y="116" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">molecule distance error</text>
+          <text x="234" y="148" text-anchor="middle" font-size="26" fill="#0F766E">3.33e-16</text>
+          <rect x="526" y="76" width="320" height="92" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="686" y="116" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">attention row error</text>
+          <text x="686" y="148" text-anchor="middle" font-size="26" fill="#0F766E">2.22e-16</text>
+          <rect x="74" y="236" width="320" height="92" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="234" y="276" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">road graph edges</text>
+          <text x="234" y="308" text-anchor="middle" font-size="26" fill="#B45309">12</text>
+          <rect x="526" y="236" width="320" height="92" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="686" y="276" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">particle count</text>
+          <text x="686" y="308" text-anchor="middle" font-size="26" fill="#6D28D9">80</text>
+          <rect x="300" y="394" width="320" height="92" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"></rect>
+          <text x="460" y="434" text-anchor="middle" font-size="26" font-weight="700" fill="#111827">heterogeneous node types</text>
+          <text x="460" y="466" text-anchor="middle" font-size="26" fill="#1E3A8A">3</text>
+          <path d="M394 122 C460 120 468 120 526 122" fill="none" stroke="#CBD5E1" stroke-width="4"></path>
+          <path d="M394 282 C462 318 496 348 526 424" fill="none" stroke="#CBD5E1" stroke-width="4"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="box teal">
+          <div class="box-title">What these checks mean</div>
+          <p>They are finite, inspectable claims that the notebook construction obeys the advertised symmetry or structural assumption.</p>
+        </div>
+        <div class="box">
+          <div class="box-title">What they do not mean</div>
+          <p>They do not prove a benchmark result. They make a small domain transformation concrete enough to debug.</p>
+        </div>
+        <div class="box violet">
+          <div class="box-title">Artifacts referenced</div>
+          <p>Molecular graphs, network medicine, road forecasting, sequence attention, and particle event visuals are generated under the chapter 06 artifact tree.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>From visual claim to residual</span><span>Chapter 06 notebook ledger</span></div>
+    <aside class="speaker-notes">Connect the lecture to the executable notebook. The molecule check verifies distance preservation under rigid motion, the attention check verifies stochastic rows, the traffic graph records edge structure, and the particle event count guards the point-cloud construction.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Common Symmetry Mismatches">
+    <div class="kicker">Failure modes</div>
+    <h2>Common Symmetry Mismatches</h2>
+    <div class="layout-2">
+      <div class="panel">
+        <svg class="svg-frame" viewBox="0 0 840 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-warn" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#B45309"></path>
+            </marker>
+          </defs>
+          <rect x="86" y="86" width="260" height="122" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="216" y="134" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">wrong invariant</text>
+          <text x="216" y="172" text-anchor="middle" font-size="23" fill="#475569">erases orientation</text>
+          <rect x="494" y="86" width="260" height="122" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="624" y="134" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">unused equivariance</text>
+          <text x="624" y="172" text-anchor="middle" font-size="23" fill="#475569">adds cost to scalar task</text>
+          <rect x="86" y="330" width="260" height="122" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="216" y="378" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">locality trap</text>
+          <text x="216" y="416" text-anchor="middle" font-size="23" fill="#475569">misses long constraints</text>
+          <rect x="494" y="330" width="260" height="122" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="624" y="378" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">augmentation patch</text>
+          <text x="624" y="416" text-anchor="middle" font-size="23" fill="#475569">hides representation bug</text>
+          <path d="M346 148 C430 180 470 180 494 148" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-warn)"></path>
+          <path d="M216 208 C218 272 218 300 216 330" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-warn)"></path>
+          <path d="M624 208 C626 272 626 300 624 330" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-warn)"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="box amber">
+          <div class="box-title">Diagnostic question</div>
+          <p>After a transformation, should the answer stay fixed, move with the input, change smoothly, or change completely?</p>
+        </div>
+        <div class="box">
+          <div class="box-title">Implementation question</div>
+          <p>Is the behavior built into the layer, learned from data augmentation, or merely hoped for after training?</p>
+        </div>
+        <div class="box teal">
+          <div class="box-title">Validation question</div>
+          <p>Can the notebook create a small transformed example where the expected residual is visible and numerical?</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Geometry should constrain behavior</span><span>Not every symmetry is desirable</span></div>
+    <aside class="speaker-notes">Warn that geometric language can become decorative when the task is not specified. Invariance can erase important orientation, equivariance can be wasted on scalar decisions, locality can miss long-range constraints, and augmentation can hide rather than fix a wrong representation.</aside>
+  </section>
+
+  <section class="slide" data-label="Takeaways">
+    <div class="kicker">Recap</div>
+    <h2>Takeaways</h2>
+    <div class="layout-55">
+      <div class="panel soft">
+        <svg class="svg-frame" viewBox="0 0 930 570" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow-final" markerWidth="14" markerHeight="14" refX="10" refY="4" orient="auto">
+              <path d="M0,0 L10,4 L0,8 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <circle cx="206" cy="286" r="102" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+          <circle cx="466" cy="286" r="102" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></circle>
+          <circle cx="726" cy="286" r="102" fill="#F5F3FF" stroke="#6D28D9" stroke-width="5"></circle>
+          <path d="M310 286 H356" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-final)"></path>
+          <path d="M570 286 H616" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-final)"></path>
+          <text x="206" y="268" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">name the</text>
+          <text x="206" y="306" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">domain</text>
+          <text x="466" y="268" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">name the</text>
+          <text x="466" y="306" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">actions</text>
+          <text x="726" y="268" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">test the</text>
+          <text x="726" y="306" text-anchor="middle" font-size="32" font-weight="700" fill="#111827">behavior</text>
+          <text x="466" y="470" text-anchor="middle" font-size="30" fill="#475569">Geometric deep learning is the discipline of making this contract explicit.</text>
+        </svg>
+      </div>
+      <div>
+        <div class="box">
+          <div class="box-title">One blueprint, many domains</div>
+          <p>Chemistry, proteins, recommenders, traffic, vision, games, language/audio, healthcare, physics, and VR/AR differ because their domain objects and tasks differ.</p>
+        </div>
+        <div class="box teal">
+          <div class="box-title">The enduring habit</div>
+          <p>Translate every architecture claim into an executable claim about transformations, output behavior, and a residual that can be checked.</p>
+        </div>
+        <div class="box violet">
+          <div class="box-title">Lecture close</div>
+          <p>The application atlas is not a catalog; it is a method for asking the right geometric questions before training begins.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Geometric Deep Learning</span><span>Chapter 06 complete</span></div>
+    <aside class="speaker-notes">Close by returning to the chapter question. Chemistry, proteins, recommenders, traffic, vision, games, language, audio, healthcare, physics, and VR or AR are unified by the same discipline: name the domain, name the transformations, then test the task behavior.</aside>
+  </section>
+</deck-stage>
+</body>
+</html>

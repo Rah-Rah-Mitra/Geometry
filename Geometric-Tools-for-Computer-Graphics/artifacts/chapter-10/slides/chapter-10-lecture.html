@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-10">
+  <meta name="chapter_title" content="Chapter 10: Distance in 3D">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-03-3d-geometric-tools/chapter-10-distance-in-3d/10-distance-in-3d.ipynb">
+  <meta name="source_span" content="printed pages 365-480; PDF pages 412-527">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <title>Chapter 10: Distance in 3D</title>
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Geometric Tools for Computer Graphics",
+  "chapter_id": "chapter-10",
+  "chapter_title": "Chapter 10: Distance in 3D",
+  "notebook_path": "D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-03-3d-geometric-tools/chapter-10-distance-in-3d/10-distance-in-3d.ipynb",
+  "source_span": "printed pages 365-480; PDF pages 412-527",
+  "source_pdf": "D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    "Open the lecture by making distance a query design problem rather than a formula catalog. The assigned source span is broad, printed pages 365 through 480, so students need a map: every primitive family returns closest points, feature labels, parameters, and diagnostics that can be checked in code.",
+    "Use the chapter map to separate families by reduction style. Point-to-linear and point-to-planar queries are mostly projection plus clamping. Polyhedra and boxes add containment and local frames. Quadrics, curves, and surfaces add nonlinear stationarity. GJK and geodesics change the representation of distance itself.",
+    "This slide supplies the reusable template for the chapter. Distance is minimized as a squared norm over a parameter domain because the square avoids unnecessary roots and exposes stationarity. The important implementation habit is to return the active domain feature together with the numerical distance.",
+    "Projecting a point onto a line is the cleanest case, but real graphics queries usually clamp that projection to a ray, a segment, or each segment of a polyline. Stress that the returned parameter is part of the answer because it identifies whether the closest feature is interior or endpoint constrained.",
+    "For point-to-triangle distance, first inspect the plane projection, then classify its barycentric coordinates. A projection inside the triangle gives an interior closest point. A projection outside delegates to an edge or vertex query. The notebook artifact makes that feature change visible without relying on a source figure.",
+    "Linear component pairs are two-parameter minimization problems. If both optimal parameters are interior, the connector is orthogonal to both directions. If either parameter clamps to a boundary, the problem becomes a lower-dimensional point-to-component query. This is the first place degeneracy and near-parallelism need explicit handling.",
+    "The chapter repeatedly turns complicated targets into a finite list of simpler feature queries. A segment against a triangle, rectangle, tetrahedron, or oriented box is not a new mystery each time; it is a candidate search over faces, edges, and corners with the same connector and clamping invariants.",
+    "Oriented boxes illustrate the power of choosing the right coordinate frame. Transform the point into box coordinates, clamp each component to the half-extent interval, and transform the closest point back. The sanity check is that world-space distance and local-frame distance agree to numerical tolerance.",
+    "For polyhedra and frusta, containment changes the answer before any minimization starts: an interior point has zero distance. Outside points are handled by candidate faces and boundary features. Students should notice the production pattern: cheap rejection or containment first, then exact feature distance only where needed.",
+    "Quadrics shift from clamping to constrained stationarity. At a closest point on a smooth implicit surface, the displacement from the query point is normal to the surface. For ellipsoids this leads to a one-variable root or iterative solve, so residuals and convergence criteria become part of the lesson.",
+    "Polynomial curves and surfaces are the chapter's reminder that exact geometry often becomes numerical optimization. The plotted diagnostic shows a valid parameter interval and a squared-distance profile. The minimum is trustworthy only when the parameter domain, stationarity residual, and boundary comparisons have all been checked.",
+    "GJK reframes distance between convex bodies through the Minkowski difference. Instead of enumerating every pair of features, the algorithm asks support queries and keeps the simplex closest to the origin. The visible simplex should be read as an evolving certificate, not as a decorative convex hull.",
+    "Geodesic distance is intrinsic to a surface, so it can differ sharply from the ambient Euclidean chord. Use this slide to separate the two questions: closest point in three-dimensional space versus shortest path constrained to a surface. Mesh algorithms approximate the latter through graph or heat-style propagation.",
+    "Close with a checklist that students can apply to their own graphics pipelines. A distance routine is not finished when it returns a scalar. It should explain the active feature, preserve frame invariants, handle degeneracy deliberately, and expose residuals that let a caller distinguish geometry from numerical accident."
+  ]
+}
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: var(--slide-ink);
+    }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 62px 92px 48px;
+      border-top: 10px solid var(--slide-accent);
+      overflow: clip;
+      position: relative;
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px;
+    }
+    h1, h2, h3, p, figure {
+      margin: 0;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: 68px;
+      line-height: 1.04;
+      font-weight: 700;
+      max-width: 1320px;
+    }
+    h2 {
+      font-size: 52px;
+      line-height: 1.08;
+      font-weight: 700;
+    }
+    h3 {
+      font-size: 30px;
+      line-height: 1.14;
+      font-weight: 700;
+      color: var(--slide-accent);
+      margin-bottom: 8px;
+    }
+    p, li {
+      font-size: 26px;
+      line-height: 1.3;
+    }
+    ul, ol {
+      margin: 0;
+      padding-left: 30px;
+    }
+    li + li { margin-top: 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.24;
+    }
+    th {
+      text-align: left;
+      background: #f8fafc;
+      color: var(--slide-accent);
+      border-bottom: 2px solid var(--slide-border);
+      padding: 12px 14px;
+      font-weight: 700;
+    }
+    td {
+      border-bottom: 1px solid var(--slide-border-light);
+      padding: 10px 14px;
+      vertical-align: top;
+    }
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      color: var(--slide-muted);
+      font-size: 22px;
+    }
+    .eyebrow {
+      color: var(--slide-teal);
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .badge {
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 8px 13px;
+      background: #fff;
+      color: var(--slide-accent);
+      font-size: 21px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .lead {
+      font-size: 31px;
+      line-height: 1.25;
+      color: var(--slide-muted);
+      max-width: 1360px;
+    }
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 26px;
+      align-items: stretch;
+    }
+    .cols { grid-template-columns: 0.96fr 1.04fr; }
+    .cols-wide { grid-template-columns: 1.12fr 0.88fr; }
+    .cols-even { grid-template-columns: 1fr 1fr; }
+    .three { grid-template-columns: repeat(3, 1fr); }
+    .four { grid-template-columns: repeat(4, 1fr); }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 17px;
+      min-height: 0;
+    }
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 21px 23px;
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel.blue { border-left: 6px solid var(--slide-blue); background: #eff6ff; }
+    .panel.teal { border-left: 6px solid var(--slide-teal); background: #f0fdfa; }
+    .panel.amber { border-left: 6px solid var(--slide-amber); background: #fffbeb; }
+    .panel.violet { border-left: 6px solid var(--slide-violet); background: #f5f3ff; }
+    .panel.slate { border-left: 6px solid #94a3b8; background: #f8fafc; }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.32;
+    }
+    .formula-lg {
+      font-family: var(--font-math);
+      font-size: 40px;
+      line-height: 1.26;
+    }
+    .small {
+      font-size: 22px;
+      line-height: 1.24;
+      color: var(--slide-muted);
+    }
+    .diagram {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      overflow: clip;
+    }
+    .diagram svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .diagram img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .figure-caption {
+      font-size: 22px;
+      color: var(--slide-muted);
+      margin-top: 10px;
+      line-height: 1.25;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      border-top: 1px solid var(--slide-border-light);
+      padding-top: 13px;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      font-weight: 600;
+    }
+    .pill-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      border: 1px solid var(--slide-border);
+      background: #fff;
+      color: var(--slide-accent);
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .math-box {
+      border-radius: 8px;
+      padding: 20px 22px;
+      border-left: 6px solid var(--slide-accent);
+      background: var(--math-theorem-bg);
+    }
+    .math-box.definition {
+      border-left-color: var(--slide-blue);
+      background: var(--math-definition-bg);
+    }
+    .math-box.example {
+      border-left-color: var(--slide-teal);
+      background: var(--math-example-bg);
+    }
+    .math-box.warning {
+      border-left-color: var(--slide-amber);
+      background: var(--math-warning-bg);
+    }
+    .math-box.exercise {
+      border-left-color: var(--slide-violet);
+      background: var(--math-exercise-bg);
+    }
+    .box-label {
+      font-size: 21px;
+      line-height: 1.1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-accent);
+      margin-bottom: 8px;
+    }
+    .check-list {
+      list-style: disc;
+      padding-left: 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .check-list li::marker { color: var(--slide-teal); }
+    .svg-label { font: 700 31px "Source Sans 3", Arial, sans-serif; fill: #111827; }
+    .svg-small { font: 600 24px "Source Sans 3", Arial, sans-serif; fill: #64748b; }
+    .svg-note { font: 600 22px "Source Sans 3", Arial, sans-serif; fill: #475569; }
+    .svg-math { font: 400 28px "STIX Two Text", Georgia, serif; fill: #111827; }
+    .katex-display { margin: 8px 0 !important; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Distance Queries As Contracts">
+      <div class="topline"><div class="eyebrow">Geometric Tools for Computer Graphics</div><div class="badge">printed pp. 365-480 / PDF pp. 412-527</div></div>
+      <h1>Distance in 3D: Closest Features, Parameters, Residuals</h1>
+      <p class="lead">A distance routine is an optimization query with geometric obligations: closest points, active features, parameter locations, frame conventions, and diagnostics that survive degenerate cases.</p>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Chapter Goal</div><p>Organize point, line, ray, segment, triangle, rectangle, box, polyhedron, quadric, curve, surface, and geodesic distances as repeatable computational patterns.</p></div>
+          <div class="panel teal"><h3>Notebook Anchors</h3><p>Four checked visuals drive the lecture: point-to-triangle feature classification, segment-segment closest connector, oriented-box local coordinates, and ellipsoid iteration residuals.</p></div>
+          <div class="panel slate"><p class="small">Notebook: Geometric-Tools-for-Computer-Graphics/part-03-3d-geometric-tools/chapter-10-distance-in-3d/10-distance-in-3d.ipynb</p></div>
+        </div>
+        <figure class="diagram" aria-label="Distance query contract">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs>
+              <marker id="arr-title" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16 Z" fill="#1e3a8a"/></marker>
+            </defs>
+            <rect x="58" y="92" width="242" height="120" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <text x="99" y="142" class="svg-label">inputs</text>
+            <text x="94" y="178" class="svg-small">primitives + frames</text>
+            <rect x="330" y="92" width="242" height="120" rx="12" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="363" y="142" class="svg-label">minimize</text>
+            <text x="374" y="178" class="svg-small">squared norm</text>
+            <rect x="602" y="92" width="242" height="120" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="651" y="142" class="svg-label">return</text>
+            <text x="638" y="178" class="svg-small">feature + residual</text>
+            <g stroke="#1e3a8a" stroke-width="5" marker-end="url(#arr-title)">
+              <line x1="302" y1="152" x2="322" y2="152"/>
+              <line x1="574" y1="152" x2="594" y2="152"/>
+            </g>
+            <g transform="translate(88,302)">
+              <circle cx="62" cy="72" r="20" fill="#b45309"/>
+              <polygon points="210,24 370,82 260,192" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+              <circle cx="282" cy="104" r="14" fill="#0f766e"/>
+              <line x1="62" y1="72" x2="282" y2="104" stroke="#b45309" stroke-width="5"/>
+              <text x="18" y="126" class="svg-small">query point</text>
+              <text x="236" y="232" class="svg-small">closest feature</text>
+              <path d="M476 64 C548 18,640 28,692 86 C750 152,690 230,590 216 C508 204,438 136,476 64 Z" fill="#f8fafc" stroke="#64748b" stroke-width="4"/>
+              <polyline points="506,174 556,132 618,148 670,94" fill="none" stroke="#0f766e" stroke-width="6"/>
+              <text x="498" y="264" class="svg-small">surface path or residual trace</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Manifest index 394</span><span>Design system: lecture-design-system-2026-05-23</span></div>
+      <aside class="speaker-notes">Open the lecture by making distance a query design problem rather than a formula catalog. The assigned source span is broad, printed pages 365 through 480, so students need a map: every primitive family returns closest points, feature labels, parameters, and diagnostics that can be checked in code.</aside>
+    </section>
+
+    <section class="slide" data-label="Chapter Map By Reduction Style">
+      <div class="topline"><div class="eyebrow">Source Orientation</div><div class="badge">Sections 10.1-10.13</div></div>
+      <h2>Chapter Map By Reduction Style</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <table>
+            <thead><tr><th>Primitive Family</th><th>Core Reduction</th><th>State To Return</th></tr></thead>
+            <tbody>
+              <tr><td>Point to line, ray, segment, polyline</td><td>Projection, then clamp to domain</td><td>Parameter and endpoint status</td></tr>
+              <tr><td>Point to plane, triangle, rectangle, polygon</td><td>Signed projection plus boundary fallback</td><td>Barycentric or edge feature</td></tr>
+              <tr><td>Point to polyhedron, OBB, frustum</td><td>Containment, local frame, face candidates</td><td>Inside flag and closest boundary feature</td></tr>
+              <tr><td>Quadrics, curves, polynomial surfaces</td><td>Stationarity equations and numerical solves</td><td>Residual, iteration count, boundary comparison</td></tr>
+              <tr><td>Convex bodies and geodesics</td><td>Support mappings or intrinsic surface paths</td><td>Certificate simplex or path length</td></tr>
+            </tbody>
+          </table>
+          <div class="panel blue"><h3>Reading Strategy</h3><p>Do not memorize every case separately. Ask which domain is being minimized over, which constraints are active, and whether the result is an ambient distance or a surface-constrained distance.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Notebook concept route map">
+          <img src="../figures/distance-in-3d-concept-route-map.png" alt="Notebook-generated route map for Distance in 3D">
+        </figure>
+      </div>
+      <div class="footer"><span>Broad span, compact taxonomy</span><span>Projection -> clamping -> feature search -> nonlinear residuals</span></div>
+      <aside class="speaker-notes">Use the chapter map to separate families by reduction style. Point-to-linear and point-to-planar queries are mostly projection plus clamping. Polyhedra and boxes add containment and local frames. Quadrics, curves, and surfaces add nonlinear stationarity. GJK and geodesics change the representation of distance itself.</aside>
+    </section>
+
+    <section class="slide alt" data-label="The Parameter-Minimization Template">
+      <div class="topline"><div class="eyebrow">Core Pattern</div><div class="badge">squared distance first</div></div>
+      <h2>The Parameter-Minimization Template</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Distance Query</div><p class="formula-lg">\( \min_{u \in U,\; v \in V} \|X(u)-Y(v)\|^2 \)</p><p>Use the squared norm for stable comparison; take a square root only when a metric value is required for reporting.</p></div>
+          <div class="panel teal"><h3>Return More Than A Scalar</h3><ul><li>closest points \(X(u^\star)\) and \(Y(v^\star)\)</li><li>parameters \(u^\star, v^\star\)</li><li>active feature labels: interior, edge, vertex, face</li><li>residuals and tolerances used to accept the result</li></ul></div>
+        </div>
+        <figure class="diagram" aria-label="Parameter domain and constrained minimizer">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-template" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <rect x="92" y="70" width="306" height="396" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="4"/>
+            <text x="128" y="116" class="svg-label">parameter domain</text>
+            <line x1="150" y1="386" x2="340" y2="386" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arr-template)"/>
+            <line x1="150" y1="386" x2="150" y2="162" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arr-template)"/>
+            <text x="350" y="398" class="svg-math">u</text>
+            <text x="130" y="154" class="svg-math">v</text>
+            <ellipse cx="238" cy="280" rx="88" ry="52" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <ellipse cx="238" cy="280" rx="48" ry="28" fill="none" stroke="#2563eb" stroke-width="3"/>
+            <circle cx="364" cy="386" r="14" fill="#b45309"/>
+            <text x="298" y="432" class="svg-small">boundary optimum</text>
+            <path d="M250 280 C316 236,380 262,364 386" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <rect x="512" y="116" width="290" height="110" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="548" y="163" class="svg-label">stationarity</text>
+            <text x="552" y="198" class="svg-small">gradient zero if unconstrained</text>
+            <rect x="512" y="284" width="290" height="110" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <text x="548" y="331" class="svg-label">active set</text>
+            <text x="552" y="366" class="svg-small">clamp if boundary active</text>
+            <line x1="398" y1="306" x2="498" y2="176" stroke="#64748b" stroke-width="4" marker-end="url(#arr-template)"/>
+            <line x1="398" y1="358" x2="498" y2="338" stroke="#64748b" stroke-width="4" marker-end="url(#arr-template)"/>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>All later cases specialize \(U\), \(V\), and the active constraints</span><span>Notebook check: residuals and feature tags</span></div>
+      <aside class="speaker-notes">This slide supplies the reusable template for the chapter. Distance is minimized as a squared norm over a parameter domain because the square avoids unnecessary roots and exposes stationarity. The important implementation habit is to return the active domain feature together with the numerical distance.</aside>
+    </section>
+
+    <section class="slide" data-label="Point To Linear Components">
+      <div class="topline"><div class="eyebrow">Projection Plus Clamping</div><div class="badge">line, ray, segment, polyline</div></div>
+      <h2>Point To Linear Components</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Point projection onto line segment">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-linear" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <line x1="142" y1="404" x2="750" y2="206" stroke="#cbd5e1" stroke-width="8"/>
+            <line x1="250" y1="368" x2="646" y2="240" stroke="#2563eb" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="250" cy="368" r="14" fill="#1e3a8a"/>
+            <circle cx="646" cy="240" r="14" fill="#1e3a8a"/>
+            <text x="218" y="418" class="svg-math">A</text>
+            <text x="648" y="214" class="svg-math">B</text>
+            <circle cx="438" cy="126" r="18" fill="#b45309"/>
+            <text x="408" y="88" class="svg-math">P</text>
+            <circle cx="376" cy="328" r="14" fill="#0f766e"/>
+            <line x1="438" y1="126" x2="376" y2="328" stroke="#b45309" stroke-width="5"/>
+            <path d="M400 320 L414 362 L372 376" fill="none" stroke="#64748b" stroke-width="4"/>
+            <text x="410" y="356" class="svg-small">interior projection</text>
+            <circle cx="792" cy="86" r="18" fill="#b45309"/>
+            <text x="766" y="52" class="svg-math">R</text>
+            <line x1="792" y1="86" x2="646" y2="240" stroke="#b45309" stroke-width="5" stroke-dasharray="12 10"/>
+            <text x="632" y="306" class="svg-small">clamped endpoint</text>
+            <line x1="250" y1="472" x2="646" y2="472" stroke="#1e3a8a" stroke-width="4" marker-end="url(#arr-linear)"/>
+            <text x="400" y="518" class="svg-small">parameter \(t\) in \([0,1]\)</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Line Projection</div><p class="formula">\( t_0 = \dfrac{(P-A)\cdot (B-A)}{\|B-A\|^2} \)</p></div>
+          <div class="panel blue"><h3>Domain Rules</h3><ul><li>line: keep \(t_0\)</li><li>ray: use \(\max(0,t_0)\)</li><li>segment: clamp to \(0 \leq t \leq 1\)</li><li>polyline: evaluate each segment and keep the minimum</li></ul></div>
+          <div class="panel amber"><h3>Implementation Check</h3><p>If \(0 &lt; t &lt; 1\), the connector must be perpendicular to the segment direction. If \(t\) is clamped, endpoint status is the feature label.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Boundary conditions carry geometric meaning</span><span>Feature label: interior, endpoint, or chosen polyline segment</span></div>
+      <aside class="speaker-notes">Projecting a point onto a line is the cleanest case, but real graphics queries usually clamp that projection to a ray, a segment, or each segment of a polyline. Stress that the returned parameter is part of the answer because it identifies whether the closest feature is interior or endpoint constrained.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Point To Triangle Feature Map">
+      <div class="topline"><div class="eyebrow">Planar Components</div><div class="badge">plane -> triangle -> boundary</div></div>
+      <h2>Point To Triangle Feature Map</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Plane Projection</div><p class="formula">\( P_{\Pi}=P-((P-A)\cdot n)n \)</p><p>Projection gives a candidate. Barycentric coordinates decide whether that candidate lies in the triangle or belongs to a boundary subproblem.</p></div>
+          <div class="panel teal"><h3>Feature Classification</h3><ul><li>\(\alpha,\beta,\gamma \geq 0\): interior or edge on zero coordinate</li><li>one negative coordinate: nearest edge candidate</li><li>two negative coordinates: nearest vertex candidate</li></ul></div>
+          <div class="panel slate"><p class="small">Notebook check: barycentric coordinates classify triangle features, and the connector from the query point to the active feature is normal only for unconstrained plane projection.</p></div>
+        </div>
+        <figure>
+          <div class="diagram" aria-label="Notebook point-to-triangle scaffold" style="height: 690px;">
+            <img src="../figures/distance-in-3d-construction-scene.png" alt="Notebook-generated point-to-triangle distance scaffold">
+          </div>
+          <p class="figure-caption">The plotted query point projects onto the triangle plane. The returned feature is the projected point if it is inside; otherwise the algorithm falls back to edge or vertex distance.</p>
+        </figure>
+      </div>
+      <div class="footer"><span>Signed plane distance is not the whole triangle distance</span><span>Barycentric signs select the active feature</span></div>
+      <aside class="speaker-notes">For point-to-triangle distance, first inspect the plane projection, then classify its barycentric coordinates. A projection inside the triangle gives an interior closest point. A projection outside delegates to an edge or vertex query. The notebook artifact makes that feature change visible without relying on a source figure.</aside>
+    </section>
+
+    <section class="slide" data-label="Segment-Segment Closest Connector">
+      <div class="topline"><div class="eyebrow">Linear Component Pairs</div><div class="badge">two parameters, four boundaries</div></div>
+      <h2>Segment-Segment Closest Connector</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Two segments and closest connector">
+          <svg viewBox="0 0 900 620" role="img">
+            <line x1="160" y1="416" x2="690" y2="212" stroke="#2563eb" stroke-width="10" stroke-linecap="round"/>
+            <line x1="268" y1="166" x2="760" y2="452" stroke="#0f766e" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="370" cy="335" r="15" fill="#1e3a8a"/>
+            <circle cx="548" cy="329" r="15" fill="#0f766e"/>
+            <line x1="370" y1="335" x2="548" y2="329" stroke="#b45309" stroke-width="7"/>
+            <path d="M390 327 L402 358 L370 369" fill="none" stroke="#64748b" stroke-width="4"/>
+            <path d="M528 337 L508 312 L535 296" fill="none" stroke="#64748b" stroke-width="4"/>
+            <text x="154" y="462" class="svg-small">segment \(A+sU\)</text>
+            <text x="578" y="500" class="svg-small">segment \(B+tV\)</text>
+            <text x="416" y="300" class="svg-label">connector</text>
+            <rect x="98" y="74" width="262" height="118" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/>
+            <text x="128" y="122" class="svg-label">interior</text>
+            <text x="126" y="158" class="svg-small">orthogonal to both</text>
+            <rect x="522" y="74" width="278" height="118" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <text x="552" y="122" class="svg-label">boundary</text>
+            <text x="552" y="158" class="svg-small">reduce to point query</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Two-Parameter Query</div><p class="formula">\( \min_{0\leq s,t\leq 1}\|A+sU-B-tV\|^2 \)</p></div>
+          <div class="panel teal"><h3>Interior Condition</h3><p>When \(s\) and \(t\) are both interior, the connector is perpendicular to both \(U\) and \(V\). This is the geometric test behind the unconstrained linear solve.</p></div>
+          <div class="panel amber"><h3>Degenerate Cases</h3><p>Parallel or nearly parallel directions make the unconstrained solve ill-conditioned. Robust implementations compare boundary candidates and record the tolerance branch used.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Active set: interior-interior, endpoint-interior, endpoint-endpoint</span><span>Notebook check: closest connector is perpendicular to active unconstrained features</span></div>
+      <aside class="speaker-notes">Linear component pairs are two-parameter minimization problems. If both optimal parameters are interior, the connector is orthogonal to both directions. If either parameter clamps to a boundary, the problem becomes a lower-dimensional point-to-component query. This is the first place degeneracy and near-parallelism need explicit handling.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Feature Recursion For Larger Targets">
+      <div class="topline"><div class="eyebrow">From Components To Solids</div><div class="badge">triangle, rectangle, tetrahedron, OBB</div></div>
+      <h2>Feature Recursion For Larger Targets</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box example"><div class="box-label">Working Rule</div><p>Many 3D distances are solved by checking a small set of candidate features, then reusing point-component or segment-component distances on those candidates.</p></div>
+          <table>
+            <thead><tr><th>Target</th><th>Candidate Features</th><th>Useful Return Data</th></tr></thead>
+            <tbody>
+              <tr><td>Triangle or rectangle</td><td>interior face, edges, vertices</td><td>barycentric or local coordinates</td></tr>
+              <tr><td>Tetrahedron</td><td>inside test, four triangular faces</td><td>face index and boundary feature</td></tr>
+              <tr><td>Oriented box</td><td>local coordinate clamp, faces and corners</td><td>local coordinate and world point</td></tr>
+              <tr><td>Line or ray to bounded object</td><td>interior intersection, then boundary features</td><td>parameter interval and active boundary</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="diagram" aria-label="Feature hierarchy from face to edge to vertex">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-feature" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <polygon points="128,430 354,186 616,374" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <line x1="354" y1="186" x2="354" y2="430" stroke="#cbd5e1" stroke-width="4" stroke-dasharray="11 9"/>
+            <text x="314" y="160" class="svg-label">face</text>
+            <text x="174" y="466" class="svg-small">edge fallback</text>
+            <circle cx="128" cy="430" r="14" fill="#b45309"/>
+            <circle cx="354" cy="186" r="14" fill="#b45309"/>
+            <circle cx="616" cy="374" r="14" fill="#b45309"/>
+            <circle cx="456" cy="308" r="16" fill="#0f766e"/>
+            <text x="476" y="292" class="svg-small">interior candidate</text>
+            <path d="M700 110 C760 194,790 304,748 410 C700 526,570 542,486 486" fill="none" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arr-feature)"/>
+            <rect x="592" y="68" width="238" height="96" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="624" y="108" class="svg-label">test</text>
+            <text x="624" y="140" class="svg-small">face, edge, vertex</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>One query tree, many primitive families</span><span>Closest feature is a certificate for later collision or response code</span></div>
+      <aside class="speaker-notes">The chapter repeatedly turns complicated targets into a finite list of simpler feature queries. A segment against a triangle, rectangle, tetrahedron, or oriented box is not a new mystery each time; it is a candidate search over faces, edges, and corners with the same connector and clamping invariants.</aside>
+    </section>
+
+    <section class="slide" data-label="Oriented Box Local Coordinates">
+      <div class="topline"><div class="eyebrow">Coordinate Frames</div><div class="badge">make the hard box axis-aligned</div></div>
+      <h2>Oriented Box Local Coordinates</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Point to oriented box via local frame">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-box" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <polygon points="238,412 560,506 726,256 402,162" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="402,162 516,104 838,198 726,256" fill="#f8fafc" stroke="#2563eb" stroke-width="4"/>
+            <polygon points="560,506 674,448 838,198 726,256" fill="#e0f2fe" stroke="#2563eb" stroke-width="4"/>
+            <circle cx="654" cy="118" r="18" fill="#b45309"/>
+            <circle cx="620" cy="214" r="14" fill="#0f766e"/>
+            <line x1="654" y1="118" x2="620" y2="214" stroke="#b45309" stroke-width="6"/>
+            <text x="676" y="112" class="svg-math">P</text>
+            <text x="636" y="246" class="svg-math">Q</text>
+            <line x1="402" y1="162" x2="522" y2="128" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arr-box)"/>
+            <line x1="402" y1="162" x2="356" y2="246" stroke="#0f766e" stroke-width="5" marker-end="url(#arr-box)"/>
+            <line x1="402" y1="162" x2="402" y2="58" stroke="#b45309" stroke-width="5" marker-end="url(#arr-box)"/>
+            <text x="536" y="122" class="svg-math">u</text>
+            <text x="328" y="270" class="svg-math">v</text>
+            <text x="412" y="54" class="svg-math">w</text>
+            <rect x="84" y="84" width="250" height="130" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="116" y="130" class="svg-label">local point</text>
+            <text x="116" y="166" class="svg-small">dot with axes</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Change Of Frame</div><p class="formula">\(p'=( (P-C)\cdot u,\; (P-C)\cdot v,\; (P-C)\cdot w )\)</p></div>
+          <div class="panel blue"><h3>Clamp In Local Coordinates</h3><p>For each component, clamp \(p'_i\) to the interval \([-e_i,e_i]\). The local closest point \(q'\) is then mapped back by \(Q=C+q'_1u+q'_2v+q'_3w\).</p></div>
+          <div class="panel teal"><h3>Invariant</h3><p>The squared distance \(\|P-Q\|^2\) must match \(\|p'-q'\|^2\). If it does not, the frame is not orthonormal or a transform convention is wrong.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Coordinate transforms should simplify geometry, not hide it</span><span>Notebook check: local-frame and world-frame distances agree</span></div>
+      <aside class="speaker-notes">Oriented boxes illustrate the power of choosing the right coordinate frame. Transform the point into box coordinates, clamp each component to the half-extent interval, and transform the closest point back. The sanity check is that world-space distance and local-frame distance agree to numerical tolerance.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Polyhedron And Frustum Workflow">
+      <div class="topline"><div class="eyebrow">Bounded 3D Regions</div><div class="badge">containment before distance</div></div>
+      <h2>Polyhedron And Frustum Workflow</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box warning"><div class="box-label">First Branch</div><p>If the point is inside the solid, the distance to the solid is zero. Only outside points need boundary feature evaluation.</p></div>
+          <div class="panel blue"><h3>Convex Polyhedron</h3><p>Signed face tests identify whether the point lies inside all supporting halfspaces. Outside faces give a small candidate set; each candidate becomes a point-to-planar-component query.</p></div>
+          <div class="panel teal"><h3>Frustum Or View Volume</h3><p>Choose a coordinate system where the planes or scale factors are simple, then reuse the same inside/outside and boundary candidate logic.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Point and polyhedron face candidates">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-poly" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <polygon points="248,438 430,516 684,402 482,320" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="248,438 482,320 500,126 292,214" fill="#f8fafc" stroke="#2563eb" stroke-width="4"/>
+            <polygon points="482,320 684,402 692,204 500,126" fill="#e0f2fe" stroke="#2563eb" stroke-width="4"/>
+            <polygon points="292,214 500,126 692,204 482,320" fill="#eef2ff" stroke="#2563eb" stroke-width="4"/>
+            <circle cx="746" cy="144" r="18" fill="#b45309"/>
+            <line x1="746" y1="144" x2="608" y2="246" stroke="#b45309" stroke-width="6"/>
+            <circle cx="608" cy="246" r="14" fill="#0f766e"/>
+            <text x="770" y="140" class="svg-math">P</text>
+            <text x="620" y="282" class="svg-small">candidate face</text>
+            <line x1="608" y1="246" x2="682" y2="206" stroke="#1e3a8a" stroke-width="4" marker-end="url(#arr-poly)"/>
+            <text x="686" y="198" class="svg-small">normal test</text>
+            <circle cx="430" cy="358" r="14" fill="#0f766e"/>
+            <text x="332" y="366" class="svg-small">inside point -> zero</text>
+            <rect x="80" y="70" width="258" height="118" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <text x="110" y="118" class="svg-label">outside?</text>
+            <text x="110" y="154" class="svg-small">then search boundary</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Interior is a distance answer, not a failed query</span><span>Candidate faces reduce work and improve diagnostics</span></div>
+      <aside class="speaker-notes">For polyhedra and frusta, containment changes the answer before any minimization starts: an interior point has zero distance. Outside points are handled by candidate faces and boundary features. Students should notice the production pattern: cheap rejection or containment first, then exact feature distance only where needed.</aside>
+    </section>
+
+    <section class="slide" data-label="Quadrics And Ellipsoid Residuals">
+      <div class="topline"><div class="eyebrow">Nonlinear Surfaces</div><div class="badge">normal equation plus solve</div></div>
+      <h2>Quadrics And Ellipsoid Residuals</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Point to ellipsoid normal condition">
+          <svg viewBox="0 0 900 620" role="img">
+            <ellipse cx="440" cy="326" rx="260" ry="156" fill="#eff6ff" stroke="#2563eb" stroke-width="6"/>
+            <path d="M188 326 C260 248,342 206,440 206 C538 206,620 248,692 326 C620 404,538 446,440 446 C342 446,260 404,188 326 Z" fill="none" stroke="#1e3a8a" stroke-width="3" stroke-dasharray="12 10"/>
+            <circle cx="644" cy="206" r="18" fill="#b45309"/>
+            <text x="670" y="200" class="svg-math">P</text>
+            <circle cx="570" cy="266" r="15" fill="#0f766e"/>
+            <line x1="644" y1="206" x2="570" y2="266" stroke="#b45309" stroke-width="6"/>
+            <line x1="570" y1="266" x2="620" y2="206" stroke="#1e3a8a" stroke-width="5"/>
+            <text x="524" y="298" class="svg-small">surface point \(X\)</text>
+            <text x="614" y="244" class="svg-small">normal direction</text>
+            <rect x="76" y="70" width="324" height="132" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"/>
+            <text x="108" y="118" class="svg-label">closest condition</text>
+            <text x="108" y="156" class="svg-math">P-X = \lambda \nabla F(X)</text>
+            <rect x="524" y="420" width="286" height="104" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="4"/>
+            <text x="556" y="462" class="svg-label">acceptance</text>
+            <text x="556" y="496" class="svg-small">root residual + boundary check</text>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Implicit Surface Rule</div><p class="formula">For \(F(X)=0\), a smooth unconstrained closest point satisfies \(P-X=\lambda\nabla F(X)\).</p></div>
+          <div class="panel blue"><h3>General Quadric</h3><p>Substituting the normal condition turns geometry into algebra. Depending on representation, the solver may face a high-degree polynomial or a constrained numerical root.</p></div>
+          <div class="panel teal"><h3>Ellipsoid Habit</h3><p>Scale to a convenient frame, solve for the multiplier, then report both the point and the residual that verifies the normal condition.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Nonlinear distance needs convergence evidence</span><span>Residuals are part of the mathematical output</span></div>
+      <aside class="speaker-notes">Quadrics shift from clamping to constrained stationarity. At a closest point on a smooth implicit surface, the displacement from the query point is normal to the surface. For ellipsoids this leads to a one-variable root or iterative solve, so residuals and convergence criteria become part of the lesson.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Polynomial Curves And Surfaces">
+      <div class="topline"><div class="eyebrow">Numerical Diagnostics</div><div class="badge">domain, boundaries, stationarity</div></div>
+      <h2>Polynomial Curves And Surfaces</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Curve Stationarity</div><p class="formula">\( \frac{d}{dt}\|C(t)-P\|^2 = 2(C(t)-P)\cdot C'(t)=0 \)</p></div>
+          <div class="math-box definition"><div class="box-label">Surface Stationarity</div><p class="formula">\( (S(u,v)-P)\cdot S_u=0,\quad (S(u,v)-P)\cdot S_v=0 \)</p></div>
+          <div class="panel amber"><h3>Audit Boundary Candidates</h3><p>Stationary points inside the parameter domain must be compared with boundary curves, corners, and any constrained intervals. A low residual is not enough if the domain was wrong.</p></div>
+        </div>
+        <figure>
+          <div class="diagram" aria-label="Notebook numeric diagnostic" style="height: 690px;">
+            <img src="../figures/numeric-diagnostic.png" alt="Notebook-generated squared-distance diagnostic over a valid parameter domain">
+          </div>
+          <p class="figure-caption">The diagnostic curve makes the valid parameter domain and boundary comparisons explicit before reporting a minimum.</p>
+        </figure>
+      </div>
+      <div class="footer"><span>Numerical minimization must name its domain</span><span>Notebook check: iterative residuals decrease for the shown surface example</span></div>
+      <aside class="speaker-notes">Polynomial curves and surfaces are the chapter's reminder that exact geometry often becomes numerical optimization. The plotted diagnostic shows a valid parameter interval and a squared-distance profile. The minimum is trustworthy only when the parameter domain, stationarity residual, and boundary comparisons have all been checked.</aside>
+    </section>
+
+    <section class="slide" data-label="GJK As A Distance Certificate">
+      <div class="topline"><div class="eyebrow">Convex Bodies</div><div class="badge">support mapping and simplex</div></div>
+      <h2>GJK As A Distance Certificate</h2>
+      <div class="content cols">
+        <figure class="diagram" aria-label="Minkowski difference and simplex closest to origin">
+          <svg viewBox="0 0 900 620" role="img">
+            <defs><marker id="arr-gjk" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 Z" fill="#1e3a8a"/></marker></defs>
+            <line x1="130" y1="330" x2="770" y2="330" stroke="#cbd5e1" stroke-width="3"/>
+            <line x1="450" y1="560" x2="450" y2="96" stroke="#cbd5e1" stroke-width="3"/>
+            <circle cx="450" cy="330" r="13" fill="#111827"/>
+            <text x="466" y="320" class="svg-small">origin</text>
+            <polygon points="250,190 362,128 442,238 356,338 236,302" fill="#eff6ff" stroke="#2563eb" stroke-width="5"/>
+            <polygon points="562,210 706,274 676,412 538,458 466,332" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"/>
+            <polygon points="526,224 630,322 510,394" fill="#fffbeb" stroke="#b45309" stroke-width="6"/>
+            <circle cx="510" cy="394" r="14" fill="#b45309"/>
+            <line x1="450" y1="330" x2="510" y2="394" stroke="#b45309" stroke-width="6"/>
+            <text x="582" y="354" class="svg-small">current simplex</text>
+            <text x="214" y="370" class="svg-small">convex body A</text>
+            <text x="560" y="494" class="svg-small">convex body B</text>
+            <rect x="92" y="442" width="304" height="100" rx="12" fill="#eef2ff" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="124" y="482" class="svg-label">support query</text>
+            <text x="124" y="516" class="svg-math">s(d)=s_A(d)-s_B(-d)</text>
+            <line x1="398" y1="492" x2="498" y2="414" stroke="#1e3a8a" stroke-width="4" marker-end="url(#arr-gjk)"/>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Minkowski Difference</div><p class="formula">\( \operatorname{dist}(A,B)=\operatorname{dist}(0,A-B) \)</p></div>
+          <div class="panel blue"><h3>GJK Loop</h3><ol><li>Ask for a support point in a search direction.</li><li>Add it to a simplex in the Minkowski difference.</li><li>Replace the direction by the vector toward the closest point on that simplex.</li></ol></div>
+          <div class="panel teal"><h3>Certificate</h3><p>The final simplex and closest point to the origin explain the distance or certify intersection when the origin is enclosed.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Convex distance without enumerating all feature pairs</span><span>Useful for collision detection and conservative advancement</span></div>
+      <aside class="speaker-notes">GJK reframes distance between convex bodies through the Minkowski difference. Instead of enumerating every pair of features, the algorithm asks support queries and keeps the simplex closest to the origin. The visible simplex should be read as an evolving certificate, not as a decorative convex hull.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Geodesic Distance Is Intrinsic">
+      <div class="topline"><div class="eyebrow">Surface-Constrained Distance</div><div class="badge">ambient chord versus surface path</div></div>
+      <h2>Geodesic Distance Is Intrinsic</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box definition"><div class="box-label">Two Different Questions</div><p>Euclidean distance uses the straight chord in \(\mathbb{R}^3\). Geodesic distance restricts the path to the surface and minimizes path length there.</p></div>
+          <div class="panel blue"><h3>Computational Models</h3><ul><li>smooth surface: differential equation or variational solve</li><li>triangle mesh: graph path, unfolding, fast marching, or heat-style method</li><li>debug output: path length, residual, and mesh resolution sensitivity</li></ul></div>
+          <div class="panel amber"><h3>Important Distinction</h3><p>A point can be close through space but far along the surface when holes, folds, ridges, or constraints block the intrinsic path.</p></div>
+        </div>
+        <figure class="diagram" aria-label="Intrinsic surface path versus chord">
+          <svg viewBox="0 0 900 620" role="img">
+            <path d="M118 372 C210 214,350 176,470 282 C576 376,688 358,784 214" fill="none" stroke="#cbd5e1" stroke-width="44" stroke-linecap="round"/>
+            <path d="M118 372 C210 214,350 176,470 282 C576 376,688 358,784 214" fill="none" stroke="#eff6ff" stroke-width="38" stroke-linecap="round"/>
+            <path d="M118 372 C210 214,350 176,470 282 C576 376,688 358,784 214" fill="none" stroke="#2563eb" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="196" cy="278" r="18" fill="#0f766e"/>
+            <circle cx="708" cy="300" r="18" fill="#b45309"/>
+            <line x1="196" y1="278" x2="708" y2="300" stroke="#b45309" stroke-width="5" stroke-dasharray="14 10"/>
+            <path d="M196 278 C318 174,430 240,520 326 C596 398,650 360,708 300" fill="none" stroke="#0f766e" stroke-width="8"/>
+            <text x="214" y="246" class="svg-math">a</text>
+            <text x="726" y="286" class="svg-math">b</text>
+            <text x="352" y="258" class="svg-small">surface path</text>
+            <text x="392" y="350" class="svg-small">ambient chord</text>
+            <rect x="112" y="450" width="682" height="90" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+            <text x="146" y="490" class="svg-label">same endpoints, different metric</text>
+            <text x="146" y="524" class="svg-small">geodesic distance depends on the allowed surface paths</text>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Ambient closest-point queries and intrinsic path queries should not be conflated</span><span>Surface constraints change the metric</span></div>
+      <aside class="speaker-notes">Geodesic distance is intrinsic to a surface, so it can differ sharply from the ambient Euclidean chord. Use this slide to separate the two questions: closest point in three-dimensional space versus shortest path constrained to a surface. Mesh algorithms approximate the latter through graph or heat-style propagation.</aside>
+    </section>
+
+    <section class="slide" data-label="Production Sanity Checklist">
+      <div class="topline"><div class="eyebrow">Recap And Lab</div><div class="badge">from notebook checks to graphics code</div></div>
+      <h2>Production Sanity Checklist</h2>
+      <div class="content cols-wide">
+        <div class="stack">
+          <div class="math-box exercise"><div class="box-label">Applied Lab Prompt</div><p>Choose one primitive, one tolerance, and one coordinate frame. Perturb a nearly degenerate case, render the active features, and record which changes are geometric rather than representation artifacts.</p></div>
+          <ul class="check-list">
+            <li>Closest connector is perpendicular to active unconstrained features.</li>
+            <li>Barycentric or local coordinates classify the returned feature.</li>
+            <li>World-frame and local-frame distances agree after transforms.</li>
+            <li>Iterative residuals decrease or explain why they stop.</li>
+            <li>Interior, boundary, and degenerate branches are visible in the return state.</li>
+          </ul>
+        </div>
+        <figure>
+          <div class="diagram" aria-label="Notebook storyboard gallery" style="height: 690px;">
+            <img src="../figures/storyboard-gallery.png" alt="Notebook-generated storyboard gallery for Distance in 3D">
+          </div>
+          <p class="figure-caption">The notebook artifacts are a review surface: each picture is paired with an invariant that can fail in production code.</p>
+        </figure>
+      </div>
+      <div class="footer"><span>Distance in 3D is a modeling contract</span><span>Report enough state to debug degeneracy, tolerance, and conventions</span></div>
+      <aside class="speaker-notes">Close with a checklist that students can apply to their own graphics pipelines. A distance routine is not finished when it returns a scalar. It should explain the active feature, preserve frame invariants, handle degeneracy deliberately, and expose residuals that let a caller distinguish geometry from numerical accident.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometry I - Chapter 2: Affine Spaces</title>
+  <meta name="course" content="Geometry I">
+  <meta name="chapter_id" content="chapter-02">
+  <meta name="notebook_path" content="D:/Geometry/Geometry-I/chapter-02-affine-spaces/02-affine-spaces.ipynb">
+  <meta name="source_span" content="printed 32-66, PDF 44-78">
+  <meta name="source_pdf" content="D:/Geometry/Geometry-I/Geometry-I.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    deck-stage:not(:defined) { visibility: hidden; }
+    html, body { margin: 0; background: #000; }
+    body { font-family: var(--font-sans); }
+    .speaker-notes { display: none; }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      padding: 72px 96px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+      position: relative;
+    }
+
+    .slide.alt { background: var(--slide-bg-alt); }
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.32;
+      background-image:
+        linear-gradient(#E2E8F0 1px, transparent 1px),
+        linear-gradient(90deg, #E2E8F0 1px, transparent 1px);
+      background-size: 72px 72px;
+      pointer-events: none;
+    }
+
+    .content { position: relative; z-index: 1; display: flex; flex: 1; flex-direction: column; gap: 30px; min-height: 0; }
+    .topline { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+    .brand { display: flex; align-items: center; gap: 16px; color: var(--slide-muted); font-size: 24px; }
+    .brand img { width: 48px; height: 48px; }
+    .eyebrow { color: var(--slide-accent); font-size: 24px; font-weight: 700; letter-spacing: 0; text-transform: uppercase; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { max-width: 1160px; font-size: 62px; line-height: 1.05; font-weight: 700; letter-spacing: 0; }
+    h2 { font-size: 52px; line-height: 1.08; font-weight: 700; letter-spacing: 0; }
+    h3 { font-size: 32px; line-height: 1.18; font-weight: 700; color: var(--slide-accent); letter-spacing: 0; }
+    p, li { font-size: 28px; line-height: 1.42; }
+    .muted { color: var(--slide-muted); }
+    .dimmed { color: var(--slide-dimmed); }
+    .math { font-family: var(--font-math); }
+    .big-math { font-size: 40px; line-height: 1.35; }
+    .caption { color: var(--slide-dimmed); font-size: 22px; line-height: 1.35; }
+    .source-line { color: var(--slide-muted); font-size: 24px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: stretch; flex: 1; min-height: 0; }
+    .wide-left { display: grid; grid-template-columns: 1.18fr 0.82fr; gap: 44px; align-items: stretch; flex: 1; min-height: 0; }
+    .wide-right { display: grid; grid-template-columns: 0.82fr 1.18fr; gap: 44px; align-items: stretch; flex: 1; min-height: 0; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; align-items: stretch; flex: 1; min-height: 0; }
+    .stack { display: flex; flex-direction: column; gap: 22px; }
+
+    .box {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 28px 32px;
+      box-shadow: var(--shadow-sm);
+    }
+    .box.alt { background: #F8FAFC; }
+    .math-box {
+      border-left: 5px solid var(--slide-blue);
+      background: #EFF6FF;
+      border-radius: 8px;
+      padding: 24px 28px;
+    }
+    .math-box.theorem { border-left-color: var(--slide-accent); background: #EEF2FF; }
+    .math-box.example { border-left-color: var(--slide-teal); background: #F0FDFA; }
+    .math-box.warning { border-left-color: var(--slide-amber); background: #FFFBEB; }
+    .math-box.exercise { border-left-color: var(--slide-violet); background: #F5F3FF; }
+    .box-label { font-size: 22px; font-weight: 700; color: var(--slide-accent); letter-spacing: 0; text-transform: uppercase; margin-bottom: 10px; }
+    .math-box.example .box-label { color: var(--slide-teal); }
+    .math-box.warning .box-label { color: var(--slide-amber); }
+    .math-box.exercise .box-label { color: var(--slide-violet); }
+
+    ul.clean { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    ul.clean li { padding-left: 28px; position: relative; }
+    ul.clean li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 17px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--slide-blue);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 26px; }
+    th { text-align: left; color: var(--slide-accent); font-weight: 700; border-bottom: 2px solid var(--slide-border); padding: 12px 16px; }
+    td { border-bottom: 1px solid var(--slide-border-light); padding: 12px 16px; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+
+    .figure-frame {
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .figure-frame img { max-width: 100%; max-height: 610px; object-fit: contain; }
+    svg.diagram { width: 100%; height: auto; max-height: 690px; }
+    svg text { font-family: var(--font-sans); fill: var(--slide-ink); }
+    svg .math-label { font-family: var(--font-math); font-style: italic; }
+
+    .formula-strip {
+      border: 1px solid var(--slide-border-light);
+      background: #FFFFFF;
+      border-radius: 8px;
+      padding: 22px 28px;
+      text-align: center;
+    }
+
+    .recap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .recap-item { border-left: 5px solid var(--slide-teal); padding: 18px 22px; background: #F8FAFC; border-radius: 8px; }
+    .recap-item:nth-child(2) { border-left-color: var(--slide-blue); }
+    .recap-item:nth-child(3) { border-left-color: var(--slide-amber); }
+    .recap-item:nth-child(4) { border-left-color: var(--slide-violet); }
+  </style>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script id="deck-metadata" type="application/json">
+{
+  "course": "Geometry I",
+  "chapter_id": "chapter-02",
+  "notebook_path": "D:/Geometry/Geometry-I/chapter-02-affine-spaces/02-affine-spaces.ipynb",
+  "source_span": "printed 32-66, PDF 44-78",
+  "source_pdf": "D:/Geometry/Geometry-I/Geometry-I.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    "Open the lecture by naming the torsor viewpoint: the chapter keeps points but removes a privileged origin. The source span printed pages 32 through 66 is used only for orientation; the deck follows the notebook's original computational route through frames, maps, subspaces, and incidence tests.",
+    "Spend time on the difference between a point and a free vector. A vector can move any point, but it is not itself a point of the affine space. The simply transitive action gives exactly one displacement from P to Q, which is the operational meaning of subtracting points.",
+    "Introduce coordinates as a temporary language created by choosing an origin and a basis of directions. The same geometric point receives different coordinate tuples after the origin or frame changes. The teaching target is that affine statements must survive this relabeling.",
+    "Use this slide to show why affine geometry can discuss lines and ratios without discussing angles. Once a point P and a direction v are chosen, the parameter t labels the whole line. Affine maps preserve that parameter up to an affine change, so ratios along a line survive.",
+    "Make the formula for an affine map feel inevitable. Choose one base point, record where it goes, and then use a linear map on all displacement vectors. The coordinate expression x maps to A x plus b is useful, but the coordinate-free rule explains why collinearity and parallelism are preserved.",
+    "Explain an affine subspace as a point plus a linear direction subspace. The same direction subspace can appear in many translated copies, which is the affine meaning of parallelism. Intersections are therefore governed by linear directions plus the separate question of whether the translated sets meet.",
+    "Connect the abstract invariants to the notebook artifacts. The transformed grid deliberately changes lengths and angles while keeping straightness and parallel families intact. The certificate matters because it records a check, not just an attractive picture, and it is generated inside the assigned chapter artifact tree.",
+    "Present Thales as a ratio test for affine thinking. Parallel cuts across two rays create corresponding segments with the same parameter value. The theorem is not about Euclidean measurement of angles; it is about how parallel projection transports the one-dimensional affine coordinate.",
+    "Pappus is an incidence stress test. Six points constrained to two lines produce three intersection points, and the theorem asserts that those three are collinear. In lecture, emphasize that affine coordinates can verify one instance, while the statement itself is geometric and survives frame changes.",
+    "Desargues links affine and projective habits. If corresponding vertices of two triangles are joined by concurrent lines, then the intersections of corresponding sides fall on one line. The slide should be used to show why three-dimensional projection intuition can organize a planar incidence theorem.",
+    "Use the table as a diagnostic checklist. Students often import Euclidean structure too early, so separate affine invariants from metric properties. The exercise asks them to apply a shear and decide which claims still make sense before any inner product or distance function has been introduced.",
+    "Close by returning to the chapter question. Affine geometry has enough structure to move points, compare displacements, choose frames, map subspaces, and test incidence theorems, but it refuses to choose a canonical origin or metric. That restraint is what makes the next barycentric and projective chapters natural."
+  ]
+}
+  </script>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="slide alt" data-label="Affine Spaces Without An Origin">
+    <div class="grid-bg"></div>
+    <div class="topline">
+      <div class="brand"><img src="../../../../lecture-design-system/assets/icon.svg" alt="Geometry Atlas icon"><span>Geometry I</span></div>
+      <div class="source-line">Chapter 2: printed 32-66, PDF 44-78</div>
+    </div>
+    <div class="content wide-left">
+      <div class="stack">
+        <div class="eyebrow">Lecture Deck</div>
+        <h1>Affine Spaces Without A Privileged Origin</h1>
+        <p class="muted">What remains when geometry has points, translations, parallelism, and incidence, but no canonical zero point?</p>
+        <div class="formula-strip big-math">points \(P,Q\)  give  displacements \(\overrightarrow{PQ}\), not absolute position</div>
+      </div>
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Affine grid with points and displacement arrows">
+          <defs>
+            <pattern id="title-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+            </pattern>
+            <marker id="title-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#2563EB"/>
+            </marker>
+          </defs>
+          <rect x="20" y="28" width="720" height="500" rx="8" fill="url(#title-grid)"/>
+          <g transform="translate(72 352) skewX(-18)">
+            <path d="M 0 0 L 570 -72 L 620 -252 L 48 -172 Z" fill="#0F766E" opacity="0.08" stroke="#0F766E" stroke-width="5"/>
+            <path d="M 48 -172 L 620 -252 M 0 0 L 570 -72 M 186 -190 L 136 -18 M 332 -210 L 280 -38 M 478 -230 L 426 -58" fill="none" stroke="#0F766E" stroke-width="4"/>
+          </g>
+          <circle cx="250" cy="340" r="10" fill="#B45309"/>
+          <circle cx="490" cy="260" r="10" fill="#B45309"/>
+          <line x1="250" y1="340" x2="478" y2="264" stroke="#2563EB" stroke-width="7" marker-end="url(#title-arrow)"/>
+          <text x="226" y="382" font-size="30" class="math-label">P</text>
+          <text x="504" y="252" font-size="30" class="math-label">Q</text>
+          <text x="310" y="242" font-size="28" fill="#1E3A8A">one displacement vector</text>
+          <text x="288" y="286" font-size="30" class="math-label">v = PQ</text>
+        </svg>
+        <p class="caption">The diagram is a coordinate drawing of an affine idea: only differences between points are intrinsic.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Open the lecture by naming the torsor viewpoint: the chapter keeps points but removes a privileged origin. The source span printed pages 32 through 66 is used only for orientation; the deck follows the notebook's original computational route through frames, maps, subspaces, and incidence tests.</aside>
+  </section>
+
+  <section class="slide" data-label="Points And Free Vectors">
+    <div class="topline">
+      <div class="eyebrow">Definition 2.1</div>
+      <div class="source-line">Affine space as a vector torsor</div>
+    </div>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="math-box">
+          <div class="box-label">Affine Space</div>
+          <p>An affine space \(A\) modeled on a vector space \(V\) has a free and transitive action \(A \times V \to A\), written \(P+v\).</p>
+          <p class="big-math">For every \(P,Q \in A\), there is a unique \(v \in V\) with \(Q=P+v\).</p>
+        </div>
+        <div class="math-box warning">
+          <div class="box-label">Point-Vector Separation</div>
+          <p>Expressions like \(Q-P\) are vectors. Expressions like \(P+Q\) require extra choices and are not affine operations.</p>
+        </div>
+      </div>
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 900 650" role="img" aria-label="Points as torsor and free vectors">
+          <defs>
+            <marker id="vec-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#2563EB"/>
+            </marker>
+            <marker id="green-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#0F766E"/>
+            </marker>
+          </defs>
+          <rect x="50" y="52" width="800" height="530" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+          <circle cx="190" cy="390" r="11" fill="#B45309"/>
+          <circle cx="445" cy="285" r="11" fill="#B45309"/>
+          <circle cx="670" cy="365" r="11" fill="#B45309"/>
+          <line x1="190" y1="390" x2="430" y2="292" stroke="#2563EB" stroke-width="7" marker-end="url(#vec-arrow)"/>
+          <line x1="445" y1="285" x2="657" y2="360" stroke="#0F766E" stroke-width="7" marker-end="url(#green-arrow)"/>
+          <line x1="190" y1="390" x2="655" y2="365" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 12"/>
+          <text x="158" y="434" font-size="30" class="math-label">P</text>
+          <text x="458" y="277" font-size="30" class="math-label">Q</text>
+          <text x="684" y="367" font-size="30" class="math-label">R</text>
+          <text x="245" y="315" font-size="30" class="math-label">Q-P</text>
+          <text x="520" y="345" font-size="30" class="math-label">R-Q</text>
+          <text x="120" y="116" font-size="34" fill="#1E3A8A">Same vector can act from any base point</text>
+          <line x1="148" y1="174" x2="318" y2="132" stroke="#2563EB" stroke-width="6" marker-end="url(#vec-arrow)"/>
+          <line x1="478" y1="512" x2="648" y2="470" stroke="#2563EB" stroke-width="6" marker-end="url(#vec-arrow)"/>
+          <text x="336" y="138" font-size="28" class="math-label">v</text>
+          <text x="666" y="476" font-size="28" class="math-label">v</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Spend time on the difference between a point and a free vector. A vector can move any point, but it is not itself a point of the affine space. The simply transitive action gives exactly one displacement from P to Q, which is the operational meaning of subtracting points.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Frames Are Temporary Languages">
+    <div class="topline">
+      <div class="eyebrow">Coordinates</div>
+      <div class="source-line">Frames name points, but do not create them</div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <h2>Affine Frames Are Choices</h2>
+        <div class="math-box example">
+          <div class="box-label">Frame Formula</div>
+          <p>A frame \((O; e_1,\ldots,e_n)\) assigns coordinates by</p>
+          <p class="big-math">\(P = O + x_1 e_1 + \cdots + x_n e_n.\)</p>
+        </div>
+        <ul class="clean">
+          <li>Changing \(O\) translates the coordinate tuple.</li>
+          <li>Changing the basis applies an invertible linear change.</li>
+          <li>The point \(P\), the line through points, and incidence relations stay put.</li>
+        </ul>
+      </div>
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 900 650" role="img" aria-label="Two affine frames label the same point differently">
+          <defs>
+            <marker id="frame-blue" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#2563EB"/>
+            </marker>
+            <marker id="frame-teal" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#0F766E"/>
+            </marker>
+          </defs>
+          <rect x="60" y="60" width="780" height="520" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3" rx="8"/>
+          <path d="M120 500 L790 500 M120 400 L790 400 M120 300 L790 300 M120 200 L790 200 M120 100 L790 100 M160 80 L160 540 M280 80 L280 540 M400 80 L400 540 M520 80 L520 540 M640 80 L640 540 M760 80 L760 540" stroke="#E2E8F0" stroke-width="3"/>
+          <circle cx="260" cy="450" r="10" fill="#2563EB"/>
+          <line x1="260" y1="450" x2="430" y2="450" stroke="#2563EB" stroke-width="7" marker-end="url(#frame-blue)"/>
+          <line x1="260" y1="450" x2="260" y2="280" stroke="#2563EB" stroke-width="7" marker-end="url(#frame-blue)"/>
+          <text x="220" y="488" font-size="28" class="math-label">O</text>
+          <text x="436" y="476" font-size="26" class="math-label">e1</text>
+          <text x="272" y="276" font-size="26" class="math-label">e2</text>
+          <circle cx="570" cy="390" r="10" fill="#0F766E"/>
+          <line x1="570" y1="390" x2="720" y2="348" stroke="#0F766E" stroke-width="7" marker-end="url(#frame-teal)"/>
+          <line x1="570" y1="390" x2="528" y2="230" stroke="#0F766E" stroke-width="7" marker-end="url(#frame-teal)"/>
+          <text x="582" y="424" font-size="28" class="math-label">O'</text>
+          <text x="728" y="358" font-size="26" class="math-label">e1'</text>
+          <text x="486" y="225" font-size="26" class="math-label">e2'</text>
+          <circle cx="505" cy="230" r="13" fill="#B45309"/>
+          <text x="522" y="222" font-size="30" class="math-label">P</text>
+          <path d="M260 450 C330 390 405 310 505 230" fill="none" stroke="#2563EB" stroke-width="5" stroke-dasharray="10 10"/>
+          <path d="M570 390 C535 330 520 280 505 230" fill="none" stroke="#0F766E" stroke-width="5" stroke-dasharray="10 10"/>
+          <text x="142" y="125" font-size="28" fill="#475569">one point, two coordinate stories</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Introduce coordinates as a temporary language created by choosing an origin and a basis of directions. The same geometric point receives different coordinate tuples after the origin or frame changes. The teaching target is that affine statements must survive this relabeling.</aside>
+  </section>
+
+  <section class="slide" data-label="Lines And Ratios">
+    <div class="topline">
+      <div class="eyebrow">One-Dimensional Affine Geometry</div>
+      <div class="source-line">Parameters, collinearity, and ratios</div>
+    </div>
+    <div class="content wide-left">
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 980 650" role="img" aria-label="Affine line parameter preserves ratios">
+          <defs>
+            <marker id="line-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#1E3A8A"/>
+            </marker>
+          </defs>
+          <rect x="55" y="82" width="860" height="440" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="120" y1="390" x2="850" y2="190" stroke="#1E3A8A" stroke-width="7" marker-end="url(#line-arrow)"/>
+          <circle cx="180" cy="374" r="11" fill="#2563EB"/>
+          <circle cx="410" cy="311" r="11" fill="#B45309"/>
+          <circle cx="640" cy="248" r="11" fill="#0F766E"/>
+          <text x="145" y="430" font-size="30" class="math-label">P</text>
+          <text x="385" y="356" font-size="30" class="math-label">P+t v</text>
+          <text x="620" y="295" font-size="30" class="math-label">P+s v</text>
+          <line x1="180" y1="442" x2="410" y2="380" stroke="#94A3B8" stroke-width="4"/>
+          <line x1="410" y1="380" x2="640" y2="318" stroke="#94A3B8" stroke-width="4"/>
+          <text x="253" y="485" font-size="26">parameter gap t</text>
+          <text x="485" y="410" font-size="26">parameter gap s-t</text>
+          <text x="122" y="138" font-size="34" fill="#1E3A8A">A line is P + Rv</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <h2>Ratios Without Lengths</h2>
+        <div class="math-box theorem">
+          <div class="box-label">Affine Invariant</div>
+          <p>If \(A,B,C\) lie on one affine line, the scalar \(t\) in \(C=A+t(B-A)\) is independent of the chosen frame.</p>
+        </div>
+        <p>Affine maps preserve collinearity and ratios along a single line; they need not preserve distances, angles, or perpendicularity.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use this slide to show why affine geometry can discuss lines and ratios without discussing angles. Once a point P and a direction v are chosen, the parameter t labels the whole line. Affine maps preserve that parameter up to an affine change, so ratios along a line survive.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Affine Maps">
+    <div class="topline">
+      <div class="eyebrow">Morphisms</div>
+      <div class="source-line">Linear part plus the image of one point</div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <h2>The Coordinate-Free Rule</h2>
+        <div class="math-box">
+          <div class="box-label">Affine Map</div>
+          <p>A map \(f:A\to B\) is affine if there is a linear map \(L:V_A\to V_B\) such that</p>
+          <p class="big-math">\(f(P+v)=f(P)+L(v)\).</p>
+        </div>
+        <div class="formula-strip big-math">after a frame is chosen: \(x \mapsto A x + b\)</div>
+      </div>
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 900 650" role="img" aria-label="Affine map sends grid lines to grid lines">
+          <defs>
+            <marker id="map-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#B45309"/>
+            </marker>
+          </defs>
+          <rect x="48" y="70" width="320" height="460" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+          <rect x="532" y="70" width="320" height="460" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+          <g stroke="#2563EB" stroke-width="4">
+            <line x1="92" y1="138" x2="322" y2="138"/><line x1="92" y1="218" x2="322" y2="218"/><line x1="92" y1="298" x2="322" y2="298"/><line x1="92" y1="378" x2="322" y2="378"/>
+            <line x1="116" y1="110" x2="116" y2="438"/><line x1="196" y1="110" x2="196" y2="438"/><line x1="276" y1="110" x2="276" y2="438"/>
+          </g>
+          <g stroke="#0F766E" stroke-width="4">
+            <line x1="574" y1="180" x2="806" y2="122"/><line x1="574" y1="260" x2="806" y2="202"/><line x1="574" y1="340" x2="806" y2="282"/><line x1="574" y1="420" x2="806" y2="362"/>
+            <line x1="606" y1="124" x2="654" y2="452"/><line x1="684" y1="104" x2="732" y2="432"/><line x1="762" y1="84" x2="810" y2="412"/>
+          </g>
+          <line x1="388" y1="300" x2="504" y2="300" stroke="#B45309" stroke-width="8" marker-end="url(#map-arrow)"/>
+          <text x="158" y="570" font-size="30">frame coordinates</text>
+          <text x="602" y="570" font-size="30">affine image</text>
+          <text x="407" y="260" font-size="34" fill="#B45309" class="math-label">f</text>
+          <circle cx="196" cy="298" r="10" fill="#B45309"/>
+          <circle cx="682" cy="282" r="10" fill="#B45309"/>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Make the formula for an affine map feel inevitable. Choose one base point, record where it goes, and then use a linear map on all displacement vectors. The coordinate expression x maps to A x plus b is useful, but the coordinate-free rule explains why collinearity and parallelism are preserved.</aside>
+  </section>
+
+  <section class="slide" data-label="Subspaces And Parallelism">
+    <div class="topline">
+      <div class="eyebrow">Affine Subspaces</div>
+      <div class="source-line">Translated linear structure</div>
+    </div>
+    <div class="content wide-right">
+      <div class="stack">
+        <div class="math-box">
+          <div class="box-label">Subspace Form</div>
+          <p>An affine subspace is \(P+W=\{P+w:w\in W\}\), where \(W\le V\) is a vector subspace.</p>
+        </div>
+        <ul class="clean">
+          <li>Direction space: \(\operatorname{dir}(P+W)=W\).</li>
+          <li>Parallel copies share the same \(W\) but have different base points.</li>
+          <li>Intersections are empty or affine subspaces with direction \(W_1\cap W_2\).</li>
+        </ul>
+      </div>
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 920 650" role="img" aria-label="Parallel affine subspaces as translated lines">
+          <defs>
+            <marker id="sub-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+              <path d="M 2 2 L 12 7 L 2 12 Z" fill="#2563EB"/>
+            </marker>
+          </defs>
+          <rect x="64" y="72" width="792" height="500" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3" rx="8"/>
+          <line x1="150" y1="442" x2="764" y2="260" stroke="#2563EB" stroke-width="7"/>
+          <line x1="110" y1="330" x2="724" y2="148" stroke="#2563EB" stroke-width="7" opacity="0.65"/>
+          <line x1="220" y1="514" x2="834" y2="332" stroke="#2563EB" stroke-width="7" opacity="0.65"/>
+          <line x1="250" y1="412" x2="430" y2="358" stroke="#0F766E" stroke-width="8" marker-end="url(#sub-arrow)"/>
+          <circle cx="250" cy="412" r="10" fill="#B45309"/>
+          <circle cx="404" cy="244" r="10" fill="#B45309"/>
+          <line x1="404" y1="244" x2="585" y2="190" stroke="#0F766E" stroke-width="8" marker-end="url(#sub-arrow)"/>
+          <text x="182" y="466" font-size="30" class="math-label">P+W</text>
+          <text x="95" y="292" font-size="30" class="math-label">P'+W</text>
+          <text x="516" y="186" font-size="30" class="math-label">W</text>
+          <line x1="520" y1="92" x2="700" y2="540" stroke="#B45309" stroke-width="5" stroke-dasharray="13 12"/>
+          <circle cx="584" cy="251" r="11" fill="#B45309"/>
+          <text x="610" y="257" font-size="28">one transverse line meets each copy once</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Explain an affine subspace as a point plus a linear direction subspace. The same direction subspace can appear in many translated copies, which is the affine meaning of parallelism. Intersections are therefore governed by linear directions plus the separate question of whether the translated sets meet.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Notebook Artifact Check">
+    <div class="topline">
+      <div class="eyebrow">Notebook Artifact</div>
+      <div class="source-line">Geometry-I/artifacts/chapter-02/checks/visual-summary.json</div>
+    </div>
+    <div class="content wide-left">
+      <div class="figure-frame">
+        <img src="../figures/affine-frame-transformed-grid.png" alt="Affine frame transformed grid generated by the notebook">
+        <p class="caption">Generated chapter artifact: transformed grid with affine frame points \(O,e_1,e_2\).</p>
+      </div>
+      <div class="stack">
+        <h2>What The Check Records</h2>
+        <div class="math-box example">
+          <div class="box-label">Computed Certificate</div>
+          <p>\(\texttt{parallelism\_preserved} = \texttt{true}\)</p>
+          <p>\(\texttt{image\_segment\_length} \approx 1.2166\)</p>
+        </div>
+        <p>Length changed because the chosen affine map is not Euclidean. Parallel families stayed parallel because the linear part carries direction subspaces to direction subspaces.</p>
+        <p class="caption">The image and JSON summary are local notebook outputs, not source PDF material.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Connect the abstract invariants to the notebook artifacts. The transformed grid deliberately changes lengths and angles while keeping straightness and parallel families intact. The certificate matters because it records a check, not just an attractive picture, and it is generated inside the assigned chapter artifact tree.</aside>
+  </section>
+
+  <section class="slide" data-label="Thales As A Ratio Test">
+    <div class="topline">
+      <div class="eyebrow">Classical Incidence I</div>
+      <div class="source-line">Parallel projection preserves affine parameters</div>
+    </div>
+    <div class="content two-col">
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 900 650" role="img" aria-label="Thales theorem with parallel cuts">
+          <rect x="58" y="68" width="784" height="508" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+          <circle cx="170" cy="500" r="11" fill="#B45309"/>
+          <line x1="170" y1="500" x2="770" y2="180" stroke="#1E3A8A" stroke-width="6"/>
+          <line x1="170" y1="500" x2="780" y2="520" stroke="#1E3A8A" stroke-width="6"/>
+          <g stroke="#0F766E" stroke-width="6">
+            <line x1="342" y1="408" x2="347" y2="506"/>
+            <line x1="514" y1="316" x2="524" y2="512"/>
+            <line x1="686" y1="224" x2="701" y2="518"/>
+          </g>
+          <circle cx="342" cy="408" r="9" fill="#2563EB"/>
+          <circle cx="347" cy="506" r="9" fill="#2563EB"/>
+          <circle cx="514" cy="316" r="9" fill="#2563EB"/>
+          <circle cx="524" cy="512" r="9" fill="#2563EB"/>
+          <circle cx="686" cy="224" r="9" fill="#2563EB"/>
+          <circle cx="701" cy="518" r="9" fill="#2563EB"/>
+          <text x="134" y="542" font-size="30" class="math-label">O</text>
+          <text x="312" y="386" font-size="26" class="math-label">A1</text>
+          <text x="312" y="548" font-size="26" class="math-label">B1</text>
+          <text x="484" y="294" font-size="26" class="math-label">A2</text>
+          <text x="494" y="554" font-size="26" class="math-label">B2</text>
+          <text x="656" y="202" font-size="26" class="math-label">A3</text>
+          <text x="672" y="558" font-size="26" class="math-label">B3</text>
+          <text x="258" y="126" font-size="32" fill="#0F766E">parallel cuts give matched parameters</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <h2>Thales, Affine Version</h2>
+        <div class="math-box theorem">
+          <div class="box-label">Ratio Statement</div>
+          <p>If parallel lines cut two transversals from the same vertex, corresponding points have the same affine parameter.</p>
+          <p class="big-math">\(\dfrac{OA_i}{OA_j} = \dfrac{OB_i}{OB_j}\)</p>
+        </div>
+        <p>The formula is read as a statement about one-dimensional affine coordinates on each transversal.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Present Thales as a ratio test for affine thinking. Parallel cuts across two rays create corresponding segments with the same parameter value. The theorem is not about Euclidean measurement of angles; it is about how parallel projection transports the one-dimensional affine coordinate.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Pappus Incidence">
+    <div class="topline">
+      <div class="eyebrow">Classical Incidence II</div>
+      <div class="source-line">A collinearity theorem as a frame-invariant test</div>
+    </div>
+    <div class="content wide-left">
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 980 650" role="img" aria-label="Pappus configuration with three collinear intersection points">
+          <rect x="58" y="74" width="860" height="498" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+          <line x1="112" y1="210" x2="850" y2="165" stroke="#1E3A8A" stroke-width="6"/>
+          <line x1="120" y1="455" x2="840" y2="505" stroke="#0F766E" stroke-width="6"/>
+          <g fill="#2563EB">
+            <circle cx="210" cy="204" r="10"/><circle cx="445" cy="190" r="10"/><circle cx="690" cy="175" r="10"/>
+          </g>
+          <g fill="#0F766E">
+            <circle cx="240" cy="463" r="10"/><circle cx="510" cy="482" r="10"/><circle cx="740" cy="498" r="10"/>
+          </g>
+          <g stroke="#94A3B8" stroke-width="4" opacity="0.75">
+            <line x1="210" y1="204" x2="510" y2="482"/>
+            <line x1="445" y1="190" x2="240" y2="463"/>
+            <line x1="445" y1="190" x2="740" y2="498"/>
+            <line x1="690" y1="175" x2="510" y2="482"/>
+            <line x1="210" y1="204" x2="740" y2="498"/>
+            <line x1="690" y1="175" x2="240" y2="463"/>
+          </g>
+          <line x1="208" y1="356" x2="796" y2="344" stroke="#B45309" stroke-width="6" stroke-dasharray="14 10"/>
+          <g fill="#B45309">
+            <circle cx="332" cy="354" r="11"/><circle cx="520" cy="350" r="11"/><circle cx="704" cy="346" r="11"/>
+          </g>
+          <text x="188" y="168" font-size="26" class="math-label">A</text>
+          <text x="432" y="154" font-size="26" class="math-label">B</text>
+          <text x="690" y="140" font-size="26" class="math-label">C</text>
+          <text x="218" y="504" font-size="26" class="math-label">A'</text>
+          <text x="494" y="526" font-size="26" class="math-label">B'</text>
+          <text x="728" y="542" font-size="26" class="math-label">C'</text>
+          <text x="256" y="332" font-size="28" fill="#B45309">Pappus line</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <h2>Pappus As A Robust Incidence Test</h2>
+        <div class="math-box theorem">
+          <div class="box-label">Theorem Shape</div>
+          <p>Put three points on one line and three on another. Intersect the three pairs of cross-joins. The three resulting points are collinear.</p>
+        </div>
+        <p>Affine coordinates can verify an instance, but the statement is about incidence, so frame changes cannot alter its truth.</p>
+      </div>
+    </div>
+    <aside class="speaker-notes">Pappus is an incidence stress test. Six points constrained to two lines produce three intersection points, and the theorem asserts that those three are collinear. In lecture, emphasize that affine coordinates can verify one instance, while the statement itself is geometric and survives frame changes.</aside>
+  </section>
+
+  <section class="slide" data-label="Desargues Perspective">
+    <div class="topline">
+      <div class="eyebrow">Classical Incidence III</div>
+      <div class="source-line">Perspective triangles and a collinearity conclusion</div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <h2>Desargues In The Affine Plane</h2>
+        <div class="math-box theorem">
+          <div class="box-label">Incidence Principle</div>
+          <p>If the joins \(AA'\), \(BB'\), and \(CC'\) are concurrent, then the intersections of corresponding sides are collinear whenever they are finite.</p>
+        </div>
+        <p class="muted">The theorem is often easiest to remember as a projection shadow of a three-dimensional configuration.</p>
+      </div>
+      <div class="figure-frame">
+        <svg class="diagram" viewBox="0 0 900 650" role="img" aria-label="Desargues perspective triangles">
+          <rect x="54" y="72" width="800" height="508" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+          <polygon points="260,440 435,165 622,430" fill="#2563EB" opacity="0.08" stroke="#2563EB" stroke-width="6"/>
+          <polygon points="338,386 456,228 565,382" fill="#0F766E" opacity="0.10" stroke="#0F766E" stroke-width="6"/>
+          <circle cx="450" cy="70" r="12" fill="#B45309"/>
+          <g stroke="#B45309" stroke-width="4" stroke-dasharray="11 10">
+            <line x1="450" y1="70" x2="260" y2="440"/>
+            <line x1="450" y1="70" x2="435" y2="165"/>
+            <line x1="450" y1="70" x2="622" y2="430"/>
+            <line x1="450" y1="70" x2="338" y2="386"/>
+            <line x1="450" y1="70" x2="456" y2="228"/>
+            <line x1="450" y1="70" x2="565" y2="382"/>
+          </g>
+          <line x1="160" y1="522" x2="762" y2="502" stroke="#1E3A8A" stroke-width="6" stroke-dasharray="14 10"/>
+          <g fill="#1E3A8A">
+            <circle cx="248" cy="519" r="10"/><circle cx="468" cy="512" r="10"/><circle cx="684" cy="505" r="10"/>
+          </g>
+          <text x="464" y="64" font-size="30" class="math-label">S</text>
+          <text x="227" y="472" font-size="26" class="math-label">A</text>
+          <text x="424" y="154" font-size="26" class="math-label">B</text>
+          <text x="630" y="446" font-size="26" class="math-label">C</text>
+          <text x="318" y="374" font-size="26" class="math-label">A'</text>
+          <text x="468" y="224" font-size="26" class="math-label">B'</text>
+          <text x="574" y="400" font-size="26" class="math-label">C'</text>
+          <text x="336" y="560" font-size="28" fill="#1E3A8A">Desargues axis</text>
+        </svg>
+      </div>
+    </div>
+    <aside class="speaker-notes">Desargues links affine and projective habits. If corresponding vertices of two triangles are joined by concurrent lines, then the intersections of corresponding sides fall on one line. The slide should be used to show why three-dimensional projection intuition can organize a planar incidence theorem.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Invariant Checklist">
+    <div class="topline">
+      <div class="eyebrow">Pitfalls And Lab Prompt</div>
+      <div class="source-line">Do not smuggle a metric into an affine argument</div>
+    </div>
+    <div class="content two-col">
+      <div class="stack">
+        <h2>What Survives An Affine Change?</h2>
+        <table>
+          <thead>
+            <tr><th>Survives</th><th>Reason</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Collinearity</td><td>Lines map to lines.</td></tr>
+            <tr><td>Parallelism</td><td>Direction subspaces map linearly.</td></tr>
+            <tr><td>Ratio on one line</td><td>The affine parameter is preserved.</td></tr>
+            <tr><td>Midpoints</td><td>\(\frac12 P+\frac12 Q\) uses weights summing to one.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="stack">
+        <h2>What Usually Does Not?</h2>
+        <table>
+          <thead>
+            <tr><th>Does Not Survive</th><th>Missing Structure</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Length</td><td>No chosen norm or metric.</td></tr>
+            <tr><td>Angle</td><td>No inner product.</td></tr>
+            <tr><td>Area scale one</td><td>Affine maps may change volume.</td></tr>
+            <tr><td>Perpendicularity</td><td>Orthogonality is Euclidean, not affine.</td></tr>
+          </tbody>
+        </table>
+        <div class="math-box exercise">
+          <div class="box-label">Lab Prompt</div>
+          <p>Draw a construction, apply the shear \(x \mapsto Ax+b\), and mark exactly which claims still hold.</p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Use the table as a diagnostic checklist. Students often import Euclidean structure too early, so separate affine invariants from metric properties. The exercise asks them to apply a shear and decide which claims still make sense before any inner product or distance function has been introduced.</aside>
+  </section>
+
+  <section class="slide" data-label="Recap">
+    <div class="topline">
+      <div class="eyebrow">Recap</div>
+      <div class="source-line">Affine space is geometry with controlled freedom</div>
+    </div>
+    <div class="content">
+      <h2>Chapter 2 Board Summary</h2>
+      <div class="recap-grid">
+        <div class="recap-item">
+          <h3>Objects</h3>
+          <p>Points form a torsor over a vector space. Vectors compare points, but no point is the default zero.</p>
+        </div>
+        <div class="recap-item">
+          <h3>Coordinates</h3>
+          <p>A frame is a useful language. Changing it changes tuples, not the affine relation being described.</p>
+        </div>
+        <div class="recap-item">
+          <h3>Morphisms</h3>
+          <p>Affine maps have a linear part plus one point image, so they preserve lines, parallelism, and line ratios.</p>
+        </div>
+        <div class="recap-item">
+          <h3>Tests</h3>
+          <p>Thales, Pappus, and Desargues become stress tests for incidence and frame-invariant reasoning.</p>
+        </div>
+      </div>
+      <div class="formula-strip big-math">Affine geometry asks: what can be proved before a metric or origin is chosen?</div>
+    </div>
+    <aside class="speaker-notes">Close by returning to the chapter question. Affine geometry has enough structure to move points, compare displacements, choose frames, map subspaces, and test incidence theorems, but it refuses to choose a canonical origin or metric. That restraint is what makes the next barycentric and projective chapters natural.</aside>
+  </section>
+</deck-stage>
+</body>
+</html>

@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometric Algebra for Computer Science - Chapter 22</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="chapter-22">
+  <meta name="chapter_title" content="22 - Specializing The Structure For Efficiency">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-22-specializing-the-structure-for-efficiency/22-specializing-the-structure-for-efficiency.ipynb">
+  <meta name="source_span" content="PDF pages 561-576.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script id="deck-metadata" type="application/json">
+{
+  "course": "Geometric Algebra for Computer Science",
+  "chapter_id": "chapter-22",
+  "chapter_title": "22 - Specializing The Structure For Efficiency",
+  "notebook_path": "Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-22-specializing-the-structure-for-efficiency/22-specializing-the-structure-for-efficiency.ipynb",
+  "source_span": "PDF pages 561-576.",
+  "source_pdf": "Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Specializing The Structure For Efficiency",
+      "notes": "Open with the performance promise: geometric algebra should remain expressive while competing with coordinate code. Frame the lecture as a compiler story. Once the algebra, metric, object families, and recurring operations are fixed, the implementation can replace general multivectors with compact generated kernels and keep the generic layer as a reference."
+    },
+    {
+      "slide": 2,
+      "title": "Where Generality Costs",
+      "notes": "Use the three pressure points as the reason specialization is necessary. Full multivectors allocate coordinates that many geometric objects never use. Runtime metric lookup wastes cycles inside tiny products. Generic product loops add branches and memory traffic exactly where a renderer or simulator needs predictable hot-path arithmetic."
+    },
+    {
+      "slide": 3,
+      "title": "The Generator Contract",
+      "notes": "Emphasize that a code generator cannot optimize an informal idea of an algebra. It needs a written contract: dimension, basis labels, metric, specialized type masks, constants, and the operations the application will actually call. The more stable that contract is, the narrower and clearer the emitted code can be."
+    },
+    {
+      "slide": 4,
+      "title": "Store Promises, Not Zeros",
+      "notes": "The storage visual should make sparsity feel structural rather than accidental. A vector, line, rotor, or normalized point is not a small multivector by luck; its type promises which basis blades are variable, zero, or constant. That promise removes memory traffic before the arithmetic is even considered."
+    },
+    {
+      "slide": 5,
+      "title": "Hard-Code The Metric",
+      "notes": "Treat the metric as part of the compiled algebra, not as a runtime setting inside every product. The conformal example is useful because the intuitive null basis can be both more readable and more compact for certain objects. The generator should preserve that chosen basis while removing lookup overhead."
+    },
+    {
+      "slide": 6,
+      "title": "Where Generation Can Happen",
+      "notes": "Walk through the tool chain without making one approach universal. Ahead-of-time generation gives inspectable library code, compile-time metaprogramming integrates with the host language, and runtime generation can adapt to observed calls and hardware. Each choice changes startup cost, debuggability, and profiling feedback."
+    },
+    {
+      "slide": 7,
+      "title": "A Product Kernel After Simplification",
+      "notes": "Use the outer product example as a small audit trail. The high-level expression stays geometric, but the emitted kernel contains only determinant-like coordinate combinations and direct copies caused by a known constant coordinate. Stress that this is generated code first and trusted code only after reference checks."
+    },
+    {
+      "slide": 8,
+      "title": "Constants Are Compile-Time Geometry",
+      "notes": "Make constants more than a storage trick. A pseudoscalar, a basis blade, or a normalized coordinate can act as a symbolic token that disappears during simplification. The important lesson is that readable geometric formulas can collapse to shuffles, sign changes, or copies without a human maintaining those low-level details."
+    },
+    {
+      "slide": 9,
+      "title": "Specialize Whole Functions",
+      "notes": "Shift from individual products to whole expressions. If an application repeatedly applies a versor to a known point type, the generator can substitute argument types, expand products on the basis, simplify, infer the return type, and emit one straight-line function instead of a chain of generic calls."
+    },
+    {
+      "slide": 10,
+      "title": "Outermorphisms As A Hot Path",
+      "notes": "Present outermorphism matrices as a representation change chosen for repeated work. A rotor sandwich is geometrically clean, but if the same transformation touches thousands of points or blades, initializing the induced matrix once can move cost out of the inner loop. The break-even point belongs to benchmarking."
+    },
+    {
+      "slide": 11,
+      "title": "Nonlinear Functions Need Shape Guarantees",
+      "notes": "This is the caution slide. Linear products reveal their output support from input types, while nonlinear algorithms may branch on numeric values. Versor inverses and bivector exponentials specialize well when intermediates have fixed shape. General multivector inversion, meet, and join need fallback paths or runtime decisions."
+    },
+    {
+      "slide": 12,
+      "title": "Design For The Processor",
+      "notes": "Tie the algebraic decisions to machine behavior. Compact storage reduces cache pressure, hard-coded metrics remove memory lookups, unrolled loops remove branches, and fused expressions avoid temporary multivectors. The goal is not clever micro-optimization; it is letting known geometry make the processor's job simple."
+    },
+    {
+      "slide": 13,
+      "title": "Benchmark Complete Choices",
+      "notes": "Frame the performance table as evidence about complete representations, not a universal ranking. The ray-tracing comparison keeps the application fixed while changing the geometry model and implementation strategy. The lesson is benchmark-minded design: include conversion costs, hot paths, memory behavior, and the best traditional baseline."
+    },
+    {
+      "slide": 14,
+      "title": "Carry Forward",
+      "notes": "Close by separating the two layers students should keep. The generic algebra remains the flexible reference model, useful for exploration and validation. Specialized code is the fast path for stable types, metrics, and repeated operations. Good implementations use both, with tests connecting them."
+    }
+  ]
+}
+  </script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    deck-stage > section {
+      width: 1920px;
+      height: 1080px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      display: flex;
+      flex-direction: column;
+      padding: 62px 92px 58px;
+      border-top: 10px solid var(--slide-accent);
+      background:
+        linear-gradient(90deg, rgba(30, 58, 138, 0.03) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.024) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 76px 76px, 76px 76px, auto;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.034) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(109, 40, 217, 0.026) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px, 72px 72px, auto;
+    }
+
+    h1,
+    h2,
+    h3,
+    p,
+    ul,
+    ol,
+    figure {
+      margin-top: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+      font-size: 62px;
+      line-height: 1.05;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: 50px;
+      line-height: 1.08;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: 30px;
+      line-height: 1.15;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    p,
+    li {
+      font-size: 26px;
+      line-height: 1.28;
+    }
+
+    ul,
+    ol {
+      margin-bottom: 0;
+      padding-left: 30px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 23px;
+      background: #F8FAFC;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 6px;
+      padding: 2px 7px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--slide-muted);
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+    }
+
+    .source-chip {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .kicker {
+      color: var(--slide-accent);
+      font-size: 24px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 1000px;
+      margin: 0;
+      color: var(--slide-muted);
+      font-size: 30px;
+      line-height: 1.34;
+    }
+
+    .title-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 58px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 34px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .wide-col {
+      display: grid;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 34px;
+      align-items: stretch;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 26px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel.blue {
+      background: #EFF6FF;
+      border-left: 5px solid var(--slide-blue);
+    }
+
+    .panel.teal {
+      background: #F0FDFA;
+      border-left: 5px solid var(--slide-teal);
+    }
+
+    .panel.amber {
+      background: #FFFBEB;
+      border-left: 5px solid var(--slide-amber);
+    }
+
+    .panel.violet {
+      background: #F5F3FF;
+      border-left: 5px solid var(--slide-violet);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .pill {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 22px;
+      font-weight: 700;
+      background: #FFFFFF;
+      color: var(--slide-muted);
+    }
+
+    .equation {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.25;
+      color: var(--slide-ink);
+    }
+
+    .math-note {
+      font-family: var(--font-math);
+      font-size: 28px;
+      line-height: 1.3;
+    }
+
+    .caption {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      line-height: 1.25;
+      margin: 12px 0 0;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      margin-top: 18px;
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .schema-card {
+      min-height: 142px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 18px;
+    }
+
+    .schema-card strong {
+      display: block;
+      color: var(--slide-accent);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .schema-card span {
+      display: block;
+      color: var(--slide-muted);
+      font-size: 23px;
+      line-height: 1.22;
+    }
+
+    .mask-table {
+      display: grid;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .mask-row {
+      display: grid;
+      grid-template-columns: 220px 1fr 130px;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .mask-label {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    .mask-count {
+      font-size: 22px;
+      color: var(--slide-muted);
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .slot-track {
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      gap: 3px;
+      height: 34px;
+      padding: 5px;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #FFFFFF;
+    }
+
+    .slot-track span {
+      border-radius: 4px;
+      background: #E5E7EB;
+    }
+
+    .slot-track .stored {
+      background: var(--slide-blue);
+    }
+
+    .slot-track .constant {
+      background: var(--slide-amber);
+    }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      margin-top: 20px;
+      color: var(--slide-muted);
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      margin-right: 8px;
+      border-radius: 5px;
+      vertical-align: -4px;
+    }
+
+    .matrix {
+      display: grid;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 24px;
+      color: var(--slide-ink);
+      margin-top: 12px;
+    }
+
+    .matrix.cols-5 {
+      grid-template-columns: repeat(5, 58px);
+    }
+
+    .matrix.cols-3 {
+      grid-template-columns: repeat(3, 58px);
+    }
+
+    .matrix span {
+      display: grid;
+      place-items: center;
+      height: 42px;
+      border-radius: 6px;
+      background: #F8FAFC;
+      border: 1px solid var(--slide-border-light);
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 90px;
+      gap: 14px;
+      align-items: center;
+      font-size: 23px;
+      font-weight: 700;
+    }
+
+    .bar-track {
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--slide-border-light);
+      background: #F8FAFC;
+      overflow: clip;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      background: var(--slide-blue);
+    }
+
+    .bar-fill.teal {
+      background: var(--slide-teal);
+    }
+
+    .bar-fill.amber {
+      background: var(--slide-amber);
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .stage-card {
+      min-height: 180px;
+      padding: 22px;
+      border-radius: 8px;
+      border: 1px solid var(--slide-border-light);
+      background: #FFFFFF;
+    }
+
+    .stage-number {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #EEF2FF;
+      color: var(--slide-accent);
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .stage-card strong {
+      display: block;
+      font-size: 27px;
+      margin-bottom: 8px;
+    }
+
+    .stage-card span {
+      color: var(--slide-muted);
+      font-size: 23px;
+      line-height: 1.22;
+    }
+
+    .code-box {
+      font-family: var(--font-mono);
+      font-size: 23px;
+      line-height: 1.36;
+      color: #0F172A;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #F8FAFC;
+      padding: 20px;
+      white-space: pre-line;
+    }
+
+    .decision-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      margin-top: 26px;
+    }
+
+    .decision {
+      min-height: 280px;
+      border-radius: 8px;
+      padding: 24px;
+      background: #FFFFFF;
+      border: 1px solid var(--slide-border-light);
+    }
+
+    .decision .badge {
+      display: inline-block;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 22px;
+      font-weight: 700;
+      background: #EEF2FF;
+      color: var(--slide-accent);
+    }
+
+    .benchmark {
+      display: grid;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .benchmark-row {
+      display: grid;
+      grid-template-columns: 140px 170px 1fr 90px;
+      gap: 14px;
+      align-items: center;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .mini-head {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .recap-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .recap-card {
+      min-height: 250px;
+      border-radius: 8px;
+      border: 1px solid var(--slide-border-light);
+      background: #FFFFFF;
+      padding: 22px;
+    }
+
+    .recap-card strong {
+      display: block;
+      font-size: 27px;
+      color: var(--slide-accent);
+      margin-bottom: 12px;
+    }
+
+    .recap-card span {
+      display: block;
+      font-size: 23px;
+      line-height: 1.25;
+      color: var(--slide-muted);
+    }
+  </style>
+</head>
+<body>
+  <deck-stage>
+    <section class="slide alt">
+      <div class="topline">
+        <div class="brand"><img class="brand-icon" src="../../../../../lecture-design-system/assets/icon.svg" alt=""> Geometry Atlas</div>
+        <div class="source-chip">GA for CS Ch. 22 - PDF pages 561-576</div>
+      </div>
+      <div class="title-grid">
+        <div>
+          <div class="kicker">Implementation lecture</div>
+          <h1>Specializing The Structure For Efficiency</h1>
+          <p class="subtitle">Use the algebra as a generator contract: compact types, fixed metrics, simplified products, cached transformations, and benchmarked hot paths.</p>
+          <div class="pill-row">
+            <span class="pill">precomputed tables</span>
+            <span class="pill">sparsity masks</span>
+            <span class="pill">metric specialization</span>
+            <span class="pill">code generation</span>
+          </div>
+        </div>
+        <figure class="panel">
+          <svg viewBox="0 0 780 520" role="img" aria-label="A general 32 coordinate multivector contracts into specialized hot path coordinates">
+            <defs>
+              <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <text x="34" y="46" fill="#1E3A8A" font-size="26" font-weight="700">general multivector</text>
+            <g transform="translate(34 80)">
+              <rect width="360" height="180" rx="8" fill="#F8FAFC" stroke="#CBD5E1"></rect>
+              <g transform="translate(24 28)">
+                <rect x="0" y="0" width="34" height="26" rx="4" fill="#2563EB"></rect>
+                <rect x="40" y="0" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="80" y="0" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="120" y="0" width="34" height="26" rx="4" fill="#2563EB"></rect>
+                <rect x="160" y="0" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="200" y="0" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="240" y="0" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="280" y="0" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="0" y="36" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="40" y="36" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="80" y="36" width="34" height="26" rx="4" fill="#2563EB"></rect>
+                <rect x="120" y="36" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="160" y="36" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="200" y="36" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="240" y="36" width="34" height="26" rx="4" fill="#B45309"></rect>
+                <rect x="280" y="36" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="0" y="72" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="40" y="72" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="80" y="72" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="120" y="72" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="160" y="72" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="200" y="72" width="34" height="26" rx="4" fill="#2563EB"></rect>
+                <rect x="240" y="72" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="280" y="72" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="0" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="40" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="80" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="120" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="160" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="200" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="240" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+                <rect x="280" y="108" width="34" height="26" rx="4" fill="#E5E7EB"></rect>
+              </g>
+              <text x="24" y="160" fill="#64748B" font-size="23" font-weight="700">32 possible basis coordinates</text>
+            </g>
+            <line x1="425" y1="170" x2="560" y2="170" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-title)"></line>
+            <text x="444" y="138" fill="#1E3A8A" font-size="24" font-weight="700">type mask</text>
+            <text x="444" y="210" fill="#1E3A8A" font-size="24" font-weight="700">fixed metric</text>
+            <g transform="translate(570 96)">
+              <rect width="172" height="148" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="24" y="38" fill="#0F766E" font-size="27" font-weight="700">line kernel</text>
+              <rect x="24" y="60" width="124" height="24" rx="5" fill="#2563EB"></rect>
+              <rect x="24" y="92" width="84" height="24" rx="5" fill="#2563EB"></rect>
+              <rect x="116" y="92" width="32" height="24" rx="5" fill="#B45309"></rect>
+              <text x="24" y="132" fill="#475569" font-size="22" font-weight="700">6 outputs</text>
+            </g>
+            <g transform="translate(110 330)">
+              <rect width="560" height="110" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+              <text x="30" y="42" fill="#111827" font-size="28" font-weight="700">High-level formula stays geometric</text>
+              <text x="30" y="78" fill="#475569" font-size="24">generated arithmetic becomes branch-free and checkable</text>
+            </g>
+          </svg>
+          <figcaption class="caption">The lecture treats specialization as a disciplined compilation step from algebraic structure to processor-friendly code.</figcaption>
+        </figure>
+      </div>
+      <aside class="speaker-notes">Open with the performance promise: geometric algebra should remain expressive while competing with coordinate code. Frame the lecture as a compiler story. Once the algebra, metric, object families, and recurring operations are fixed, the implementation can replace general multivectors with compact generated kernels and keep the generic layer as a reference.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Section 22.1</div>
+        <div class="source-chip">Issue map</div>
+      </div>
+      <h2>Where Generality Costs</h2>
+      <div class="two-col">
+        <div class="panel">
+          <svg viewBox="0 0 780 620" role="img" aria-label="Three implementation pressure points">
+            <defs>
+              <marker id="arrow-cost" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#475569"></path>
+              </marker>
+            </defs>
+            <circle cx="390" cy="305" r="90" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></circle>
+            <text x="390" y="292" text-anchor="middle" fill="#1E3A8A" font-size="29" font-weight="700">generic</text>
+            <text x="390" y="330" text-anchor="middle" fill="#1E3A8A" font-size="29" font-weight="700">GA library</text>
+            <g transform="translate(50 58)">
+              <rect width="250" height="150" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="24" y="42" fill="#2563EB" font-size="27" font-weight="700">Multivectors</text>
+              <text x="24" y="82" fill="#111827" font-size="23">space for \(2^n\)</text>
+              <text x="24" y="116" fill="#475569" font-size="23">many known zeros</text>
+            </g>
+            <g transform="translate(480 58)">
+              <rect width="250" height="150" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="24" y="42" fill="#0F766E" font-size="27" font-weight="700">Metrics</text>
+              <text x="24" y="82" fill="#111827" font-size="23">products depend on \(g\)</text>
+              <text x="24" y="116" fill="#475569" font-size="23">lookup repeats often</text>
+            </g>
+            <g transform="translate(265 432)">
+              <rect width="250" height="150" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="24" y="42" fill="#B45309" font-size="27" font-weight="700">Operations</text>
+              <text x="24" y="82" fill="#111827" font-size="23">small coordinate work</text>
+              <text x="24" y="116" fill="#475569" font-size="23">branches dominate</text>
+            </g>
+            <line x1="300" y1="150" x2="340" y2="245" stroke="#475569" stroke-width="3" marker-end="url(#arrow-cost)"></line>
+            <line x1="480" y1="150" x2="440" y2="245" stroke="#475569" stroke-width="3" marker-end="url(#arrow-cost)"></line>
+            <line x1="390" y1="432" x2="390" y2="400" stroke="#475569" stroke-width="3" marker-end="url(#arrow-cost)"></line>
+          </svg>
+        </div>
+        <div class="panel amber">
+          <h3>The fast path is narrow</h3>
+          <ul>
+            <li>A conformal 3D algebra has 32 basis blades, but common objects use small subsets.</li>
+            <li>Products are often tiny, so loop overhead and table lookup become visible.</li>
+            <li>A fixed application usually repeats the same few type combinations.</li>
+            <li>The generic implementation remains valuable as a flexible oracle.</li>
+          </ul>
+          <p class="caption">Specialization does not deny the universal model. It identifies the stable inner loops where universality is too expensive.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Geometric Algebra for Computer Science</span><span>Chapter 22</span></div>
+      <aside class="speaker-notes">Use the three pressure points as the reason specialization is necessary. Full multivectors allocate coordinates that many geometric objects never use. Runtime metric lookup wastes cycles inside tiny products. Generic product loops add branches and memory traffic exactly where a renderer or simulator needs predictable hot-path arithmetic.</aside>
+    </section>
+
+    <section class="slide alt">
+      <div class="topline">
+        <div class="kicker">Specification before optimization</div>
+        <div class="source-chip">Generator input</div>
+      </div>
+      <h2>The Generator Contract</h2>
+      <p class="subtitle">Optimization starts when the application commits to algebraic facts that are stable enough to compile.</p>
+      <div class="schema-grid">
+        <div class="schema-card"><strong>Dimension</strong><span>basis vector count, blade universe, grade structure</span></div>
+        <div class="schema-card"><strong>Basis Labels</strong><span>names that keep generated code readable and model-specific</span></div>
+        <div class="schema-card"><strong>Metric</strong><span>the inner-product table fixed inside product kernels</span></div>
+        <div class="schema-card"><strong>Type Masks</strong><span>stored blades, known zero blades, and fixed constants</span></div>
+        <div class="schema-card"><strong>Constants</strong><span>basis blades, pseudoscalars, normalized coordinates, identities</span></div>
+        <div class="schema-card"><strong>Used Operations</strong><span>only the functions actually reached by the program's hot paths</span></div>
+      </div>
+      <div class="panel teal" style="margin-top: 28px;">
+        <div class="equation">contract \(=\) algebra specification \(+\) application promises \(+\) reference checks</div>
+      </div>
+      <div class="footer"><span>Notebook focus: symbolic kernels, storage masks, and invariants</span><span>Slide 3</span></div>
+      <aside class="speaker-notes">Emphasize that a code generator cannot optimize an informal idea of an algebra. It needs a written contract: dimension, basis labels, metric, specialized type masks, constants, and the operations the application will actually call. The more stable that contract is, the narrower and clearer the emitted code can be.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Sparsity as a type promise</div>
+        <div class="source-chip">32 basis slots</div>
+      </div>
+      <h2>Store Promises, Not Zeros</h2>
+      <div class="wide-col">
+        <div class="panel">
+          <div class="mask-table">
+            <div class="mask-row">
+              <div class="mask-label">general</div>
+              <div class="slot-track">
+                <span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span>
+                <span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span>
+                <span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span>
+                <span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span><span class="stored"></span>
+              </div>
+              <div class="mask-count">32 stored</div>
+            </div>
+            <div class="mask-row">
+              <div class="mask-label">vector</div>
+              <div class="slot-track">
+                <span></span><span class="stored"></span><span class="stored"></span><span></span><span class="stored"></span><span></span><span></span><span></span>
+                <span class="stored"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                <span class="stored"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="mask-count">5 stored</div>
+            </div>
+            <div class="mask-row">
+              <div class="mask-label">line</div>
+              <div class="slot-track">
+                <span></span><span></span><span></span><span class="stored"></span><span></span><span class="stored"></span><span class="stored"></span><span></span>
+                <span></span><span class="stored"></span><span class="stored"></span><span></span><span class="stored"></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="mask-count">6 stored</div>
+            </div>
+            <div class="mask-row">
+              <div class="mask-label">flat point</div>
+              <div class="slot-track">
+                <span></span><span class="stored"></span><span class="stored"></span><span></span><span class="stored"></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span class="constant"></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="mask-count">3 + constant</div>
+            </div>
+            <div class="mask-row">
+              <div class="mask-label">rotor slice</div>
+              <div class="slot-track">
+                <span class="stored"></span><span></span><span></span><span class="stored"></span><span></span><span class="stored"></span><span class="stored"></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="mask-count">4 stored</div>
+            </div>
+          </div>
+          <div class="legend"><span><i style="background:#2563EB"></i>runtime coordinate</span><span><i style="background:#B45309"></i>constant</span><span><i style="background:#E5E7EB"></i>known zero</span></div>
+        </div>
+        <div class="panel blue">
+          <h3>The type carries meaning</h3>
+          <ul>
+            <li>Storage shrinks before any operation runs.</li>
+            <li>Zero coordinates never enter product loops.</li>
+            <li>Constants can be folded into generated formulas.</li>
+            <li>Output type inference makes the next expression narrower.</li>
+          </ul>
+          <p class="caption">The notebook's flat-point and dual-plane example uses this mask logic to generate a six-coordinate line-like output.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Visual target: inspect which coordinates survive the type promise</span><span>Slide 4</span></div>
+      <aside class="speaker-notes">The storage visual should make sparsity feel structural rather than accidental. A vector, line, rotor, or normalized point is not a small multivector by luck; its type promises which basis blades are variable, zero, or constant. That promise removes memory traffic before the arithmetic is even considered.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Metric specialization</div>
+        <div class="source-chip">basis choice is an implementation choice</div>
+      </div>
+      <h2>Hard-Code The Metric</h2>
+      <div class="two-col">
+        <div class="panel teal">
+          <h3>Null-style conformal basis</h3>
+          <p>Keep \(o\) and \(\infty\) as named basis vectors when they make formulas and storage clearer.</p>
+          <div class="matrix cols-5" aria-label="Conformal style metric matrix">
+            <span>1</span><span>0</span><span>0</span><span>0</span><span>0</span>
+            <span>0</span><span>1</span><span>0</span><span>0</span><span>0</span>
+            <span>0</span><span>0</span><span>1</span><span>0</span><span>0</span>
+            <span>0</span><span>0</span><span>0</span><span>0</span><span>-1</span>
+            <span>0</span><span>0</span><span>0</span><span>-1</span><span>0</span>
+          </div>
+          <p class="caption">The generator bakes these entries into basis products instead of consulting a table at runtime.</p>
+        </div>
+        <div class="panel">
+          <h3>Same geometry, different storage</h3>
+          <div class="bar-list">
+            <div class="bar-row"><span>\(o,\infty\) line</span><div class="bar-track"><div class="bar-fill teal" style="width: 67%;"></div></div><span>6 coords</span></div>
+            <div class="bar-row"><span>diagonalized line</span><div class="bar-track"><div class="bar-fill amber" style="width: 100%;"></div></div><span>9 coords</span></div>
+          </div>
+          <div class="panel amber" style="margin-top: 30px;">
+            <h3>Specialize per metric</h3>
+            <p>Different metrics deserve different generated implementations. The metric is too fundamental to leave as an inner-loop variable.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Memory layout and readable basis names can point in the same direction</span><span>Slide 5</span></div>
+      <aside class="speaker-notes">Treat the metric as part of the compiled algebra, not as a runtime setting inside every product. The conformal example is useful because the intuitive null basis can be both more readable and more compact for certain objects. The generator should preserve that chosen basis while removing lookup overhead.</aside>
+    </section>
+
+    <section class="slide alt">
+      <div class="topline">
+        <div class="kicker">Generative programming</div>
+        <div class="source-chip">source to running program</div>
+      </div>
+      <h2>Where Generation Can Happen</h2>
+      <div class="timeline">
+        <div class="stage-card"><div class="stage-number">1</div><strong>Before compile</strong><span>Generate a library from the algebra specification; inspectable output, separate tool step.</span></div>
+        <div class="stage-card"><div class="stage-number">2</div><strong>At compile time</strong><span>Metaprogramming instantiates algebraic operations inside the host language.</span></div>
+        <div class="stage-card"><div class="stage-number">3</div><strong>At runtime</strong><span>Generate the first time a specific call pattern and hardware context are known.</span></div>
+        <div class="stage-card"><div class="stage-number">4</div><strong>After profiling</strong><span>Feed measured hot paths back into the next generated build.</span></div>
+      </div>
+      <div class="panel" style="margin-top: 34px;">
+        <svg viewBox="0 0 1500 270" role="img" aria-label="Tool chain with generation insertion points">
+          <defs>
+            <marker id="arrow-pipe" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3">
+            <rect x="40" y="90" width="250" height="88" rx="8"></rect>
+            <rect x="400" y="90" width="250" height="88" rx="8"></rect>
+            <rect x="760" y="90" width="250" height="88" rx="8"></rect>
+            <rect x="1120" y="90" width="250" height="88" rx="8"></rect>
+          </g>
+          <text x="165" y="145" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">source</text>
+          <text x="525" y="145" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">compile</text>
+          <text x="885" y="145" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">link</text>
+          <text x="1245" y="145" text-anchor="middle" font-size="30" font-weight="700" fill="#111827">run</text>
+          <line x1="300" y1="134" x2="385" y2="134" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipe)"></line>
+          <line x1="660" y1="134" x2="745" y2="134" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipe)"></line>
+          <line x1="1020" y1="134" x2="1105" y2="134" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipe)"></line>
+          <g>
+            <circle cx="345" cy="70" r="24" fill="#2563EB"></circle>
+            <text x="345" y="79" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">1</text>
+            <circle cx="525" cy="214" r="24" fill="#0F766E"></circle>
+            <text x="525" y="223" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">2</text>
+            <circle cx="1245" cy="70" r="24" fill="#B45309"></circle>
+            <text x="1245" y="79" text-anchor="middle" font-size="24" font-weight="700" fill="#FFFFFF">3</text>
+          </g>
+        </svg>
+      </div>
+      <div class="footer"><span>Placement changes integration, diagnostics, startup cost, and feedback</span><span>Slide 6</span></div>
+      <aside class="speaker-notes">Walk through the tool chain without making one approach universal. Ahead-of-time generation gives inspectable library code, compile-time metaprogramming integrates with the host language, and runtime generation can adapt to observed calls and hardware. Each choice changes startup cost, debuggability, and profiling feedback.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Worked kernel</div>
+        <div class="source-chip">flat point \( \wedge \) dual plane</div>
+      </div>
+      <h2>A Product Kernel After Simplification</h2>
+      <div class="wide-col">
+        <div class="panel blue">
+          <h3>High-level operation</h3>
+          <div class="equation">line \(= x \wedge y\)</div>
+          <p>Argument types tell the generator that \(x\) has three variable coordinates plus one fixed coordinate, while \(y\) contributes three plane coordinates.</p>
+          <div class="code-box">l0 = x1*y0 - x0*y1
+l1 = x2*y0 - x0*y2
+l2 = x2*y1 - x1*y2
+l3 = y0
+l4 = y1
+l5 = y2</div>
+        </div>
+        <div class="panel">
+          <h3>Operation count shape</h3>
+          <svg viewBox="0 0 620 420" role="img" aria-label="Three computed coordinates and three copied coordinates">
+            <line x1="80" y1="340" x2="570" y2="340" stroke="#CBD5E1" stroke-width="3"></line>
+            <line x1="80" y1="60" x2="80" y2="340" stroke="#CBD5E1" stroke-width="3"></line>
+            <g font-size="24" font-weight="700" fill="#475569">
+              <text x="54" y="347" text-anchor="end">0</text>
+              <text x="54" y="247" text-anchor="end">2</text>
+              <text x="54" y="147" text-anchor="end">4</text>
+            </g>
+            <g>
+              <rect x="112" y="140" width="54" height="200" rx="6" fill="#2563EB"></rect>
+              <rect x="190" y="140" width="54" height="200" rx="6" fill="#2563EB"></rect>
+              <rect x="268" y="140" width="54" height="200" rx="6" fill="#2563EB"></rect>
+              <rect x="346" y="290" width="54" height="50" rx="6" fill="#B45309"></rect>
+              <rect x="424" y="290" width="54" height="50" rx="6" fill="#B45309"></rect>
+              <rect x="502" y="290" width="54" height="50" rx="6" fill="#B45309"></rect>
+            </g>
+            <g font-size="23" fill="#111827" font-weight="700">
+              <text x="139" y="376" text-anchor="middle">l0</text>
+              <text x="217" y="376" text-anchor="middle">l1</text>
+              <text x="295" y="376" text-anchor="middle">l2</text>
+              <text x="373" y="376" text-anchor="middle">l3</text>
+              <text x="451" y="376" text-anchor="middle">l4</text>
+              <text x="529" y="376" text-anchor="middle">l5</text>
+            </g>
+            <text x="310" y="40" text-anchor="middle" fill="#1E3A8A" font-size="27" font-weight="700">surviving arithmetic</text>
+          </svg>
+          <p class="caption">Blue bars are computed coordinates. Amber bars are copies made possible by the normalized constant.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Reference dense and sparse products still check the emitted kernel</span><span>Slide 7</span></div>
+      <aside class="speaker-notes">Use the outer product example as a small audit trail. The high-level expression stays geometric, but the emitted kernel contains only determinant-like coordinate combinations and direct copies caused by a known constant coordinate. Stress that this is generated code first and trusted code only after reference checks.</aside>
+    </section>
+
+    <section class="slide alt">
+      <div class="topline">
+        <div class="kicker">Symbolic constants</div>
+        <div class="source-chip">compile-time geometry</div>
+      </div>
+      <h2>Constants Are Compile-Time Geometry</h2>
+      <div class="two-col">
+        <div class="panel teal">
+          <h3>Normalized coordinate</h3>
+          <div class="equation">flat point \(x:\quad c_{o\wedge\infty}=1\)</div>
+          <svg viewBox="0 0 720 260" role="img" aria-label="Constant coordinate removes multiplications">
+            <defs>
+              <marker id="arrow-const" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#0F766E"></path>
+              </marker>
+            </defs>
+            <rect x="45" y="62" width="210" height="80" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+            <text x="150" y="111" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">1 * y0</text>
+            <line x1="275" y1="102" x2="435" y2="102" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-const)"></line>
+            <rect x="455" y="62" width="210" height="80" rx="8" fill="#ECFDF5" stroke="#0F766E" stroke-width="3"></rect>
+            <text x="560" y="111" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">y0</text>
+            <text x="360" y="190" text-anchor="middle" font-size="24" fill="#475569">multiplication folds into a copy</text>
+          </svg>
+        </div>
+        <div class="panel violet">
+          <h3>Pseudoscalar token</h3>
+          <div class="equation">dual \(a = a \cdot I^{-1}\)</div>
+          <div class="code-box">input vector coordinates
+    a0, a1, a2
+
+after simplification
+    bivector(-a2, -a0, -a1)</div>
+          <p class="caption">The geometric formula remains the authoring form; the token \(I^{-1}\) disappears from the emitted arithmetic.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Constants improve readability before they improve speed</span><span>Slide 8</span></div>
+      <aside class="speaker-notes">Make constants more than a storage trick. A pseudoscalar, a basis blade, or a normalized coordinate can act as a symbolic token that disappears during simplification. The important lesson is that readable geometric formulas can collapse to shuffles, sign changes, or copies without a human maintaining those low-level details.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Function-level specialization</div>
+        <div class="source-chip">beyond single products</div>
+      </div>
+      <h2>Specialize Whole Functions</h2>
+      <div class="panel">
+        <svg viewBox="0 0 1500 560" role="img" aria-label="Pipeline for specializing a whole function">
+          <defs>
+            <marker id="arrow-fn" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M 0 0 L 12 6 L 0 12 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <g font-size="25" font-weight="700">
+            <rect x="50" y="190" width="230" height="120" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+            <text x="165" y="242" text-anchor="middle" fill="#1E3A8A">generic function</text>
+            <text x="165" y="280" text-anchor="middle" fill="#111827">\(V X \widetilde{V}\)</text>
+            <rect x="355" y="80" width="230" height="120" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+            <text x="470" y="132" text-anchor="middle" fill="#2563EB">type substitution</text>
+            <text x="470" y="170" text-anchor="middle" fill="#111827">rotor, point</text>
+            <rect x="355" y="300" width="230" height="120" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+            <text x="470" y="352" text-anchor="middle" fill="#6D28D9">basis expansion</text>
+            <text x="470" y="390" text-anchor="middle" fill="#111827">coordinate terms</text>
+            <rect x="665" y="190" width="230" height="120" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <text x="780" y="242" text-anchor="middle" fill="#B45309">symbolic cleanup</text>
+            <text x="780" y="280" text-anchor="middle" fill="#111827">fold, cancel, merge</text>
+            <rect x="980" y="80" width="230" height="120" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <text x="1095" y="132" text-anchor="middle" fill="#0F766E">return type</text>
+            <text x="1095" y="170" text-anchor="middle" fill="#111827">flat point</text>
+            <rect x="980" y="300" width="230" height="120" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="1095" y="352" text-anchor="middle" fill="#1E3A8A">emit code</text>
+            <text x="1095" y="390" text-anchor="middle" fill="#111827">straight-line</text>
+            <rect x="1280" y="190" width="170" height="120" rx="8" fill="#F8FAFC" stroke="#64748B" stroke-width="3"></rect>
+            <text x="1365" y="242" text-anchor="middle" fill="#475569">reference</text>
+            <text x="1365" y="280" text-anchor="middle" fill="#111827">checks</text>
+          </g>
+          <line x1="282" y1="235" x2="342" y2="154" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-fn)"></line>
+          <line x1="282" y1="265" x2="342" y2="346" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-fn)"></line>
+          <line x1="590" y1="140" x2="658" y2="225" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-fn)"></line>
+          <line x1="590" y1="360" x2="658" y2="275" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-fn)"></line>
+          <line x1="900" y1="235" x2="967" y2="154" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-fn)"></line>
+          <line x1="900" y1="265" x2="967" y2="346" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-fn)"></line>
+          <line x1="1215" y1="360" x2="1270" y2="275" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-fn)"></line>
+        </svg>
+      </div>
+      <div class="panel blue" style="margin-top: 22px;">
+        <div class="equation">Function optimization matters most when several products would otherwise create temporary multivectors.</div>
+      </div>
+      <div class="footer"><span>Generated functions should be derivable and testable, not hand-maintained</span><span>Slide 9</span></div>
+      <aside class="speaker-notes">Shift from individual products to whole expressions. If an application repeatedly applies a versor to a known point type, the generator can substitute argument types, expand products on the basis, simplify, infer the return type, and emit one straight-line function instead of a chain of generic calls.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Repeated transformations</div>
+        <div class="source-chip">outermorphism matrix</div>
+      </div>
+      <h2>Outermorphisms As A Hot Path</h2>
+      <div class="two-col">
+        <div class="panel">
+          <svg viewBox="0 0 760 570" role="img" aria-label="Rotor action and cached outermorphism action agree on repeated points">
+            <defs>
+              <marker id="arrow-om" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#0F766E"></path>
+              </marker>
+            </defs>
+            <path d="M 90 405 C 170 300, 240 460, 330 350 C 430 230, 520 310, 630 160" fill="none" stroke="#94A3B8" stroke-width="6"></path>
+            <path d="M 150 430 C 245 365, 285 500, 390 415 C 500 320, 560 365, 675 235" fill="none" stroke="#2563EB" stroke-width="7"></path>
+            <g fill="#B45309">
+              <circle cx="155" cy="430" r="7"></circle><circle cx="240" cy="405" r="7"></circle><circle cx="330" cy="455" r="7"></circle><circle cx="430" cy="385" r="7"></circle><circle cx="540" cy="356" r="7"></circle><circle cx="650" cy="250" r="7"></circle>
+            </g>
+            <line x1="145" y1="120" x2="620" y2="120" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-om)"></line>
+            <text x="380" y="92" text-anchor="middle" fill="#0F766E" font-size="27" font-weight="700">initialize once</text>
+            <rect x="100" y="140" width="180" height="92" rx="8" fill="#F8FAFC" stroke="#CBD5E1"></rect>
+            <text x="190" y="194" text-anchor="middle" font-size="27" font-weight="700" fill="#111827">rotor R</text>
+            <rect x="480" y="140" width="180" height="92" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <text x="570" y="194" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">matrix M</text>
+            <text x="380" y="525" text-anchor="middle" fill="#475569" font-size="24">same geometry, lower repeated-call overhead when the count is high enough</text>
+          </svg>
+        </div>
+        <div class="panel teal">
+          <h3>When to cache</h3>
+          <ul>
+            <li>The same transformation is applied to many points, lines, planes, or blades.</li>
+            <li>Matrix initialization is amortized over many calls.</li>
+            <li>Grade-specific exterior-power matrices can be precomputed.</li>
+            <li>The result remains checked against the direct versor action.</li>
+          </ul>
+          <div class="math-note" style="margin-top: 28px;">\(M(u \wedge v) = M(u) \wedge M(v)\)</div>
+        </div>
+      </div>
+      <div class="footer"><span>The right representation can change between authoring and execution</span><span>Slide 10</span></div>
+      <aside class="speaker-notes">Present outermorphism matrices as a representation change chosen for repeated work. A rotor sandwich is geometrically clean, but if the same transformation touches thousands of points or blades, initializing the induced matrix once can move cost out of the inner loop. The break-even point belongs to benchmarking.</aside>
+    </section>
+
+    <section class="slide alt">
+      <div class="topline">
+        <div class="kicker">Nonlinear specialization</div>
+        <div class="source-chip">shape guarantees</div>
+      </div>
+      <h2>Nonlinear Functions Need Shape Guarantees</h2>
+      <p class="subtitle">Products specialize from support masks. Nonlinear algorithms also need predictable intermediate types.</p>
+      <div class="decision-grid">
+        <div class="decision">
+          <span class="badge">Good target</span>
+          <h3>Versor inverse</h3>
+          <p class="math-note">\(V^{-1} = \widetilde{V}/(V\widetilde{V})\)</p>
+          <p>Known versor structure keeps the formula compact and makes the denominator predictable.</p>
+        </div>
+        <div class="decision">
+          <span class="badge">Conditional target</span>
+          <h3>Bivector exponential</h3>
+          <p class="math-note">\(\exp(B)=\cos\theta + \frac{\sin\theta}{\theta}B\)</p>
+          <p>This closed form is available when the generator knows \(B^2\) is scalar.</p>
+        </div>
+        <div class="decision">
+          <span class="badge">Fallback target</span>
+          <h3>Meet and join</h3>
+          <p>Intermediate supports can depend on actual values, so a fixed return type may be dishonest.</p>
+          <p class="caption">Use generic code or runtime specialization when the shape is data-dependent.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Specialize aggressively only when the algebraic contract supports it</span><span>Slide 11</span></div>
+      <aside class="speaker-notes">This is the caution slide. Linear products reveal their output support from input types, while nonlinear algorithms may branch on numeric values. Versor inverses and bivector exponentials specialize well when intermediates have fixed shape. General multivector inversion, meet, and join need fallback paths or runtime decisions.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Hot paths and memory layout</div>
+        <div class="source-chip">processor-aware algebra</div>
+      </div>
+      <h2>Design For The Processor</h2>
+      <div class="two-col">
+        <div class="panel">
+          <h3>From generic loop to straight line</h3>
+          <svg viewBox="0 0 760 500" role="img" aria-label="Generic loops become straight-line hot path code">
+            <defs>
+              <marker id="arrow-hot" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="50" y="70" width="270" height="320" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <text x="185" y="118" text-anchor="middle" font-size="28" font-weight="700" fill="#B45309">generic loop</text>
+            <text x="82" y="166" font-size="24" fill="#111827">for blade i</text>
+            <text x="112" y="204" font-size="24" fill="#475569">if coord != 0</text>
+            <text x="112" y="242" font-size="24" fill="#475569">lookup metric</text>
+            <text x="112" y="280" font-size="24" fill="#475569">branch on sign</text>
+            <text x="112" y="318" font-size="24" fill="#475569">accumulate</text>
+            <line x1="335" y1="230" x2="440" y2="230" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-hot)"></line>
+            <rect x="455" y="70" width="255" height="320" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <text x="582" y="118" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">hot path</text>
+            <text x="492" y="166" font-size="24" fill="#111827">t0 = x1*y0</text>
+            <text x="492" y="204" font-size="24" fill="#111827">t1 = x0*y1</text>
+            <text x="492" y="242" font-size="24" fill="#111827">l0 = t0 - t1</text>
+            <text x="492" y="280" font-size="24" fill="#111827">l3 = y0</text>
+            <text x="492" y="318" font-size="24" fill="#475569">no branches</text>
+          </svg>
+        </div>
+        <div class="panel blue">
+          <h3>Memory layout is part of the algorithm</h3>
+          <svg viewBox="0 0 720 240" role="img" aria-label="Compact coordinate arrays inside cache-friendly storage">
+            <g transform="translate(40 62)">
+              <rect width="640" height="80" rx="8" fill="#FFFFFF" stroke="#CBD5E1"></rect>
+              <rect x="20" y="18" width="74" height="44" rx="6" fill="#2563EB"></rect>
+              <rect x="104" y="18" width="74" height="44" rx="6" fill="#2563EB"></rect>
+              <rect x="188" y="18" width="74" height="44" rx="6" fill="#2563EB"></rect>
+              <rect x="272" y="18" width="74" height="44" rx="6" fill="#B45309"></rect>
+              <rect x="356" y="18" width="74" height="44" rx="6" fill="#E5E7EB"></rect>
+              <rect x="440" y="18" width="74" height="44" rx="6" fill="#E5E7EB"></rect>
+              <rect x="524" y="18" width="74" height="44" rx="6" fill="#E5E7EB"></rect>
+            </g>
+            <text x="360" y="178" text-anchor="middle" font-size="24" fill="#475569">compact arrays make cache behavior visible and testable</text>
+          </svg>
+          <ul>
+            <li>Compact storage reduces memory traffic.</li>
+            <li>Unrolled formulas remove loop branches.</li>
+            <li>Fused expressions avoid temporary multivectors.</li>
+            <li>Precomputed product tables belong outside the inner loop.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer"><span>The processor benefits when algebraic facts become layout facts</span><span>Slide 12</span></div>
+      <aside class="speaker-notes">Tie the algebraic decisions to machine behavior. Compact storage reduces cache pressure, hard-coded metrics remove memory lookups, unrolled loops remove branches, and fused expressions avoid temporary multivectors. The goal is not clever micro-optimization; it is letting known geometry make the processor's job simple.</aside>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="kicker">Benchmark-minded design</div>
+        <div class="source-chip">relative ray-tracing timings</div>
+      </div>
+      <h2>Benchmark Complete Choices</h2>
+      <div class="wide-col">
+        <div class="panel">
+          <div class="benchmark">
+            <div class="benchmark-row mini-head"><span>Model</span><span>Implementation</span><span>Relative time</span><span>Value</span></div>
+            <div class="benchmark-row"><span>3D LA</span><span>standard</span><div class="bar-track"><div class="bar-fill" style="width: 79%;"></div></div><span>1.00</span></div>
+            <div class="benchmark-row"><span>3D GA-OM</span><span>generated</span><div class="bar-track"><div class="bar-fill teal" style="width: 78%;"></div></div><span>0.98</span></div>
+            <div class="benchmark-row"><span>3D GA</span><span>generated</span><div class="bar-track"><div class="bar-fill" style="width: 83%;"></div></div><span>1.05</span></div>
+            <div class="benchmark-row"><span>4D LA</span><span>standard</span><div class="bar-track"><div class="bar-fill amber" style="width: 97%;"></div></div><span>1.22</span></div>
+            <div class="benchmark-row"><span>4D GA</span><span>generated</span><div class="bar-track"><div class="bar-fill amber" style="width: 95%;"></div></div><span>1.20</span></div>
+            <div class="benchmark-row"><span>5D GA</span><span>generated</span><div class="bar-track"><div class="bar-fill amber" style="width: 100%;"></div></div><span>1.26</span></div>
+          </div>
+          <p class="caption">Lower is faster. The numbers summarize one fixed ray-tracing workload and should be read as a design comparison, not a universal law.</p>
+        </div>
+        <div class="panel amber">
+          <h3>A fair benchmark includes</h3>
+          <ul>
+            <li>the full workload, not one isolated operation;</li>
+            <li>conversion costs between representations;</li>
+            <li>cache behavior and branch predictability;</li>
+            <li>the best traditional implementation available;</li>
+            <li>the intended model's readability and error surface.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer"><span>The chapter's claim is competitiveness with clear geometric source code</span><span>Slide 13</span></div>
+      <aside class="speaker-notes">Frame the performance table as evidence about complete representations, not a universal ranking. The ray-tracing comparison keeps the application fixed while changing the geometry model and implementation strategy. The lesson is benchmark-minded design: include conversion costs, hot paths, memory behavior, and the best traditional baseline.</aside>
+    </section>
+
+    <section class="slide alt">
+      <div class="topline">
+        <div class="kicker">Implementation checklist</div>
+        <div class="source-chip">Chapter 22 takeaways</div>
+      </div>
+      <h2>Carry Forward</h2>
+      <div class="recap-grid">
+        <div class="recap-card"><strong>Keep the oracle</strong><span>Generic dense or sparse code remains the reference path for tests and unusual values.</span></div>
+        <div class="recap-card"><strong>Name the types</strong><span>Specialized classes encode geometric meaning, active blades, constants, and valid operations.</span></div>
+        <div class="recap-card"><strong>Fix the metric</strong><span>Generate a separate implementation when the metric or basis choice changes.</span></div>
+        <div class="recap-card"><strong>Generate hot paths</strong><span>Expand, simplify, infer the return type, and emit straight-line arithmetic only where used.</span></div>
+        <div class="recap-card"><strong>Measure designs</strong><span>Benchmark complete application choices and keep equivalence checks near every optimization.</span></div>
+      </div>
+      <div class="panel teal" style="margin-top: 32px;">
+        <div class="equation">Clear algebraic authoring \(+\) specialized kernels \(+\) reference checks \(=\) practical geometric algebra.</div>
+      </div>
+      <div class="footer"><span>Next: Chapter 23 uses these ideas inside a conformal ray tracer</span><span>Slide 14</span></div>
+      <aside class="speaker-notes">Close by separating the two layers students should keep. The generic algebra remains the flexible reference model, useful for exploration and validation. Specialized code is the fast path for stable types, metrics, and repeated operations. Good implementations use both, with tests connecting them.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

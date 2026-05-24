@@ -1,0 +1,1319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 05 Lecture - Geometric Deep Learning Models</title>
+  <meta name="course" content="Geometric Deep Learning">
+  <meta name="chapter_id" content="chapter-05">
+  <meta name="notebook_path" content="Geometric-Deep-Learning/chapter-05-geometric-deep-learning-models/05-geometric-deep-learning-models.ipynb">
+  <meta name="source_span" content="printed pages 68-101; PDF pages 72-105.">
+  <meta name="source_pdf" content="Geometric-Deep-Learning/Geometric Deep Learning.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="math_support" content="STIX Two Text for inline mathematics and KaTeX 0.16.11 for rendered formulas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+{
+  "course": "Geometric Deep Learning",
+  "chapter_id": "chapter-05",
+  "notebook_path": "Geometric-Deep-Learning/chapter-05-geometric-deep-learning-models/05-geometric-deep-learning-models.ipynb",
+  "source_span": "printed pages 68-101; PDF pages 72-105.",
+  "source_pdf": "Geometric-Deep-Learning/Geometric Deep Learning.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23",
+  "provenance_note": "Original lecture deck authored from the assigned notebook and source span with original inline SVGs and chapter-local notebook artifacts."
+}
+  </script>
+  <script type="application/json" id="speaker-notes">{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Geometric Deep Learning Models",
+      "notes": "Open by framing Chapter 05 as an architecture selection lecture. The important move is to stop naming layers first and instead ask what kind of domain carries the signal, what transformations should be respected, and which residual or visual check will reveal whether the promise is actually being kept."
+    },
+    {
+      "slide": 2,
+      "title": "The Architecture Contract",
+      "notes": "Use this slide as the contract that every later model must satisfy. A geometric layer is not only a computation; it names a domain, an allowed transformation family, a local operation, and a readout. The final check column keeps the lecture grounded in executable evidence rather than vocabulary."
+    },
+    {
+      "slide": 3,
+      "title": "Model-To-Domain Routing",
+      "notes": "Treat the routing diagram as a decision aid, not a taxonomy poster. Images route to grid convolutions because translations are meaningful. Graph data routes to message passing because labels are arbitrary. Point clouds, meshes, sets, and sequences each carry a different notion of locality and transformation."
+    },
+    {
+      "slide": 4,
+      "title": "CNNs On Grids",
+      "notes": "Emphasize that convolution is the grid case of a local shared rule. The same stencil is applied at every pixel or lattice site, so translating the input should translate the response. The formula is less important than the commuting behavior that the notebook checks with a tiny signal."
+    },
+    {
+      "slide": 5,
+      "title": "CNN Filters As Generators",
+      "notes": "Use the generated artifact as a microscope. The input, derivative filters, and averaging filter show that a CNN layer begins with small local measurements rather than global recognition. The displayed zero translation residual is the finite diagnostic tying the image panel to the equivariance claim."
+    },
+    {
+      "slide": 6,
+      "title": "Group CNNs Add Transformation Channels",
+      "notes": "Explain group convolution by separating spatial motion from transformation channels. Rotating the input should not destroy the feature; it should move activation among orientation channels. The notebook artifact demonstrates this with a simple pattern whose ninety-degree rotation becomes a channel permutation."
+    },
+    {
+      "slide": 7,
+      "title": "GNNs Respect Relabeling",
+      "notes": "Keep the graph drawing subordinate to the algebraic idea. Node names are bookkeeping, so relabeling every node should relabel the output in exactly the same way. Message passing achieves this by aggregating neighbor information through symmetric operations tied to the adjacency structure."
+    },
+    {
+      "slide": 8,
+      "title": "Attention Builds A Soft Graph",
+      "notes": "Connect attention to graph neural networks without claiming they are identical. The attention matrix is a learned dense adjacency whose rows form probability weights. For sets, permutation behavior matters; for sequences, positional or temporal information is deliberately added because order carries meaning."
+    },
+    {
+      "slide": 9,
+      "title": "Transformers: Set Core, Sequence Add-On",
+      "notes": "This slide should prevent a common confusion. Self-attention by itself treats tokens through pairwise compatibility and can be permutation equivariant. Sequence modeling becomes ordered only after position, time, or causal masking is injected. The architecture therefore exposes which geometry is built in and which is supplied."
+    },
+    {
+      "slide": 10,
+      "title": "E(3) Message Passing",
+      "notes": "Present E(3) message passing as the point-cloud version of the same contract. Distances and scalar features can be invariant under rigid motion, while coordinate-like vectors must rotate and translate predictably. The notebook check preserves pairwise distances after a rigid transform, which is the minimal sanity test."
+    },
+    {
+      "slide": 11,
+      "title": "Mesh CNNs Need Surface Neighborhoods",
+      "notes": "Meshes add a subtlety that ordinary grids hide: neighbors live on a surface, and local coordinates may change from face to face. A mesh CNN must choose a neighborhood, transport or align features, and pool across cells without pretending that the surface is a flat image grid."
+    },
+    {
+      "slide": 12,
+      "title": "RNN And LSTM Time Geometry",
+      "notes": "Use the time visual to distinguish sequence geometry from set geometry. The recurrence shares a rule across positions, while LSTM-style gates decide how far information should persist. Dilated receptive fields and memory traces both show how architecture encodes assumptions about temporal scale."
+    },
+    {
+      "slide": 13,
+      "title": "Residuals Make Claims Auditable",
+      "notes": "This is the verification slide. Each residual corresponds to a promise made earlier: CNN translation equivariance, group-channel permutation, GNN relabeling behavior, attention row normalization, E(3) distance preservation, and gate range. The numbers are small because the notebook deliberately isolates the mechanism."
+    },
+    {
+      "slide": 14,
+      "title": "Locality And Scale",
+      "notes": "Stress that locality is not the same in every architecture. A convolutional stencil expands through depth, a GNN expands through graph hops, attention can connect every token immediately, and recurrent models expand through time. Pooling and readout then decide which information becomes invariant."
+    },
+    {
+      "slide": 15,
+      "title": "What Changes And What Stays Fixed",
+      "notes": "Use the three columns as a vocabulary cleanup. Invariance means the answer should stay fixed, equivariance means the output should move in a predictable representation, and stability means small domain perturbations should not cause uncontrolled output changes. Many mistakes come from blending these requirements."
+    },
+    {
+      "slide": 16,
+      "title": "Routing Case Studies",
+      "notes": "Read these examples as design reviews. A molecule is not just a graph if three-dimensional geometry matters. A mesh is not just a set if surface adjacency matters. Language is not just a set if word order matters. The right model is the one whose built-in geometry matches the task."
+    },
+    {
+      "slide": 17,
+      "title": "Failure Modes To Catch Early",
+      "notes": "Make this slide practical. Overbuilding symmetry can erase useful orientation or order, while underbuilding symmetry forces the model to relearn coordinate conventions from data. Padding, graph construction, local frames, and positional encodings are all places where a good-looking architecture can quietly break its contract."
+    },
+    {
+      "slide": 18,
+      "title": "Takeaways And Lab",
+      "notes": "Close by returning to the notebook lab. Students should perturb one geometric assumption, rerun the corresponding check, and explain the failure or preservation in domain language. The final habit is simple: choose the domain, name the transformation, inspect the visual, and keep the residual nearby."
+    }
+  ]
+}</script>
+  <style>
+    :root {
+      --slide-bg: #FFFFFF;
+      --slide-bg-alt: #F8FAFC;
+      --slide-ink: #111827;
+      --slide-muted: #475569;
+      --slide-dimmed: #64748B;
+      --slide-accent: #1E3A8A;
+      --slide-blue: #2563EB;
+      --slide-teal: #0F766E;
+      --slide-amber: #B45309;
+      --slide-violet: #6D28D9;
+      --slide-border: #CBD5E1;
+      --slide-soft-border: #E2E8F0;
+      --font-sans: 'Source Sans 3', Arial, sans-serif;
+      --font-math: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      --font-code: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    deck-stage:not(:defined) { visibility: hidden; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0F172A;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(37, 99, 235, 0.07), transparent 25%),
+        radial-gradient(circle at 86% 18%, rgba(15, 118, 110, 0.07), transparent 22%),
+        linear-gradient(to right, rgba(203, 213, 225, 0.34) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.26) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: auto, auto, 96px 96px, 96px 96px, auto;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 58px 92px 52px;
+      border-top: 10px solid var(--slide-accent);
+      overflow: clip;
+    }
+    .slide.alt { background-color: var(--slide-bg-alt); }
+    h1, h2, h3, p, figure { margin: 0; letter-spacing: 0; }
+    h1 { font-size: 66px; line-height: 1.02; font-weight: 700; max-width: 1240px; }
+    h2 { font-size: 52px; line-height: 1.08; font-weight: 700; color: var(--slide-ink); }
+    h3 { font-size: 31px; line-height: 1.18; font-weight: 700; color: var(--slide-accent); margin-bottom: 10px; }
+    p, li { font-size: 27px; line-height: 1.3; }
+    ul, ol { margin: 0; padding-left: 31px; }
+    li + li { margin-top: 8px; }
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+      color: var(--slide-muted);
+      font-size: 22px;
+      line-height: 1.2;
+      flex: 0 0 auto;
+    }
+    .eyebrow {
+      color: var(--slide-teal);
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .source-pill {
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 8px 13px;
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--slide-muted);
+      font-size: 22px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .content {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-height: 0;
+    }
+    .title-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 54px;
+      align-items: center;
+    }
+    .subtitle {
+      color: var(--slide-muted);
+      font-size: 32px;
+      line-height: 1.24;
+      max-width: 1020px;
+    }
+    .accent-rule {
+      width: 190px;
+      height: 6px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--slide-blue), var(--slide-teal), var(--slide-amber));
+      margin: 26px 0;
+    }
+    .two {
+      display: grid;
+      grid-template-columns: 0.98fr 1.02fr;
+      gap: 34px;
+      align-items: stretch;
+      min-height: 0;
+      flex: 1;
+    }
+    .two.wide-left { grid-template-columns: 1.12fr 0.88fr; }
+    .two.wide-right { grid-template-columns: 0.86fr 1.14fr; }
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+    .four {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .stack {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+      min-height: 0;
+    }
+    .box {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 20px 24px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+    .box.blue { border-left: 5px solid var(--slide-blue); background: #EFF6FF; }
+    .box.teal { border-left: 5px solid var(--slide-teal); background: #F0FDFA; }
+    .box.amber { border-left: 5px solid var(--slide-amber); background: #FFFBEB; }
+    .box.violet { border-left: 5px solid var(--slide-violet); background: #F5F3FF; }
+    .box.slate { border-left: 5px solid #64748B; background: #F8FAFC; }
+    .box strong {
+      color: var(--slide-accent);
+      font-weight: 700;
+    }
+    .formula {
+      border: 1px solid var(--slide-border);
+      border-left: 5px solid var(--slide-accent);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 18px 22px;
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.24;
+    }
+    .mono {
+      font-family: var(--font-code);
+      font-size: 23px;
+      line-height: 1.28;
+    }
+    .muted { color: var(--slide-muted); }
+    .small { font-size: 23px; line-height: 1.26; }
+    .tiny { font-size: 21px; line-height: 1.25; }
+    .viz {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+    .viz.tall { min-height: 625px; }
+    .artifact-img {
+      display: block;
+      width: 100%;
+      max-height: 540px;
+      object-fit: contain;
+      border: 1px solid var(--slide-soft-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+    }
+    .caption {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      line-height: 1.24;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .tag {
+      border: 1px solid var(--slide-border);
+      border-radius: 6px;
+      padding: 7px 12px;
+      background: #FFFFFF;
+      color: var(--slide-accent);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .table {
+      display: grid;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+      overflow: clip;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 0.92fr 1.16fr 1.14fr;
+      border-bottom: 1px solid var(--slide-soft-border);
+      min-height: 0;
+    }
+    .row:last-child { border-bottom: 0; }
+    .row > div {
+      padding: 13px 16px;
+      font-size: 23px;
+      line-height: 1.22;
+      border-right: 1px solid var(--slide-soft-border);
+    }
+    .row > div:last-child { border-right: 0; }
+    .row.header > div {
+      background: #EEF2FF;
+      color: var(--slide-accent);
+      font-weight: 700;
+      font-size: 22px;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .metric {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 18px;
+      background: #FFFFFF;
+      display: grid;
+      gap: 8px;
+    }
+    .metric .value {
+      font-family: var(--font-code);
+      font-size: 25px;
+      color: var(--slide-teal);
+      font-weight: 700;
+    }
+    .metric .label {
+      font-size: 22px;
+      line-height: 1.22;
+      color: var(--slide-muted);
+      font-weight: 600;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      font-family: var(--font-sans);
+    }
+    .svg-title { font-size: 32px; fill: var(--slide-ink); font-weight: 700; }
+    .svg-label { font-size: 26px; fill: var(--slide-ink); font-weight: 700; }
+    .svg-note { font-size: 23px; fill: var(--slide-muted); font-weight: 600; }
+    .svg-math { font-size: 26px; fill: var(--slide-ink); font-family: var(--font-math); }
+    .footer-note {
+      color: var(--slide-muted);
+      font-size: 22px;
+      line-height: 1.22;
+      flex: 0 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide alt" data-label="Title">
+      <div class="topline">
+        <div class="eyebrow">Geometric Deep Learning - Chapter 05</div>
+        <div class="source-pill">Printed pages 68-101; PDF pages 72-105</div>
+      </div>
+      <div class="title-grid">
+        <div>
+          <h1>Geometric Deep Learning Models</h1>
+          <div class="accent-rule"></div>
+          <p class="subtitle">CNNs, group CNNs, GNNs, sets and Transformers, E(3) message passing, mesh CNNs, and recurrent sequence models as domain-specific symmetry contracts.</p>
+        </div>
+        <div class="viz tall">
+          <svg viewBox="0 0 900 620" role="img" aria-label="Model families arranged around geometric domains">
+            <defs>
+              <marker id="title-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                <path d="M0 0L10 5L0 10z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="322" y="236" width="256" height="132" rx="18" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="450" y="288" text-anchor="middle" class="svg-title">model</text>
+            <text x="450" y="326" text-anchor="middle" class="svg-note">domain + action + check</text>
+            <g fill="#FFFFFF" stroke-width="4">
+              <rect x="62" y="86" width="190" height="82" rx="14" stroke="#2563EB"></rect>
+              <rect x="356" y="42" width="188" height="82" rx="14" stroke="#0F766E"></rect>
+              <rect x="648" y="86" width="190" height="82" rx="14" stroke="#B45309"></rect>
+              <rect x="62" y="454" width="190" height="82" rx="14" stroke="#6D28D9"></rect>
+              <rect x="356" y="500" width="188" height="82" rx="14" stroke="#2563EB"></rect>
+              <rect x="648" y="454" width="190" height="82" rx="14" stroke="#0F766E"></rect>
+            </g>
+            <g class="svg-label" text-anchor="middle">
+              <text x="157" y="136">grids</text>
+              <text x="450" y="92">graphs</text>
+              <text x="743" y="136">groups</text>
+              <text x="157" y="504">sets</text>
+              <text x="450" y="550">surfaces</text>
+              <text x="743" y="504">sequences</text>
+            </g>
+            <g stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#title-arrow)" opacity="0.78">
+              <path d="M252 150 C300 194 306 230 322 270"></path>
+              <path d="M450 124 C450 166 450 205 450 236"></path>
+              <path d="M648 150 C598 194 590 230 578 270"></path>
+              <path d="M252 492 C304 446 312 398 340 360"></path>
+              <path d="M450 500 C450 454 450 410 450 368"></path>
+              <path d="M648 492 C596 446 586 398 560 360"></path>
+            </g>
+            <text x="450" y="416" text-anchor="middle" class="svg-note">choose the architecture by the geometry it must respect</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open by framing Chapter 05 as an architecture selection lecture. The important move is to stop naming layers first and instead ask what kind of domain carries the signal, what transformations should be respected, and which residual or visual check will reveal whether the promise is actually being kept.</aside>
+    </section>
+
+    <section class="slide" data-label="Architecture Contract">
+      <div class="topline">
+        <div class="eyebrow">A reusable design loop</div>
+        <div class="source-pill">Notebook: 05-geometric-deep-learning-models.ipynb</div>
+      </div>
+      <div class="content">
+        <h2>The Architecture Contract</h2>
+        <div class="two wide-left">
+          <div class="viz tall">
+            <svg viewBox="0 0 940 620" role="img" aria-label="Architecture contract loop">
+              <defs>
+                <marker id="contract-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#475569"></path>
+                </marker>
+              </defs>
+              <g fill="#FFFFFF" stroke-width="4">
+                <rect x="70" y="80" width="250" height="105" rx="14" stroke="#2563EB"></rect>
+                <rect x="346" y="80" width="250" height="105" rx="14" stroke="#0F766E"></rect>
+                <rect x="622" y="80" width="250" height="105" rx="14" stroke="#B45309"></rect>
+                <rect x="70" y="365" width="250" height="105" rx="14" stroke="#6D28D9"></rect>
+                <rect x="346" y="365" width="250" height="105" rx="14" stroke="#2563EB"></rect>
+                <rect x="622" y="365" width="250" height="105" rx="14" stroke="#0F766E"></rect>
+              </g>
+              <g class="svg-label" text-anchor="middle">
+                <text x="195" y="126">domain</text>
+                <text x="471" y="126">transformation</text>
+                <text x="747" y="126">local rule</text>
+                <text x="195" y="411">representation</text>
+                <text x="471" y="411">readout</text>
+                <text x="747" y="411">residual</text>
+              </g>
+              <g class="svg-note" text-anchor="middle">
+                <text x="195" y="160">grid, graph, set, mesh</text>
+                <text x="471" y="160">shift, relabel, rotate</text>
+                <text x="747" y="160">share, aggregate, attend</text>
+                <text x="195" y="445">how features move</text>
+                <text x="471" y="445">invariant or equivariant</text>
+                <text x="747" y="445">small finite check</text>
+              </g>
+              <g stroke="#475569" stroke-width="4" fill="none" marker-end="url(#contract-arrow)">
+                <line x1="320" y1="132" x2="346" y2="132"></line>
+                <line x1="596" y1="132" x2="622" y2="132"></line>
+                <path d="M747 186 C747 260 196 285 196 365"></path>
+                <line x1="320" y1="417" x2="346" y2="417"></line>
+                <line x1="596" y1="417" x2="622" y2="417"></line>
+              </g>
+              <rect x="250" y="246" width="440" height="70" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="470" y="291" text-anchor="middle" class="svg-math">f(g . x) = rho(g) f(x)</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box blue">
+              <h3>Layer Names Are Late</h3>
+              <p>Start with the object indexing the signal and the transformations that should not be relearned from scratch.</p>
+            </div>
+            <div class="box teal">
+              <h3>Locality Is Domain-Specific</h3>
+              <p>A stencil, graph neighborhood, attention row, mesh ring, and recurrent state all encode different neighborhoods.</p>
+            </div>
+            <div class="formula">Check: transform input, run the layer, compare with transformed output.</div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use this slide as the contract that every later model must satisfy. A geometric layer is not only a computation; it names a domain, an allowed transformation family, a local operation, and a readout. The final check column keeps the lecture grounded in executable evidence rather than vocabulary.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Model-To-Domain Routing">
+      <div class="topline">
+        <div class="eyebrow">Routing before modeling</div>
+        <div class="source-pill">Domains, transformations, and readouts</div>
+      </div>
+      <div class="content">
+        <h2>Model-To-Domain Routing</h2>
+        <div class="two wide-right">
+          <div class="stack">
+            <div class="box blue"><p><strong>Grid signal:</strong> translations matter, so use convolutional sharing before dense readout.</p></div>
+            <div class="box teal"><p><strong>Graph or set:</strong> labels are arbitrary, so aggregation or attention must respect permutation.</p></div>
+            <div class="box amber"><p><strong>Point cloud or surface:</strong> rigid motion and local frames decide whether E(3) or mesh methods are needed.</p></div>
+            <div class="box violet"><p><strong>Sequence:</strong> order carries information, so recurrence, dilation, masking, or positional structure becomes part of the geometry.</p></div>
+          </div>
+          <div class="viz tall">
+            <svg viewBox="0 0 980 650" role="img" aria-label="Routing from domains to model families">
+              <defs>
+                <marker id="route-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g class="svg-label">
+                <text x="84" y="64">domain</text>
+                <text x="712" y="64">architecture</text>
+              </g>
+              <g fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3">
+                <rect x="60" y="98" width="260" height="74" rx="12"></rect>
+                <rect x="60" y="194" width="260" height="74" rx="12"></rect>
+                <rect x="60" y="290" width="260" height="74" rx="12"></rect>
+                <rect x="60" y="386" width="260" height="74" rx="12"></rect>
+                <rect x="60" y="482" width="260" height="74" rx="12"></rect>
+                <rect x="660" y="98" width="260" height="74" rx="12"></rect>
+                <rect x="660" y="194" width="260" height="74" rx="12"></rect>
+                <rect x="660" y="290" width="260" height="74" rx="12"></rect>
+                <rect x="660" y="386" width="260" height="74" rx="12"></rect>
+                <rect x="660" y="482" width="260" height="74" rx="12"></rect>
+              </g>
+              <g class="svg-label" font-weight="700">
+                <text x="94" y="143">image grid</text>
+                <text x="94" y="239">social graph</text>
+                <text x="94" y="335">unordered set</text>
+                <text x="94" y="431">3D molecule</text>
+                <text x="94" y="527">surface mesh</text>
+                <text x="694" y="143">CNN</text>
+                <text x="694" y="239">GNN</text>
+                <text x="694" y="335">Transformer</text>
+                <text x="694" y="431">E(3) MPNN</text>
+                <text x="694" y="527">mesh CNN</text>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="4" fill="none" marker-end="url(#route-arrow)">
+                <path d="M320 135 C456 135 520 135 660 135"></path>
+                <path d="M320 231 C456 231 520 231 660 231"></path>
+                <path d="M320 327 C456 327 520 327 660 327"></path>
+                <path d="M320 423 C456 423 520 423 660 423"></path>
+                <path d="M320 519 C456 519 520 519 660 519"></path>
+              </g>
+              <text x="490" y="610" text-anchor="middle" class="svg-note">route by the invariance or equivariance the task should preserve</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Treat the routing diagram as a decision aid, not a taxonomy poster. Images route to grid convolutions because translations are meaningful. Graph data routes to message passing because labels are arbitrary. Point clouds, meshes, sets, and sequences each carry a different notion of locality and transformation.</aside>
+    </section>
+
+    <section class="slide" data-label="CNNs On Grids">
+      <div class="topline">
+        <div class="eyebrow">CNNs</div>
+        <div class="source-pill">Translation equivariance on grids</div>
+      </div>
+      <div class="content">
+        <h2>CNNs On Grids</h2>
+        <div class="two">
+          <div class="viz tall">
+            <svg viewBox="0 0 900 620" role="img" aria-label="Grid convolution stencil and translated response">
+              <defs>
+                <marker id="cnn-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#475569"></path>
+                </marker>
+              </defs>
+              <g stroke="#CBD5E1" stroke-width="2">
+                <path d="M90 90H410M90 142H410M90 194H410M90 246H410M90 298H410M90 350H410M90 402H410"></path>
+                <path d="M90 90V402M142 90V402M194 90V402M246 90V402M298 90V402M350 90V402M402 90V402"></path>
+              </g>
+              <rect x="194" y="194" width="156" height="156" fill="rgba(180,83,9,0.14)" stroke="#B45309" stroke-width="4"></rect>
+              <circle cx="272" cy="272" r="18" fill="#2563EB"></circle>
+              <text x="250" y="462" class="svg-label">shared 3 x 3 stencil</text>
+              <line x1="430" y1="246" x2="510" y2="246" stroke="#475569" stroke-width="5" marker-end="url(#cnn-arrow)"></line>
+              <g stroke="#CBD5E1" stroke-width="2">
+                <path d="M540 90H820M540 142H820M540 194H820M540 246H820M540 298H820M540 350H820M540 402H820"></path>
+                <path d="M540 90V402M592 90V402M644 90V402M696 90V402M748 90V402M800 90V402"></path>
+              </g>
+              <rect x="644" y="246" width="156" height="104" fill="rgba(15,118,110,0.14)" stroke="#0F766E" stroke-width="4"></rect>
+              <circle cx="722" cy="298" r="18" fill="#0F766E"></circle>
+              <text x="596" y="462" class="svg-label">response shifts with input</text>
+              <text x="450" y="552" text-anchor="middle" class="svg-math">T_a (K * x) = K * (T_a x)</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box blue">
+              <h3>Domain</h3>
+              <p>A regular grid gives a canonical notion of neighboring pixels and translations.</p>
+            </div>
+            <div class="box teal">
+              <h3>Operation</h3>
+              <p>The same kernel is reused at each position, creating local measurements with shared parameters.</p>
+            </div>
+            <div class="box amber">
+              <h3>Check</h3>
+              <p>Shift the image, convolve, and compare with shifting the original response.</p>
+            </div>
+            <div class="formula">Grid promise: local sharing plus predictable response under translation.</div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Emphasize that convolution is the grid case of a local shared rule. The same stencil is applied at every pixel or lattice site, so translating the input should translate the response. The formula is less important than the commuting behavior that the notebook checks with a tiny signal.</aside>
+    </section>
+
+    <section class="slide alt" data-label="CNN Filters">
+      <div class="topline">
+        <div class="eyebrow">Notebook artifact</div>
+        <div class="source-pill">cnn-filter-generators.png</div>
+      </div>
+      <div class="content">
+        <h2>CNN Filters As Generators</h2>
+        <div class="two wide-left">
+          <figure>
+            <img class="artifact-img" src="../figures/cnn-filter-generators.png" alt="CNN filter generator artifact showing input, gradients, and average filter">
+            <figcaption class="caption">Local filters expose derivative-like and averaging measurements before any global recognition step.</figcaption>
+          </figure>
+          <div class="stack">
+            <div class="metric-grid">
+              <div class="metric"><div class="value">0.0</div><div class="label">translation equivariance error</div></div>
+              <div class="metric"><div class="value">3 x 3</div><div class="label">finite stencil footprint</div></div>
+              <div class="metric"><div class="value">wrap</div><div class="label">padding convention in the check</div></div>
+            </div>
+            <div class="box teal">
+              <h3>Inspection Target</h3>
+              <p>Find the same local measurement after a shift. If padding or indexing changes the boundary contract, the residual stops being a property of convolution alone.</p>
+            </div>
+            <div class="box slate">
+              <p class="mono">convolve(shift(x), K) - shift(convolve(x, K))</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the generated artifact as a microscope. The input, derivative filters, and averaging filter show that a CNN layer begins with small local measurements rather than global recognition. The displayed zero translation residual is the finite diagnostic tying the image panel to the equivariance claim.</aside>
+    </section>
+
+    <section class="slide" data-label="Group CNNs">
+      <div class="topline">
+        <div class="eyebrow">Group CNNs</div>
+        <div class="source-pill">Rotations become feature channels</div>
+      </div>
+      <div class="content">
+        <h2>Group CNNs Add Transformation Channels</h2>
+        <div class="two wide-left">
+          <figure>
+            <img class="artifact-img" src="../figures/group-conv-transform-convolve.png" alt="Group convolution artifact showing rotated orientation channels">
+            <figcaption class="caption">A rotated input should permute orientation channels rather than make the feature disappear.</figcaption>
+          </figure>
+          <div class="stack">
+            <div class="box blue">
+              <h3>Ordinary CNN</h3>
+              <p>Shares filters across translations but treats rotations as data variation unless augmentation or architecture handles them.</p>
+            </div>
+            <div class="box teal">
+              <h3>Group CNN</h3>
+              <p>Indexes features by position and group element, so transformations act by moving mass across the feature stack.</p>
+            </div>
+            <div class="formula">Feature field: \(f : G \rightarrow \mathbb{R}^C\), with transformed inputs acting on channel coordinates.</div>
+            <div class="metric"><div class="value">0.0</div><div class="label">rotation channel permutation error</div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Explain group convolution by separating spatial motion from transformation channels. Rotating the input should not destroy the feature; it should move activation among orientation channels. The notebook artifact demonstrates this with a simple pattern whose ninety-degree rotation becomes a channel permutation.</aside>
+    </section>
+
+    <section class="slide alt" data-label="GNNs">
+      <div class="topline">
+        <div class="eyebrow">Graph neural networks</div>
+        <div class="source-pill">Permutation equivariant message passing</div>
+      </div>
+      <div class="content">
+        <h2>GNNs Respect Relabeling</h2>
+        <div class="two">
+          <div class="viz tall">
+            <svg viewBox="0 0 900 620" role="img" aria-label="Graph message passing with relabeling">
+              <defs>
+                <marker id="gnn-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <g stroke="#94A3B8" stroke-width="5">
+                <line x1="220" y1="180" x2="370" y2="240"></line>
+                <line x1="220" y1="180" x2="190" y2="360"></line>
+                <line x1="370" y1="240" x2="300" y2="430"></line>
+                <line x1="190" y1="360" x2="300" y2="430"></line>
+                <line x1="370" y1="240" x2="520" y2="155"></line>
+                <line x1="520" y1="155" x2="650" y2="300"></line>
+                <line x1="650" y1="300" x2="520" y2="445"></line>
+                <line x1="520" y1="445" x2="370" y2="240"></line>
+              </g>
+              <g fill="#DBEAFE" stroke="#2563EB" stroke-width="4">
+                <circle cx="220" cy="180" r="36"></circle>
+                <circle cx="370" cy="240" r="36"></circle>
+                <circle cx="190" cy="360" r="36"></circle>
+                <circle cx="300" cy="430" r="36"></circle>
+                <circle cx="520" cy="155" r="36"></circle>
+                <circle cx="650" cy="300" r="36"></circle>
+                <circle cx="520" cy="445" r="36"></circle>
+              </g>
+              <g class="svg-label" text-anchor="middle">
+                <text x="220" y="189">1</text>
+                <text x="370" y="249">2</text>
+                <text x="190" y="369">3</text>
+                <text x="300" y="439">4</text>
+                <text x="520" y="164">5</text>
+                <text x="650" y="309">6</text>
+                <text x="520" y="454">7</text>
+              </g>
+              <g stroke="#B45309" stroke-width="4" fill="none" marker-end="url(#gnn-arrow)" stroke-dasharray="12 8">
+                <line x1="238" y1="198" x2="340" y2="236"></line>
+                <line x1="204" y1="344" x2="340" y2="250"></line>
+                <line x1="502" y1="176" x2="400" y2="232"></line>
+                <line x1="527" y1="414" x2="388" y2="270"></line>
+              </g>
+              <rect x="95" y="520" width="710" height="60" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="450" y="559" text-anchor="middle" class="svg-math">h_v' = phi(h_v, aggregate({psi(h_u, e_uv) : u in N(v)}))</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box blue">
+              <h3>Why Permutation Matters</h3>
+              <p>Graph node IDs are not physical coordinates. Relabeling them should only relabel the features.</p>
+            </div>
+            <div class="box teal">
+              <h3>How Message Passing Helps</h3>
+              <p>Each node uses neighbor features through an aggregation rule that ignores arbitrary ordering.</p>
+            </div>
+            <div class="metric"><div class="value">2.78e-16</div><div class="label">GNN permutation equivariance error in the notebook ledger</div></div>
+            <div class="box amber">
+              <p>Changing edges is different from relabeling nodes; it changes the domain, so the output may legitimately change.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Keep the graph drawing subordinate to the algebraic idea. Node names are bookkeeping, so relabeling every node should relabel the output in exactly the same way. Message passing achieves this by aggregating neighbor information through symmetric operations tied to the adjacency structure.</aside>
+    </section>
+
+    <section class="slide" data-label="Attention Soft Graph">
+      <div class="topline">
+        <div class="eyebrow">Sets and attention</div>
+        <div class="source-pill">Attention as learned adjacency</div>
+      </div>
+      <div class="content">
+        <h2>Attention Builds A Soft Graph</h2>
+        <div class="two wide-left">
+          <figure>
+            <img class="artifact-img" src="../figures/gnn-transformer-soft-graph.png" alt="GNN and Transformer soft graph artifact with attention matrix and residuals">
+            <figcaption class="caption">The attention matrix is a learned dense relation; row normalization makes each token aggregate a weighted neighborhood.</figcaption>
+          </figure>
+          <div class="stack">
+            <div class="formula">\( \mathrm{Attn}(Q,K,V) = \mathrm{softmax}(QK^\top / \sqrt{d})V \)</div>
+            <div class="box teal">
+              <h3>Set Behavior</h3>
+              <p>Without position information, permuting tokens permutes queries, keys, values, and outputs in the same organized way.</p>
+            </div>
+            <div class="box violet">
+              <h3>Sequence Behavior</h3>
+              <p>Order enters through position encodings, causal masks, or recurrence-like restrictions.</p>
+            </div>
+            <div class="metric"><div class="value">1.11e-16</div><div class="label">attention row sum error</div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Connect attention to graph neural networks without claiming they are identical. The attention matrix is a learned dense adjacency whose rows form probability weights. For sets, permutation behavior matters; for sequences, positional or temporal information is deliberately added because order carries meaning.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Transformers">
+      <div class="topline">
+        <div class="eyebrow">Transformers</div>
+        <div class="source-pill">Set core, sequence add-on</div>
+      </div>
+      <div class="content">
+        <h2>Transformers: Set Core, Sequence Add-On</h2>
+        <div class="two">
+          <div class="viz tall">
+            <svg viewBox="0 0 900 620" role="img" aria-label="Transformer token geometry">
+              <defs>
+                <marker id="attn-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <g>
+                <rect x="90" y="118" width="130" height="68" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <rect x="270" y="118" width="130" height="68" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <rect x="450" y="118" width="130" height="68" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <rect x="630" y="118" width="130" height="68" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              </g>
+              <g class="svg-label" text-anchor="middle">
+                <text x="155" y="162">x1</text>
+                <text x="335" y="162">x2</text>
+                <text x="515" y="162">x3</text>
+                <text x="695" y="162">x4</text>
+              </g>
+              <g stroke="#0F766E" stroke-width="4" fill="none" marker-end="url(#attn-arrow)" opacity="0.78">
+                <path d="M155 190 C210 286 280 292 335 190"></path>
+                <path d="M155 190 C300 348 560 348 695 190"></path>
+                <path d="M335 190 C385 270 465 270 515 190"></path>
+                <path d="M515 190 C565 270 645 270 695 190"></path>
+              </g>
+              <rect x="185" y="352" width="530" height="82" rx="16" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="450" y="402" text-anchor="middle" class="svg-label">self-attention: pairwise compatibility</text>
+              <rect x="120" y="482" width="250" height="74" rx="12" fill="#FFFFFF" stroke="#6D28D9" stroke-width="4"></rect>
+              <rect x="530" y="482" width="250" height="74" rx="12" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></rect>
+              <text x="245" y="528" text-anchor="middle" class="svg-label">set: no order</text>
+              <text x="655" y="528" text-anchor="middle" class="svg-label">sequence: add order</text>
+              <text x="450" y="600" text-anchor="middle" class="svg-note">the same attention block changes meaning when position or mask data is attached</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box blue">
+              <h3>Permutation-Equivariant Core</h3>
+              <p>The token interaction rule is shared. Reordering tokens reorders the attention rows and outputs.</p>
+            </div>
+            <div class="box amber">
+              <h3>Geometry Injection</h3>
+              <p>Position encodings, causal masks, rotary features, or graph biases tell the same block which relations should matter.</p>
+            </div>
+            <div class="box teal">
+              <h3>Readout Choice</h3>
+              <p>A pooled set representation is invariant; a token-level prediction remains equivariant to token order.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This slide should prevent a common confusion. Self-attention by itself treats tokens through pairwise compatibility and can be permutation equivariant. Sequence modeling becomes ordered only after position, time, or causal masking is injected. The architecture therefore exposes which geometry is built in and which is supplied.</aside>
+    </section>
+
+    <section class="slide" data-label="E(3) Message Passing">
+      <div class="topline">
+        <div class="eyebrow">E(3) equivariant models</div>
+        <div class="source-pill">Rigid-motion sanity checks</div>
+      </div>
+      <div class="content">
+        <h2>E(3) Message Passing</h2>
+        <div class="two">
+          <div class="viz tall">
+            <svg viewBox="0 0 900 620" role="img" aria-label="E3 point cloud message passing">
+              <defs>
+                <marker id="e3-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <g stroke="#CBD5E1" stroke-width="3" opacity="0.75">
+                <line x1="120" y1="482" x2="390" y2="482"></line>
+                <line x1="120" y1="482" x2="210" y2="396"></line>
+                <line x1="120" y1="482" x2="120" y2="245"></line>
+              </g>
+              <g stroke="#94A3B8" stroke-width="4">
+                <line x1="250" y1="250" x2="390" y2="305"></line>
+                <line x1="390" y1="305" x2="330" y2="430"></line>
+                <line x1="330" y1="430" x2="210" y2="360"></line>
+                <line x1="210" y1="360" x2="250" y2="250"></line>
+                <line x1="250" y1="250" x2="330" y2="430"></line>
+              </g>
+              <g fill="#DBEAFE" stroke="#2563EB" stroke-width="4">
+                <circle cx="250" cy="250" r="24"></circle>
+                <circle cx="390" cy="305" r="24"></circle>
+                <circle cx="330" cy="430" r="24"></circle>
+                <circle cx="210" cy="360" r="24"></circle>
+              </g>
+              <g stroke="#B45309" stroke-width="4" fill="none" marker-end="url(#e3-arrow)">
+                <line x1="250" y1="250" x2="356" y2="292"></line>
+                <line x1="330" y1="430" x2="230" y2="372"></line>
+              </g>
+              <path d="M535 145 C620 210 666 300 650 410 C646 442 676 470 708 468" fill="none" stroke="#0F766E" stroke-width="6"></path>
+              <g stroke="#94A3B8" stroke-width="4">
+                <line x1="610" y1="230" x2="748" y2="250"></line>
+                <line x1="748" y1="250" x2="720" y2="394"></line>
+                <line x1="720" y1="394" x2="582" y2="350"></line>
+                <line x1="582" y1="350" x2="610" y2="230"></line>
+                <line x1="610" y1="230" x2="720" y2="394"></line>
+              </g>
+              <g fill="#DCFCE7" stroke="#0F766E" stroke-width="4">
+                <circle cx="610" cy="230" r="24"></circle>
+                <circle cx="748" cy="250" r="24"></circle>
+                <circle cx="720" cy="394" r="24"></circle>
+                <circle cx="582" cy="350" r="24"></circle>
+              </g>
+              <text x="250" y="560" text-anchor="middle" class="svg-label">original point cloud</text>
+              <text x="665" y="560" text-anchor="middle" class="svg-label">rigidly transformed</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="formula">Scalar messages can use \(||x_i - x_j||\); vector messages must transform with coordinates.</div>
+            <div class="box blue">
+              <h3>Invariant Part</h3>
+              <p>Distances, angles, and scalar edge features survive translations and rotations.</p>
+            </div>
+            <div class="box teal">
+              <h3>Equivariant Part</h3>
+              <p>Coordinate updates or vector features should rotate and translate predictably with the input.</p>
+            </div>
+            <div class="metric"><div class="value">4.44e-16</div><div class="label">E(3) distance preservation error</div></div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Present E(3) message passing as the point-cloud version of the same contract. Distances and scalar features can be invariant under rigid motion, while coordinate-like vectors must rotate and translate predictably. The notebook check preserves pairwise distances after a rigid transform, which is the minimal sanity test.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Mesh CNNs">
+      <div class="topline">
+        <div class="eyebrow">Meshes and surfaces</div>
+        <div class="source-pill">Local frames replace image coordinates</div>
+      </div>
+      <div class="content">
+        <h2>Mesh CNNs Need Surface Neighborhoods</h2>
+        <div class="two">
+          <div class="viz tall">
+            <svg viewBox="0 0 900 620" role="img" aria-label="Mesh CNN surface neighborhoods">
+              <defs>
+                <marker id="mesh-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#6D28D9"></path>
+                </marker>
+              </defs>
+              <g stroke="#CBD5E1" stroke-width="4" fill="none">
+                <polygon points="160,160 320,120 420,250 285,330"></polygon>
+                <polygon points="320,120 510,145 560,300 420,250"></polygon>
+                <polygon points="285,330 420,250 560,300 470,455"></polygon>
+                <polygon points="110,315 160,160 285,330 220,470"></polygon>
+                <polygon points="220,470 285,330 470,455 360,540"></polygon>
+              </g>
+              <polygon points="285,330 420,250 560,300 470,455" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="5"></polygon>
+              <circle cx="430" cy="335" r="22" fill="#2563EB"></circle>
+              <g stroke="#B45309" stroke-width="5" fill="none">
+                <path d="M430 335 L520 322" marker-end="url(#mesh-arrow)"></path>
+                <path d="M430 335 L396 260" marker-end="url(#mesh-arrow)"></path>
+              </g>
+              <text x="560" y="335" class="svg-label">local frame</text>
+              <rect x="620" y="110" width="210" height="92" rx="12" fill="#FFFFFF" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="725" y="147" text-anchor="middle" class="svg-label">edge ring</text>
+              <text x="725" y="181" text-anchor="middle" class="svg-note">surface neighborhood</text>
+              <rect x="620" y="250" width="210" height="92" rx="12" fill="#FFFFFF" stroke="#B45309" stroke-width="4"></rect>
+              <text x="725" y="287" text-anchor="middle" class="svg-label">transport</text>
+              <text x="725" y="321" text-anchor="middle" class="svg-note">align features</text>
+              <rect x="620" y="390" width="210" height="92" rx="12" fill="#FFFFFF" stroke="#6D28D9" stroke-width="4"></rect>
+              <text x="725" y="427" text-anchor="middle" class="svg-label">pool</text>
+              <text x="725" y="461" text-anchor="middle" class="svg-note">coarsen cells</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box blue">
+              <h3>The Domain Is Not Flat</h3>
+              <p>Faces and vertices form an irregular surface, so local neighborhoods need mesh connectivity and often a chosen frame.</p>
+            </div>
+            <div class="box teal">
+              <h3>Feature Transport Matters</h3>
+              <p>Comparing features across adjacent cells requires an alignment rule, otherwise the same vector can mean different directions.</p>
+            </div>
+            <div class="box amber">
+              <h3>Common Check</h3>
+              <p>Perturb the mesh or rotate local frames and inspect whether the response changes in the intended way.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Meshes add a subtlety that ordinary grids hide: neighbors live on a surface, and local coordinates may change from face to face. A mesh CNN must choose a neighborhood, transport or align features, and pool across cells without pretending that the surface is a flat image grid.</aside>
+    </section>
+
+    <section class="slide" data-label="RNN And LSTM">
+      <div class="topline">
+        <div class="eyebrow">RNN and LSTM</div>
+        <div class="source-pill">Temporal locality and memory scale</div>
+      </div>
+      <div class="content">
+        <h2>RNN And LSTM Time Geometry</h2>
+        <div class="two wide-left">
+          <figure>
+            <img class="artifact-img" src="../figures/rnn-lstm-gates-time-warping.png" alt="RNN and LSTM artifact showing dilated receptive fields and memory gates">
+            <figcaption class="caption">Dilations enlarge temporal receptive fields; gates tune whether information is written, forgotten, or carried forward.</figcaption>
+          </figure>
+          <div class="stack">
+            <div class="box blue">
+              <h3>Sequence Domain</h3>
+              <p>Neighborhoods are ordered by time or token position, so swapping two entries is not usually harmless.</p>
+            </div>
+            <div class="box teal">
+              <h3>Recurrent Sharing</h3>
+              <p>The same transition rule is reused across the sequence, but state carries history forward.</p>
+            </div>
+            <div class="metric-grid">
+              <div class="metric"><div class="value">31</div><div class="label">dilated receptive field</div></div>
+              <div class="metric"><div class="value">0.011</div><div class="label">minimum gate value</div></div>
+              <div class="metric"><div class="value">0.995</div><div class="label">maximum gate value</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the time visual to distinguish sequence geometry from set geometry. The recurrence shares a rule across positions, while LSTM-style gates decide how far information should persist. Dilated receptive fields and memory traces both show how architecture encodes assumptions about temporal scale.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Residuals">
+      <div class="topline">
+        <div class="eyebrow">Finite diagnostics</div>
+        <div class="source-pill">chapter-05-visual-ledger.json</div>
+      </div>
+      <div class="content">
+        <h2>Residuals Make Claims Auditable</h2>
+        <div class="table">
+          <div class="row header"><div>Model family</div><div>Promise</div><div>Notebook diagnostic</div></div>
+          <div class="row"><div>CNN</div><div>Translation of input translates response</div><div>translation equivariance error = 0.0</div></div>
+          <div class="row"><div>Group CNN</div><div>Rotation moves activation across orientation channels</div><div>channel permutation error = 0.0</div></div>
+          <div class="row"><div>GNN</div><div>Relabeling nodes only relabels features</div><div>permutation error = 2.78e-16</div></div>
+          <div class="row"><div>Transformer</div><div>Rows aggregate as normalized soft neighborhoods</div><div>row sum error = 1.11e-16</div></div>
+          <div class="row"><div>E(3)</div><div>Rigid motions preserve scalar distance evidence</div><div>distance error = 4.44e-16</div></div>
+          <div class="row"><div>LSTM</div><div>Gates stay bounded while changing timescale</div><div>gate range = [0.011, 0.995]</div></div>
+        </div>
+        <p class="footer-note">These are finite checks for the teaching examples. They verify the intended mechanism, not every property of a production model.</p>
+      </div>
+      <aside class="speaker-notes">This is the verification slide. Each residual corresponds to a promise made earlier: CNN translation equivariance, group-channel permutation, GNN relabeling behavior, attention row normalization, E(3) distance preservation, and gate range. The numbers are small because the notebook deliberately isolates the mechanism.</aside>
+    </section>
+
+    <section class="slide" data-label="Locality And Scale">
+      <div class="topline">
+        <div class="eyebrow">Comparing receptive fields</div>
+        <div class="source-pill">Local rules become global through depth</div>
+      </div>
+      <div class="content">
+        <h2>Locality And Scale</h2>
+        <div class="four">
+          <div class="box blue">
+            <h3>CNN</h3>
+            <p>Stencil neighborhoods expand layer by layer across the grid.</p>
+          </div>
+          <div class="box teal">
+            <h3>GNN</h3>
+            <p>Messages expand by graph hops and depend on the chosen edge set.</p>
+          </div>
+          <div class="box amber">
+            <h3>Attention</h3>
+            <p>Every token can communicate immediately unless a mask restricts it.</p>
+          </div>
+          <div class="box violet">
+            <h3>RNN</h3>
+            <p>State carries information along the ordered sequence, with gates controlling persistence.</p>
+          </div>
+        </div>
+        <div class="viz tall">
+          <svg viewBox="0 0 1500 430" role="img" aria-label="Locality and scale comparison">
+            <defs>
+              <marker id="scale-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                <path d="M0 0L10 5L0 10z" fill="#475569"></path>
+              </marker>
+            </defs>
+            <g transform="translate(60,70)">
+              <text x="0" y="-28" class="svg-label">grid depth</text>
+              <g stroke="#CBD5E1" stroke-width="3">
+                <path d="M0 0H250M0 50H250M0 100H250M0 150H250M0 200H250"></path>
+                <path d="M0 0V200M50 0V200M100 0V200M150 0V200M200 0V200M250 0V200"></path>
+              </g>
+              <rect x="50" y="50" width="150" height="150" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="4"></rect>
+            </g>
+            <g transform="translate(430,70)">
+              <text x="0" y="-28" class="svg-label">graph hops</text>
+              <g stroke="#94A3B8" stroke-width="5">
+                <line x1="80" y1="100" x2="160" y2="40"></line>
+                <line x1="80" y1="100" x2="160" y2="160"></line>
+                <line x1="160" y1="40" x2="250" y2="90"></line>
+                <line x1="160" y1="160" x2="250" y2="90"></line>
+              </g>
+              <g fill="#DCFCE7" stroke="#0F766E" stroke-width="4">
+                <circle cx="80" cy="100" r="28"></circle>
+                <circle cx="160" cy="40" r="28"></circle>
+                <circle cx="160" cy="160" r="28"></circle>
+                <circle cx="250" cy="90" r="28"></circle>
+              </g>
+            </g>
+            <g transform="translate(790,70)">
+              <text x="0" y="-28" class="svg-label">attention</text>
+              <g fill="#FFFBEB" stroke="#B45309" stroke-width="4">
+                <rect x="0" y="55" width="70" height="70" rx="12"></rect>
+                <rect x="110" y="55" width="70" height="70" rx="12"></rect>
+                <rect x="220" y="55" width="70" height="70" rx="12"></rect>
+              </g>
+              <g stroke="#B45309" stroke-width="4" marker-end="url(#scale-arrow)">
+                <line x1="70" y1="90" x2="110" y2="90"></line>
+                <line x1="180" y1="90" x2="220" y2="90"></line>
+                <path d="M35 55 C88 0 203 0 255 55"></path>
+              </g>
+            </g>
+            <g transform="translate(1140,70)">
+              <text x="0" y="-28" class="svg-label">recurrence</text>
+              <g stroke="#6D28D9" stroke-width="4" marker-end="url(#scale-arrow)">
+                <line x1="70" y1="90" x2="120" y2="90"></line>
+                <line x1="190" y1="90" x2="240" y2="90"></line>
+              </g>
+              <g fill="#F5F3FF" stroke="#6D28D9" stroke-width="4">
+                <rect x="0" y="55" width="70" height="70" rx="14"></rect>
+                <rect x="120" y="55" width="70" height="70" rx="14"></rect>
+                <rect x="240" y="55" width="70" height="70" rx="14"></rect>
+              </g>
+              <text x="155" y="174" text-anchor="middle" class="svg-note">state carries past</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <aside class="speaker-notes">Stress that locality is not the same in every architecture. A convolutional stencil expands through depth, a GNN expands through graph hops, attention can connect every token immediately, and recurrent models expand through time. Pooling and readout then decide which information becomes invariant.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Invariant Equivariant Stable">
+      <div class="topline">
+        <div class="eyebrow">Vocabulary cleanup</div>
+        <div class="source-pill">Three different promises</div>
+      </div>
+      <div class="content">
+        <h2>What Changes And What Stays Fixed</h2>
+        <div class="three">
+          <div class="box blue">
+            <h3>Invariant</h3>
+            <p>The prediction ignores an allowed transformation.</p>
+            <div class="formula">\(F(gx) = F(x)\)</div>
+            <p class="small">Example: a graph-level class does not depend on node ordering.</p>
+          </div>
+          <div class="box teal">
+            <h3>Equivariant</h3>
+            <p>The output transforms in a matching representation.</p>
+            <div class="formula">\(F(gx) = \rho(g)F(x)\)</div>
+            <p class="small">Example: node features relabel when graph nodes are relabeled.</p>
+          </div>
+          <div class="box amber">
+            <h3>Stable</h3>
+            <p>Small domain changes cause controlled output changes.</p>
+            <div class="formula">\(d_Y(Fx,Fx') \leq C d_X(x,x')\)</div>
+            <p class="small">Example: a mesh perturbation should not create a wild feature jump.</p>
+          </div>
+        </div>
+        <div class="box violet">
+          <p>Architectures often combine these: equivariant intermediate features, invariant pooling, and stability checks around the domain perturbations the data actually experiences.</p>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the three columns as a vocabulary cleanup. Invariance means the answer should stay fixed, equivariance means the output should move in a predictable representation, and stability means small domain perturbations should not cause uncontrolled output changes. Many mistakes come from blending these requirements.</aside>
+    </section>
+
+    <section class="slide" data-label="Routing Cases">
+      <div class="topline">
+        <div class="eyebrow">Applied routing</div>
+        <div class="source-pill">Model choice follows task geometry</div>
+      </div>
+      <div class="content">
+        <h2>Routing Case Studies</h2>
+        <div class="table">
+          <div class="row header"><div>Problem signal</div><div>Geometry to preserve</div><div>Reasonable model route</div></div>
+          <div class="row"><div>Molecule with coordinates</div><div>Bond graph plus rigid 3D motion</div><div>GNN with E(3)-equivariant messages</div></div>
+          <div class="row"><div>Image or feature map</div><div>Nearby pixels and translation</div><div>CNN, group CNN if rotations are meaningful</div></div>
+          <div class="row"><div>Point set event</div><div>Permutation of particles should not matter</div><div>Set Transformer or attention with invariant pooling</div></div>
+          <div class="row"><div>Surface deformation</div><div>Mesh adjacency, local frames, curvature-like neighborhoods</div><div>Mesh CNN or gauge-aware surface model</div></div>
+          <div class="row"><div>Time series</div><div>Order and multi-scale temporal dependence</div><div>RNN, LSTM, dilated convolution, or masked attention</div></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">domain first</span>
+          <span class="tag">symmetry second</span>
+          <span class="tag">architecture third</span>
+          <span class="tag">residual always</span>
+        </div>
+      </div>
+      <aside class="speaker-notes">Read these examples as design reviews. A molecule is not just a graph if three-dimensional geometry matters. A mesh is not just a set if surface adjacency matters. Language is not just a set if word order matters. The right model is the one whose built-in geometry matches the task.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Failure Modes">
+      <div class="topline">
+        <div class="eyebrow">Common mistakes</div>
+        <div class="source-pill">Break the contract deliberately</div>
+      </div>
+      <div class="content">
+        <h2>Failure Modes To Catch Early</h2>
+        <div class="two">
+          <div class="stack">
+            <div class="box amber">
+              <h3>Overbuilt Symmetry</h3>
+              <p>Making a model invariant to orientation, order, or position can erase the very signal the task needs.</p>
+            </div>
+            <div class="box amber">
+              <h3>Underbuilt Symmetry</h3>
+              <p>Ignoring label arbitrariness or coordinate frames forces training data to teach conventions that should have been structural.</p>
+            </div>
+            <div class="box amber">
+              <h3>Hidden Boundary Choices</h3>
+              <p>Padding, graph edge construction, frame alignment, and positional encodings can silently define a different problem.</p>
+            </div>
+          </div>
+          <div class="viz tall">
+            <svg viewBox="0 0 900 620" role="img" aria-label="Failure mode checklist">
+              <g fill="#FFFFFF" stroke-width="4">
+                <rect x="120" y="90" width="660" height="80" rx="14" stroke="#B45309"></rect>
+                <rect x="120" y="210" width="660" height="80" rx="14" stroke="#B45309"></rect>
+                <rect x="120" y="330" width="660" height="80" rx="14" stroke="#B45309"></rect>
+                <rect x="120" y="450" width="660" height="80" rx="14" stroke="#B45309"></rect>
+              </g>
+              <g class="svg-label">
+                <text x="162" y="140">Does a transformed input get the expected output?</text>
+                <text x="162" y="260">Did the graph or mesh construction change the domain?</text>
+                <text x="162" y="380">Are local frames and channels aligned consistently?</text>
+                <text x="162" y="500">Does pooling erase only nuisance variation?</text>
+              </g>
+              <g fill="#FFFBEB" stroke="#B45309" stroke-width="4">
+                <circle cx="720" cy="130" r="26"></circle>
+                <circle cx="720" cy="250" r="26"></circle>
+                <circle cx="720" cy="370" r="26"></circle>
+                <circle cx="720" cy="490" r="26"></circle>
+              </g>
+              <g stroke="#B45309" stroke-width="5" fill="none">
+                <path d="M708 130 L718 142 L735 116"></path>
+                <path d="M708 250 L718 262 L735 236"></path>
+                <path d="M708 370 L718 382 L735 356"></path>
+                <path d="M708 490 L718 502 L735 476"></path>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Make this slide practical. Overbuilding symmetry can erase useful orientation or order, while underbuilding symmetry forces the model to relearn coordinate conventions from data. Padding, graph construction, local frames, and positional encodings are all places where a good-looking architecture can quietly break its contract.</aside>
+    </section>
+
+    <section class="slide" data-label="Takeaways">
+      <div class="topline">
+        <div class="eyebrow">Closing loop</div>
+        <div class="source-pill">Applied lab: perturb one geometric assumption</div>
+      </div>
+      <div class="content">
+        <h2>Takeaways And Lab</h2>
+        <div class="two wide-right">
+          <div class="stack">
+            <div class="box blue"><p><strong>Choose the domain:</strong> grid, graph, set, group, point cloud, mesh, or sequence.</p></div>
+            <div class="box teal"><p><strong>Name the transformation:</strong> shift, relabel, rotate, reorder, transport, or time-warp.</p></div>
+            <div class="box amber"><p><strong>Inspect the visual:</strong> verify what moved, what stayed fixed, and what changed meaning.</p></div>
+            <div class="box violet"><p><strong>Keep the residual nearby:</strong> make the claim auditable before scaling the model.</p></div>
+          </div>
+          <div class="viz tall">
+            <svg viewBox="0 0 900 620" role="img" aria-label="Lab loop for geometric model checks">
+              <defs>
+                <marker id="lab-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                  <path d="M0 0L10 5L0 10z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <circle cx="450" cy="310" r="116" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></circle>
+              <text x="450" y="300" text-anchor="middle" class="svg-title">lab</text>
+              <text x="450" y="338" text-anchor="middle" class="svg-note">perturb one assumption</text>
+              <g fill="#FFFFFF" stroke-width="4">
+                <rect x="70" y="100" width="260" height="86" rx="14" stroke="#2563EB"></rect>
+                <rect x="570" y="100" width="260" height="86" rx="14" stroke="#0F766E"></rect>
+                <rect x="570" y="434" width="260" height="86" rx="14" stroke="#B45309"></rect>
+                <rect x="70" y="434" width="260" height="86" rx="14" stroke="#6D28D9"></rect>
+              </g>
+              <g class="svg-label" text-anchor="middle">
+                <text x="200" y="153">transform</text>
+                <text x="700" y="153">run model</text>
+                <text x="700" y="487">inspect visual</text>
+                <text x="200" y="487">read residual</text>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="5" fill="none" marker-end="url(#lab-arrow)">
+                <path d="M330 143 C420 78 480 78 570 143"></path>
+                <path d="M730 186 C800 280 800 360 730 434"></path>
+                <path d="M570 477 C480 542 420 542 330 477"></path>
+                <path d="M170 434 C100 360 100 280 170 186"></path>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by returning to the notebook lab. Students should perturb one geometric assumption, rerun the corresponding check, and explain the failure or preservation in domain language. The final habit is simple: choose the domain, name the transformation, inspect the visual, and keep the residual nearby.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

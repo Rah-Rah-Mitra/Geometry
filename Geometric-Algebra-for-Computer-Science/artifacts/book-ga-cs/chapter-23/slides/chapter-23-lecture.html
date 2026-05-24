@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chapter 23 Lecture - Ray Tracing With Conformal Geometry</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="chapter-23">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-23-using-the-geometry-in-a-ray-tracing-application/23-ray-tracing-with-conformal-geometry.ipynb">
+  <meta name="source_span" content="printed pages 581; PDF pages 577.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <style>
+    :root {
+      --deck-bg: #ffffff;
+      --deck-alt: #f8fafc;
+      --deck-ink: #111827;
+      --deck-muted: #475569;
+      --deck-dimmed: #64748b;
+      --deck-accent: #1e3a8a;
+      --deck-blue: #2563eb;
+      --deck-teal: #0f766e;
+      --deck-amber: #b45309;
+      --deck-violet: #6d28d9;
+      --deck-border: #cbd5e1;
+      --deck-border-soft: #e2e8f0;
+      --font-sans-local: 'Source Sans 3', Arial, sans-serif;
+      --font-math-local: 'STIX Two Text', 'STIX Two Math', 'Cambria Math', Georgia, serif;
+      --font-mono-local: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    body {
+      margin: 0;
+      background: #000000;
+      color: var(--deck-ink);
+      font-family: var(--font-sans-local);
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+      background: var(--deck-bg);
+      color: var(--deck-ink);
+      font-family: var(--font-sans-local);
+    }
+
+    .slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37, 99, 235, 0.034) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.028) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+    }
+
+    .pad {
+      position: relative;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 68px 92px 54px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 66px;
+      line-height: 1.06;
+      font-weight: 700;
+      color: var(--deck-ink);
+      max-width: 980px;
+    }
+
+    h2 {
+      font-size: 52px;
+      line-height: 1.1;
+      font-weight: 700;
+      color: var(--deck-ink);
+    }
+
+    h3 {
+      font-size: 31px;
+      line-height: 1.16;
+      font-weight: 700;
+      color: var(--deck-accent);
+    }
+
+    p,
+    li {
+      font-size: 27px;
+      line-height: 1.38;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 32px;
+    }
+
+    .eyebrow {
+      font-size: 23px;
+      line-height: 1.25;
+      font-weight: 700;
+      color: var(--deck-accent);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      font-size: 31px;
+      line-height: 1.36;
+      color: var(--deck-muted);
+      max-width: 1080px;
+    }
+
+    .body {
+      font-size: 28px;
+      line-height: 1.4;
+      color: var(--deck-ink);
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.32;
+      color: var(--deck-dimmed);
+    }
+
+    .math {
+      font-family: var(--font-math-local);
+      font-style: italic;
+    }
+
+    .mono {
+      font-family: var(--font-mono-local);
+      font-size: 24px;
+      line-height: 1.34;
+    }
+
+    .katex {
+      font-size: 1em;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    .title-grid,
+    .two-col,
+    .wide-left,
+    .wide-right {
+      display: grid;
+      gap: 44px;
+      flex: 1;
+      min-height: 0;
+      align-items: stretch;
+    }
+
+    .title-grid {
+      grid-template-columns: 0.94fr 1.06fr;
+      gap: 58px;
+      align-items: center;
+    }
+
+    .two-col {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .wide-left {
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+
+    .wide-right {
+      grid-template-columns: 0.88fr 1.12fr;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .spread {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .box {
+      border: 1px solid var(--deck-border-soft);
+      border-left: 6px solid var(--deck-blue);
+      border-radius: 8px;
+      background: rgba(248, 250, 252, 0.96);
+      padding: 22px 26px;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    }
+
+    .box.teal {
+      border-left-color: var(--deck-teal);
+      background: #f0fdfa;
+    }
+
+    .box.amber {
+      border-left-color: var(--deck-amber);
+      background: #fffbeb;
+    }
+
+    .box.violet {
+      border-left-color: var(--deck-violet);
+      background: #f5f3ff;
+    }
+
+    .box.indigo {
+      border-left-color: var(--deck-accent);
+      background: #eef2ff;
+    }
+
+    .box-title {
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--deck-accent);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .box.teal .box-title {
+      color: var(--deck-teal);
+    }
+
+    .box.amber .box-title {
+      color: var(--deck-amber);
+    }
+
+    .box.violet .box-title {
+      color: var(--deck-violet);
+    }
+
+    .formula {
+      font-family: var(--font-math-local);
+      font-size: 34px;
+      line-height: 1.34;
+      text-align: center;
+      padding: 16px 20px;
+      border-radius: 8px;
+      background: var(--deck-alt);
+      border: 1px solid var(--deck-border-soft);
+      color: var(--deck-ink);
+    }
+
+    .formula.tight {
+      font-size: 31px;
+      text-align: left;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: #eef2ff;
+      color: var(--deck-accent);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .tag.teal {
+      background: #ccfbf1;
+      color: var(--deck-teal);
+    }
+
+    .tag.amber {
+      background: #fef3c7;
+      color: var(--deck-amber);
+    }
+
+    .tag.violet {
+      background: #ede9fe;
+      color: var(--deck-violet);
+    }
+
+    .viz-card {
+      border: 1px solid var(--deck-border-soft);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    }
+
+    .viz-card.alt {
+      background: var(--deck-alt);
+    }
+
+    .viz {
+      width: 100%;
+      height: auto;
+      max-height: 720px;
+      display: block;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .pipe-step {
+      position: relative;
+      min-height: 160px;
+      border: 1px solid var(--deck-border-soft);
+      border-radius: 8px;
+      padding: 18px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: space-between;
+    }
+
+    .pipe-step::after {
+      content: '';
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      width: 28px;
+      height: 4px;
+      background: var(--deck-border);
+      transform: translateY(-50%);
+      z-index: 2;
+    }
+
+    .pipe-step:last-child::after {
+      display: none;
+    }
+
+    .pipe-label {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.18;
+      color: var(--deck-accent);
+    }
+
+    .pipe-text {
+      font-size: 22px;
+      line-height: 1.28;
+      color: var(--deck-muted);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .metric {
+      border-radius: 8px;
+      border: 1px solid var(--deck-border-soft);
+      background: #ffffff;
+      padding: 20px 22px;
+    }
+
+    .metric-number {
+      font-size: 48px;
+      line-height: 1;
+      font-weight: 700;
+      color: var(--deck-accent);
+      margin-bottom: 8px;
+    }
+
+    .metric-label {
+      font-size: 23px;
+      line-height: 1.25;
+      color: var(--deck-muted);
+    }
+
+    .checklist {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .check {
+      border: 1px solid var(--deck-border-soft);
+      border-left: 6px solid var(--deck-teal);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 18px 20px;
+      font-size: 25px;
+      line-height: 1.28;
+      color: var(--deck-ink);
+    }
+
+    .footer-note {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      font-size: 22px;
+      line-height: 1.28;
+      color: var(--deck-dimmed);
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="deck-metadata">
+    {
+      "course": "Geometric Algebra for Computer Science",
+      "chapter_id": "chapter-23",
+      "notebook_path": "Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-23-using-the-geometry-in-a-ray-tracing-application/23-ray-tracing-with-conformal-geometry.ipynb",
+      "source_span": "printed pages 581; PDF pages 577.",
+      "source_pdf": "Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf",
+      "design_system_version": "lecture-design-system-2026-05-23"
+    }
+  </script>
+
+  <deck-stage width="1920" height="1080" no-rail>
+    <section class="slide" data-label="Ray Tracing With Conformal Geometry">
+      <div class="pad">
+        <div class="title-grid">
+          <div class="stack">
+            <div class="eyebrow">Geometric Algebra For Computer Science · Chapter 23</div>
+            <h1>Ray Tracing With Conformal Geometry</h1>
+            <p class="subtitle">A renderer as a chain of geometric predicates: lift the objects conceptually, specialize the hot path deliberately, and keep invariants visible.</p>
+            <div class="tag-row">
+              <span class="tag">rays</span>
+              <span class="tag teal">rounds and flats</span>
+              <span class="tag amber">intersections</span>
+              <span class="tag violet">spawned rays</span>
+            </div>
+          </div>
+          <div class="viz-card alt">
+            <svg class="viz" viewBox="0 0 760 520" role="img" aria-label="Camera rays intersecting a scene of a sphere, a plane, and a box">
+              <defs>
+                <marker id="arrow-title" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#1e3a8a"></path>
+                </marker>
+                <linearGradient id="sphere-grad" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#fecaca"></stop>
+                  <stop offset="1" stop-color="#dc2626"></stop>
+                </linearGradient>
+              </defs>
+              <rect x="40" y="430" width="660" height="32" fill="#e2e8f0"></rect>
+              <path d="M96 218 L150 170 L150 282 Z" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"></path>
+              <circle cx="102" cy="218" r="12" fill="#1e3a8a"></circle>
+              <line x1="150" y1="180" x2="340" y2="128" stroke="#2563eb" stroke-width="5" marker-end="url(#arrow-title)"></line>
+              <line x1="150" y1="218" x2="552" y2="236" stroke="#2563eb" stroke-width="5" marker-end="url(#arrow-title)"></line>
+              <line x1="150" y1="270" x2="438" y2="398" stroke="#2563eb" stroke-width="5" marker-end="url(#arrow-title)"></line>
+              <circle cx="405" cy="236" r="82" fill="url(#sphere-grad)" opacity="0.9" stroke="#991b1b" stroke-width="5"></circle>
+              <circle cx="405" cy="236" r="118" fill="none" stroke="#b45309" stroke-width="5" stroke-dasharray="14 12"></circle>
+              <path d="M540 334 L650 302 L680 390 L570 424 Z" fill="#dbeafe" stroke="#2563eb" stroke-width="5"></path>
+              <line x1="540" y1="334" x2="570" y2="424" stroke="#2563eb" stroke-width="4"></line>
+              <line x1="650" y1="302" x2="680" y2="390" stroke="#2563eb" stroke-width="4"></line>
+              <text x="74" y="146" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">camera</text>
+              <text x="308" y="96" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#2563eb">primary rays</text>
+              <text x="292" y="382" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#b45309">bounding sphere</text>
+              <text x="520" y="468" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#475569">receiver plane</text>
+              <text x="470" y="238" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#ffffff">mesh</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Source span: printed page 581; PDF page 577.</span>
+          <span>Notebook: chapter 23 ray tracing application.</span>
+        </div>
+        <aside class="speaker-notes">Open by making the lecture an engineering stress test for conformal geometry. The point is not that every value must be stored as a full conformal blade. The point is that points, rays, rounds, flats, normals, and spawned rays can be named in one language, then specialized where repeated rendering queries demand cheaper storage.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Pipeline Narrow The Question">
+      <div class="pad">
+        <div class="spread">
+          <div>
+            <div class="eyebrow">Pipeline Flow</div>
+            <h2>Pipeline: Narrow The Question</h2>
+          </div>
+          <div class="tag-row">
+            <span class="tag">broad query</span>
+            <span class="tag teal">local event</span>
+          </div>
+        </div>
+        <div class="pipeline">
+          <div class="pipe-step">
+            <div class="pipe-label">Pixel Sample</div>
+            <div class="pipe-text">Choose image-plane coordinates and camera frame.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-label">Primary Ray</div>
+            <div class="pipe-text">Store origin, unit direction, and interval.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-label">Model Filter</div>
+            <div class="pipe-text">Reject with spheres or enclosing boxes.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-label">Primitive Hit</div>
+            <div class="pipe-text">Find nearest positive triangle intersection.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-label">Surface Data</div>
+            <div class="pipe-text">Interpolate normal, material, and local frame.</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-label">Shading Rays</div>
+            <div class="pipe-text">Spawn shadow, reflected, or refracted queries.</div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="box indigo">
+            <div class="box-title">Conformal Reading</div>
+            <p>Points, spheres, planes, lines, reflections, and transformations live in one model, so the renderer has a shared vocabulary for geometric relationships.</p>
+          </div>
+          <div class="box teal">
+            <div class="box-title">Implementation Reading</div>
+            <p>Hot loops store the specific fields each predicate needs: dot products, intervals, barycentric weights, bounding volumes, and traversal counters.</p>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Design target: preserve geometry while lowering repeated work.</span>
+          <span>Chapter 23 / ray tracing as a sequence of predicates.</span>
+        </div>
+        <aside class="speaker-notes">Use the pipeline as the organizing map for the whole class. Each stage narrows the geometric question from a pixel-sized viewing query to a local surface event. Emphasize that every later stage depends on preserving the answer of the earlier predicates, so speedups must be justified by invariants rather than by hope.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Rays Bridge Conformal Lines And Hot Loops">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Ray Representation</div>
+          <h2>Rays Bridge Conformal Lines And Hot Loops</h2>
+        </div>
+        <div class="wide-right">
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Conceptual Lift</div>
+              <p class="formula tight">\(P(x)=x+n_o+\frac{1}{2}\lVert x\rVert^2 n_\infty\), with \(P(x)\cdot P(y)=-\frac{1}{2}\lVert x-y\rVert^2\).</p>
+            </div>
+            <div class="box teal">
+              <div class="box-title">Renderer Stand-In</div>
+              <p class="mono">Ray(origin, direction, t_min, t_max)</p>
+              <p>Closest-hit logic compares the scalar parameter \(t\), then shortens the interval once a nearer hit is known.</p>
+            </div>
+            <div class="box amber">
+              <div class="box-title">Invariant To Check</div>
+              <p>Direction is unit length; center camera ray points toward the target; spawned rays begin with a small surface offset.</p>
+            </div>
+          </div>
+          <div class="viz-card">
+            <svg class="viz" viewBox="0 0 780 620" role="img" aria-label="Conformal lift and point direction ray storage">
+              <defs>
+                <marker id="arrow-ray" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#2563eb"></path>
+                </marker>
+              </defs>
+              <ellipse cx="376" cy="338" rx="235" ry="102" fill="#eef2ff" stroke="#cbd5e1" stroke-width="4"></ellipse>
+              <path d="M154 334 C258 230 496 230 598 334" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="12 10"></path>
+              <path d="M154 334 C258 448 496 448 598 334" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="12 10"></path>
+              <line x1="120" y1="500" x2="670" y2="118" stroke="#2563eb" stroke-width="6" marker-end="url(#arrow-ray)"></line>
+              <circle cx="216" cy="434" r="12" fill="#1e3a8a"></circle>
+              <circle cx="486" cy="246" r="12" fill="#0f766e"></circle>
+              <line x1="216" y1="434" x2="486" y2="246" stroke="#2563eb" stroke-width="6"></line>
+              <path d="M216 434 L216 530" stroke="#1e3a8a" stroke-width="4"></path>
+              <path d="M486 246 L486 146" stroke="#0f766e" stroke-width="4"></path>
+              <text x="190" y="564" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">origin \(o\)</text>
+              <text x="506" y="142" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">point \(o+td\)</text>
+              <text x="310" y="252" font-size="30" font-family="STIX Two Text" font-style="italic" fill="#2563eb">q(t)=o+t d</text>
+              <text x="96" y="96" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#475569">conformal line idea</text>
+              <text x="96" y="130" font-size="24" font-family="Source Sans 3" fill="#64748b">stored as point, direction, and interval</text>
+              <text x="480" y="430" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#b45309">unit direction</text>
+              <path d="M456 410 L386 316" stroke="#b45309" stroke-width="4" marker-end="url(#arrow-ray)"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Conceptual line language; point-direction storage for repeated closest-hit work.</span>
+          <span>Chapter 23 / camera rays.</span>
+        </div>
+        <aside class="speaker-notes">Frame this slide as the translation layer. In conformal language a Euclidean point lifts to a null point and a line can be built algebraically. In the inner loop, however, the renderer stores an origin, a unit direction, and a parameter interval because closest-hit comparisons and spawned ray offsets read those fields constantly.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Spheres And Planes Are Early Predicates">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Rounds, Flats, And Rejection</div>
+          <h2>Spheres And Planes Are Early Predicates</h2>
+        </div>
+        <div class="wide-left">
+          <div class="viz-card alt">
+            <svg class="viz" viewBox="0 0 850 610" role="img" aria-label="Ray sphere and plane interval predicates">
+              <defs>
+                <marker id="arrow-pred" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#1e3a8a"></path>
+                </marker>
+              </defs>
+              <line x1="80" y1="470" x2="782" y2="118" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-pred)"></line>
+              <circle cx="418" cy="300" r="122" fill="#dbeafe" stroke="#2563eb" stroke-width="5"></circle>
+              <circle cx="418" cy="300" r="8" fill="#2563eb"></circle>
+              <line x1="418" y1="300" x2="516" y2="228" stroke="#2563eb" stroke-width="4"></line>
+              <path d="M608 156 L760 218 L680 410 L528 348 Z" fill="#ccfbf1" opacity="0.82" stroke="#0f766e" stroke-width="5"></path>
+              <line x1="644" y1="286" x2="706" y2="188" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-pred)"></line>
+              <circle cx="310" cy="354" r="11" fill="#b45309"></circle>
+              <circle cx="532" cy="240" r="11" fill="#b45309"></circle>
+              <path d="M310 354 L532 240" stroke="#b45309" stroke-width="8"></path>
+              <text x="318" y="390" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#b45309">sphere interval</text>
+              <text x="438" y="286" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#2563eb">center \(c\)</text>
+              <text x="522" y="216" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#2563eb">radius \(r\)</text>
+              <text x="702" y="186" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">plane normal</text>
+              <text x="88" y="520" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">ray segment</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Sphere Predicate</div>
+              <p class="formula tight">\(\lVert o+t d-c\rVert^2=r^2\) gives an interval or proves a miss.</p>
+            </div>
+            <div class="box teal">
+              <div class="box-title">Plane Predicate</div>
+              <p class="formula tight">\(t=-\frac{n\cdot o+h}{n\cdot d}\) is useful only inside the active ray segment.</p>
+            </div>
+            <div class="box amber">
+              <div class="box-title">Acceleration Logic</div>
+              <p>Cheap tests are conservative: a miss is decisive; a hit merely licenses detailed triangle work.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Rounds and flats provide early, interpretable rejection tests.</span>
+          <span>Chapter 23 / bounding spheres and plane queries.</span>
+        </div>
+        <aside class="speaker-notes">Make conservative rejection concrete. A bounding sphere hit does not prove the mesh is hit; it only permits more expensive work. A sphere miss, or a plane interval outside the ray segment, is a certificate that later triangle tests are unnecessary. This is where conformal rounds and flats become acceleration-minded predicates.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Triangle Hits Carry Barycentric Data">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Intersection To Interpolation</div>
+          <h2>Triangle Hits Carry Barycentric Data</h2>
+        </div>
+        <div class="two-col">
+          <div class="viz-card">
+            <svg class="viz" viewBox="0 0 760 610" role="img" aria-label="Ray hitting a triangle with barycentric weights">
+              <defs>
+                <marker id="arrow-tri" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#1e3a8a"></path>
+                </marker>
+              </defs>
+              <polygon points="170,456 624,392 392,106" fill="#dbeafe" stroke="#2563eb" stroke-width="6"></polygon>
+              <line x1="96" y1="122" x2="414" y2="318" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-tri)"></line>
+              <circle cx="414" cy="318" r="13" fill="#b45309"></circle>
+              <line x1="414" y1="318" x2="416" y2="166" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-tri)"></line>
+              <line x1="170" y1="456" x2="414" y2="318" stroke="#b45309" stroke-width="3" stroke-dasharray="12 10"></line>
+              <line x1="624" y1="392" x2="414" y2="318" stroke="#b45309" stroke-width="3" stroke-dasharray="12 10"></line>
+              <line x1="392" y1="106" x2="414" y2="318" stroke="#b45309" stroke-width="3" stroke-dasharray="12 10"></line>
+              <text x="142" y="492" font-size="30" font-family="STIX Two Text" font-style="italic" fill="#2563eb">v_0</text>
+              <text x="624" y="426" font-size="30" font-family="STIX Two Text" font-style="italic" fill="#2563eb">v_1</text>
+              <text x="372" y="88" font-size="30" font-family="STIX Two Text" font-style="italic" fill="#2563eb">v_2</text>
+              <text x="432" y="318" font-size="30" font-family="STIX Two Text" font-style="italic" fill="#b45309">p=o+td</text>
+              <text x="432" y="166" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">interpolated normal</text>
+              <text x="96" y="96" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">incoming ray</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Hit Conditions</div>
+              <p>A valid hit has \(t>0\), nonnegative barycentric weights, and \(\beta_0+\beta_1+\beta_2=1\).</p>
+            </div>
+            <div class="formula">\(p=o+t d=\beta_0 v_0+\beta_1 v_1+\beta_2 v_2\)</div>
+            <div class="box teal">
+              <div class="box-title">Payload</div>
+              <ul>
+                <li>Triangle index and nearest parameter</li>
+                <li>Barycentric weights for interpolation</li>
+                <li>Material and local surface normal</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Barycentric weights make a hit usable by the shader.</span>
+          <span>Chapter 23 / triangle intersection.</span>
+        </div>
+        <aside class="speaker-notes">Slow down on barycentric weights because they are the bridge between intersection and shading. The ray parameter tells where the surface lies along the viewing query, while the three weights say whether the hit is inside the triangle and how normals, colors, or texture coordinates should be interpolated.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Normals Turn Hits Into Surface Attitude">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Meshes, Transformations, Normals</div>
+          <h2>Normals Turn Hits Into Surface Attitude</h2>
+        </div>
+        <div class="wide-right">
+          <div class="stack">
+            <div class="box teal">
+              <div class="box-title">Mesh Contract</div>
+              <p>Faces intersect as triangles; vertex normals shade as a smooth attitude field attached to the surface.</p>
+            </div>
+            <div class="formula tight">\(n(p)=\operatorname{normalize}(\beta_0 n_0+\beta_1 n_1+\beta_2 n_2)\)</div>
+            <div class="box indigo">
+              <div class="box-title">Object-Level Motion</div>
+              <p>Conformal versors explain rotations and translations as object transformations; the lab stores already transformed world-space arrays for tracing.</p>
+            </div>
+            <div class="box amber">
+              <div class="box-title">Notebook Checks</div>
+              <p>Positive face areas, unit face normals, unit vertex normals, and conserved rigid-motion lengths prevent rendering bugs from impersonating geometry.</p>
+            </div>
+          </div>
+          <div class="viz-card alt">
+            <svg class="viz" viewBox="0 0 820 620" role="img" aria-label="Triangle mesh with normals and transformed model">
+              <defs>
+                <marker id="arrow-norm" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#0f766e"></path>
+                </marker>
+              </defs>
+              <polygon points="122,438 324,384 230,250" fill="#dbeafe" stroke="#2563eb" stroke-width="5"></polygon>
+              <polygon points="324,384 526,420 430,264 230,250" fill="#eff6ff" stroke="#2563eb" stroke-width="5"></polygon>
+              <polygon points="230,250 430,264 344,118" fill="#bfdbfe" stroke="#2563eb" stroke-width="5"></polygon>
+              <line x1="230" y1="250" x2="198" y2="142" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-norm)"></line>
+              <line x1="430" y1="264" x2="462" y2="150" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-norm)"></line>
+              <line x1="324" y1="384" x2="330" y2="256" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-norm)"></line>
+              <path d="M596 244 L706 214 L736 324 L626 354 Z" fill="#fef3c7" stroke="#b45309" stroke-width="5"></path>
+              <path d="M626 354 L626 460 L736 430 L736 324 Z" fill="#fde68a" stroke="#b45309" stroke-width="5"></path>
+              <path d="M596 244 L626 354 L626 460 L516 350 L516 236 Z" fill="#fffbeb" stroke="#b45309" stroke-width="5"></path>
+              <path d="M576 184 C620 142 686 148 728 198" fill="none" stroke="#6d28d9" stroke-width="5" marker-end="url(#arrow-norm)"></path>
+              <text x="144" y="504" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#2563eb">shared vertex positions</text>
+              <text x="462" y="150" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">unit normals</text>
+              <text x="542" y="520" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#b45309">transformed box</text>
+              <text x="576" y="136" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#6d28d9">rigid motion</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>The hit point becomes useful when it carries local surface attitude.</span>
+          <span>Chapter 23 / mesh representation and transformations.</span>
+        </div>
+        <aside class="speaker-notes">Treat normals as local surface attitude, not as decorative arrows. The mesh is intersected as flat triangles, but the shader may use an interpolated unit normal to represent smoother lighting. That compromise is mathematically honest only when the notebook checks positive areas, unit normals, and transformed model invariants.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Reflection And Refraction Spawn New Rays">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Operators At The Surface</div>
+          <h2>Reflection And Refraction Spawn New Rays</h2>
+        </div>
+        <div class="two-col">
+          <div class="viz-card">
+            <svg class="viz" viewBox="0 0 760 620" role="img" aria-label="Reflection and refraction directions at an interface">
+              <defs>
+                <marker id="arrow-bounce" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#1e3a8a"></path>
+                </marker>
+                <marker id="arrow-bounce-teal" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#0f766e"></path>
+                </marker>
+                <marker id="arrow-bounce-amber" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <rect x="84" y="316" width="592" height="20" fill="#cbd5e1"></rect>
+              <rect x="84" y="336" width="592" height="168" fill="#ccfbf1" opacity="0.54"></rect>
+              <circle cx="380" cy="326" r="13" fill="#111827"></circle>
+              <line x1="380" y1="326" x2="380" y2="120" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-bounce-teal)"></line>
+              <line x1="206" y1="118" x2="374" y2="318" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-bounce)"></line>
+              <line x1="386" y1="318" x2="560" y2="118" stroke="#b45309" stroke-width="6" marker-end="url(#arrow-bounce-amber)"></line>
+              <line x1="386" y1="336" x2="498" y2="512" stroke="#0f766e" stroke-width="6" marker-end="url(#arrow-bounce-teal)"></line>
+              <path d="M330 264 A66 66 0 0 1 380 240" fill="none" stroke="#64748b" stroke-width="4"></path>
+              <path d="M380 240 A72 72 0 0 1 428 270" fill="none" stroke="#64748b" stroke-width="4"></path>
+              <text x="174" y="104" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">incident \(d\)</text>
+              <text x="532" y="104" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#b45309">reflected</text>
+              <text x="506" y="536" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">refracted</text>
+              <text x="394" y="148" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">normal \(n\)</text>
+              <text x="102" y="382" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#475569">interface plane</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Reflection</div>
+              <p class="formula tight">\(d_{\mathrm{out}}=d-2(d\cdot n)n\), matching the plane-reflection sandwich habit.</p>
+            </div>
+            <div class="box teal">
+              <div class="box-title">Refraction</div>
+              <p>Snell's law returns a transmitted unit direction when the discriminant is valid; otherwise total internal reflection wins.</p>
+            </div>
+            <div class="box amber">
+              <div class="box-title">Spawn Discipline</div>
+              <p>Secondary rays start just above the surface and carry finite intervals for shadow tests or recursive intervals for reflection.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Reflection preserves length; refraction may fail by total internal reflection.</span>
+          <span>Chapter 23 / spawned ray operators.</span>
+        </div>
+        <aside class="speaker-notes">Connect the vector formulas to the algebraic habit students already know. Reflection is a sandwich-style operation in geometric algebra and a short dot-product formula in the shader. Refraction adds Snell's law and the possibility of total internal reflection, so the ray-spawning rule must return either a unit direction or a principled failure.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Acceleration Keeps The Answer But Changes The Work">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">BSP Traversal And Predicates</div>
+          <h2>Acceleration Keeps The Answer But Changes The Work</h2>
+        </div>
+        <div class="wide-left">
+          <div class="viz-card alt">
+            <svg class="viz" viewBox="0 0 860 610" role="img" aria-label="BSP tree pruning spatial boxes before triangle tests">
+              <defs>
+                <marker id="arrow-bsp" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#1e3a8a"></path>
+                </marker>
+              </defs>
+              <rect x="70" y="88" width="430" height="332" fill="#ffffff" stroke="#1e3a8a" stroke-width="5"></rect>
+              <line x1="280" y1="88" x2="280" y2="420" stroke="#6d28d9" stroke-width="5" stroke-dasharray="12 10"></line>
+              <line x1="70" y1="254" x2="500" y2="254" stroke="#0f766e" stroke-width="5" stroke-dasharray="12 10"></line>
+              <polygon points="130,364 214,314 236,386" fill="#dbeafe" stroke="#2563eb" stroke-width="4"></polygon>
+              <polygon points="332,164 440,124 412,220" fill="#fee2e2" stroke="#b45309" stroke-width="4"></polygon>
+              <polygon points="336,348 450,348 392,408" fill="#ccfbf1" stroke="#0f766e" stroke-width="4"></polygon>
+              <line x1="30" y1="490" x2="474" y2="118" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-bsp)"></line>
+              <circle cx="418" cy="166" r="11" fill="#b45309"></circle>
+              <text x="84" y="468" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">ray visits nearer boxes first</text>
+              <text x="300" y="118" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#6d28d9">split plane</text>
+              <text x="520" y="132" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#475569">Traversal tree</text>
+              <circle cx="640" cy="198" r="34" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"></circle>
+              <circle cx="574" cy="306" r="30" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"></circle>
+              <circle cx="706" cy="306" r="30" fill="#fffbeb" stroke="#b45309" stroke-width="5"></circle>
+              <circle cx="534" cy="412" r="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="5"></circle>
+              <circle cx="614" cy="412" r="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="5"></circle>
+              <circle cx="686" cy="412" r="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="5"></circle>
+              <circle cx="766" cy="412" r="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="5"></circle>
+              <line x1="624" y1="228" x2="590" y2="280" stroke="#64748b" stroke-width="4"></line>
+              <line x1="656" y1="228" x2="690" y2="280" stroke="#64748b" stroke-width="4"></line>
+              <line x1="562" y1="334" x2="542" y2="386" stroke="#64748b" stroke-width="4"></line>
+              <line x1="586" y1="334" x2="606" y2="386" stroke="#64748b" stroke-width="4"></line>
+              <line x1="696" y1="334" x2="690" y2="386" stroke="#64748b" stroke-width="4"></line>
+              <line x1="718" y1="334" x2="758" y2="386" stroke="#64748b" stroke-width="4"></line>
+              <text x="626" y="208" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">root</text>
+              <text x="552" y="316" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#0f766e">near</text>
+              <text x="682" y="316" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#b45309">far</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Correctness Contract</div>
+              <p>Naive traversal and BSP traversal must agree about the closest hit or miss for every probe ray.</p>
+            </div>
+            <div class="mini-grid">
+              <div class="metric">
+                <div class="metric-number">20,472</div>
+                <div class="metric-label">naive triangle tests in the notebook probe bundle</div>
+              </div>
+              <div class="metric">
+                <div class="metric-number">1,408</div>
+                <div class="metric-label">BSP triangle tests after spatial pruning</div>
+              </div>
+            </div>
+            <div class="box teal">
+              <div class="box-title">Cost Trade</div>
+              <p>Extra box and node predicates are worthwhile only when they prevent enough expensive primitive tests.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Acceleration is valid only when it preserves hit identity.</span>
+          <span>Chapter 23 / BSP tree and ray bundle check.</span>
+        </div>
+        <aside class="speaker-notes">Separate correctness from cost. The BSP traversal is allowed to change the order and number of primitive tests, but it is not allowed to change the closest hit or miss result. The notebook's ray bundle comparison is the right evidence: agreement of answers first, then fewer triangle tests as the payoff.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="Shading Is Local Geometry Plus Visibility">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Surface Event To Color</div>
+          <h2>Shading Is Local Geometry Plus Visibility</h2>
+        </div>
+        <div class="two-col">
+          <div class="stack">
+            <div class="box teal">
+              <div class="box-title">Local Data At A Hit</div>
+              <p>Point, normal, material, view direction, light direction, and finite shadow interval.</p>
+            </div>
+            <div class="formula tight">\(C=C_a+\sum_{\ell \in V} I_\ell(k_d \max(0,n\cdot \ell)c+k_s(r\cdot v)^s)\)</div>
+            <div class="box indigo">
+              <div class="box-title">Secondary Queries</div>
+              <p>Shadow rays test visibility to lights; reflection rays sample mirror contribution; refraction rays would continue through transmissive surfaces.</p>
+            </div>
+          </div>
+          <div class="viz-card alt">
+            <svg class="viz" viewBox="0 0 800 620" role="img" aria-label="Hit point spawning shadow and reflection rays">
+              <defs>
+                <marker id="arrow-shade" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#1e3a8a"></path>
+                </marker>
+                <marker id="arrow-shade-teal" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#0f766e"></path>
+                </marker>
+                <marker id="arrow-shade-amber" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                  <path d="M 1 1 L 11 6 L 1 11 Z" fill="#b45309"></path>
+                </marker>
+              </defs>
+              <ellipse cx="394" cy="430" rx="290" ry="78" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="4"></ellipse>
+              <circle cx="384" cy="372" r="14" fill="#111827"></circle>
+              <line x1="150" y1="150" x2="374" y2="364" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-shade)"></line>
+              <line x1="384" y1="372" x2="384" y2="174" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-shade-teal)"></line>
+              <line x1="384" y1="372" x2="642" y2="126" stroke="#b45309" stroke-width="6" marker-end="url(#arrow-shade-amber)"></line>
+              <line x1="384" y1="372" x2="604" y2="246" stroke="#6d28d9" stroke-width="5" stroke-dasharray="14 10" marker-end="url(#arrow-shade)"></line>
+              <line x1="384" y1="372" x2="216" y2="508" stroke="#0f766e" stroke-width="5" marker-end="url(#arrow-shade-teal)"></line>
+              <circle cx="642" cy="126" r="28" fill="#fef3c7" stroke="#b45309" stroke-width="5"></circle>
+              <circle cx="604" cy="246" r="24" fill="#ede9fe" stroke="#6d28d9" stroke-width="5"></circle>
+              <rect x="520" y="292" width="92" height="104" fill="#dbeafe" stroke="#2563eb" stroke-width="5"></rect>
+              <text x="92" y="130" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">view ray</text>
+              <text x="396" y="172" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">normal</text>
+              <text x="640" y="96" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#b45309">light</text>
+              <text x="610" y="270" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#6d28d9">finite shadow ray</text>
+              <text x="158" y="540" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0f766e">reflected ray</text>
+              <text x="320" y="420" font-size="28" font-family="STIX Two Text" font-style="italic" fill="#111827">hit \(p\)</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Color emerges from visibility predicates and angle predicates at one surface event.</span>
+          <span>Chapter 23 / shading, shadows, and secondary rays.</span>
+        </div>
+        <aside class="speaker-notes">At the shading stage, the ray tracer stops asking which surface is first and starts asking which outgoing directions matter. The hit point, normal, view direction, finite shadow segment, light direction, and reflected ray are all local geometric objects. Color is the result of those objects passing visibility and angle tests.</aside>
+      </div>
+    </section>
+
+    <section class="slide" data-label="The Design Habit Algebra Names Code Specializes">
+      <div class="pad">
+        <div>
+          <div class="eyebrow">Evaluation And Carry-Forward Habit</div>
+          <h2>The Design Habit: Algebra Names, Code Specializes</h2>
+        </div>
+        <div class="wide-right">
+          <div class="stack">
+            <div class="box indigo">
+              <div class="box-title">Name The Geometry</div>
+              <p>Use conformal language to identify points, rounds, flats, lines, transformations, reflections, and incidence.</p>
+            </div>
+            <div class="box teal">
+              <div class="box-title">Specialize The Query</div>
+              <p>Store the cheap fields each repeated predicate needs: intervals, dot products, indices, weights, boxes, and counters.</p>
+            </div>
+            <div class="box amber">
+              <div class="box-title">Keep The Bridge Audited</div>
+              <p>Executable checks verify conformal distance, unit directions, mesh normals, barycentric reconstruction, traversal agreement, and render shape.</p>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="checklist">
+              <div class="check">Conformal point identity anchors Euclidean distance.</div>
+              <div class="check">Ray directions remain unit length after spawning.</div>
+              <div class="check">Sphere and box predicates are conservative filters.</div>
+              <div class="check">Barycentric weights reconstruct the hit point.</div>
+              <div class="check">Interpolated normals are normalized before shading.</div>
+              <div class="check">Naive and accelerated traversal agree on hits.</div>
+            </div>
+            <div class="viz-card alt">
+              <svg class="viz" viewBox="0 0 820 240" role="img" aria-label="Conformal design habit from algebra to specialized code to checks">
+                <defs>
+                  <marker id="arrow-recap" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+                    <path d="M 1 1 L 11 6 L 1 11 Z" fill="#1e3a8a"></path>
+                  </marker>
+                </defs>
+                <rect x="34" y="58" width="210" height="118" rx="8" fill="#eef2ff" stroke="#1e3a8a" stroke-width="5"></rect>
+                <rect x="306" y="58" width="210" height="118" rx="8" fill="#f0fdfa" stroke="#0f766e" stroke-width="5"></rect>
+                <rect x="578" y="58" width="210" height="118" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="5"></rect>
+                <line x1="244" y1="118" x2="304" y2="118" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-recap)"></line>
+                <line x1="516" y1="118" x2="576" y2="118" stroke="#1e3a8a" stroke-width="6" marker-end="url(#arrow-recap)"></line>
+                <text x="72" y="108" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#1e3a8a">Algebra names</text>
+                <text x="86" y="144" font-size="26" font-family="Source Sans 3" fill="#475569">object + invariant</text>
+                <text x="342" y="108" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#0f766e">Code stores</text>
+                <text x="340" y="144" font-size="26" font-family="Source Sans 3" fill="#475569">query-specific data</text>
+                <text x="620" y="108" font-size="30" font-family="Source Sans 3" font-weight="700" fill="#b45309">Checks protect</text>
+                <text x="620" y="144" font-size="26" font-family="Source Sans 3" fill="#475569">semantic equivalence</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer-note">
+          <span>Reusable habit: concept first, representation second, invariant always.</span>
+          <span>Chapter 23 / evaluation.</span>
+        </div>
+        <aside class="speaker-notes">Close by turning the chapter into a reusable software habit. Let conformal geometry name the object and the invariant, let the implementation store the cheapest representation that answers the repeated query, and keep executable checks between the two. That bridge is the practical lesson students can carry into any geometry-heavy renderer.</aside>
+      </div>
+    </section>
+  </deck-stage>
+
+  <script type="application/json" id="speaker-notes">
+    {
+      "slides": [
+        {
+          "slide": 1,
+          "title": "Ray Tracing With Conformal Geometry",
+          "notes": "Open by making the lecture an engineering stress test for conformal geometry. The point is not that every value must be stored as a full conformal blade. The point is that points, rays, rounds, flats, normals, and spawned rays can be named in one language, then specialized where repeated rendering queries demand cheaper storage."
+        },
+        {
+          "slide": 2,
+          "title": "Pipeline: Narrow The Question",
+          "notes": "Use the pipeline as the organizing map for the whole class. Each stage narrows the geometric question from a pixel-sized viewing query to a local surface event. Emphasize that every later stage depends on preserving the answer of the earlier predicates, so speedups must be justified by invariants rather than by hope."
+        },
+        {
+          "slide": 3,
+          "title": "Rays Bridge Conformal Lines And Hot Loops",
+          "notes": "Frame this slide as the translation layer. In conformal language a Euclidean point lifts to a null point and a line can be built algebraically. In the inner loop, however, the renderer stores an origin, a unit direction, and a parameter interval because closest-hit comparisons and spawned ray offsets read those fields constantly."
+        },
+        {
+          "slide": 4,
+          "title": "Spheres And Planes Are Early Predicates",
+          "notes": "Make conservative rejection concrete. A bounding sphere hit does not prove the mesh is hit; it only permits more expensive work. A sphere miss, or a plane interval outside the ray segment, is a certificate that later triangle tests are unnecessary. This is where conformal rounds and flats become acceleration-minded predicates."
+        },
+        {
+          "slide": 5,
+          "title": "Triangle Hits Carry Barycentric Data",
+          "notes": "Slow down on barycentric weights because they are the bridge between intersection and shading. The ray parameter tells where the surface lies along the viewing query, while the three weights say whether the hit is inside the triangle and how normals, colors, or texture coordinates should be interpolated."
+        },
+        {
+          "slide": 6,
+          "title": "Normals Turn Hits Into Surface Attitude",
+          "notes": "Treat normals as local surface attitude, not as decorative arrows. The mesh is intersected as flat triangles, but the shader may use an interpolated unit normal to represent smoother lighting. That compromise is mathematically honest only when the notebook checks positive areas, unit normals, and transformed model invariants."
+        },
+        {
+          "slide": 7,
+          "title": "Reflection And Refraction Spawn New Rays",
+          "notes": "Connect the vector formulas to the algebraic habit students already know. Reflection is a sandwich-style operation in geometric algebra and a short dot-product formula in the shader. Refraction adds Snell's law and the possibility of total internal reflection, so the ray-spawning rule must return either a unit direction or a principled failure."
+        },
+        {
+          "slide": 8,
+          "title": "Acceleration Keeps The Answer But Changes The Work",
+          "notes": "Separate correctness from cost. The BSP traversal is allowed to change the order and number of primitive tests, but it is not allowed to change the closest hit or miss result. The notebook's ray bundle comparison is the right evidence: agreement of answers first, then fewer triangle tests as the payoff."
+        },
+        {
+          "slide": 9,
+          "title": "Shading Is Local Geometry Plus Visibility",
+          "notes": "At the shading stage, the ray tracer stops asking which surface is first and starts asking which outgoing directions matter. The hit point, normal, view direction, finite shadow segment, light direction, and reflected ray are all local geometric objects. Color is the result of those objects passing visibility and angle tests."
+        },
+        {
+          "slide": 10,
+          "title": "The Design Habit: Algebra Names, Code Specializes",
+          "notes": "Close by turning the chapter into a reusable software habit. Let conformal geometry name the object and the invariant, let the implementation store the cheapest representation that answers the repeated query, and keep executable checks between the two. That bridge is the practical lesson students can carry into any geometry-heavy renderer."
+        }
+      ]
+    }
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof renderMathInElement === "function") {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+</body>
+</html>

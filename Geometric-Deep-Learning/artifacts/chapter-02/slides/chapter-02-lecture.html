@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometric Deep Learning - Chapter 02: Learning in High Dimensions</title>
+  <meta name="course" content="Geometric Deep Learning">
+  <meta name="chapter_id" content="chapter-02">
+  <meta name="chapter_title" content="Chapter 02: Learning in High Dimensions">
+  <meta name="notebook_path" content="Geometric-Deep-Learning/chapter-02-learning-in-high-dimensions/02-learning-in-high-dimensions.ipynb">
+  <meta name="source_span" content="printed pages 5-8; PDF pages 9-12">
+  <meta name="source_pdf" content="Geometric-Deep-Learning/Geometric Deep Learning.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script id="deck-metadata" type="application/json">
+{
+  "course": "Geometric Deep Learning",
+  "chapter_id": "chapter-02",
+  "chapter_title": "Chapter 02: Learning in High Dimensions",
+  "notebook_path": "Geometric-Deep-Learning/chapter-02-learning-in-high-dimensions/02-learning-in-high-dimensions.ipynb",
+  "source_span": "printed pages 5-8; PDF pages 9-12.",
+  "source_pdf": "Geometric-Deep-Learning/Geometric Deep Learning.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "id": "title",
+      "title": "Learning In High Dimensions",
+      "notes": "Open by naming the chapter problem as a pressure test for modern learning. Interpolation is easy for expressive models, but choosing the interpolant that behaves well away from the training set requires a bias. The lecture will move from ordinary smoothness to geometric structure, using the notebook figures as executable evidence."
+    },
+    {
+      "slide": 2,
+      "id": "setup",
+      "title": "The Supervised Setup",
+      "notes": "Set up the formal language without dwelling on statistical learning theory. We have samples in a large ambient space, a target function, a parameterized class, and a risk measured on fresh points. The main danger is that matching every observed pair does not by itself say what happens between or beyond those pairs."
+    },
+    {
+      "slide": 3,
+      "id": "interpolation",
+      "title": "Interpolation Does Not Choose",
+      "notes": "Use the figure as the first warning. Both displayed candidates pass through the training samples, so the training error check is nearly zero for each. Ask students to look between samples, where the functions disagree. That empty region is where generalization lives, and it is not controlled by interpolation alone."
+    },
+    {
+      "slide": 4,
+      "id": "regularity",
+      "title": "Regularity Selects A Winner",
+      "notes": "Move from existence to preference. A complexity score, such as a smoothness energy or norm, turns the interpolation constraint into a selection rule. The important message is not that splines solve all learning problems; it is that low-dimensional approximation works because regularity makes the unobserved regions less arbitrary."
+    },
+    {
+      "slide": 5,
+      "id": "bias",
+      "title": "Bias Is A Restriction",
+      "notes": "Present inductive bias as a narrowing of possible functions, not as a vague taste for simpler answers. Universal approximation says many targets are representable, while the complexity map says which representatives the learner is willing to prefer. This distinction prepares the later shift from hand-written penalties to architecture-level priors."
+    },
+    {
+      "slide": 6,
+      "id": "implicit-bias",
+      "title": "Optimization Can Add Bias",
+      "notes": "This slide is about implicit regularization. In an underdetermined linear system, there are infinitely many exact solutions, but gradient descent from the origin follows a path that lands at the minimum Euclidean norm solution. Treat this as a small, transparent model for a broader question: what preference does the training procedure secretly impose?"
+    },
+    {
+      "slide": 7,
+      "id": "fill-distance",
+      "title": "Lipschitz Error Needs Fill Distance",
+      "notes": "Define the fill distance visually. If every new point is close to a training sample, a Lipschitz assumption transfers observed values to nearby unobserved values with a controlled error. The trouble is geometric: keeping the largest uncovered hole small becomes brutally expensive as the ambient dimension grows."
+    },
+    {
+      "slide": 8,
+      "id": "covering-growth",
+      "title": "Covering Growth Is Exponential",
+      "notes": "Read this as a sampling budget calculation. Halving a resolution scale in one dimension is manageable, but in dimension d the count is multiplied along every coordinate. The notebook ledger makes this concrete: a modest five cells per axis already gives more than thirty billion boxes in fifteen dimensions."
+    },
+    {
+      "slide": 9,
+      "id": "projection-prior",
+      "title": "Projection Priors Help Only When True",
+      "notes": "Use the projection artifact to separate a useful prior from a magical one. If the target depends on a few low-dimensional projections, a sparse or ridge-like model can reduce the apparent dimension. If the target uses long-range interactions across coordinates, the same prior can miss the signal while still looking beautifully simple."
+    },
+    {
+      "slide": 10,
+      "id": "geometric-priors",
+      "title": "Geometry Replaces Ambient Smoothness",
+      "notes": "This is the pivot toward geometric deep learning. Instead of asking a function on raw Euclidean coordinates to be smooth everywhere, we ask which transformations of the domain are meaningful and how signals should respond. Locality, symmetry, and stability become sources of regularity that match the data-generating structure."
+    },
+    {
+      "slide": 11,
+      "id": "blueprint",
+      "title": "A Blueprint For Taming Dimension",
+      "notes": "Turn the chapter into a design checklist. The learner should identify the domain, specify allowed transformations, choose equivariant or invariant layers, restrict information flow locally, and keep a diagnostic residual. This checklist is the bridge from the abstract curse of dimensionality to concrete architectures in the following chapters."
+    },
+    {
+      "slide": 12,
+      "id": "synthesis",
+      "title": "Chapter Synthesis",
+      "notes": "Close by tracing the whole argument in one line. Rich models can interpolate; regularity chooses among interpolants; generic smoothness fails in high dimensions; special structure can reduce the effective search space. The exit question asks students to name the prior before naming the layer, which is the habit the rest of the course develops."
+    }
+  ]
+}
+  </script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false},
+            {left: "\\[", right: "\\]", display: true}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --deck-bg: #ffffff;
+      --deck-alt: #f8fafc;
+      --ink: #111827;
+      --muted: #475569;
+      --dimmed: #64748b;
+      --blue: #2563eb;
+      --indigo: #1e3a8a;
+      --teal: #0f766e;
+      --amber: #b45309;
+      --violet: #6d28d9;
+      --border: #cbd5e1;
+      --soft-border: #e2e8f0;
+      --font-sans-local: "Source Sans 3", Arial, sans-serif;
+      --font-math-local: "STIX Two Text", "STIX Two Math", Cambria Math, Georgia, serif;
+      --font-mono-local: "JetBrains Mono", Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #e5e7eb;
+      color: var(--ink);
+      font-family: var(--font-sans-local);
+      letter-spacing: 0;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    deck-stage {
+      background: #0f172a;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      padding: 72px 96px 56px;
+      background: var(--deck-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      color: var(--ink);
+      position: relative;
+      letter-spacing: 0;
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(0deg, rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.96)),
+        repeating-linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0 1px, transparent 1px 48px),
+        repeating-linear-gradient(0deg, rgba(15, 118, 110, 0.06) 0 1px, transparent 1px 48px);
+    }
+
+    .slide-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 44px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--indigo);
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .brand-row img {
+      width: 52px;
+      height: 52px;
+      display: block;
+    }
+
+    .eyebrow {
+      color: var(--indigo);
+      font-size: 23px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      line-height: 1.25;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 1160px;
+      font-size: 58px;
+      line-height: 1.08;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.1;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    h3 {
+      font-size: 30px;
+      line-height: 1.18;
+      font-weight: 700;
+      color: var(--indigo);
+    }
+
+    .subtitle {
+      max-width: 1120px;
+      font-size: 30px;
+      line-height: 1.42;
+      color: var(--muted);
+    }
+
+    .meta-pill {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 22px;
+      line-height: 1.25;
+      color: var(--muted);
+      background: #ffffff;
+      white-space: nowrap;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 36px;
+      align-items: stretch;
+    }
+
+    .two-col {
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    }
+
+    .two-col.reverse {
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    }
+
+    .three-col {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      min-height: 0;
+    }
+
+    .lead {
+      font-size: 30px;
+      line-height: 1.42;
+      color: var(--ink);
+    }
+
+    .body-text {
+      font-size: 27px;
+      line-height: 1.42;
+      color: var(--ink);
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--dimmed);
+    }
+
+    .math-card,
+    .callout,
+    .metric,
+    .step-card {
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+
+    .math-card {
+      padding: 24px 28px;
+      border-left: 5px solid var(--blue);
+    }
+
+    .math-card.teal {
+      border-left-color: var(--teal);
+      background: #f0fdfa;
+    }
+
+    .math-card.amber {
+      border-left-color: var(--amber);
+      background: #fffbeb;
+    }
+
+    .math-card.violet {
+      border-left-color: var(--violet);
+      background: #f5f3ff;
+    }
+
+    .label {
+      font-size: 22px;
+      line-height: 1.2;
+      color: var(--dimmed);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 10px;
+    }
+
+    .formula {
+      font-family: var(--font-math-local);
+      font-size: 34px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+
+    .formula.large {
+      font-size: 42px;
+      line-height: 1.36;
+      text-align: center;
+      color: var(--indigo);
+      padding: 8px 0;
+    }
+
+    .image-frame {
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 18px;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .image-frame.tall {
+      height: 650px;
+    }
+
+    .image-frame.medium {
+      height: 560px;
+    }
+
+    .image-frame.short {
+      height: 460px;
+    }
+
+    .svg-frame {
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      background: #ffffff;
+      min-height: 0;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      font-family: var(--font-sans-local);
+      letter-spacing: 0;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .metric {
+      padding: 18px 20px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 34px;
+      line-height: 1.1;
+      color: var(--indigo);
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      font-size: 22px;
+      line-height: 1.25;
+      color: var(--muted);
+    }
+
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .step-card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 170px;
+    }
+
+    .step-card .num {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #eff6ff;
+      color: var(--blue);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .step-card p {
+      font-size: 25px;
+      line-height: 1.32;
+      color: var(--ink);
+    }
+
+    .table-wrap {
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--soft-border);
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--indigo);
+      font-weight: 700;
+      background: #f8fafc;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      color: var(--dimmed);
+      font-size: 22px;
+      line-height: 1.2;
+      border-top: 1px solid var(--soft-border);
+      padding-top: 16px;
+    }
+
+    aside.speaker-notes {
+      display: none;
+    }
+
+    .route-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 8px;
+    }
+
+    .route-item {
+      border: 1px solid var(--soft-border);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 18px;
+      min-height: 138px;
+    }
+
+    .route-item strong {
+      display: block;
+      font-size: 25px;
+      color: var(--indigo);
+      margin-bottom: 8px;
+    }
+
+    .route-item span {
+      display: block;
+      font-size: 22px;
+      line-height: 1.28;
+      color: var(--muted);
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-list div {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 14px;
+      align-items: start;
+      font-size: 26px;
+      line-height: 1.32;
+      color: var(--ink);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--teal);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080" aria-label="Chapter 02 lecture deck">
+    <section class="slide alt" data-label="Learning In High Dimensions">
+      <div class="slide-header">
+        <div class="brand-row">
+          <img src="../../../../lecture-design-system/assets/icon.svg" alt="Geometry Atlas mark">
+          <span>Geometry Atlas<br>Geometric Deep Learning</span>
+        </div>
+        <div class="meta-pill">Row 364 | printed pages 5-8 | PDF pages 9-12</div>
+      </div>
+      <div class="content two-col">
+        <div class="stack" style="justify-content:center;">
+          <div class="eyebrow">Chapter 02</div>
+          <h1>Learning In High Dimensions</h1>
+          <p class="subtitle">Why interpolation needs regularity, why generic smoothness collapses in high dimension, and why geometric priors give learning a usable search space.</p>
+          <div class="route-strip">
+            <div class="route-item"><strong>Interpolate</strong><span>Many functions fit the same samples.</span></div>
+            <div class="route-item"><strong>Regularize</strong><span>Complexity chooses among exact fits.</span></div>
+            <div class="route-item"><strong>Optimize</strong><span>Training dynamics add hidden preferences.</span></div>
+            <div class="route-item"><strong>Cover</strong><span>Ambient fill distance grows too fast.</span></div>
+            <div class="route-item"><strong>Geometrize</strong><span>Structure narrows the hypothesis space.</span></div>
+          </div>
+        </div>
+        <div class="svg-frame">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Concept path from interpolation to geometric priors">
+            <defs>
+              <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#1e3a8a"></path>
+              </marker>
+              <linearGradient id="band-title" x1="0" x2="1">
+                <stop offset="0" stop-color="#eff6ff"></stop>
+                <stop offset="1" stop-color="#f0fdfa"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="28" y="34" width="704" height="492" rx="14" fill="url(#band-title)" stroke="#cbd5e1" stroke-width="2"></rect>
+            <g fill="none" stroke="#cbd5e1" stroke-width="1.4">
+              <path d="M90 472 C210 382 302 408 405 294 S590 190 680 104"></path>
+              <path d="M74 146 C172 246 300 196 398 278 S566 418 682 354" stroke-dasharray="8 8"></path>
+            </g>
+            <g font-size="25" font-weight="700" text-anchor="middle">
+              <circle cx="126" cy="410" r="48" fill="#dbeafe" stroke="#2563eb" stroke-width="4"></circle>
+              <text x="126" y="403" fill="#1e3a8a">finite</text>
+              <text x="126" y="433" fill="#1e3a8a">samples</text>
+              <circle cx="292" cy="318" r="52" fill="#fef3c7" stroke="#b45309" stroke-width="4"></circle>
+              <text x="292" y="312" fill="#92400e">many</text>
+              <text x="292" y="342" fill="#92400e">fits</text>
+              <circle cx="460" cy="252" r="56" fill="#ede9fe" stroke="#6d28d9" stroke-width="4"></circle>
+              <text x="460" y="245" fill="#5b21b6">choose</text>
+              <text x="460" y="275" fill="#5b21b6">bias</text>
+              <circle cx="624" cy="154" r="58" fill="#ccfbf1" stroke="#0f766e" stroke-width="4"></circle>
+              <text x="624" y="147" fill="#115e59">use</text>
+              <text x="624" y="177" fill="#115e59">geometry</text>
+            </g>
+            <path d="M176 388 C212 366 226 352 243 336" stroke="#1e3a8a" stroke-width="4" fill="none" marker-end="url(#arrow-title)"></path>
+            <path d="M344 300 C372 286 391 276 407 266" stroke="#1e3a8a" stroke-width="4" fill="none" marker-end="url(#arrow-title)"></path>
+            <path d="M514 232 C546 212 560 198 576 182" stroke="#1e3a8a" stroke-width="4" fill="none" marker-end="url(#arrow-title)"></path>
+            <g font-size="23" fill="#475569" font-weight="600">
+              <text x="88" y="96">Chapter claim</text>
+              <text x="88" y="126">Generalization is a geometry problem once the data live in high dimension.</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Notebook: Geometric-Deep-Learning/chapter-02-learning-in-high-dimensions/02-learning-in-high-dimensions.ipynb</span><span>design_system_version: lecture-design-system-2026-05-23</span></div>
+      <aside class="speaker-notes">Open by naming the chapter problem as a pressure test for modern learning. Interpolation is easy for expressive models, but choosing the interpolant that behaves well away from the training set requires a bias. The lecture will move from ordinary smoothness to geometric structure, using the notebook figures as executable evidence.</aside>
+    </section>
+
+    <section class="slide" data-label="The Supervised Setup">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Formal object</div>
+          <h2>The Supervised Setup</h2>
+        </div>
+        <div class="meta-pill">High ambient dimension \(d\)</div>
+      </div>
+      <div class="content two-col">
+        <div class="stack">
+          <p class="lead">The learner sees finitely many pairs and chooses a function from a parameterized class.</p>
+          <div class="math-card">
+            <div class="label">Data and model</div>
+            <div class="formula">\(D=\{(x_i,y_i)\}_{i=1}^{N}\), with \(x_i\in X\subseteq \mathbb{R}^{d}\), \(y_i=f(x_i)\), and \(f_\theta\in \mathcal{F}\).</div>
+          </div>
+          <div class="math-card teal">
+            <div class="label">Generalization target</div>
+            <div class="formula">\(R(f_\theta)=\mathbb{E}_{x\sim P}\,L(f_\theta(x),f(x))\)</div>
+          </div>
+          <p class="body-text">Exact fit on \(D\) is only a constraint. The learning question is which exact fit remains reliable for new draws from \(P\).</p>
+        </div>
+        <div class="svg-frame">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Samples in high dimension and a parameterized learner">
+            <defs>
+              <marker id="arrow-setup" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#2563eb"></path>
+              </marker>
+            </defs>
+            <rect x="38" y="64" width="300" height="300" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"></rect>
+            <g stroke="#e2e8f0" stroke-width="1.5">
+              <path d="M98 64 V364 M158 64 V364 M218 64 V364 M278 64 V364"></path>
+              <path d="M38 124 H338 M38 184 H338 M38 244 H338 M38 304 H338"></path>
+            </g>
+            <g fill="#2563eb" stroke="#ffffff" stroke-width="3">
+              <circle cx="94" cy="294" r="10"></circle>
+              <circle cx="142" cy="168" r="10"></circle>
+              <circle cx="210" cy="246" r="10"></circle>
+              <circle cx="282" cy="132" r="10"></circle>
+              <circle cx="302" cy="314" r="10"></circle>
+              <circle cx="166" cy="326" r="10"></circle>
+            </g>
+            <text x="52" y="408" fill="#475569" font-size="25" font-weight="700">finite observations in \(X\)</text>
+            <path d="M356 214 C410 214 438 214 486 214" stroke="#2563eb" stroke-width="5" fill="none" marker-end="url(#arrow-setup)"></path>
+            <rect x="502" y="106" width="206" height="220" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-width="3"></rect>
+            <g stroke="#1e3a8a" stroke-width="3" fill="#ffffff">
+              <circle cx="558" cy="162" r="15"></circle>
+              <circle cx="558" cy="216" r="15"></circle>
+              <circle cx="558" cy="270" r="15"></circle>
+              <circle cx="625" cy="188" r="15"></circle>
+              <circle cx="625" cy="244" r="15"></circle>
+              <circle cx="680" cy="216" r="15"></circle>
+              <path d="M573 162 L610 188 M573 162 L610 244 M573 216 L610 188 M573 216 L610 244 M573 270 L610 188 M573 270 L610 244 M640 188 L665 216 M640 244 L665 216"></path>
+            </g>
+            <text x="520" y="374" fill="#1e3a8a" font-size="26" font-weight="700">\(f_\theta\in\mathcal{F}\)</text>
+            <path d="M604 398 C552 454 448 474 346 444" stroke="#0f766e" stroke-width="4" fill="none" stroke-dasharray="10 8"></path>
+            <text x="402" y="506" fill="#0f766e" font-size="25" font-weight="700">risk is measured away from the sample set</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Concepts: data domain, function class, interpolation, risk</span><span>Source span: printed pages 5-8; PDF pages 9-12</span></div>
+      <aside class="speaker-notes">Set up the formal language without dwelling on statistical learning theory. We have samples in a large ambient space, a target function, a parameterized class, and a risk measured on fresh points. The main danger is that matching every observed pair does not by itself say what happens between or beyond those pairs.</aside>
+    </section>
+
+    <section class="slide" data-label="Interpolation Does Not Choose">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Exact fit is underdetermined</div>
+          <h2>Interpolation Does Not Choose</h2>
+        </div>
+        <div class="meta-pill">Notebook artifact</div>
+      </div>
+      <div class="content two-col">
+        <div class="image-frame tall">
+          <img src="../figures/interpolation-does-not-choose.png" alt="Two interpolating functions pass through the same training samples but disagree between samples.">
+        </div>
+        <div class="stack">
+          <p class="lead">A rich class can satisfy all sample constraints while leaving very different behavior in the gaps.</p>
+          <div class="math-card amber">
+            <div class="label">Interpolation constraint</div>
+            <div class="formula">\(f_\theta(x_i)=y_i\quad\text{for every training sample }i\)</div>
+          </div>
+          <div class="kpi-row">
+            <div class="metric"><strong>\(<10^{-13}\)</strong><span>polynomial training error in the notebook ledger</span></div>
+            <div class="metric"><strong>\(<10^{-17}\)</strong><span>spline training error in the notebook ledger</span></div>
+            <div class="metric"><strong>large</strong><span>off-sample disagreement is still possible</span></div>
+          </div>
+          <p class="body-text">The same observations support multiple exact stories. A learning algorithm needs a second principle to choose one.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: interpolation-does-not-choose.png</span><span>Check: interpolant_train_errors</span></div>
+      <aside class="speaker-notes">Use the figure as the first warning. Both displayed candidates pass through the training samples, so the training error check is nearly zero for each. Ask students to look between samples, where the functions disagree. That empty region is where generalization lives, and it is not controlled by interpolation alone.</aside>
+    </section>
+
+    <section class="slide" data-label="Regularity Selects A Winner">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Explicit regularity</div>
+          <h2>Regularity Selects A Winner</h2>
+        </div>
+        <div class="meta-pill">Smoothness as complexity</div>
+      </div>
+      <div class="content two-col reverse">
+        <div class="stack">
+          <p class="lead">A complexity measure turns exact fitting into a preference relation.</p>
+          <div class="math-card teal">
+            <div class="label">Constrained selection</div>
+            <div class="formula">\( \tilde f \in \operatorname*{arg\,min}_{g\in \mathcal{F}} c(g)\quad \text{s.t.}\quad g(x_i)=y_i \)</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>candidate</th><th>bending energy</th><th>reading</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>natural spline</td><td>778.66</td><td>least wiggly among exact fits</td></tr>
+                <tr><td>degree 8 polynomial</td><td>779.59</td><td>also exact, slightly rougher here</td></tr>
+                <tr><td>wiggly interpolant</td><td>866.91</td><td>exact but less regular</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="caption">The numeric values come from the notebook ledger and are used as a diagnostic, not as a universal theorem.</p>
+        </div>
+        <div class="image-frame tall">
+          <img src="../figures/regularity-selects-interpolant.png" alt="Smoothness comparison among interpolating functions.">
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: regularity-selects-interpolant.png</span><span>Check: bending_energy</span></div>
+      <aside class="speaker-notes">Move from existence to preference. A complexity score, such as a smoothness energy or norm, turns the interpolation constraint into a selection rule. The important message is not that splines solve all learning problems; it is that low-dimensional approximation works because regularity makes the unobserved regions less arbitrary.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Bias Is A Restriction">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Inductive bias</div>
+          <h2>Bias Is A Restriction</h2>
+        </div>
+        <div class="meta-pill">Representable is not selectable</div>
+      </div>
+      <div class="content two-col">
+        <div class="svg-frame">
+          <svg viewBox="0 0 820 590" role="img" aria-label="Inductive bias narrows a hypothesis class">
+            <defs>
+              <marker id="arrow-bias" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#1e3a8a"></path>
+              </marker>
+            </defs>
+            <ellipse cx="256" cy="292" rx="196" ry="228" fill="#eff6ff" stroke="#2563eb" stroke-width="4"></ellipse>
+            <ellipse cx="300" cy="294" rx="116" ry="142" fill="#dbeafe" stroke="#1e3a8a" stroke-width="4"></ellipse>
+            <ellipse cx="330" cy="296" rx="52" ry="66" fill="#bfdbfe" stroke="#1e40af" stroke-width="4"></ellipse>
+            <text x="256" y="92" font-size="28" fill="#1e3a8a" font-weight="700" text-anchor="middle">large \(\mathcal{F}\)</text>
+            <text x="300" y="214" font-size="25" fill="#1e3a8a" font-weight="700" text-anchor="middle">low \(c(g)\)</text>
+            <text x="330" y="306" font-size="24" fill="#1e40af" font-weight="700" text-anchor="middle">chosen fit</text>
+            <g fill="#b45309">
+              <circle cx="130" cy="304" r="7"></circle>
+              <circle cx="210" cy="172" r="7"></circle>
+              <circle cx="362" cy="438" r="7"></circle>
+              <circle cx="404" cy="182" r="7"></circle>
+              <circle cx="170" cy="430" r="7"></circle>
+            </g>
+            <path d="M506 280 H636" stroke="#1e3a8a" stroke-width="5" fill="none" marker-end="url(#arrow-bias)"></path>
+            <rect x="658" y="164" width="118" height="260" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"></rect>
+            <text x="717" y="226" font-size="26" fill="#115e59" font-weight="700" text-anchor="middle">prior</text>
+            <text x="717" y="266" font-size="24" fill="#115e59" text-anchor="middle">norm</text>
+            <text x="717" y="306" font-size="24" fill="#115e59" text-anchor="middle">sparsity</text>
+            <text x="717" y="346" font-size="24" fill="#115e59" text-anchor="middle">locality</text>
+            <text x="717" y="386" font-size="24" fill="#115e59" text-anchor="middle">symmetry</text>
+            <text x="110" y="552" font-size="24" fill="#475569" font-weight="600">Universal approximation asks what can be represented.</text>
+            <text x="110" y="582" font-size="24" fill="#475569" font-weight="600">Inductive bias asks what the learner will prefer.</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <p class="lead">A dense function class gives possibility. A bias gives selection.</p>
+          <div class="math-card">
+            <div class="label">Two separate claims</div>
+            <div class="mini-list">
+              <div><span class="dot"></span><p><strong>Approximation:</strong> the class is rich enough to express many continuous targets.</p></div>
+              <div><span class="dot"></span><p><strong>Regularization:</strong> a cost or procedure ranks the functions that fit the data.</p></div>
+              <div><span class="dot"></span><p><strong>Prior:</strong> the preferred functions match the structure expected in the task.</p></div>
+            </div>
+          </div>
+          <div class="math-card violet">
+            <div class="label">Bayesian reading</div>
+            <p class="body-text">A complexity score can be read as a negative log prior: functions with lower cost are treated as more plausible before seeing the labels.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Core distinction: representation capacity versus selection rule</span><span>Next: the optimizer can also select</span></div>
+      <aside class="speaker-notes">Present inductive bias as a narrowing of possible functions, not as a vague taste for simpler answers. Universal approximation says many targets are representable, while the complexity map says which representatives the learner is willing to prefer. This distinction prepares the later shift from hand-written penalties to architecture-level priors.</aside>
+    </section>
+
+    <section class="slide" data-label="Optimization Can Add Bias">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Implicit bias</div>
+          <h2>Optimization Can Add Bias</h2>
+        </div>
+        <div class="meta-pill">Underdetermined least squares</div>
+      </div>
+      <div class="content two-col">
+        <div class="image-frame medium">
+          <img src="../figures/implicit-minimum-norm-trace.png" alt="Gradient descent path reaches a minimum norm interpolating solution.">
+        </div>
+        <div class="stack">
+          <p class="lead">The training rule may prefer one interpolating solution even without an explicit penalty in the objective.</p>
+          <div class="math-card">
+            <div class="label">Toy model</div>
+            <div class="formula">\(Aw=y\)</div>
+            <p class="body-text">Many \(w\) solve the system when \(A\) is underdetermined.</p>
+          </div>
+          <div class="math-card teal">
+            <div class="label">Gradient descent from zero</div>
+            <div class="formula">\(w_{\mathrm{GD}}\approx A^\top(AA^\top)^{-1}y\)</div>
+            <p class="body-text">This is the minimum \(L^2\)-norm interpolant.</p>
+          </div>
+          <div class="metric"><strong>\(3.05\cdot 10^{-16}\)</strong><span>minimum-norm residual recorded by the chapter check</span></div>
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: implicit-minimum-norm-trace.png</span><span>Check: minimum_norm_error</span></div>
+      <aside class="speaker-notes">This slide is about implicit regularization. In an underdetermined linear system, there are infinitely many exact solutions, but gradient descent from the origin follows a path that lands at the minimum Euclidean norm solution. Treat this as a small, transparent model for a broader question: what preference does the training procedure secretly impose?</aside>
+    </section>
+
+    <section class="slide alt" data-label="Lipschitz Error Needs Fill Distance">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Local smoothness</div>
+          <h2>Lipschitz Error Needs Fill Distance</h2>
+        </div>
+        <div class="meta-pill">How close is every query to data?</div>
+      </div>
+      <div class="content two-col reverse">
+        <div class="stack">
+          <p class="lead">For a 1-Lipschitz target, nearest-neighbor control is only as good as the largest uncovered hole.</p>
+          <div class="math-card">
+            <div class="label">Fill distance</div>
+            <div class="formula">\(h_D=\sup_{x\in X}\min_i \|x-x_i\|\)</div>
+          </div>
+          <div class="math-card teal">
+            <div class="label">Error transfer</div>
+            <div class="formula">If \(|f(x)-f(x')|\le \|x-x'\|\), then a nearby sample gives \(|f(x)-f(x_i)|\le h_D\).</div>
+          </div>
+          <p class="body-text">This is a clean guarantee in principle. Its sample cost is where high dimension enters.</p>
+        </div>
+        <div class="svg-frame">
+          <svg viewBox="0 0 820 590" role="img" aria-label="Fill distance as the largest uncovered hole around samples">
+            <defs>
+              <marker id="arrow-fill" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#b45309"></path>
+              </marker>
+            </defs>
+            <rect x="84" y="72" width="520" height="410" rx="14" fill="#ffffff" stroke="#1e3a8a" stroke-width="4"></rect>
+            <g stroke="#e2e8f0" stroke-width="2">
+              <path d="M164 72 V482 M244 72 V482 M324 72 V482 M404 72 V482 M484 72 V482 M564 72 V482"></path>
+              <path d="M84 152 H604 M84 232 H604 M84 312 H604 M84 392 H604"></path>
+            </g>
+            <g fill="#2563eb" stroke="#ffffff" stroke-width="4">
+              <circle cx="164" cy="138" r="11"></circle>
+              <circle cx="248" cy="278" r="11"></circle>
+              <circle cx="362" cy="190" r="11"></circle>
+              <circle cx="502" cy="334" r="11"></circle>
+              <circle cx="540" cy="142" r="11"></circle>
+              <circle cx="186" cy="416" r="11"></circle>
+              <circle cx="394" cy="434" r="11"></circle>
+            </g>
+            <g fill="#2563eb" opacity="0.12" stroke="#2563eb" stroke-width="3">
+              <circle cx="164" cy="138" r="68"></circle>
+              <circle cx="248" cy="278" r="68"></circle>
+              <circle cx="362" cy="190" r="68"></circle>
+              <circle cx="502" cy="334" r="68"></circle>
+              <circle cx="540" cy="142" r="68"></circle>
+              <circle cx="186" cy="416" r="68"></circle>
+              <circle cx="394" cy="434" r="68"></circle>
+            </g>
+            <circle cx="604" cy="482" r="9" fill="#b45309"></circle>
+            <path d="M604 482 C668 460 694 418 704 374" stroke="#b45309" stroke-width="5" fill="none" marker-end="url(#arrow-fill)"></path>
+            <text x="640" y="346" font-size="26" fill="#92400e" font-weight="700">largest hole</text>
+            <text x="640" y="378" font-size="26" fill="#92400e" font-weight="700">sets \(h_D\)</text>
+            <text x="104" y="534" font-size="25" fill="#475569" font-weight="600">The guarantee is local, but coverage is global.</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Visual: original fill-distance diagram</span><span>Bridge to covering number growth</span></div>
+      <aside class="speaker-notes">Define the fill distance visually. If every new point is close to a training sample, a Lipschitz assumption transfers observed values to nearby unobserved values with a controlled error. The trouble is geometric: keeping the largest uncovered hole small becomes brutally expensive as the ambient dimension grows.</aside>
+    </section>
+
+    <section class="slide" data-label="Covering Growth Is Exponential">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Curse of dimensionality</div>
+          <h2>Covering Growth Is Exponential</h2>
+        </div>
+        <div class="meta-pill">Five bins per axis in \(d=15\)</div>
+      </div>
+      <div class="content two-col">
+        <div class="image-frame tall">
+          <img src="../figures/lipschitz-covering-explosion.png" alt="Covering number growth explodes with dimension.">
+        </div>
+        <div class="stack">
+          <p class="lead">A resolution budget multiplies across independent coordinates.</p>
+          <div class="math-card amber">
+            <div class="label">Covering count heuristic</div>
+            <div class="formula">\(N(\varepsilon,d)\approx (1/\varepsilon)^d\)</div>
+          </div>
+          <div class="metric"><strong>30,517,578,125</strong><span>boxes for \(5^{15}\), recorded as covering_count_d15</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>dimension</th><th>five cells per axis</th><th>teaching point</th></tr></thead>
+              <tbody>
+                <tr><td>2</td><td>25</td><td>visual coverage is feasible</td></tr>
+                <tr><td>5</td><td>3,125</td><td>already a budget</td></tr>
+                <tr><td>15</td><td>30.5 billion</td><td>generic Lipschitz coverage fails</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: lipschitz-covering-explosion.png</span><span>Check: covering_count_d15</span></div>
+      <aside class="speaker-notes">Read this as a sampling budget calculation. Halving a resolution scale in one dimension is manageable, but in dimension d the count is multiplied along every coordinate. The notebook ledger makes this concrete: a modest five cells per axis already gives more than thirty billion boxes in fifteen dimensions.</aside>
+    </section>
+
+    <section class="slide" data-label="Projection Priors Help Only When True">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Special low-dimensional structure</div>
+          <h2>Projection Priors Help Only When True</h2>
+        </div>
+        <div class="meta-pill">A prior is a bet</div>
+      </div>
+      <div class="content two-col reverse">
+        <div class="stack">
+          <p class="lead">A projection prior can break ambient dimension when the target really depends on a few directions.</p>
+          <div class="math-card teal">
+            <div class="label">Works when</div>
+            <div class="formula">\(f(x)\approx \phi(a_1^\top x,\ldots,a_k^\top x)\), with \(k\ll d\).</div>
+          </div>
+          <div class="math-card amber">
+            <div class="label">Fails when</div>
+            <p class="body-text">The label depends on structured interactions distributed across coordinates, neighborhoods, or relations.</p>
+          </div>
+          <div class="kpi-row">
+            <div class="metric"><strong>0.464</strong><span>projection target variance</span></div>
+            <div class="metric"><strong>0.513</strong><span>interaction target variance</span></div>
+            <div class="metric"><strong>different</strong><span>same ambient dimension, different regularity</span></div>
+          </div>
+        </div>
+        <div class="image-frame tall">
+          <img src="../figures/projection-prior-success-failure.png" alt="Projection prior succeeds for projection targets and fails for interaction targets.">
+        </div>
+      </div>
+      <div class="footer"><span>Artifact: projection-prior-success-failure.png</span><span>Checks: projection_target_variance, interaction_target_variance</span></div>
+      <aside class="speaker-notes">Use the projection artifact to separate a useful prior from a magical one. If the target depends on a few low-dimensional projections, a sparse or ridge-like model can reduce the apparent dimension. If the target uses long-range interactions across coordinates, the same prior can miss the signal while still looking beautifully simple.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Geometry Replaces Ambient Smoothness">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Geometric priors</div>
+          <h2>Geometry Replaces Ambient Smoothness</h2>
+        </div>
+        <div class="meta-pill">Locality + symmetry + stability</div>
+      </div>
+      <div class="content two-col">
+        <div class="svg-frame">
+          <svg viewBox="0 0 820 590" role="img" aria-label="Geometric priors tame high-dimensional learning">
+            <defs>
+              <marker id="arrow-geo" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#0f766e"></path>
+              </marker>
+            </defs>
+            <rect x="52" y="60" width="296" height="200" rx="14" fill="#eff6ff" stroke="#2563eb" stroke-width="4"></rect>
+            <g stroke="#cbd5e1" stroke-width="2">
+              <path d="M104 104 H296 M104 152 H296 M104 200 H296"></path>
+              <path d="M104 104 V200 M152 104 V200 M200 104 V200 M248 104 V200 M296 104 V200"></path>
+            </g>
+            <circle cx="200" cy="152" r="18" fill="#2563eb"></circle>
+            <text x="200" y="236" text-anchor="middle" font-size="25" fill="#1e3a8a" font-weight="700">grid locality</text>
+            <rect x="472" y="60" width="296" height="200" rx="14" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"></rect>
+            <g stroke="#0f766e" stroke-width="4" fill="#ffffff">
+              <path d="M550 140 L620 100 L694 150 L620 206 L550 140 M550 140 L620 206 M620 100 L620 206 M694 150 L620 206"></path>
+              <circle cx="550" cy="140" r="14"></circle>
+              <circle cx="620" cy="100" r="14"></circle>
+              <circle cx="694" cy="150" r="14"></circle>
+              <circle cx="620" cy="206" r="14"></circle>
+            </g>
+            <text x="620" y="236" text-anchor="middle" font-size="25" fill="#115e59" font-weight="700">graph relations</text>
+            <rect x="52" y="328" width="296" height="200" rx="14" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"></rect>
+            <path d="M104 428 C146 352 246 352 296 428 C250 504 150 504 104 428 Z" fill="#ede9fe" stroke="#6d28d9" stroke-width="4"></path>
+            <path d="M162 432 C194 408 230 408 258 432" fill="none" stroke="#6d28d9" stroke-width="4"></path>
+            <text x="200" y="504" text-anchor="middle" font-size="25" fill="#5b21b6" font-weight="700">manifold neighborhoods</text>
+            <rect x="472" y="328" width="296" height="200" rx="14" fill="#fffbeb" stroke="#b45309" stroke-width="4"></rect>
+            <circle cx="620" cy="424" r="62" fill="none" stroke="#b45309" stroke-width="4"></circle>
+            <path d="M620 362 L620 486 M558 424 H682 M580 380 L660 468 M660 380 L580 468" stroke="#b45309" stroke-width="4"></path>
+            <text x="620" y="504" text-anchor="middle" font-size="25" fill="#92400e" font-weight="700">group actions</text>
+            <path d="M348 160 C390 160 424 160 464 160" stroke="#0f766e" stroke-width="5" fill="none" marker-end="url(#arrow-geo)"></path>
+            <path d="M348 428 C390 428 424 428 464 428" stroke="#0f766e" stroke-width="5" fill="none" marker-end="url(#arrow-geo)"></path>
+            <text x="410" y="292" text-anchor="middle" font-size="28" fill="#0f766e" font-weight="700">structure defines regularity</text>
+          </svg>
+        </div>
+        <div class="stack">
+          <p class="lead">The escape route is not generic smoothness on \(\mathbb{R}^{d}\). It is task-specific structure.</p>
+          <div class="math-card teal">
+            <div class="label">Geometric prior</div>
+            <p class="body-text">Specify the domain, transformations that preserve meaning, and how outputs should transform.</p>
+          </div>
+          <div class="mini-list">
+            <div><span class="dot"></span><p><strong>Locality:</strong> use nearby elements before global aggregation.</p></div>
+            <div><span class="dot"></span><p><strong>Equivariance:</strong> move features predictably when the input is transformed.</p></div>
+            <div><span class="dot"></span><p><strong>Invariance:</strong> discard nuisance coordinates at the readout.</p></div>
+            <div><span class="dot"></span><p><strong>Stability:</strong> small meaningful deformations should not cause wild outputs.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Visual: original geometric-prior map</span><span>Bridge to Chapter 03: Geometric Priors</span></div>
+      <aside class="speaker-notes">This is the pivot toward geometric deep learning. Instead of asking a function on raw Euclidean coordinates to be smooth everywhere, we ask which transformations of the domain are meaningful and how signals should respond. Locality, symmetry, and stability become sources of regularity that match the data-generating structure.</aside>
+    </section>
+
+    <section class="slide" data-label="A Blueprint For Taming Dimension">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Architecture reading habit</div>
+          <h2>A Blueprint For Taming Dimension</h2>
+        </div>
+        <div class="meta-pill">Name the prior before the layer</div>
+      </div>
+      <div class="content">
+        <div class="step-grid">
+          <div class="step-card"><div class="num">1</div><h3>Domain</h3><p>What object indexes the signal: grid, graph, set, group, manifold, or sequence?</p></div>
+          <div class="step-card"><div class="num">2</div><h3>Transformations</h3><p>Which changes are coordinate changes, and which changes alter the meaning?</p></div>
+          <div class="step-card"><div class="num">3</div><h3>Response</h3><p>Should the output be invariant, equivariant, stable, or intentionally sensitive?</p></div>
+          <div class="step-card"><div class="num">4</div><h3>Local Rule</h3><p>Where does information flow first, and how does scale grow across layers?</p></div>
+        </div>
+        <div class="svg-frame" style="min-height: 450px;">
+          <svg viewBox="0 0 1500 400" role="img" aria-label="Blueprint from geometric assumptions to diagnostics">
+            <defs>
+              <marker id="arrow-blueprint" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#1e3a8a"></path>
+              </marker>
+            </defs>
+            <g font-size="28" font-weight="700" text-anchor="middle">
+              <rect x="58" y="92" width="240" height="150" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="4"></rect>
+              <text x="178" y="152" fill="#1e3a8a">geometric</text>
+              <text x="178" y="190" fill="#1e3a8a">assumption</text>
+              <rect x="392" y="92" width="240" height="150" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"></rect>
+              <text x="512" y="152" fill="#115e59">constrained</text>
+              <text x="512" y="190" fill="#115e59">layer family</text>
+              <rect x="726" y="92" width="240" height="150" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"></rect>
+              <text x="846" y="152" fill="#5b21b6">smaller</text>
+              <text x="846" y="190" fill="#5b21b6">search space</text>
+              <rect x="1060" y="92" width="240" height="150" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="4"></rect>
+              <text x="1180" y="152" fill="#92400e">diagnostic</text>
+              <text x="1180" y="190" fill="#92400e">residual</text>
+            </g>
+            <path d="M300 166 H382" stroke="#1e3a8a" stroke-width="5" fill="none" marker-end="url(#arrow-blueprint)"></path>
+            <path d="M634 166 H716" stroke="#1e3a8a" stroke-width="5" fill="none" marker-end="url(#arrow-blueprint)"></path>
+            <path d="M968 166 H1050" stroke="#1e3a8a" stroke-width="5" fill="none" marker-end="url(#arrow-blueprint)"></path>
+            <text x="178" y="318" text-anchor="middle" font-size="24" fill="#475569">symmetry, locality, scale</text>
+            <text x="512" y="318" text-anchor="middle" font-size="24" fill="#475569">convolution, message passing, pooling</text>
+            <text x="846" y="318" text-anchor="middle" font-size="24" fill="#475569">less generic interpolation</text>
+            <text x="1180" y="318" text-anchor="middle" font-size="24" fill="#475569">checks that the prior really holds</text>
+          </svg>
+        </div>
+        <div class="math-card">
+          <div class="label">Course habit</div>
+          <p class="body-text">Every later architecture should be read as a claim about transformations and regularity, not merely as a named layer stack.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Visual: original blueprint diagram</span><span>Notebook language: domain, signal, transformation, invariant, equivariant</span></div>
+      <aside class="speaker-notes">Turn the chapter into a design checklist. The learner should identify the domain, specify allowed transformations, choose equivariant or invariant layers, restrict information flow locally, and keep a diagnostic residual. This checklist is the bridge from the abstract curse of dimensionality to concrete architectures in the following chapters.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Chapter Synthesis">
+      <div class="slide-header">
+        <div>
+          <div class="eyebrow">Recap</div>
+          <h2>Chapter Synthesis</h2>
+        </div>
+        <div class="meta-pill">From high dimension to geometric priors</div>
+      </div>
+      <div class="content two-col">
+        <div class="stack">
+          <div class="math-card">
+            <div class="label">Argument chain</div>
+            <div class="mini-list">
+              <div><span class="dot"></span><p>Expressive models can interpolate finite data.</p></div>
+              <div><span class="dot"></span><p>Regularity or implicit bias selects among interpolants.</p></div>
+              <div><span class="dot"></span><p>Generic Lipschitz or Sobolev-style coverage grows exponentially with dimension.</p></div>
+              <div><span class="dot"></span><p>Geometric priors reduce the effective hypothesis space by respecting domain structure.</p></div>
+            </div>
+          </div>
+          <div class="math-card violet">
+            <div class="label">Exit exercise</div>
+            <p class="body-text">Choose a data type from the course. State the domain, one transformation that should preserve meaning, the desired model response, and one residual that would reveal a broken prior.</p>
+          </div>
+        </div>
+        <div class="svg-frame">
+          <svg viewBox="0 0 760 560" role="img" aria-label="Synthesis ladder for the chapter">
+            <defs>
+              <marker id="arrow-synthesis" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#1e3a8a"></path>
+              </marker>
+            </defs>
+            <g font-size="27" font-weight="700">
+              <rect x="110" y="62" width="540" height="78" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="4"></rect>
+              <text x="140" y="111" fill="#1e3a8a">1. Interpolation is not generalization</text>
+              <rect x="110" y="176" width="540" height="78" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="4"></rect>
+              <text x="140" y="225" fill="#115e59">2. Regularity is a selection rule</text>
+              <rect x="110" y="290" width="540" height="78" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="4"></rect>
+              <text x="140" y="339" fill="#92400e">3. Ambient coverage explodes</text>
+              <rect x="110" y="404" width="540" height="78" rx="10" fill="#f5f3ff" stroke="#6d28d9" stroke-width="4"></rect>
+              <text x="140" y="453" fill="#5b21b6">4. Geometry supplies the prior</text>
+            </g>
+            <path d="M380 142 V166" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-synthesis)"></path>
+            <path d="M380 256 V280" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-synthesis)"></path>
+            <path d="M380 370 V394" stroke="#1e3a8a" stroke-width="5" marker-end="url(#arrow-synthesis)"></path>
+            <text x="380" y="528" text-anchor="middle" font-size="24" fill="#475569" font-weight="600">Next chapter: make the priors precise.</text>
+          </svg>
+        </div>
+      </div>
+      <div class="footer"><span>Changed files: chapter-02-lecture.html and chapter-02-speaker-notes.json</span><span>Source span: printed pages 5-8; PDF pages 9-12</span></div>
+      <aside class="speaker-notes">Close by tracing the whole argument in one line. Rich models can interpolate; regularity chooses among interpolants; generic smoothness fails in high dimensions; special structure can reduce the effective search space. The exit question asks students to name the prior before naming the layer, which is the habit the rest of the course develops.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

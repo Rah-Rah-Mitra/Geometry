@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometric Priors: Domains, Symmetries, Stability</title>
+  <meta name="course" content="Geometric Deep Learning">
+  <meta name="chapter_id" content="chapter-03">
+  <meta name="notebook_path" content="Geometric-Deep-Learning/chapter-03-geometric-priors/03-geometric-priors.ipynb">
+  <meta name="source_span" content="printed pages 9-29; PDF pages 13-33.">
+  <meta name="source_pdf" content="Geometric-Deep-Learning/Geometric Deep Learning.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="manifest_row" content="365">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 70px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+      position: relative;
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(30, 58, 138, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 58, 138, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 64px 64px;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 66px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 50px;
+      line-height: 1.12;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      line-height: 1.16;
+      color: var(--slide-accent);
+    }
+
+    p, li {
+      font-size: 27px;
+      line-height: 1.34;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 32px;
+    }
+
+    .eyebrow {
+      font-size: 23px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    .rule {
+      width: 92px;
+      height: 6px;
+      background: var(--slide-accent);
+      border-radius: 4px;
+      margin: 24px 0 28px;
+    }
+
+    .subtitle {
+      font-size: 31px;
+      line-height: 1.35;
+      color: var(--slide-muted);
+      max-width: 1180px;
+    }
+
+    .source-line {
+      font-size: 23px;
+      color: var(--slide-dimmed);
+      margin-top: 24px;
+    }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 46px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .cols.wide-left {
+      grid-template-columns: 1.18fr 0.82fr;
+    }
+
+    .cols.wide-right {
+      grid-template-columns: 0.82fr 1.18fr;
+    }
+
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .four {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel.soft {
+      background: var(--slide-bg-alt);
+    }
+
+    .panel h3 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .panel p, .panel li {
+      font-size: 24px;
+      line-height: 1.34;
+    }
+
+    .math-box {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.38;
+    }
+
+    .math-box-title {
+      font-size: 27px;
+      line-height: 1.2;
+    }
+
+    .math-box-label {
+      font-size: 21px;
+      letter-spacing: 0.06em;
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 33px;
+      line-height: 1.35;
+      color: var(--slide-ink);
+    }
+
+    .formula.small {
+      font-size: 28px;
+    }
+
+    .tag {
+      display: inline-block;
+      border: 1px solid var(--slide-border);
+      background: var(--slide-bg-alt);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-muted);
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .caption {
+      font-size: 22px;
+      line-height: 1.35;
+      color: var(--slide-dimmed);
+      margin-top: 12px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--slide-teal);
+      background: var(--math-example-bg);
+      padding: 18px 22px;
+      border-radius: 8px;
+      font-size: 25px;
+      line-height: 1.34;
+    }
+
+    .warning {
+      border-left-color: var(--slide-amber);
+      background: var(--math-warning-bg);
+    }
+
+    .visual {
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .visual.white {
+      background: #fff;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 0;
+    }
+
+    .slide-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 28px;
+      margin-bottom: 28px;
+    }
+
+    .slide-num {
+      color: var(--slide-dimmed);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      padding-top: 8px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .mini {
+      border: 1px solid var(--slide-border-light);
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 118px;
+    }
+
+    .mini strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.15;
+      color: var(--slide-accent);
+      margin-bottom: 8px;
+    }
+
+    .mini span {
+      display: block;
+      font-size: 22px;
+      line-height: 1.28;
+      color: var(--slide-muted);
+    }
+
+    .ledger {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .ledger th {
+      text-align: left;
+      color: var(--slide-accent);
+      border-bottom: 2px solid var(--slide-border);
+      padding: 12px 14px;
+      font-size: 24px;
+    }
+
+    .ledger td {
+      border-bottom: 1px solid var(--slide-border-light);
+      padding: 11px 14px;
+      font-size: 23px;
+      vertical-align: top;
+    }
+
+    .ok {
+      color: var(--slide-teal);
+      font-weight: 700;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt">
+        <div class="cols wide-left" style="align-items: center;">
+          <div>
+            <div class="eyebrow">Geometric Deep Learning · Chapter 03 · Row 365</div>
+            <h1>Geometric Priors: Domains, Symmetries, Stability</h1>
+            <div class="rule"></div>
+            <p class="subtitle">A lecture on turning informal architectural instincts into precise transformation claims: signals live on domains, groups act on those domains, and useful neural layers respect or relax those actions.</p>
+            <p class="source-line">Notebook: Geometric-Deep-Learning/chapter-03-geometric-priors/03-geometric-priors.ipynb · Source span: printed pages 9-29; PDF pages 13-33.</p>
+          </div>
+          <div class="visual white">
+            <svg viewBox="0 0 720 520" role="img" aria-label="Domain to signal to architecture diagram">
+              <defs>
+                <marker id="arrow-title" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="30" y="60" width="180" height="360" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <rect x="270" y="60" width="180" height="360" rx="20" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <rect x="510" y="60" width="180" height="360" rx="20" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="120" y="112" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#2563EB">domain Ω</text>
+              <text x="360" y="112" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0F766E">signal x</text>
+              <text x="600" y="112" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#6D28D9">model f</text>
+              <g fill="#2563EB" opacity="0.92">
+                <circle cx="86" cy="180" r="12"></circle><circle cx="150" cy="180" r="12"></circle><circle cx="118" cy="236" r="12"></circle><circle cx="180" cy="276" r="12"></circle><circle cx="78" cy="308" r="12"></circle><circle cx="144" cy="348" r="12"></circle>
+              </g>
+              <g stroke="#2563EB" stroke-width="4" opacity="0.65">
+                <line x1="86" y1="180" x2="150" y2="180"></line><line x1="86" y1="180" x2="118" y2="236"></line><line x1="150" y1="180" x2="118" y2="236"></line><line x1="118" y1="236" x2="180" y2="276"></line><line x1="118" y1="236" x2="78" y2="308"></line><line x1="78" y1="308" x2="144" y2="348"></line><line x1="180" y1="276" x2="144" y2="348"></line>
+              </g>
+              <path d="M315 355 C330 260, 352 215, 392 155" fill="none" stroke="#0F766E" stroke-width="7"></path>
+              <g fill="#0F766E">
+                <circle cx="315" cy="355" r="10"></circle><circle cx="338" cy="280" r="10"></circle><circle cx="362" cy="220" r="10"></circle><circle cx="392" cy="155" r="10"></circle>
+              </g>
+              <g stroke="#6D28D9" stroke-width="4" fill="#fff">
+                <circle cx="565" cy="175" r="22"></circle><circle cx="635" cy="175" r="22"></circle><circle cx="600" cy="245" r="22"></circle><circle cx="560" cy="320" r="22"></circle><circle cx="640" cy="320" r="22"></circle>
+                <line x1="587" y1="175" x2="613" y2="175"></line><line x1="578" y1="196" x2="590" y2="224"></line><line x1="622" y1="196" x2="610" y2="224"></line><line x1="590" y1="266" x2="570" y2="298"></line><line x1="610" y1="266" x2="630" y2="298"></line>
+              </g>
+              <path d="M220 240 L258 240" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-title)"></path>
+              <path d="M460 240 L498 240" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-title)"></path>
+              <text x="240" y="220" text-anchor="middle" font-size="23" font-family="Source Sans 3" fill="#475569">index</text>
+              <text x="480" y="220" text-anchor="middle" font-size="23" font-family="Source Sans 3" fill="#475569">learn</text>
+              <text x="120" y="462" text-anchor="middle" font-size="24" font-family="Source Sans 3" fill="#475569">structure</text>
+              <text x="360" y="462" text-anchor="middle" font-size="24" font-family="Source Sans 3" fill="#475569">values on Ω</text>
+              <text x="600" y="462" text-anchor="middle" font-size="24" font-family="Source Sans 3" fill="#475569">allowed maps</text>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Open by telling the room that this chapter is the hinge between generic high-dimensional learning and geometric deep learning. The lecture will not start with a layer name. It starts by asking what object indexes the data, which transformations are semantics-preserving, and what a model should do when those transformations are applied.</aside>
+      </div>
+    </section>
+
+    <section data-label="Signals On Domains">
+      <div class="slide">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">1 · Signals On Domains</div>
+            <h2>The First Prior Is Where Values Live</h2>
+          </div>
+          <div class="slide-num">pp. 9-11</div>
+        </div>
+        <div class="cols wide-right">
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Definition Lens</div>
+              <div class="math-box-title">A datum becomes geometric when it is a function on a structured index set.</div>
+              <div>Write a signal as \(x:\Omega\to C\). The domain \(\Omega\) may be a grid, graph, point set, surface, group, or sequence; \(C\) stores scalar, vector, categorical, or feature values.</div>
+            </div>
+            <div class="callout">
+              A layer is not just a formula on arrays. It is a rule that should respect the way the domain can be re-indexed, moved, coarsened, or slightly deformed.
+            </div>
+          </div>
+          <div class="visual">
+            <svg viewBox="0 0 880 610" role="img" aria-label="Four domains with signals">
+              <g transform="translate(30 30)">
+                <rect x="0" y="0" width="380" height="250" rx="14" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="24" y="38" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#1E3A8A">grid domain</text>
+                <g transform="translate(42 70)">
+                  <g stroke="#CBD5E1" stroke-width="2">
+                    <line x1="0" y1="0" x2="260" y2="0"></line><line x1="0" y1="45" x2="260" y2="45"></line><line x1="0" y1="90" x2="260" y2="90"></line><line x1="0" y1="135" x2="260" y2="135"></line><line x1="0" y1="180" x2="260" y2="180"></line>
+                    <line x1="0" y1="0" x2="0" y2="180"></line><line x1="65" y1="0" x2="65" y2="180"></line><line x1="130" y1="0" x2="130" y2="180"></line><line x1="195" y1="0" x2="195" y2="180"></line><line x1="260" y1="0" x2="260" y2="180"></line>
+                  </g>
+                  <rect x="65" y="45" width="65" height="45" fill="#2563EB" opacity="0.22"></rect>
+                  <rect x="130" y="90" width="65" height="45" fill="#0F766E" opacity="0.22"></rect>
+                  <rect x="195" y="45" width="65" height="45" fill="#B45309" opacity="0.18"></rect>
+                  <text x="100" y="215" text-anchor="middle" font-size="22" font-family="Source Sans 3" fill="#64748B">pixels carry values</text>
+                </g>
+              </g>
+              <g transform="translate(470 30)">
+                <rect x="0" y="0" width="380" height="250" rx="14" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="24" y="38" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#1E3A8A">graph domain</text>
+                <g stroke="#94A3B8" stroke-width="4">
+                  <line x1="92" y1="98" x2="178" y2="76"></line><line x1="178" y1="76" x2="270" y2="116"></line><line x1="92" y1="98" x2="130" y2="176"></line><line x1="130" y1="176" x2="242" y2="188"></line><line x1="242" y1="188" x2="270" y2="116"></line>
+                </g>
+                <g>
+                  <circle cx="92" cy="98" r="19" fill="#2563EB"></circle><circle cx="178" cy="76" r="26" fill="#0F766E"></circle><circle cx="270" cy="116" r="16" fill="#B45309"></circle><circle cx="130" cy="176" r="22" fill="#6D28D9"></circle><circle cx="242" cy="188" r="20" fill="#2563EB" opacity="0.82"></circle>
+                </g>
+                <text x="190" y="224" text-anchor="middle" font-size="22" font-family="Source Sans 3" fill="#64748B">nodes and edges organize features</text>
+              </g>
+              <g transform="translate(30 330)">
+                <rect x="0" y="0" width="380" height="250" rx="14" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="24" y="38" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#1E3A8A">point cloud domain</text>
+                <g fill="#0F766E">
+                  <circle cx="72" cy="118" r="10"></circle><circle cx="104" cy="80" r="13"></circle><circle cx="148" cy="122" r="12"></circle><circle cx="178" cy="164" r="11"></circle><circle cx="222" cy="92" r="16"></circle><circle cx="268" cy="138" r="13"></circle><circle cx="300" cy="184" r="10"></circle>
+                </g>
+                <g stroke="#2563EB" stroke-width="3" fill="none" opacity="0.45">
+                  <circle cx="104" cy="80" r="48"></circle><circle cx="222" cy="92" r="58"></circle><circle cx="268" cy="138" r="54"></circle>
+                </g>
+                <text x="190" y="224" text-anchor="middle" font-size="22" font-family="Source Sans 3" fill="#64748B">distances define neighborhoods</text>
+              </g>
+              <g transform="translate(470 330)">
+                <rect x="0" y="0" width="380" height="250" rx="14" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="24" y="38" font-size="26" font-family="Source Sans 3" font-weight="700" fill="#1E3A8A">surface domain</text>
+                <path d="M56 154 C104 70, 170 74, 214 132 S304 196, 338 112" fill="none" stroke="#0F766E" stroke-width="5"></path>
+                <path d="M56 174 C104 90, 170 94, 214 152 S304 216, 338 132" fill="none" stroke="#0F766E" stroke-width="5" opacity="0.32"></path>
+                <g stroke="#CBD5E1" stroke-width="2" opacity="0.85">
+                  <path d="M80 100 C140 140, 220 142, 310 92" fill="none"></path>
+                  <path d="M82 200 C160 166, 234 168, 326 214" fill="none"></path>
+                  <path d="M120 84 C112 128, 112 172, 128 214" fill="none"></path>
+                  <path d="M236 82 C224 126, 222 172, 248 214" fill="none"></path>
+                </g>
+                <circle cx="214" cy="132" r="14" fill="#B45309"></circle>
+                <text x="190" y="224" text-anchor="middle" font-size="22" font-family="Source Sans 3" fill="#64748B">geometry supplies tangent structure</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Use this slide to slow down the basic vocabulary. A grid, graph, point cloud, and surface do not merely store values in different file formats. They define different neighborhoods and admissible coordinate changes, so the same vector of numbers can demand different models depending on its domain.</aside>
+      </div>
+    </section>
+
+    <section data-label="Group Actions">
+      <div class="slide alt">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">2 · Group Actions</div>
+            <h2>A Transformation Of The Domain Induces One On Signals</h2>
+          </div>
+          <div class="slide-num">§3.1</div>
+        </div>
+        <div class="cols wide-left">
+          <div class="visual white">
+            <svg viewBox="0 0 960 590" role="img" aria-label="Triangle group action and induced signal action">
+              <defs>
+                <marker id="arrow-action" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <text x="80" y="48" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#1E3A8A">domain action</text>
+              <text x="550" y="48" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#0F766E">signal action</text>
+              <g transform="translate(90 100)">
+                <polygon points="160,20 38,230 282,230" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></polygon>
+                <circle cx="160" cy="20" r="20" fill="#2563EB"></circle><circle cx="38" cy="230" r="20" fill="#0F766E"></circle><circle cx="282" cy="230" r="20" fill="#B45309"></circle>
+                <text x="160" y="28" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">1</text>
+                <text x="38" y="238" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">2</text>
+                <text x="282" y="238" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">3</text>
+                <path d="M160 284 C105 330, 105 390, 160 438 C218 386, 218 334, 160 284" fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-action)"></path>
+                <text x="160" y="372" text-anchor="middle" font-size="26" font-family="Source Sans 3" fill="#1E3A8A">g</text>
+              </g>
+              <g transform="translate(560 105)">
+                <rect x="0" y="0" width="310" height="80" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <rect x="0" y="150" width="310" height="80" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <rect x="20" y="22" width="50" height="36" fill="#2563EB" opacity="0.75"></rect>
+                <rect x="130" y="22" width="80" height="36" fill="#0F766E" opacity="0.75"></rect>
+                <rect x="240" y="22" width="44" height="36" fill="#B45309" opacity="0.75"></rect>
+                <rect x="20" y="172" width="44" height="36" fill="#B45309" opacity="0.75"></rect>
+                <rect x="130" y="172" width="50" height="36" fill="#2563EB" opacity="0.75"></rect>
+                <rect x="240" y="172" width="80" height="36" fill="#0F766E" opacity="0.75"></rect>
+                <path d="M155 95 L155 136" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-action)"></path>
+                <text x="178" y="124" font-size="25" font-family="STIX Two Text" fill="#1E3A8A">ρ(g)</text>
+                <text x="155" y="284" text-anchor="middle" font-size="30" font-family="STIX Two Text" fill="#111827">[ρ(g)x](u)=x(g⁻¹·u)</text>
+              </g>
+              <g transform="translate(110 480)">
+                <rect x="0" y="0" width="730" height="70" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="30" y="44" font-size="25" font-family="Source Sans 3" fill="#475569">Composition law: applying h then g on Ω matches ρ(g)ρ(h) on the signal vector.</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Group Action</div>
+              <div class="math-box-title">A group element \(g\) moves a domain point \(u\) to \(g\cdot u\).</div>
+              <div>The compatibility rule \(g\cdot(h\cdot u)=(gh)\cdot u\) is what lets a transformation calculus become an architecture constraint.</div>
+            </div>
+            <div class="math-box math-box--remark">
+              <div class="math-box-label">Representation</div>
+              <div>On finite signals, the induced action is a matrix or permutation operator \(\rho(g)\). On continuous signals, it is a linear operator on a function space.</div>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Keep the triangle deliberately small. The point is not that every domain is triangular, but that a concrete action exposes the bookkeeping. Once the domain points move, signal coordinates must be pulled back so the same physical information is described after the transformation. That pullback is the representation.</aside>
+      </div>
+    </section>
+
+    <section data-label="Representations">
+      <div class="slide">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">3 · Representations</div>
+            <h2>The Prior Lives Between Three Spaces</h2>
+          </div>
+          <div class="slide-num">§3.1</div>
+        </div>
+        <div class="cols">
+          <div class="visual">
+            <svg viewBox="0 0 820 560" role="img" aria-label="Three spaces of geometric deep learning">
+              <defs>
+                <marker id="arrow-spaces" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <circle cx="180" cy="278" r="118" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></circle>
+              <circle cx="410" cy="278" r="118" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></circle>
+              <circle cx="640" cy="278" r="118" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></circle>
+              <text x="180" y="252" text-anchor="middle" font-size="30" font-family="STIX Two Text" fill="#2563EB">Ω</text>
+              <text x="180" y="292" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">domain</text>
+              <text x="410" y="252" text-anchor="middle" font-size="30" font-family="STIX Two Text" fill="#0F766E">X(Ω)</text>
+              <text x="410" y="292" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">signals</text>
+              <text x="640" y="252" text-anchor="middle" font-size="30" font-family="STIX Two Text" fill="#6D28D9">F</text>
+              <text x="640" y="292" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">hypotheses</text>
+              <path d="M296 278 L292 278" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-spaces)"></path>
+              <path d="M526 278 L522 278" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-spaces)"></path>
+              <path d="M180 116 C250 46, 570 46, 640 116" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-spaces)"></path>
+              <text x="410" y="72" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#B45309">a symmetry restricts admissible f</text>
+              <g transform="translate(90 432)">
+                <rect x="0" y="0" width="640" height="78" rx="12" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="320" y="48" text-anchor="middle" font-size="29" font-family="STIX Two Text" fill="#111827">ρ(gh)=ρ(g)ρ(h),  ρ(e)=I</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Architecture Constraint</div>
+              <div class="math-box-title">A prior is a restriction on the function class.</div>
+              <div>Rather than learning over all maps \(X(\Omega)\to Y\), choose maps whose behavior under \(\rho(g)\) is already correct by construction.</div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini"><strong>Domain</strong><span>What can move, relabel, rotate, or deform?</span></div>
+              <div class="mini"><strong>Representation</strong><span>How does that motion act on coordinates?</span></div>
+              <div class="mini"><strong>Map</strong><span>Should the output stay fixed or move predictably?</span></div>
+              <div class="mini"><strong>Check</strong><span>Which residual certifies the claim on examples?</span></div>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Frame this as the chapter's main diagrammatic habit. The same group can be discussed at three levels: it acts on the physical domain, it induces a representation on signal coordinates, and it restricts the functions we are willing to learn. This is why priors become statistical help rather than decorative terminology.</aside>
+      </div>
+    </section>
+
+    <section data-label="Invariance Equivariance">
+      <div class="slide alt">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">4 · Invariance And Equivariance</div>
+            <h2>Two Commuting Claims, Two Output Types</h2>
+          </div>
+          <div class="slide-num">§3.1</div>
+        </div>
+        <div class="cols">
+          <div class="visual white">
+            <svg viewBox="0 0 780 560" role="img" aria-label="Invariance and equivariance commuting diagrams">
+              <defs>
+                <marker id="arrow-commute" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <text x="190" y="44" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#2563EB">Invariant readout</text>
+              <text x="590" y="44" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0F766E">Equivariant field</text>
+              <g transform="translate(50 96)">
+                <rect x="0" y="0" width="280" height="300" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <text x="74" y="82" font-size="30" font-family="STIX Two Text" fill="#111827">x</text>
+                <text x="74" y="230" font-size="30" font-family="STIX Two Text" fill="#111827">ρ(g)x</text>
+                <text x="220" y="82" font-size="30" font-family="STIX Two Text" fill="#111827">y</text>
+                <text x="220" y="230" font-size="30" font-family="STIX Two Text" fill="#111827">y</text>
+                <path d="M95 72 L190 72" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-commute)"></path>
+                <path d="M95 220 L190 220" stroke="#1E3A8A" stroke-width="4" marker-end="url(#arrow-commute)"></path>
+                <path d="M74 96 L74 190" stroke="#B45309" stroke-width="4" marker-end="url(#arrow-commute)"></path>
+                <path d="M220 96 L220 190" stroke="#CBD5E1" stroke-width="4"></path>
+                <text x="145" y="56" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#1E3A8A">f</text>
+                <text x="145" y="204" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#1E3A8A">f</text>
+                <text x="38" y="150" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#B45309">ρ(g)</text>
+                <text x="140" y="278" text-anchor="middle" font-size="27" font-family="STIX Two Text" fill="#111827">f(ρ(g)x)=f(x)</text>
+              </g>
+              <g transform="translate(450 96)">
+                <rect x="0" y="0" width="280" height="300" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <text x="72" y="82" font-size="30" font-family="STIX Two Text" fill="#111827">x</text>
+                <text x="72" y="230" font-size="30" font-family="STIX Two Text" fill="#111827">ρ(g)x</text>
+                <text x="218" y="82" font-size="30" font-family="STIX Two Text" fill="#111827">z</text>
+                <text x="218" y="230" font-size="30" font-family="STIX Two Text" fill="#111827">ρ(g)z</text>
+                <path d="M94 72 L188 72" stroke="#0F766E" stroke-width="4" marker-end="url(#arrow-commute)"></path>
+                <path d="M94 220 L188 220" stroke="#0F766E" stroke-width="4" marker-end="url(#arrow-commute)"></path>
+                <path d="M72 96 L72 190" stroke="#B45309" stroke-width="4" marker-end="url(#arrow-commute)"></path>
+                <path d="M218 96 L218 190" stroke="#B45309" stroke-width="4" marker-end="url(#arrow-commute)"></path>
+                <text x="142" y="56" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#0F766E">f</text>
+                <text x="142" y="204" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#0F766E">f</text>
+                <text x="36" y="150" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#B45309">ρ(g)</text>
+                <text x="252" y="150" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#B45309">ρ(g)</text>
+                <text x="140" y="278" text-anchor="middle" font-size="27" font-family="STIX Two Text" fill="#111827">f(ρ(g)x)=ρ(g)f(x)</text>
+              </g>
+              <g transform="translate(70 446)">
+                <rect x="0" y="0" width="640" height="74" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="320" y="45" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">Classification asks for fixed answers; dense prediction asks for transformed answers.</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Invariant</div>
+              <div>A map \(f:X(\Omega)\to Y\) is \(G\)-invariant when \(f(\rho(g)x)=f(x)\). The group action disappears at the output.</div>
+            </div>
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Equivariant</div>
+              <div>A map \(f:X(\Omega)\to X(\Omega)\) is \(G\)-equivariant when \(f(\rho(g)x)=\rho(g)f(x)\). The output moves with the input.</div>
+            </div>
+            <div class="callout warning">
+              Misconception to catch: equivariance is not weaker invariance. It is a different contract for outputs that still carry domain coordinates.
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Ask students to read each square along both paths. For invariance, the right vertical edge is intentionally idle: transforming the input should not change a scalar decision. For equivariance, both vertical edges are active: the output is still a signal on a domain, so it must transform in step with the input.</aside>
+      </div>
+    </section>
+
+    <section data-label="Automorphisms">
+      <div class="slide">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">5 · Isomorphisms And Automorphisms</div>
+            <h2>Adding Structure Shrinks The Symmetry Group</h2>
+          </div>
+          <div class="slide-num">§3.2</div>
+        </div>
+        <div class="cols wide-left">
+          <div class="visual">
+            <svg viewBox="0 0 930 570" role="img" aria-label="Graph relabeling and automorphism orbits">
+              <defs>
+                <marker id="arrow-graph" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <text x="185" y="42" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#2563EB">same graph, new labels</text>
+              <text x="700" y="42" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#0F766E">automorphism orbits</text>
+              <g transform="translate(60 85)">
+                <g stroke="#94A3B8" stroke-width="5">
+                  <line x1="120" y1="40" x2="40" y2="150"></line><line x1="120" y1="40" x2="200" y2="150"></line><line x1="40" y1="150" x2="120" y2="260"></line><line x1="200" y1="150" x2="120" y2="260"></line><line x1="40" y1="150" x2="200" y2="150"></line>
+                </g>
+                <g>
+                  <circle cx="120" cy="40" r="24" fill="#2563EB"></circle><circle cx="40" cy="150" r="24" fill="#0F766E"></circle><circle cx="200" cy="150" r="24" fill="#0F766E"></circle><circle cx="120" cy="260" r="24" fill="#B45309"></circle>
+                  <text x="120" y="49" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">1</text><text x="40" y="159" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">2</text><text x="200" y="159" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">3</text><text x="120" y="269" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">4</text>
+                </g>
+              </g>
+              <path d="M350 230 L470 230" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-graph)"></path>
+              <text x="410" y="205" text-anchor="middle" font-size="24" font-family="Source Sans 3" fill="#1E3A8A">PAPᵀ</text>
+              <g transform="translate(505 85)">
+                <g stroke="#94A3B8" stroke-width="5">
+                  <line x1="120" y1="40" x2="40" y2="150"></line><line x1="120" y1="40" x2="200" y2="150"></line><line x1="40" y1="150" x2="120" y2="260"></line><line x1="200" y1="150" x2="120" y2="260"></line><line x1="40" y1="150" x2="200" y2="150"></line>
+                </g>
+                <g>
+                  <circle cx="120" cy="40" r="24" fill="#2563EB"></circle><circle cx="40" cy="150" r="24" fill="#0F766E"></circle><circle cx="200" cy="150" r="24" fill="#0F766E"></circle><circle cx="120" cy="260" r="24" fill="#B45309"></circle>
+                  <text x="120" y="49" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">a</text><text x="40" y="159" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">c</text><text x="200" y="159" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">b</text><text x="120" y="269" text-anchor="middle" font-size="24" font-family="Source Sans 3" font-weight="700" fill="#fff">d</text>
+                </g>
+                <path d="M40 198 C74 238, 166 238, 200 198" fill="none" stroke="#0F766E" stroke-width="5" stroke-dasharray="9 8"></path>
+                <text x="120" y="338" text-anchor="middle" font-size="24" font-family="Source Sans 3" fill="#475569">middle nodes can swap</text>
+              </g>
+              <g transform="translate(92 448)">
+                <rect x="0" y="0" width="750" height="76" rx="10" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="375" y="46" text-anchor="middle" font-size="26" font-family="Source Sans 3" fill="#475569">Set symmetries allow every permutation; graph symmetries preserve adjacency.</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--remark">
+              <div class="math-box-label">Hierarchy</div>
+              <div>More domain structure means fewer allowed transformations. A bare set has all bijections; a metric space keeps distance-preserving maps; a graph keeps adjacency-preserving maps.</div>
+            </div>
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Notebook Check</div>
+              <div>The chapter ledger records zero residual for a path-graph relabeling test and twelve automorphisms for the cycle example, turning the visual claim into a finite audit.</div>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Use the relabeling picture to separate isomorphism from automorphism. An isomorphism may compare two differently named copies of the same structure. An automorphism maps a structure back to itself. This distinction is essential for graph learning, because node names are rarely semantic while adjacency usually is.</aside>
+      </div>
+    </section>
+
+    <section data-label="Stability">
+      <div class="slide alt">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">6 · Deformation Stability</div>
+            <h2>Exact Symmetry Is Too Brittle For Real Data</h2>
+          </div>
+          <div class="slide-num">§3.3</div>
+        </div>
+        <div class="cols">
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Soft Prior</div>
+              <div class="math-box-title">Near a symmetry, output change should be controlled.</div>
+              <div class="formula small">\(\|f(\rho(\tau)x)-f(x)\|\le C\,c(\tau)\,\|x\|\)</div>
+            </div>
+            <div class="callout">
+              The cost \(c(\tau)\) is zero on the exact group and positive nearby. Stability generalizes invariance without pretending that small deformations form a closed group.
+            </div>
+            <div class="callout warning">
+              If the deformation carries semantic information, do not force stability. The task decides which changes are harmless.
+            </div>
+          </div>
+          <div class="visual white">
+            <svg viewBox="0 0 800 560" role="img" aria-label="Symmetry group with nearby deformations">
+              <defs>
+                <marker id="arrow-stable" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(70 56)">
+                <rect x="0" y="0" width="660" height="440" rx="18" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+                <ellipse cx="330" cy="218" rx="242" ry="140" fill="#B45309" opacity="0.1" stroke="#B45309" stroke-width="4" stroke-dasharray="12 10"></ellipse>
+                <ellipse cx="330" cy="218" rx="138" ry="76" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></ellipse>
+                <text x="330" y="224" text-anchor="middle" font-size="34" font-family="STIX Two Text" fill="#2563EB">G</text>
+                <text x="330" y="302" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">exact symmetries</text>
+                <text x="330" y="92" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#B45309">nearby deformations with cost c(τ)</text>
+                <path d="M520 128 C596 184, 580 292, 496 338" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-stable)"></path>
+              </g>
+              <g transform="translate(112 356)">
+                <path d="M0 52 C68 10, 130 88, 205 38 S322 64, 382 22" fill="none" stroke="#0F766E" stroke-width="6"></path>
+                <path d="M0 94 C70 48, 132 128, 206 78 S324 104, 382 62" fill="none" stroke="#0F766E" stroke-width="5" opacity="0.35"></path>
+                <line x1="0" y1="52" x2="0" y2="94" stroke="#94A3B8" stroke-width="3"></line><line x1="126" y1="72" x2="126" y2="112" stroke="#94A3B8" stroke-width="3"></line><line x1="252" y1="50" x2="252" y2="90" stroke="#94A3B8" stroke-width="3"></line><line x1="382" y1="22" x2="382" y2="62" stroke="#94A3B8" stroke-width="3"></line>
+                <text x="196" y="142" text-anchor="middle" font-size="24" font-family="Source Sans 3" fill="#475569">small warp, bounded response</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Explain why the ring is not a new symmetry group. Small deformations compose into larger deformations, so closure fails if we only keep the small ones. The move is to measure distance from the exact group and ask for a Lipschitz-like response, which is a softer and more realistic geometric prior.</aside>
+      </div>
+    </section>
+
+    <section data-label="Domain Stability">
+      <div class="slide">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">7 · Stability Of Domains</div>
+            <h2>Sometimes The Domain Moves, Not Just The Signal</h2>
+          </div>
+          <div class="slide-num">§3.3</div>
+        </div>
+        <div class="cols wide-right">
+          <div class="stack">
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Graph And Manifold View</div>
+              <div>A signal can stay comparable while the underlying graph or surface changes. The model then needs a correspondence \(Q\) or metric between domains, not merely an action on a fixed coordinate set.</div>
+            </div>
+            <div class="math-box math-box--remark">
+              <div class="math-box-label">Inspection Target</div>
+              <div>Ask whether the deformation preserves the information the task cares about: connectivity pattern, pairwise distances, local tangent frames, or a coarser neighborhood relation.</div>
+            </div>
+          </div>
+          <div class="visual">
+            <svg viewBox="0 0 870 570" role="img" aria-label="Domain deformation with graph and surface examples">
+              <defs>
+                <marker id="arrow-domain" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(42 62)">
+                <rect x="0" y="0" width="330" height="398" rx="16" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="165" y="44" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#2563EB">fixed domain</text>
+                <g transform="translate(38 86)">
+                  <g stroke="#94A3B8" stroke-width="4">
+                    <line x1="80" y1="40" x2="180" y2="70"></line><line x1="180" y1="70" x2="232" y2="154"></line><line x1="80" y1="40" x2="54" y2="154"></line><line x1="54" y1="154" x2="140" y2="228"></line><line x1="140" y1="228" x2="232" y2="154"></line>
+                  </g>
+                  <g fill="#0F766E">
+                    <circle cx="80" cy="40" r="18"></circle><circle cx="180" cy="70" r="18"></circle><circle cx="232" cy="154" r="18"></circle><circle cx="54" cy="154" r="18"></circle><circle cx="140" cy="228" r="18"></circle>
+                  </g>
+                  <path d="M34 276 C92 244, 176 306, 252 260" fill="none" stroke="#B45309" stroke-width="5"></path>
+                  <text x="140" y="334" text-anchor="middle" font-size="23" font-family="Source Sans 3" fill="#64748B">warp x on same Ω</text>
+                </g>
+              </g>
+              <path d="M390 262 L482 262" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-domain)"></path>
+              <text x="436" y="236" text-anchor="middle" font-size="25" font-family="STIX Two Text" fill="#1E3A8A">Q</text>
+              <g transform="translate(500 62)">
+                <rect x="0" y="0" width="330" height="398" rx="16" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="165" y="44" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#0F766E">deformed domain</text>
+                <g transform="translate(38 86)">
+                  <g stroke="#94A3B8" stroke-width="4">
+                    <line x1="88" y1="54" x2="196" y2="52"></line><line x1="196" y1="52" x2="226" y2="162"></line><line x1="88" y1="54" x2="50" y2="152"></line><line x1="50" y1="152" x2="126" y2="238"></line><line x1="126" y1="238" x2="226" y2="162"></line>
+                  </g>
+                  <g fill="#0F766E">
+                    <circle cx="88" cy="54" r="18"></circle><circle cx="196" cy="52" r="18"></circle><circle cx="226" cy="162" r="18"></circle><circle cx="50" cy="152" r="18"></circle><circle cx="126" cy="238" r="18"></circle>
+                  </g>
+                  <path d="M28 278 C94 210, 174 326, 258 250" fill="none" stroke="#B45309" stroke-width="5"></path>
+                  <text x="140" y="334" text-anchor="middle" font-size="23" font-family="Source Sans 3" fill="#64748B">compare Ω and Ω̃</text>
+                </g>
+              </g>
+              <g transform="translate(160 492)">
+                <rect x="0" y="0" width="550" height="58" rx="10" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="275" y="38" text-anchor="middle" font-size="25" font-family="STIX Two Text" fill="#111827">∥f(Ω,x)-f(Ω̃,Qx)∥ is small when d(Ω,Ω̃) is small</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Distinguish two stability settings. If only the signal changes, we can keep the domain fixed and use the representation of a deformation. If the graph, mesh, or manifold itself changes, the model needs a way to compare outputs across domains. That comparison is often where geometry enters most concretely.</aside>
+      </div>
+    </section>
+
+    <section data-label="Scale Separation">
+      <div class="slide alt">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">8 · Scale Separation</div>
+            <h2>Local Computation Becomes Global Information</h2>
+          </div>
+          <div class="slide-num">§3.4</div>
+        </div>
+        <div class="cols wide-left">
+          <div class="visual white">
+            <svg viewBox="0 0 900 560" role="img" aria-label="Scale separation grid and graph hierarchy">
+              <defs>
+                <marker id="arrow-scale" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <text x="450" y="42" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#1E3A8A">coarsening hierarchy Ω₀ → Ω₁ → Ω₂</text>
+              <g transform="translate(50 90)">
+                <rect x="0" y="0" width="250" height="250" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+                <g stroke="#CBD5E1" stroke-width="2">
+                  <line x1="30" y1="30" x2="220" y2="30"></line><line x1="30" y1="68" x2="220" y2="68"></line><line x1="30" y1="106" x2="220" y2="106"></line><line x1="30" y1="144" x2="220" y2="144"></line><line x1="30" y1="182" x2="220" y2="182"></line><line x1="30" y1="220" x2="220" y2="220"></line>
+                  <line x1="30" y1="30" x2="30" y2="220"></line><line x1="68" y1="30" x2="68" y2="220"></line><line x1="106" y1="30" x2="106" y2="220"></line><line x1="144" y1="30" x2="144" y2="220"></line><line x1="182" y1="30" x2="182" y2="220"></line><line x1="220" y1="30" x2="220" y2="220"></line>
+                </g>
+                <rect x="68" y="68" width="76" height="76" fill="#2563EB" opacity="0.22"></rect>
+                <rect x="144" y="144" width="76" height="76" fill="#0F766E" opacity="0.22"></rect>
+                <text x="125" y="302" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">fine domain</text>
+              </g>
+              <path d="M326 214 L424 214" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-scale)"></path>
+              <text x="375" y="190" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#1E3A8A">P₁</text>
+              <g transform="translate(450 118)">
+                <rect x="0" y="0" width="190" height="190" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+                <g stroke="#CBD5E1" stroke-width="3">
+                  <line x1="34" y1="34" x2="156" y2="34"></line><line x1="34" y1="95" x2="156" y2="95"></line><line x1="34" y1="156" x2="156" y2="156"></line>
+                  <line x1="34" y1="34" x2="34" y2="156"></line><line x1="95" y1="34" x2="95" y2="156"></line><line x1="156" y1="34" x2="156" y2="156"></line>
+                </g>
+                <rect x="34" y="34" width="61" height="61" fill="#2563EB" opacity="0.22"></rect>
+                <rect x="95" y="95" width="61" height="61" fill="#0F766E" opacity="0.22"></rect>
+                <text x="95" y="274" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">pooled domain</text>
+              </g>
+              <path d="M666 214 L738 214" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-scale)"></path>
+              <text x="702" y="190" text-anchor="middle" font-size="24" font-family="STIX Two Text" fill="#1E3A8A">P₂</text>
+              <g transform="translate(752 160)">
+                <rect x="0" y="0" width="110" height="110" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+                <rect x="28" y="28" width="54" height="54" fill="#6D28D9" opacity="0.2" stroke="#6D28D9" stroke-width="3"></rect>
+                <text x="55" y="232" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#475569">summary</text>
+              </g>
+              <g transform="translate(96 438)">
+                <rect x="0" y="0" width="708" height="70" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="2"></rect>
+                <text x="354" y="44" text-anchor="middle" font-size="29" font-family="STIX Two Text" fill="#111827">f(x) ≈ f′(P x), with local features retained at coarser scale</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--definition">
+              <div class="math-box-label">Scale Separation Prior</div>
+              <div>Build a hierarchy of domains and preserve task-relevant information while discarding coordinates that no longer matter at the current scale.</div>
+            </div>
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Why It Helps</div>
+              <div>Local maps keep parameter sharing tractable; pooling increases the effective receptive field and moves toward invariant summaries.</div>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Connect this picture to the computational reason deep architectures help. Local neighborhoods are cheaper and more stable than arbitrary global interactions, but the task may require long-range information. Coarsening and composition let a model grow its receptive field while carrying forward the geometric constraints established at fine scale.</aside>
+      </div>
+    </section>
+
+    <section data-label="Multiscale Locality">
+      <div class="slide">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">9 · Multiscale Locality</div>
+            <h2>Local Features Are A Stability Mechanism</h2>
+          </div>
+          <div class="slide-num">§3.4</div>
+        </div>
+        <div class="cols">
+          <div class="stack">
+            <div class="math-box math-box--remark">
+              <div class="math-box-label">Fourier Versus Localized Views</div>
+              <div>Global frequency coordinates can react strongly to small spatial warps. Localized multiscale features trade exact diagonalization for spatial robustness and compositional structure.</div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini"><strong>Local</strong><span>features inspect bounded neighborhoods</span></div>
+              <div class="mini"><strong>Equivariant</strong><span>intermediate fields move predictably</span></div>
+              <div class="mini"><strong>Pooled</strong><span>scale increases while detail compresses</span></div>
+              <div class="mini"><strong>Stable</strong><span>small deformations cause small changes</span></div>
+            </div>
+          </div>
+          <div class="visual">
+            <svg viewBox="0 0 820 560" role="img" aria-label="Global frequency and local multiscale comparison">
+              <defs>
+                <marker id="arrow-local" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <rect x="56" y="58" width="706" height="190" rx="16" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+              <text x="92" y="102" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#B45309">global coordinate view</text>
+              <path d="M96 182 C160 88, 230 276, 294 152 S430 94, 496 190 S622 226, 700 126" fill="none" stroke="#B45309" stroke-width="5"></path>
+              <path d="M96 198 C162 112, 232 296, 296 174 S432 116, 498 212 S624 248, 700 150" fill="none" stroke="#B45309" stroke-width="4" opacity="0.32"></path>
+              <text x="582" y="102" font-size="24" font-family="Source Sans 3" fill="#64748B">small warp can phase-shift many coefficients</text>
+              <rect x="56" y="308" width="706" height="190" rx="16" fill="#fff" stroke="#CBD5E1" stroke-width="2"></rect>
+              <text x="92" y="352" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#0F766E">localized multiscale view</text>
+              <g transform="translate(100 390)">
+                <path d="M0 44 C54 12, 116 72, 172 38 S278 68, 344 28" fill="none" stroke="#0F766E" stroke-width="5"></path>
+                <circle cx="54" cy="40" r="40" fill="#0F766E" opacity="0.1" stroke="#0F766E" stroke-width="3"></circle>
+                <circle cx="166" cy="42" r="52" fill="#2563EB" opacity="0.1" stroke="#2563EB" stroke-width="3"></circle>
+                <circle cx="286" cy="44" r="68" fill="#6D28D9" opacity="0.1" stroke="#6D28D9" stroke-width="3"></circle>
+                <path d="M380 44 L492 44" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-local)"></path>
+                <rect x="526" y="-6" width="102" height="100" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <text x="577" y="52" text-anchor="middle" font-size="25" font-family="Source Sans 3" fill="#0F766E">stable</text>
+              </g>
+              <text x="568" y="352" font-size="24" font-family="Source Sans 3" fill="#64748B">features compare neighborhoods before global readout</text>
+            </svg>
+          </div>
+        </div>
+        <aside class="speaker-notes">Treat this as intuition rather than a theorem proof. The point is that global coordinates can make a tiny warp look like a complicated change everywhere, while local multiscale measurements compare nearby structure first. This is why geometric deep learning often combines local equivariant maps with pooling instead of jumping straight to a global invariant.</aside>
+      </div>
+    </section>
+
+    <section data-label="Blueprint">
+      <div class="slide alt">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">10 · Architecture Priors</div>
+            <h2>The Blueprint: Local Equivariance, Coarsening, Invariant Readout</h2>
+          </div>
+          <div class="slide-num">§3.5</div>
+        </div>
+        <div class="cols wide-left">
+          <div class="visual white">
+            <svg viewBox="0 0 980 570" role="img" aria-label="Geometric deep learning architecture blueprint">
+              <defs>
+                <marker id="arrow-blueprint" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <text x="490" y="42" text-anchor="middle" font-size="29" font-family="Source Sans 3" font-weight="700" fill="#1E3A8A">compose local equivariant blocks, then pool</text>
+              <g transform="translate(42 100)">
+                <rect x="0" y="0" width="160" height="310" rx="18" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <text x="80" y="40" text-anchor="middle" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#2563EB">X(Ω₀)</text>
+                <g stroke="#94A3B8" stroke-width="3">
+                  <line x1="48" y1="92" x2="112" y2="82"></line><line x1="112" y1="82" x2="118" y2="154"></line><line x1="48" y1="92" x2="52" y2="168"></line><line x1="52" y1="168" x2="118" y2="154"></line><line x1="52" y1="168" x2="86" y2="232"></line><line x1="118" y1="154" x2="86" y2="232"></line>
+                </g>
+                <g fill="#2563EB"><circle cx="48" cy="92" r="12"></circle><circle cx="112" cy="82" r="12"></circle><circle cx="118" cy="154" r="12"></circle><circle cx="52" cy="168" r="12"></circle><circle cx="86" cy="232" r="12"></circle></g>
+              </g>
+              <path d="M222 255 L300 255" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-blueprint)"></path>
+              <g transform="translate(318 100)">
+                <rect x="0" y="0" width="170" height="310" rx="18" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <text x="85" y="40" text-anchor="middle" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#0F766E">U₁</text>
+                <text x="85" y="82" text-anchor="middle" font-size="22" font-family="Source Sans 3" fill="#64748B">local equivariant</text>
+                <circle cx="86" cy="168" r="76" fill="#0F766E" opacity="0.08" stroke="#0F766E" stroke-width="3"></circle>
+                <circle cx="86" cy="168" r="32" fill="#0F766E" opacity="0.2"></circle>
+                <text x="85" y="276" text-anchor="middle" font-size="23" font-family="STIX Two Text" fill="#111827">U₁ρ(g)=ρ(g)U₁</text>
+              </g>
+              <path d="M506 255 L584 255" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-blueprint)"></path>
+              <g transform="translate(602 100)">
+                <rect x="0" y="0" width="170" height="310" rx="18" fill="#FFF7ED" stroke="#B45309" stroke-width="3"></rect>
+                <text x="85" y="40" text-anchor="middle" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#B45309">P₁</text>
+                <text x="85" y="82" text-anchor="middle" font-size="22" font-family="Source Sans 3" fill="#64748B">coarsen</text>
+                <rect x="48" y="126" width="74" height="74" rx="12" fill="#B45309" opacity="0.12" stroke="#B45309" stroke-width="3"></rect>
+                <rect x="65" y="143" width="40" height="40" rx="10" fill="#B45309" opacity="0.22"></rect>
+                <text x="85" y="276" text-anchor="middle" font-size="23" font-family="STIX Two Text" fill="#111827">Ω₀ → Ω₁</text>
+              </g>
+              <path d="M790 255 L868 255" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-blueprint)"></path>
+              <g transform="translate(882 100)">
+                <rect x="0" y="0" width="70" height="310" rx="18" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+                <text x="35" y="158" text-anchor="middle" font-size="25" font-family="Source Sans 3" font-weight="700" fill="#6D28D9">y</text>
+              </g>
+              <g transform="translate(166 460)">
+                <rect x="0" y="0" width="650" height="72" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"></rect>
+                <text x="325" y="44" text-anchor="middle" font-size="27" font-family="STIX Two Text" fill="#111827">f = I ∘ P_J ∘ U_J ∘ ... ∘ P₁ ∘ U₁</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--theorem">
+              <div class="math-box-label">Blueprint</div>
+              <div>Use geometry to choose three reusable building blocks: local equivariant maps, coarsening operators, and global invariant maps. The architecture is the composition pattern.</div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini"><strong>CNN</strong><span>translation equivariant filters plus pooling</span></div>
+              <div class="mini"><strong>GNN</strong><span>permutation equivariant messages plus graph pooling</span></div>
+              <div class="mini"><strong>Groups</strong><span>representations determine feature transformation rules</span></div>
+              <div class="mini"><strong>Manifolds</strong><span>local frames require transport or gauge handling</span></div>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Present the blueprint as a design pattern rather than a single architecture. CNNs, GNNs, group networks, and manifold networks differ in their domains and representations, but the scaffold is recognizable: local equivariant processing, optional coarsening, and a final invariant decision when the task demands a coordinate-free output.</aside>
+      </div>
+    </section>
+
+    <section data-label="Diagnostics">
+      <div class="slide">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">11 · Executable Priors</div>
+            <h2>The Notebook Turns Claims Into Residuals</h2>
+          </div>
+          <div class="slide-num">Artifacts</div>
+        </div>
+        <div class="cols wide-right">
+          <div class="stack">
+            <div class="math-box math-box--example">
+              <div class="math-box-label">Audit Habit</div>
+              <div>Every prior should leave a measurable trace: a commutative square residual, a closure check, an invariance error, or a monotonic stability diagnostic.</div>
+            </div>
+            <div class="callout">
+              The chapter ledger is small on purpose. It teaches how to test the mechanism before hiding it inside a large training run.
+            </div>
+          </div>
+          <div class="panel">
+            <table class="ledger" aria-label="Chapter 03 diagnostic ledger">
+              <thead>
+                <tr><th>Claim</th><th>Notebook Diagnostic</th><th>Result</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>D₃ structure</td><td>closure and noncommutativity</td><td class="ok">passed</td></tr>
+                <tr><td>Convolution equivariance</td><td>\(\|C\rho(g)x-\rho(g)Cx\|\)</td><td class="ok">0.0</td></tr>
+                <tr><td>Pooling invariance</td><td>\(\|p(\rho(g)x)-p(x)\|\)</td><td class="ok">0.0</td></tr>
+                <tr><td>Graph relabeling</td><td>path-graph permutation residual</td><td class="ok">0.0</td></tr>
+                <tr><td>Deformation stability</td><td>warp cost monotonicity</td><td class="ok">true</td></tr>
+                <tr><td>Scale hierarchy</td><td>grid and graph coarsening visual</td><td class="ok">nonblank</td></tr>
+              </tbody>
+            </table>
+            <p class="caption">Values are drawn from the course-local chapter 03 ledger and restated as teaching diagnostics, not as general theorem proofs.</p>
+          </div>
+        </div>
+        <aside class="speaker-notes">Use this slide to model scientific hygiene. The lecture has used diagrams and formulas, but the notebook also records finite checks. A residual of zero on a toy convolution does not prove every network theorem; it verifies the exact mechanism being taught and gives students a pattern for debugging their own architecture claims.</aside>
+      </div>
+    </section>
+
+    <section data-label="Design Exercise">
+      <div class="slide alt">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">12 · Design Exercise</div>
+            <h2>Break One Assumption And Predict The Failure</h2>
+          </div>
+          <div class="slide-num">Lab</div>
+        </div>
+        <div class="cols">
+          <div class="visual white">
+            <svg viewBox="0 0 790 560" role="img" aria-label="Assumption failure flow">
+              <defs>
+                <marker id="arrow-lab" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g transform="translate(70 78)">
+                <rect x="0" y="0" width="650" height="88" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+                <text x="325" y="55" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#2563EB">state the geometric claim</text>
+              </g>
+              <path d="M395 176 L395 232" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-lab)"></path>
+              <g transform="translate(70 246)">
+                <rect x="0" y="0" width="650" height="88" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <text x="325" y="55" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#0F766E">choose the residual that should vanish or stay small</text>
+              </g>
+              <path d="M395 344 L395 400" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-lab)"></path>
+              <g transform="translate(70 414)">
+                <rect x="0" y="0" width="650" height="88" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+                <text x="325" y="55" text-anchor="middle" font-size="28" font-family="Source Sans 3" font-weight="700" fill="#B45309">break one assumption and inspect the changed residual</text>
+              </g>
+              <g transform="translate(98 208)">
+                <circle cx="0" cy="0" r="16" fill="#6D28D9"></circle>
+                <text x="28" y="8" font-size="23" font-family="Source Sans 3" fill="#64748B">example: relabel nodes but not adjacency</text>
+              </g>
+              <g transform="translate(98 376)">
+                <circle cx="0" cy="0" r="16" fill="#6D28D9"></circle>
+                <text x="28" y="8" font-size="23" font-family="Source Sans 3" fill="#64748B">example: rotate positions but not vector features</text>
+              </g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="math-box math-box--exercise">
+              <div class="math-box-label">Exercise</div>
+              <div>Choose one chapter 03 check. Modify the domain transformation, padding convention, graph edge set, or pooling map. Predict whether the residual becomes nonzero, unstable, or unchanged.</div>
+            </div>
+            <div class="three">
+              <div class="panel soft"><h3>Invariant?</h3><p>The output should ignore an allowed transformation.</p></div>
+              <div class="panel soft"><h3>Equivariant?</h3><p>The output should transform in the corresponding representation.</p></div>
+              <div class="panel soft"><h3>Stable?</h3><p>The output may change, but only in proportion to a deformation cost.</p></div>
+            </div>
+          </div>
+        </div>
+        <aside class="speaker-notes">Make the exercise predictive, not just experimental. Students should first name the intended prior, then name the residual, then decide what should happen when an assumption is broken. If they cannot predict the failure mode, they probably have not yet separated invariance, equivariance, stability, and locality in their own model.</aside>
+      </div>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide">
+        <div class="slide-head">
+          <div>
+            <div class="eyebrow">13 · Recap</div>
+            <h2>Geometric Priors Are Design Contracts</h2>
+          </div>
+          <div class="slide-num">Takeaways</div>
+        </div>
+        <div class="four">
+          <div class="panel">
+            <h3>Signals</h3>
+            <p>Start with \(x:\Omega\to C\). The domain decides which transformations and neighborhoods are meaningful.</p>
+          </div>
+          <div class="panel">
+            <h3>Symmetry</h3>
+            <p>Represent group actions by \(\rho(g)\), then choose invariant or equivariant maps according to the task output.</p>
+          </div>
+          <div class="panel">
+            <h3>Stability</h3>
+            <p>Relax exact symmetry by bounding output change under deformations near the allowed group.</p>
+          </div>
+          <div class="panel">
+            <h3>Scale</h3>
+            <p>Compose local equivariant maps with coarsening and an invariant readout when global decisions are needed.</p>
+          </div>
+        </div>
+        <div class="visual white" style="margin-top: 30px; flex: 1;">
+          <svg viewBox="0 0 1320 330" role="img" aria-label="Chapter recap pipeline">
+            <defs>
+              <marker id="arrow-recap" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <g transform="translate(80 70)">
+              <rect x="0" y="0" width="190" height="130" rx="16" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="95" y="78" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#2563EB">domain Ω</text>
+            </g>
+            <path d="M300 135 L410 135" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-recap)"></path>
+            <g transform="translate(440 70)">
+              <rect x="0" y="0" width="190" height="130" rx="16" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="95" y="58" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#0F766E">ρ(g)</text>
+              <text x="95" y="92" text-anchor="middle" font-size="23" font-family="Source Sans 3" fill="#64748B">representation</text>
+            </g>
+            <path d="M660 135 L770 135" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-recap)"></path>
+            <g transform="translate(800 70)">
+              <rect x="0" y="0" width="190" height="130" rx="16" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="95" y="58" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#B45309">residual</text>
+              <text x="95" y="92" text-anchor="middle" font-size="23" font-family="Source Sans 3" fill="#64748B">test the claim</text>
+            </g>
+            <path d="M1020 135 L1130 135" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-recap)"></path>
+            <g transform="translate(1160 70)">
+              <rect x="0" y="0" width="120" height="130" rx="16" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="60" y="78" text-anchor="middle" font-size="27" font-family="Source Sans 3" font-weight="700" fill="#6D28D9">f</text>
+            </g>
+            <text x="660" y="278" text-anchor="middle" font-size="27" font-family="Source Sans 3" fill="#475569">The architecture is justified only when the transformation claim matches the data and the task.</text>
+          </svg>
+        </div>
+        <aside class="speaker-notes">Close by returning to the design contract language. A geometric prior is useful only when it identifies the right domain, the right transformation group or deformation family, and the right output behavior. The chapter's vocabulary is therefore practical: it tells us what to build, what to test, and when a popular architecture is the wrong match.</aside>
+      </div>
+    </section>
+  </deck-stage>
+
+  <script type="application/json" id="speaker-notes">
+{"slides": [
+  {
+    "slide": 1,
+    "title": "Geometric Priors: Domains, Symmetries, Stability",
+    "notes": "Open by telling the room that this chapter is the hinge between generic high-dimensional learning and geometric deep learning. The lecture will not start with a layer name. It starts by asking what object indexes the data, which transformations are semantics-preserving, and what a model should do when those transformations are applied."
+  },
+  {
+    "slide": 2,
+    "title": "The First Prior Is Where Values Live",
+    "notes": "Use this slide to slow down the basic vocabulary. A grid, graph, point cloud, and surface do not merely store values in different file formats. They define different neighborhoods and admissible coordinate changes, so the same vector of numbers can demand different models depending on its domain."
+  },
+  {
+    "slide": 3,
+    "title": "A Transformation Of The Domain Induces One On Signals",
+    "notes": "Keep the triangle deliberately small. The point is not that every domain is triangular, but that a concrete action exposes the bookkeeping. Once the domain points move, signal coordinates must be pulled back so the same physical information is described after the transformation. That pullback is the representation."
+  },
+  {
+    "slide": 4,
+    "title": "The Prior Lives Between Three Spaces",
+    "notes": "Frame this as the chapter's main diagrammatic habit. The same group can be discussed at three levels: it acts on the physical domain, it induces a representation on signal coordinates, and it restricts the functions we are willing to learn. This is why priors become statistical help rather than decorative terminology."
+  },
+  {
+    "slide": 5,
+    "title": "Two Commuting Claims, Two Output Types",
+    "notes": "Ask students to read each square along both paths. For invariance, the right vertical edge is intentionally idle: transforming the input should not change a scalar decision. For equivariance, both vertical edges are active: the output is still a signal on a domain, so it must transform in step with the input."
+  },
+  {
+    "slide": 6,
+    "title": "Adding Structure Shrinks The Symmetry Group",
+    "notes": "Use the relabeling picture to separate isomorphism from automorphism. An isomorphism may compare two differently named copies of the same structure. An automorphism maps a structure back to itself. This distinction is essential for graph learning, because node names are rarely semantic while adjacency usually is."
+  },
+  {
+    "slide": 7,
+    "title": "Exact Symmetry Is Too Brittle For Real Data",
+    "notes": "Explain why the ring is not a new symmetry group. Small deformations compose into larger deformations, so closure fails if we only keep the small ones. The move is to measure distance from the exact group and ask for a Lipschitz-like response, which is a softer and more realistic geometric prior."
+  },
+  {
+    "slide": 8,
+    "title": "Sometimes The Domain Moves, Not Just The Signal",
+    "notes": "Distinguish two stability settings. If only the signal changes, we can keep the domain fixed and use the representation of a deformation. If the graph, mesh, or manifold itself changes, the model needs a way to compare outputs across domains. That comparison is often where geometry enters most concretely."
+  },
+  {
+    "slide": 9,
+    "title": "Local Computation Becomes Global Information",
+    "notes": "Connect this picture to the computational reason deep architectures help. Local neighborhoods are cheaper and more stable than arbitrary global interactions, but the task may require long-range information. Coarsening and composition let a model grow its receptive field while carrying forward the geometric constraints established at fine scale."
+  },
+  {
+    "slide": 10,
+    "title": "Local Features Are A Stability Mechanism",
+    "notes": "Treat this as intuition rather than a theorem proof. The point is that global coordinates can make a tiny warp look like a complicated change everywhere, while local multiscale measurements compare nearby structure first. This is why geometric deep learning often combines local equivariant maps with pooling instead of jumping straight to a global invariant."
+  },
+  {
+    "slide": 11,
+    "title": "The Blueprint: Local Equivariance, Coarsening, Invariant Readout",
+    "notes": "Present the blueprint as a design pattern rather than a single architecture. CNNs, GNNs, group networks, and manifold networks differ in their domains and representations, but the scaffold is recognizable: local equivariant processing, optional coarsening, and a final invariant decision when the task demands a coordinate-free output."
+  },
+  {
+    "slide": 12,
+    "title": "The Notebook Turns Claims Into Residuals",
+    "notes": "Use this slide to model scientific hygiene. The lecture has used diagrams and formulas, but the notebook also records finite checks. A residual of zero on a toy convolution does not prove every network theorem; it verifies the exact mechanism being taught and gives students a pattern for debugging their own architecture claims."
+  },
+  {
+    "slide": 13,
+    "title": "Break One Assumption And Predict The Failure",
+    "notes": "Make the exercise predictive, not just experimental. Students should first name the intended prior, then name the residual, then decide what should happen when an assumption is broken. If they cannot predict the failure mode, they probably have not yet separated invariance, equivariance, stability, and locality in their own model."
+  },
+  {
+    "slide": 14,
+    "title": "Geometric Priors Are Design Contracts",
+    "notes": "Close by returning to the design contract language. A geometric prior is useful only when it identifies the right domain, the right transformation group or deformation family, and the right output behavior. The chapter's vocabulary is therefore practical: it tells us what to build, what to test, and when a popular architecture is the wrong match."
+  }
+]}
+  </script>
+</body>
+</html>

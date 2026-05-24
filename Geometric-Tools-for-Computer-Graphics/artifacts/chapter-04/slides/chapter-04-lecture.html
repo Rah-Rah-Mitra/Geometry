@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 04: Matrices, Vector Algebra, and Transformations</title>
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-04">
+  <meta name="chapter_title" content="Chapter 04: Matrices, Vector Algebra, and Transformations">
+  <meta name="manifest_index" content="388">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-01-foundations/chapter-04-matrices-vector-algebra-and-transformations/04-matrices-vector-algebra-and-transformations.ipynb">
+  <meta name="source_span" content="printed pages 109-170; PDF pages 156-217.">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="deck_stage" content="D:/Geometry/lecture-design-system/slides/deck-stage.js">
+  <meta name="math_support" content="STIX Two Text and KaTeX are loaded for homogeneous-coordinate, projection, and normal-transform formulas.">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400;1,600&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script type="application/json" id="speaker-notes">
+{"slides":["Open the lecture by naming the chapter as the bridge between earlier linear algebra and the graphics pipeline. The source span is present for orientation, but the teaching object is the notebook pattern: representation, invariant, residual, and failure mode for transformations.","Emphasize that homogeneous coordinates are a contract, not decoration. A point carries weight one so translation affects it; a direction carries weight zero so the same matrix leaves its displacement part unchanged. Ask students to predict the result before reading the formulas.","Use this slide to clean up a common programming confusion: arrays alone do not know whether they are points or vectors. The permitted operations encode meaning. Subtracting points creates a vector, adding a vector to a point moves the point, and averaging points requires weights summing to one.","Frame vector products as query operators. The dot product answers length and angle questions, the cross product gives oriented area and a perpendicular direction, the tensor product builds linear maps from vectors, and the two-dimensional perp dot product is an orientation test in disguise.","Describe the affine matrix as a data structure that packages a linear action and a translation. Composition order matters because the rightmost operation acts first on column vectors. The invariant to test in code is that the combined matrix matches stepwise application to sample points.","Treat this slide as a taxonomy for debugging. Each familiar transform changes some measurements and preserves others, so a rendered result should be checked against the expected invariant. The table is more useful than a memorized formula when diagnosing a bad model import or camera transform.","Make the active versus passive distinction explicit. An active transform moves the geometric object in a fixed frame; a change of basis rewrites coordinates of the same object in a new frame. The matrices can look similar, so the diagram keeps the invariant point visible.","Use the projection family to connect linear algebra to camera design. Orthographic projection forgets depth along parallel rays, oblique projection keeps a slanted direction, and perspective projection makes depth enter through division. The inspection question is which ratios survive the map.","Spend time on the denominator. Homogeneous projection is safe only when the implementation tracks the w coordinate and treats small values as geometry, not as an afterthought. Perspective division is where near planes, clipping, and numerical checks enter the otherwise elegant matrix story.","Present normals as constraints rather than little arrows glued to surfaces. If a plane is described by a normal covector, the transformed plane must still annihilate transformed tangents. That requirement forces the inverse-transpose rule and explains why nonuniform scaling breaks the naive transform.","Walk through the residual as a production-style test. A transformed tangent and the corrected transformed normal should have zero dot product up to tolerance. Showing the failed naive normal beside the corrected one makes the inverse-transpose rule measurable instead of merely symbolic.","Close by tying the chapter to the notebook workflow. Each formula has a representation choice, a geometric invariant, a visible diagram, and a residual that can be asserted. That loop is the habit students should carry into cameras, modeling tools, collision code, and shading systems."]}
+  </script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    :root {
+      --gtcg-ink: #111827;
+      --gtcg-muted: #475569;
+      --gtcg-dim: #64748B;
+      --gtcg-bg: #FFFFFF;
+      --gtcg-soft: #F8FAFC;
+      --gtcg-border: #CBD5E1;
+      --gtcg-border-soft: #E2E8F0;
+      --gtcg-accent: #1E3A8A;
+      --gtcg-blue: #2563EB;
+      --gtcg-teal: #0F766E;
+      --gtcg-amber: #B45309;
+      --gtcg-violet: #6D28D9;
+      --font-sans: 'Source Sans 3', Arial, sans-serif;
+      --font-math: 'STIX Two Text', 'Cambria Math', Georgia, serif;
+      --font-code: 'JetBrains Mono', Consolas, monospace;
+    }
+    body {
+      margin: 0;
+      background: #020617;
+      color: var(--gtcg-ink);
+      font-family: var(--font-sans);
+    }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .speaker-notes { display: none; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      padding: 60px 92px 48px;
+      background:
+        linear-gradient(90deg, rgba(203, 213, 225, 0.26) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(203, 213, 225, 0.20) 1px, transparent 1px),
+        var(--gtcg-bg);
+      background-size: 96px 96px, 96px 96px, auto;
+      border-top: 10px solid var(--gtcg-accent);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .slide.soft {
+      background:
+        radial-gradient(circle at 88% 12%, rgba(15, 118, 110, 0.10), transparent 30%),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.06) 1px, transparent 1px),
+        var(--gtcg-soft);
+      background-size: auto, 88px 88px, auto;
+    }
+    h1, h2, h3, p, ul, ol, figure { margin-top: 0; letter-spacing: 0; }
+    h1 {
+      font-size: 64px;
+      line-height: 1.02;
+      margin-bottom: 16px;
+      max-width: 1180px;
+    }
+    h2 {
+      font-size: 50px;
+      line-height: 1.08;
+      margin-bottom: 12px;
+    }
+    h3 {
+      font-size: 30px;
+      line-height: 1.15;
+      margin-bottom: 10px;
+      color: var(--gtcg-accent);
+    }
+    p, li {
+      font-size: 25px;
+      line-height: 1.28;
+    }
+    ul, ol {
+      margin-bottom: 0;
+      padding-left: 30px;
+    }
+    li { margin-bottom: 7px; }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .eyebrow {
+      color: var(--gtcg-dim);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .subtitle {
+      color: var(--gtcg-muted);
+      font-size: 32px;
+      line-height: 1.22;
+      max-width: 1260px;
+      margin-bottom: 18px;
+    }
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 22px;
+    }
+    .two {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 34px;
+      align-items: center;
+    }
+    .two.left-wide { grid-template-columns: 1.16fr 0.84fr; }
+    .two.right-wide { grid-template-columns: 0.86fr 1.14fr; }
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+    .four {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+    .panel {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--gtcg-border);
+      border-left: 5px solid var(--gtcg-blue);
+      border-radius: 8px;
+      padding: 18px 22px;
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+    }
+    .panel.teal { border-left-color: var(--gtcg-teal); background: #F0FDFA; }
+    .panel.indigo { border-left-color: var(--gtcg-accent); background: #EEF2FF; }
+    .panel.amber { border-left-color: var(--gtcg-amber); background: #FFFBEB; }
+    .panel.violet { border-left-color: var(--gtcg-violet); background: #F5F3FF; }
+    .panel.slate { border-left-color: #94A3B8; background: #F8FAFC; }
+    .panel p, .panel li { font-size: 24px; line-height: 1.24; }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.18;
+      text-align: center;
+      background: #FFFFFF;
+      border: 1px solid var(--gtcg-border);
+      border-radius: 8px;
+      padding: 17px 20px;
+    }
+    .formula.compact {
+      font-size: 30px;
+      padding: 14px 18px;
+    }
+    .codebox {
+      font-family: var(--font-code);
+      font-size: 23px;
+      line-height: 1.32;
+      white-space: pre-line;
+      background: #F8FAFC;
+      border: 1px solid var(--gtcg-border);
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .tag {
+      color: var(--gtcg-accent);
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 6px;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 10px 13px 11px;
+    }
+    .tag.teal { color: var(--gtcg-teal); background: #CCFBF1; border-color: #99F6E4; }
+    .tag.amber { color: var(--gtcg-amber); background: #FEF3C7; border-color: #FDE68A; }
+    .tag.violet { color: var(--gtcg-violet); background: #EDE9FE; border-color: #DDD6FE; }
+    .caption {
+      color: var(--gtcg-dim);
+      font-size: 22px;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .source {
+      color: var(--gtcg-dim);
+      font-size: 22px;
+      line-height: 1.24;
+    }
+    .footer {
+      border-top: 1px solid var(--gtcg-border-soft);
+      color: var(--gtcg-dim);
+      display: flex;
+      justify-content: space-between;
+      gap: 28px;
+      font-size: 22px;
+      padding-top: 12px;
+    }
+    .matrix-label {
+      font-family: var(--font-code);
+      color: var(--gtcg-muted);
+      font-size: 22px;
+    }
+    .table {
+      border: 1px solid var(--gtcg-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+      overflow: clip;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 0.88fr 1.18fr 1.06fr;
+      border-bottom: 1px solid var(--gtcg-border-soft);
+    }
+    .row:last-child { border-bottom: 0; }
+    .cell {
+      padding: 13px 16px;
+      font-size: 23px;
+      line-height: 1.22;
+      border-right: 1px solid var(--gtcg-border-soft);
+    }
+    .cell:last-child { border-right: 0; }
+    .head .cell {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gtcg-accent);
+      background: #F8FAFC;
+      text-transform: uppercase;
+    }
+    .mini {
+      border: 1px solid var(--gtcg-border);
+      border-radius: 8px;
+      background: #FFFFFF;
+      padding: 16px 18px;
+    }
+    .mini h3 { font-size: 28px; margin-bottom: 7px; }
+    .mini p { font-size: 23px; color: var(--gtcg-muted); margin-bottom: 0; }
+    .katex { font-size: 1em !important; }
+    .katex-display { margin: 7px 0 !important; }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide soft" data-label="Title">
+      <div class="eyebrow">Geometric Tools for Computer Graphics</div>
+      <div class="content">
+        <div class="two left-wide">
+          <div>
+            <h1>Chapter 04: Matrices, Vector Algebra, and Transformations</h1>
+            <p class="subtitle">A lecture on the contracts that move points, vectors, frames, projections, and normals through a graphics pipeline.</p>
+            <div class="tags">
+              <span class="tag">homogeneous coordinates</span>
+              <span class="tag teal">affine maps</span>
+              <span class="tag amber">projections</span>
+              <span class="tag violet">normal transport</span>
+            </div>
+            <p class="source">Source orientation: printed pages 109-170; PDF pages 156-217. Notebook: Geometric-Tools-for-Computer-Graphics/part-01-foundations/chapter-04-matrices-vector-algebra-and-transformations/04-matrices-vector-algebra-and-transformations.ipynb.</p>
+          </div>
+          <figure>
+            <svg viewBox="0 0 820 520" role="img" aria-label="Affine graphics pipeline from model points to projected image points">
+              <defs>
+                <marker id="title-arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g fill="none" stroke="#CBD5E1" stroke-width="2">
+                <path d="M80 440 L760 440"></path>
+                <path d="M80 440 L80 70"></path>
+                <path d="M80 440 L210 330 L760 330"></path>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="5" fill="#EEF2FF">
+                <rect x="104" y="118" width="152" height="88" rx="8"></rect>
+                <rect x="334" y="118" width="152" height="88" rx="8"></rect>
+                <rect x="564" y="118" width="152" height="88" rx="8"></rect>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle">
+                <text x="180" y="171" fill="#1E3A8A">model</text>
+                <text x="410" y="171" fill="#2563EB">world</text>
+                <text x="640" y="171" fill="#0F766E">image</text>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="5" marker-end="url(#title-arrow)">
+                <path d="M258 162 L326 162"></path>
+                <path d="M488 162 L556 162"></path>
+                <path d="M640 212 C640 266, 590 304, 515 318" fill="none" stroke="#B45309"></path>
+              </g>
+              <g font-family="STIX Two Text, Georgia, serif" font-size="30">
+                <text x="296" y="132" fill="#475569">M</text>
+                <text x="526" y="132" fill="#475569">P</text>
+                <text x="428" y="354" fill="#B45309">w divide</text>
+              </g>
+              <g stroke-width="4" fill="none">
+                <path d="M128 386 L210 334 L294 386 Z" stroke="#2563EB" fill="#EFF6FF"></path>
+                <path d="M430 392 L468 342 L570 374 L508 424 Z" stroke="#0F766E" fill="#F0FDFA"></path>
+                <path d="M650 384 L720 360 L730 430 L666 438 Z" stroke="#B45309" fill="#FFFBEB"></path>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">
+                <text x="122" y="474">representation</text>
+                <text x="350" y="474">invariant</text>
+                <text x="566" y="474">residual check</text>
+              </g>
+            </svg>
+            <figcaption class="caption">The chapter theme: matrices are not just notation; they are executable geometry contracts.</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="footer"><span>Manifest index 388</span><span>Static HTML deck with STIX and KaTeX support</span></div>
+      <aside class="speaker-notes">Open the lecture by naming the chapter as the bridge between earlier linear algebra and the graphics pipeline. The source span is present for orientation, but the teaching object is the notebook pattern: representation, invariant, residual, and failure mode for transformations.</aside>
+    </section>
+
+    <section class="slide" data-label="Homogeneous Coordinates">
+      <div class="eyebrow">Representation Contract</div>
+      <h2>Homogeneous Weights Separate Locations From Directions</h2>
+      <div class="content">
+        <div class="two left-wide">
+          <figure>
+            <svg viewBox="0 0 880 530" role="img" aria-label="Translation matrix sends points to moved points and leaves vectors unchanged">
+              <defs>
+                <marker id="hom-arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="hom-arrow-teal" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <g stroke="#E2E8F0" stroke-width="2">
+                <path d="M80 455 H805"></path>
+                <path d="M80 455 V65"></path>
+                <path d="M80 365 H805"></path>
+                <path d="M80 275 H805"></path>
+                <path d="M80 185 H805"></path>
+                <path d="M170 455 V65"></path>
+                <path d="M260 455 V65"></path>
+                <path d="M350 455 V65"></path>
+                <path d="M440 455 V65"></path>
+                <path d="M530 455 V65"></path>
+                <path d="M620 455 V65"></path>
+                <path d="M710 455 V65"></path>
+              </g>
+              <g stroke-width="5" fill="none">
+                <path d="M170 365 L350 245" stroke="#2563EB" marker-end="url(#hom-arrow)"></path>
+                <path d="M170 365 L350 365" stroke="#0F766E" marker-end="url(#hom-arrow-teal)"></path>
+                <path d="M350 245 L530 125" stroke="#2563EB" stroke-dasharray="14 10" marker-end="url(#hom-arrow)"></path>
+                <path d="M350 365 L530 365" stroke="#0F766E" stroke-dasharray="14 10" marker-end="url(#hom-arrow-teal)"></path>
+              </g>
+              <g fill="#FFFFFF" stroke-width="4">
+                <circle cx="170" cy="365" r="12" stroke="#1E3A8A"></circle>
+                <circle cx="350" cy="245" r="12" stroke="#2563EB"></circle>
+                <circle cx="530" cy="125" r="12" stroke="#2563EB"></circle>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700">
+                <text x="126" y="345" fill="#1E3A8A">origin</text>
+                <text x="358" y="235" fill="#2563EB">p</text>
+                <text x="540" y="117" fill="#2563EB">p + t</text>
+                <text x="360" y="392" fill="#0F766E">v</text>
+                <text x="540" y="392" fill="#0F766E">v</text>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">
+                <text x="96" y="500">A pure translation changes the point endpoint but not the direction vector.</text>
+              </g>
+            </svg>
+          </figure>
+          <div class="stack">
+            <div class="panel indigo">
+              <h3>Data Contract</h3>
+              <p>Use a homogeneous weight to tell the matrix whether the array is a point or a displacement.</p>
+              <div class="formula compact">\(p_h = (p,1)\), \(v_h = (v,0)\)</div>
+            </div>
+            <div class="formula">
+              \[
+              \begin{bmatrix} A & t \\ 0 & 1 \end{bmatrix}
+              \begin{bmatrix} x \\ w \end{bmatrix}
+              =
+              \begin{bmatrix} Ax + wt \\ w \end{bmatrix}
+              \]
+            </div>
+            <div class="panel teal">
+              <h3>Invariant To Assert</h3>
+              <p>A pure translation should satisfy \(T(p,1)=(p+t,1)\) and \(T(v,0)=(v,0)\).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Point: affected by translation</span><span>Vector: measures displacement, not location</span></div>
+      <aside class="speaker-notes">Emphasize that homogeneous coordinates are a contract, not decoration. A point carries weight one so translation affects it; a direction carries weight zero so the same matrix leaves its displacement part unchanged. Ask students to predict the result before reading the formulas.</aside>
+    </section>
+
+    <section class="slide" data-label="Affine Arithmetic">
+      <div class="eyebrow">Vector Algebra With Meaning</div>
+      <h2>Operations Are Valid Only When The Geometry Matches</h2>
+      <div class="content">
+        <div class="two right-wide">
+          <div class="stack">
+            <div class="panel amber">
+              <h3>Programming Rule</h3>
+              <p>The same length-3 array may encode a point, a free vector, a normal, or a coordinate triple. The operation tells the truth.</p>
+            </div>
+            <div class="table">
+              <div class="row head">
+                <div class="cell">Expression</div>
+                <div class="cell">Geometric Type</div>
+                <div class="cell">Check</div>
+              </div>
+              <div class="row">
+                <div class="cell">\(Q-P\)</div>
+                <div class="cell">free vector from \(P\) to \(Q\)</div>
+                <div class="cell">unchanged by translation</div>
+              </div>
+              <div class="row">
+                <div class="cell">\(P+v\)</div>
+                <div class="cell">new point displaced by \(v\)</div>
+                <div class="cell">weight remains one</div>
+              </div>
+              <div class="row">
+                <div class="cell">\(\sum_i a_i P_i\)</div>
+                <div class="cell">affine combination of points</div>
+                <div class="cell">\(\sum_i a_i=1\)</div>
+              </div>
+              <div class="row">
+                <div class="cell">\(s v\)</div>
+                <div class="cell">scaled displacement</div>
+                <div class="cell">length scales by \(|s|\)</div>
+              </div>
+            </div>
+          </div>
+          <figure>
+            <svg viewBox="0 0 880 530" role="img" aria-label="Affine point and vector arithmetic diagram">
+              <defs>
+                <marker id="arith-arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#2563EB"></path>
+                </marker>
+              </defs>
+              <g stroke="#E2E8F0" stroke-width="2">
+                <path d="M70 455 H815"></path>
+                <path d="M70 455 V70"></path>
+                <path d="M70 365 H815"></path>
+                <path d="M70 275 H815"></path>
+                <path d="M70 185 H815"></path>
+                <path d="M160 455 V70"></path>
+                <path d="M250 455 V70"></path>
+                <path d="M340 455 V70"></path>
+                <path d="M430 455 V70"></path>
+                <path d="M520 455 V70"></path>
+                <path d="M610 455 V70"></path>
+                <path d="M700 455 V70"></path>
+              </g>
+              <polygon points="205,380 555,310 680,150" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></polygon>
+              <g stroke-width="5" fill="none">
+                <path d="M205 380 L555 310" stroke="#2563EB" marker-end="url(#arith-arrow)"></path>
+                <path d="M205 380 L680 150" stroke="#0F766E" marker-end="url(#arith-arrow)"></path>
+                <path d="M555 310 L680 150" stroke="#B45309" marker-end="url(#arith-arrow)"></path>
+              </g>
+              <g fill="#FFFFFF" stroke-width="4">
+                <circle cx="205" cy="380" r="13" stroke="#1E3A8A"></circle>
+                <circle cx="555" cy="310" r="13" stroke="#2563EB"></circle>
+                <circle cx="680" cy="150" r="13" stroke="#0F766E"></circle>
+                <circle cx="440" cy="280" r="10" stroke="#6D28D9" fill="#F5F3FF"></circle>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="28" font-weight="700">
+                <text x="176" y="420" fill="#1E3A8A">P</text>
+                <text x="566" y="302" fill="#2563EB">Q</text>
+                <text x="693" y="143" fill="#0F766E">R</text>
+                <text x="452" y="274" fill="#6D28D9">affine blend</text>
+              </g>
+              <g font-family="STIX Two Text, Georgia, serif" font-size="30" fill="#475569">
+                <text x="326" y="356">Q-P</text>
+                <text x="392" y="238">R-P</text>
+                <text x="616" y="244">R-Q</text>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">
+                <text x="82" y="504">An affine combination stays attached to points only when the weights sum to one.</text>
+              </g>
+            </svg>
+          </figure>
+        </div>
+      </div>
+      <div class="footer"><span>Arrays become geometric objects through contracts</span><span>Affine combinations preserve the point weight</span></div>
+      <aside class="speaker-notes">Use this slide to clean up a common programming confusion: arrays alone do not know whether they are points or vectors. The permitted operations encode meaning. Subtracting points creates a vector, adding a vector to a point moves the point, and averaging points requires weights summing to one.</aside>
+    </section>
+
+    <section class="slide soft" data-label="Vector Products">
+      <div class="eyebrow">Vector Products As Queries</div>
+      <h2>Dot, Cross, Tensor, And Perp Dot Answer Different Geometry Questions</h2>
+      <div class="content">
+        <div class="four">
+          <div class="mini">
+            <h3>Dot Product</h3>
+            <svg viewBox="0 0 360 220" role="img" aria-label="Dot product angle diagram">
+              <defs>
+                <marker id="dot-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#2563EB"></path>
+                </marker>
+              </defs>
+              <path d="M72 170 H292" stroke="#E2E8F0" stroke-width="3"></path>
+              <path d="M72 170 L252 98" stroke="#2563EB" stroke-width="5" marker-end="url(#dot-arrow)"></path>
+              <path d="M72 170 L264 170" stroke="#0F766E" stroke-width="5" marker-end="url(#dot-arrow)"></path>
+              <path d="M122 170 A50 50 0 0 1 118 151" fill="none" stroke="#B45309" stroke-width="4"></path>
+              <text x="132" y="153" font-family="STIX Two Text, Georgia, serif" font-size="30" fill="#B45309">theta</text>
+              <text x="72" y="48" font-family="STIX Two Text, Georgia, serif" font-size="30" fill="#111827">u dot v = |u||v| cos theta</text>
+            </svg>
+            <p>Measures angle agreement and signed projection.</p>
+          </div>
+          <div class="mini">
+            <h3>Cross Product</h3>
+            <svg viewBox="0 0 360 220" role="img" aria-label="Cross product oriented area diagram">
+              <defs>
+                <marker id="cross-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <polygon points="76,168 236,168 286,86 126,86" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></polygon>
+              <path d="M76 168 L236 168" stroke="#2563EB" stroke-width="5" marker-end="url(#cross-arrow)"></path>
+              <path d="M76 168 L126 86" stroke="#B45309" stroke-width="5" marker-end="url(#cross-arrow)"></path>
+              <circle cx="181" cy="127" r="19" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></circle>
+              <text x="171" y="137" font-family="Source Sans 3, Arial, sans-serif" font-size="28" font-weight="700" fill="#1E3A8A">n</text>
+              <text x="58" y="48" font-family="STIX Two Text, Georgia, serif" font-size="30" fill="#111827">u x v = oriented area normal</text>
+            </svg>
+            <p>Builds a perpendicular direction with orientation.</p>
+          </div>
+          <div class="mini">
+            <h3>Tensor Product</h3>
+            <svg viewBox="0 0 360 220" role="img" aria-label="Tensor product maps vector to scaled vector">
+              <defs>
+                <marker id="tensor-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#6D28D9"></path>
+                </marker>
+              </defs>
+              <rect x="58" y="70" width="112" height="104" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+              <rect x="202" y="70" width="100" height="104" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <path d="M170 122 H198" stroke="#6D28D9" stroke-width="5" marker-end="url(#tensor-arrow)"></path>
+              <text x="76" y="130" font-family="STIX Two Text, Georgia, serif" font-size="32" fill="#6D28D9">u v^T</text>
+              <text x="224" y="130" font-family="STIX Two Text, Georgia, serif" font-size="32" fill="#1E3A8A">map</text>
+              <text x="56" y="48" font-family="STIX Two Text, Georgia, serif" font-size="30" fill="#111827">(u v^T)x = u(v dot x)</text>
+            </svg>
+            <p>Creates rank-one linear maps from two vectors.</p>
+          </div>
+          <div class="mini">
+            <h3>Perp Dot</h3>
+            <svg viewBox="0 0 360 220" role="img" aria-label="Perp dot orientation in the plane">
+              <defs>
+                <marker id="perp-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <path d="M78 170 H294" stroke="#E2E8F0" stroke-width="3"></path>
+              <path d="M78 170 V52" stroke="#E2E8F0" stroke-width="3"></path>
+              <path d="M78 170 L250 118" stroke="#2563EB" stroke-width="5" marker-end="url(#perp-arrow)"></path>
+              <path d="M78 170 L182 64" stroke="#B45309" stroke-width="5" marker-end="url(#perp-arrow)"></path>
+              <path d="M112 155 C128 123, 148 97, 171 78" fill="none" stroke="#0F766E" stroke-width="4" stroke-dasharray="10 7"></path>
+              <text x="56" y="48" font-family="STIX Two Text, Georgia, serif" font-size="30" fill="#111827">perp(u) dot v = det[u v]</text>
+            </svg>
+            <p>Acts as the signed-area orientation test in 2D.</p>
+          </div>
+        </div>
+        <div class="panel indigo">
+          <p>In graphics code these products are not abstract decoration: they drive incidence tests, shading angles, surface orientation, frame construction, and rank-one updates.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Products are geometry queries</span><span>Choose the product that matches the invariant</span></div>
+      <aside class="speaker-notes">Frame vector products as query operators. The dot product answers length and angle questions, the cross product gives oriented area and a perpendicular direction, the tensor product builds linear maps from vectors, and the two-dimensional perp dot product is an orientation test in disguise.</aside>
+    </section>
+
+    <section class="slide" data-label="Affine Matrix Pipeline">
+      <div class="eyebrow">Composition</div>
+      <h2>An Affine Matrix Packages Linear Action Plus Translation</h2>
+      <div class="content">
+        <div class="two left-wide">
+          <figure>
+            <svg viewBox="0 0 900 520" role="img" aria-label="Affine transform pipeline with composition order">
+              <defs>
+                <marker id="pipe-arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle">
+                <rect x="64" y="150" width="140" height="86" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+                <text x="134" y="204" fill="#1E3A8A">x</text>
+                <rect x="254" y="150" width="162" height="86" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <text x="335" y="204" fill="#2563EB">scale</text>
+                <rect x="466" y="150" width="162" height="86" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+                <text x="547" y="204" fill="#0F766E">rotate</text>
+                <rect x="678" y="150" width="162" height="86" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+                <text x="759" y="204" fill="#B45309">translate</text>
+              </g>
+              <g fill="none" stroke="#1E3A8A" stroke-width="5" marker-end="url(#pipe-arrow)">
+                <path d="M206 193 H246"></path>
+                <path d="M418 193 H458"></path>
+                <path d="M630 193 H670"></path>
+              </g>
+              <g font-family="STIX Two Text, Georgia, serif" font-size="32" fill="#111827">
+                <text x="120" y="325">F = T R S</text>
+                <text x="120" y="372">F x = T(R(Sx))</text>
+              </g>
+              <g stroke="#CBD5E1" stroke-width="3" fill="none">
+                <rect x="456" y="300" width="310" height="142" rx="8"></rect>
+                <path d="M456 350 H766"></path>
+                <path d="M558 300 V442"></path>
+                <path d="M660 300 V442"></path>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#475569" text-anchor="middle">
+                <text x="508" y="333">A</text>
+                <text x="610" y="333">t</text>
+                <text x="713" y="333">0,1</text>
+                <text x="508" y="391">linear</text>
+                <text x="610" y="391">shift</text>
+                <text x="713" y="391">weight</text>
+              </g>
+              <text x="444" y="476" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">The rightmost operation acts first for column-vector convention.</text>
+            </svg>
+          </figure>
+          <div class="stack">
+            <div class="formula">
+              \[
+              F =
+              \begin{bmatrix} A & t \\ 0 & 1 \end{bmatrix},
+              \qquad F_2F_1 =
+              \begin{bmatrix} A_2A_1 & A_2t_1+t_2 \\ 0 & 1 \end{bmatrix}.
+              \]
+            </div>
+            <div class="panel teal">
+              <h3>Notebook Check</h3>
+              <p>Apply \(S\), then \(R\), then \(T\) to several points and compare with one multiplication by \(TRS\).</p>
+            </div>
+            <div class="codebox">stepwise = T @ (R @ (S @ x_h))
+combined = (T @ R @ S) @ x_h
+assert norm(stepwise - combined) <= tol</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Affine composition is associative</span><span>Operation order remains a convention to document</span></div>
+      <aside class="speaker-notes">Describe the affine matrix as a data structure that packages a linear action and a translation. Composition order matters because the rightmost operation acts first on column vectors. The invariant to test in code is that the combined matrix matches stepwise application to sample points.</aside>
+    </section>
+
+    <section class="slide soft" data-label="Transform Taxonomy">
+      <div class="eyebrow">Vector Geometry Of Transformations</div>
+      <h2>Every Standard Transform Has A Diagnostic Invariant</h2>
+      <div class="content">
+        <div class="three">
+          <div class="mini">
+            <h3>Translation</h3>
+            <svg viewBox="0 0 420 180" role="img" aria-label="Translation mini diagram">
+              <defs>
+                <marker id="tax-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#2563EB"></path>
+                </marker>
+              </defs>
+              <rect x="66" y="76" width="82" height="54" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <rect x="230" y="48" width="82" height="54" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <path d="M150 84 L226 58" stroke="#2563EB" stroke-width="5" marker-end="url(#tax-arrow)"></path>
+              <text x="54" y="164" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">preserves vectors, length, angle</text>
+            </svg>
+          </div>
+          <div class="mini">
+            <h3>Rotation</h3>
+            <svg viewBox="0 0 420 180" role="img" aria-label="Rotation mini diagram">
+              <path d="M210 92 m-65 0 a65 65 0 1 0 130 0 a65 65 0 1 0 -130 0" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></path>
+              <path d="M210 92 L292 92" stroke="#2563EB" stroke-width="5"></path>
+              <path d="M210 92 L252 34" stroke="#0F766E" stroke-width="5"></path>
+              <path d="M255 92 A45 45 0 0 0 237 55" fill="none" stroke="#B45309" stroke-width="4"></path>
+              <text x="56" y="164" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">orthogonal matrix, determinant one</text>
+            </svg>
+          </div>
+          <div class="mini">
+            <h3>Scaling</h3>
+            <svg viewBox="0 0 420 180" role="img" aria-label="Scaling mini diagram">
+              <defs>
+                <marker id="tax-arrow-scale" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <rect x="82" y="82" width="76" height="48" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <rect x="220" y="48" width="118" height="86" fill="#CCFBF1" stroke="#0F766E" stroke-width="4"></rect>
+              <path d="M168 106 H211" stroke="#0F766E" stroke-width="5" marker-end="url(#tax-arrow-scale)"></path>
+              <text x="58" y="164" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">changes length; may change angle</text>
+            </svg>
+          </div>
+          <div class="mini">
+            <h3>Reflection</h3>
+            <svg viewBox="0 0 420 180" role="img" aria-label="Reflection mini diagram">
+              <path d="M210 30 V145" stroke="#64748B" stroke-width="4" stroke-dasharray="10 8"></path>
+              <path d="M120 118 L176 70 L176 118 Z" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></path>
+              <path d="M300 118 L244 70 L244 118 Z" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></path>
+              <text x="55" y="164" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">preserves length; reverses orientation</text>
+            </svg>
+          </div>
+          <div class="mini">
+            <h3>Shear</h3>
+            <svg viewBox="0 0 420 180" role="img" aria-label="Shear mini diagram">
+              <defs>
+                <marker id="tax-arrow-shear" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#6D28D9"></path>
+                </marker>
+              </defs>
+              <rect x="82" y="74" width="90" height="62" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <polygon points="236,74 342,74 312,136 206,136" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></polygon>
+              <path d="M178 105 H202" stroke="#6D28D9" stroke-width="5" marker-end="url(#tax-arrow-shear)"></path>
+              <text x="78" y="164" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">parallel lines stay parallel</text>
+            </svg>
+          </div>
+          <div class="mini">
+            <h3>Diagnostic</h3>
+            <div class="formula compact">expected invariant \(+\) sampled residual</div>
+            <p>Use the invariant as a quick audit for coordinate convention errors.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Transform names are less important than preserved structure</span><span>Render and assert the expected invariant</span></div>
+      <aside class="speaker-notes">Treat this slide as a taxonomy for debugging. Each familiar transform changes some measurements and preserves others, so a rendered result should be checked against the expected invariant. The table is more useful than a memorized formula when diagnosing a bad model import or camera transform.</aside>
+    </section>
+
+    <section class="slide" data-label="Change Of Basis">
+      <div class="eyebrow">Frames And Coordinates</div>
+      <h2>Changing Basis Rewrites Coordinates Without Moving The Point</h2>
+      <div class="content">
+        <div class="two left-wide">
+          <figure>
+            <svg viewBox="0 0 900 530" role="img" aria-label="Same point represented in two coordinate frames">
+              <defs>
+                <marker id="basis-blue" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="basis-teal" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <g stroke="#E2E8F0" stroke-width="2">
+                <path d="M80 440 H820"></path>
+                <path d="M80 440 V70"></path>
+                <path d="M170 440 V70"></path>
+                <path d="M260 440 V70"></path>
+                <path d="M350 440 V70"></path>
+                <path d="M440 440 V70"></path>
+                <path d="M530 440 V70"></path>
+                <path d="M620 440 V70"></path>
+                <path d="M710 440 V70"></path>
+                <path d="M80 350 H820"></path>
+                <path d="M80 260 H820"></path>
+                <path d="M80 170 H820"></path>
+              </g>
+              <g stroke-width="5" fill="none">
+                <path d="M180 388 L340 388" stroke="#2563EB" marker-end="url(#basis-blue)"></path>
+                <path d="M180 388 L180 228" stroke="#2563EB" marker-end="url(#basis-blue)"></path>
+                <path d="M560 388 L704 330" stroke="#0F766E" marker-end="url(#basis-teal)"></path>
+                <path d="M560 388 L500 250" stroke="#0F766E" marker-end="url(#basis-teal)"></path>
+                <path d="M180 388 L500 250" stroke="#B45309" stroke-width="4" stroke-dasharray="12 9"></path>
+                <path d="M560 388 L500 250" stroke="#B45309" stroke-width="4" stroke-dasharray="12 9"></path>
+              </g>
+              <circle cx="500" cy="250" r="14" fill="#FFFFFF" stroke="#B45309" stroke-width="5"></circle>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700">
+                <text x="168" y="420" fill="#2563EB">frame E</text>
+                <text x="556" y="420" fill="#0F766E">frame B</text>
+                <text x="510" y="242" fill="#B45309">same point X</text>
+              </g>
+              <g font-family="STIX Two Text, Georgia, serif" font-size="30" fill="#111827">
+                <text x="102" y="64">X = O_E + E x_E = O_B + B x_B</text>
+              </g>
+              <text x="96" y="496" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">Passive change of basis: the coordinates change; the geometric point does not.</text>
+            </svg>
+          </figure>
+          <div class="stack">
+            <div class="panel indigo">
+              <h3>Passive Coordinate Change</h3>
+              <p>If \(B\) stores basis vectors as columns, then \(x_E = Bx_B\) and \(x_B=B^{-1}x_E\).</p>
+            </div>
+            <div class="panel teal">
+              <h3>Active Transformation</h3>
+              <p>The object itself moves: \(x_E' = Ax_E+t\). The frame is fixed while the geometry changes.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Common Failure</h3>
+              <p>Mixing active and passive interpretations can produce a visually plausible transform with the inverse matrix.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Same point, different coordinates</span><span>Columns-as-basis convention must be documented</span></div>
+      <aside class="speaker-notes">Make the active versus passive distinction explicit. An active transform moves the geometric object in a fixed frame; a change of basis rewrites coordinates of the same object in a new frame. The matrices can look similar, so the diagram keeps the invariant point visible.</aside>
+    </section>
+
+    <section class="slide soft" data-label="Projection Family">
+      <div class="eyebrow">Projection Maps</div>
+      <h2>Orthographic, Oblique, And Perspective Projections Forget Different Information</h2>
+      <div class="content">
+        <div class="three">
+          <div class="mini">
+            <h3>Orthographic</h3>
+            <svg viewBox="0 0 460 330" role="img" aria-label="Orthographic projection">
+              <defs>
+                <marker id="proj-ortho-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#2563EB"></path>
+                </marker>
+              </defs>
+              <rect x="310" y="52" width="20" height="228" fill="#F8FAFC" stroke="#64748B" stroke-width="4"></rect>
+              <g stroke="#2563EB" stroke-width="4" marker-end="url(#proj-ortho-arrow)">
+                <path d="M82 84 H302"></path>
+                <path d="M102 154 H302"></path>
+                <path d="M126 224 H302"></path>
+              </g>
+              <g fill="#EFF6FF" stroke="#2563EB" stroke-width="4">
+                <circle cx="82" cy="84" r="10"></circle>
+                <circle cx="102" cy="154" r="10"></circle>
+                <circle cx="126" cy="224" r="10"></circle>
+              </g>
+              <text x="56" y="306" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">parallel projectors; depth removed</text>
+            </svg>
+          </div>
+          <div class="mini">
+            <h3>Oblique</h3>
+            <svg viewBox="0 0 460 330" role="img" aria-label="Oblique projection">
+              <defs>
+                <marker id="proj-oblique-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <rect x="310" y="52" width="20" height="228" fill="#F8FAFC" stroke="#64748B" stroke-width="4"></rect>
+              <g stroke="#0F766E" stroke-width="4" marker-end="url(#proj-oblique-arrow)">
+                <path d="M92 82 L302 132"></path>
+                <path d="M112 152 L302 202"></path>
+                <path d="M136 222 L302 272"></path>
+              </g>
+              <g fill="#F0FDFA" stroke="#0F766E" stroke-width="4">
+                <circle cx="92" cy="82" r="10"></circle>
+                <circle cx="112" cy="152" r="10"></circle>
+                <circle cx="136" cy="222" r="10"></circle>
+              </g>
+              <text x="55" y="306" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">parallel but slanted direction</text>
+            </svg>
+          </div>
+          <div class="mini">
+            <h3>Perspective</h3>
+            <svg viewBox="0 0 460 330" role="img" aria-label="Perspective projection">
+              <defs>
+                <marker id="proj-persp-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M2 2 L10 6 L2 10 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <rect x="310" y="52" width="20" height="228" fill="#F8FAFC" stroke="#64748B" stroke-width="4"></rect>
+              <circle cx="80" cy="166" r="15" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></circle>
+              <g stroke="#B45309" stroke-width="4" marker-end="url(#proj-persp-arrow)">
+                <path d="M80 166 L302 92"></path>
+                <path d="M80 166 L302 166"></path>
+                <path d="M80 166 L302 240"></path>
+              </g>
+              <g fill="#FFFFFF" stroke="#B45309" stroke-width="4">
+                <circle cx="210" cy="122" r="9"></circle>
+                <circle cx="242" cy="166" r="9"></circle>
+                <circle cx="272" cy="230" r="9"></circle>
+              </g>
+              <text x="55" y="306" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">rays meet at a center; divide by w</text>
+            </svg>
+          </div>
+        </div>
+        <div class="panel indigo">
+          <p>Projection is a controlled loss of information. The implementation question is not only where a point lands, but which affine, metric, or projective relationships survive the map.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Orthographic: affine ratios survive on parallel slices</span><span>Perspective: depth changes scale through division</span></div>
+      <aside class="speaker-notes">Use the projection family to connect linear algebra to camera design. Orthographic projection forgets depth along parallel rays, oblique projection keeps a slanted direction, and perspective projection makes depth enter through division. The inspection question is which ratios survive the map.</aside>
+    </section>
+
+    <section class="slide" data-label="Perspective Division">
+      <div class="eyebrow">Homogeneous Projection</div>
+      <h2>Perspective Is A Matrix Followed By A Checked Division</h2>
+      <div class="content">
+        <div class="two left-wide">
+          <figure>
+            <svg viewBox="0 0 900 530" role="img" aria-label="Perspective frustum and homogeneous divide">
+              <defs>
+                <marker id="persp-arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <circle cx="116" cy="268" r="18" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></circle>
+              <rect x="340" y="120" width="28" height="300" fill="#F8FAFC" stroke="#64748B" stroke-width="4"></rect>
+              <rect x="690" y="86" width="34" height="368" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+              <g stroke="#B45309" stroke-width="4" fill="none" marker-end="url(#persp-arrow)">
+                <path d="M116 268 L340 130"></path>
+                <path d="M116 268 L340 268"></path>
+                <path d="M116 268 L340 410"></path>
+                <path d="M116 268 L690 95"></path>
+                <path d="M116 268 L690 445"></path>
+              </g>
+              <g fill="#FFFFFF" stroke-width="4">
+                <circle cx="258" cy="181" r="10" stroke="#2563EB"></circle>
+                <circle cx="294" cy="268" r="10" stroke="#0F766E"></circle>
+                <circle cx="310" cy="390" r="10" stroke="#6D28D9"></circle>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700">
+                <text x="68" y="252" fill="#B45309">eye</text>
+                <text x="320" y="104" fill="#64748B">near</text>
+                <text x="672" y="68" fill="#1E3A8A">far</text>
+              </g>
+              <g font-family="STIX Two Text, Georgia, serif" font-size="32" fill="#111827">
+                <text x="490" y="230">clip: (x_c,y_c,z_c,w_c)</text>
+                <text x="490" y="282">ndc: (x_c/w_c, y_c/w_c, z_c/w_c)</text>
+              </g>
+              <text x="92" y="498" font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">The near plane is not a mere parameter; it protects the denominator.</text>
+            </svg>
+          </figure>
+          <div class="stack">
+            <div class="panel amber">
+              <h3>Failure Mode</h3>
+              <p>If \(w_c\) is near zero, the projected coordinates explode. Clipping and tolerances are part of the geometry.</p>
+            </div>
+            <div class="formula">
+              \[
+              (x_c,y_c,z_c,w_c) \mapsto
+              \left(\frac{x_c}{w_c},\frac{y_c}{w_c},\frac{z_c}{w_c}\right)
+              \]
+            </div>
+            <div class="codebox">if abs(w_c) <= eps:
+    classify as clipped or unstable
+else:
+    ndc = clip_xyz / w_c</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Matrix multiplication alone is not the full projection</span><span>The denominator is a geometric diagnostic</span></div>
+      <aside class="speaker-notes">Spend time on the denominator. Homogeneous projection is safe only when the implementation tracks the w coordinate and treats small values as geometry, not as an afterthought. Perspective division is where near planes, clipping, and numerical checks enter the otherwise elegant matrix story.</aside>
+    </section>
+
+    <section class="slide soft" data-label="Normal Transform">
+      <div class="eyebrow">Normals As Constraints</div>
+      <h2>Normals Transform By Inverse Transpose Because They Define Planes</h2>
+      <div class="content">
+        <div class="two left-wide">
+          <figure>
+            <svg viewBox="0 0 900 530" role="img" aria-label="Plane normal transformed by inverse transpose">
+              <defs>
+                <marker id="normal-blue" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#2563EB"></path>
+                </marker>
+                <marker id="normal-amber" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#B45309"></path>
+                </marker>
+              </defs>
+              <polygon points="92,352 398,286 520,360 214,430" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></polygon>
+              <polygon points="548,326 780,238 824,380 598,454" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></polygon>
+              <g stroke-width="5" fill="none">
+                <path d="M292 356 L292 210" stroke="#2563EB" marker-end="url(#normal-blue)"></path>
+                <path d="M670 358 L628 206" stroke="#0F766E" marker-end="url(#normal-blue)"></path>
+                <path d="M670 358 L770 260" stroke="#B45309" stroke-dasharray="13 10" marker-end="url(#normal-amber)"></path>
+                <path d="M216 394 L374 360" stroke="#1E3A8A" marker-end="url(#normal-blue)"></path>
+                <path d="M604 414 L754 365" stroke="#1E3A8A" marker-end="url(#normal-blue)"></path>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="26" font-weight="700">
+                <text x="260" y="196" fill="#2563EB">n</text>
+                <text x="598" y="196" fill="#0F766E">A^{-T}n</text>
+                <text x="762" y="248" fill="#B45309">A n fails</text>
+                <text x="208" y="466" fill="#64748B">original tangent plane</text>
+                <text x="566" y="490" fill="#64748B">nonuniformly transformed plane</text>
+              </g>
+              <text x="92" y="72" font-family="STIX Two Text, Georgia, serif" font-size="34" fill="#111827">n^T x + c = 0, so n'^T(Ax+t)+c' = 0</text>
+            </svg>
+          </figure>
+          <div class="stack">
+            <div class="formula">
+              \[
+              n^T u = 0 \quad \Rightarrow \quad
+              (A^{-T}n)^T(Au)=n^T u=0.
+              \]
+            </div>
+            <div class="panel indigo">
+              <h3>Correct Rule</h3>
+              <p>For an invertible linear part \(A\), transform normals by \(A^{-T}\), then renormalize for lighting.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Why The Naive Rule Fails</h3>
+              <p>Nonuniform scale changes tangent directions differently, so applying \(A\) to the normal usually loses perpendicularity.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Normals behave like plane constraints</span><span>Inverse transpose preserves annihilation of tangents</span></div>
+      <aside class="speaker-notes">Present normals as constraints rather than little arrows glued to surfaces. If a plane is described by a normal covector, the transformed plane must still annihilate transformed tangents. That requirement forces the inverse-transpose rule and explains why nonuniform scaling breaks the naive transform.</aside>
+    </section>
+
+    <section class="slide" data-label="Worked Invariant">
+      <div class="eyebrow">Worked Example Pattern</div>
+      <h2>Turn The Normal Rule Into A Residual</h2>
+      <div class="content">
+        <div class="two right-wide">
+          <div class="stack">
+            <div class="panel teal">
+              <h3>Experiment</h3>
+              <p>Start with a tangent \(u\) and normal \(n\) satisfying \(n^Tu=0\). Apply a nonuniform scale \(A\).</p>
+            </div>
+            <div class="formula">
+              \[
+              r_{\text{naive}} = |(An)^T(Au)|,\qquad
+              r_{\text{correct}} = |(A^{-T}n)^T(Au)|.
+              \]
+            </div>
+            <div class="codebox">A = diag(2.0, 0.5, 1.25)
+tangent_p = A @ tangent
+normal_bad = normalize(A @ normal)
+normal_ok = normalize(inv(A).T @ normal)
+assert abs(dot(normal_ok, tangent_p)) <= tol</div>
+          </div>
+          <figure>
+            <svg viewBox="0 0 900 530" role="img" aria-label="Naive and corrected normal residual comparison">
+              <defs>
+                <marker id="work-amber" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#B45309"></path>
+                </marker>
+                <marker id="work-teal" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#0F766E"></path>
+                </marker>
+              </defs>
+              <g stroke="#E2E8F0" stroke-width="2">
+                <path d="M70 438 H820"></path>
+                <path d="M70 438 V74"></path>
+                <path d="M70 346 H820"></path>
+                <path d="M70 254 H820"></path>
+                <path d="M70 162 H820"></path>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B">
+                <text x="42" y="444">0</text>
+                <text x="33" y="352">0.2</text>
+                <text x="33" y="260">0.4</text>
+                <text x="33" y="168">0.6</text>
+              </g>
+              <rect x="178" y="176" width="150" height="262" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <rect x="500" y="424" width="150" height="14" rx="7" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle">
+                <text x="253" y="158" fill="#B45309">naive</text>
+                <text x="575" y="406" fill="#0F766E">corrected</text>
+              </g>
+              <g stroke-width="5" fill="none">
+                <path d="M214 108 L300 108" stroke="#B45309"></path>
+                <path d="M535 108 L621 108" stroke="#0F766E"></path>
+                <path d="M257 108 L257 60" stroke="#B45309" marker-end="url(#work-amber)"></path>
+                <path d="M578 108 L578 60" stroke="#0F766E" marker-end="url(#work-teal)"></path>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#64748B" text-anchor="middle">
+                <text x="253" y="486">normal_bad dot transformed_tangent</text>
+                <text x="575" y="486">normal_ok dot transformed_tangent</text>
+              </g>
+              <text x="92" y="54" font-family="STIX Two Text, Georgia, serif" font-size="32" fill="#111827">Perpendicularity after transformation is the invariant.</text>
+            </svg>
+          </figure>
+        </div>
+      </div>
+      <div class="footer"><span>Residuals convert visual claims into tests</span><span>Naive normal transform fails under nonuniform scale</span></div>
+      <aside class="speaker-notes">Walk through the residual as a production-style test. A transformed tangent and the corrected transformed normal should have zero dot product up to tolerance. Showing the failed naive normal beside the corrected one makes the inverse-transpose rule measurable instead of merely symbolic.</aside>
+    </section>
+
+    <section class="slide soft" data-label="Summary">
+      <div class="eyebrow">Chapter Summary</div>
+      <h2>Implementation Checklist For Transform Geometry</h2>
+      <div class="content">
+        <div class="two left-wide">
+          <figure>
+            <svg viewBox="0 0 900 520" role="img" aria-label="Summary flow from representation to residual">
+              <defs>
+                <marker id="sum-arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <path d="M2 2 L12 7 L2 12 Z" fill="#1E3A8A"></path>
+                </marker>
+              </defs>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="27" font-weight="700" text-anchor="middle">
+                <rect x="60" y="122" width="170" height="90" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+                <text x="145" y="176" fill="#1E3A8A">type</text>
+                <rect x="278" y="122" width="170" height="90" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+                <text x="363" y="176" fill="#2563EB">matrix</text>
+                <rect x="496" y="122" width="170" height="90" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+                <text x="581" y="176" fill="#0F766E">visual</text>
+                <rect x="714" y="122" width="170" height="90" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+                <text x="799" y="176" fill="#B45309">residual</text>
+              </g>
+              <g stroke="#1E3A8A" stroke-width="5" marker-end="url(#sum-arrow)">
+                <path d="M232 167 H270"></path>
+                <path d="M450 167 H488"></path>
+                <path d="M668 167 H706"></path>
+                <path d="M799 214 C795 322, 626 360, 502 290" fill="none"></path>
+              </g>
+              <g font-family="Source Sans 3, Arial, sans-serif" font-size="24" fill="#475569">
+                <text x="78" y="292">point or vector</text>
+                <text x="78" y="326">frame convention</text>
+                <text x="78" y="360">normal or tangent</text>
+                <text x="300" y="292">linear part A</text>
+                <text x="300" y="326">translation t</text>
+                <text x="300" y="360">projection w</text>
+                <text x="518" y="292">basis diagram</text>
+                <text x="518" y="326">camera family</text>
+                <text x="518" y="360">normal check</text>
+                <text x="735" y="292">translation invariant</text>
+                <text x="735" y="326">stepwise equality</text>
+                <text x="735" y="360">dot product near zero</text>
+              </g>
+            </svg>
+          </figure>
+          <div class="stack">
+            <div class="panel indigo">
+              <h3>Representation</h3>
+              <p>Keep point, vector, coordinate, tangent, and normal types separate even when all are stored as arrays.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Invariant</h3>
+              <p>Each transform should preserve something testable: weight, parallelism, angle, orientation, or plane annihilation.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Residual</h3>
+              <p>Projection denominators, determinant signs, and normal-tangent dot products expose convention and stability errors.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Carry representation, invariant, visual, residual together</span><span>Next chapters reuse these contracts for primitives and queries</span></div>
+      <aside class="speaker-notes">Close by tying the chapter to the notebook workflow. Each formula has a representation choice, a geometric invariant, a visible diagram, and a residual that can be asserted. That loop is the habit students should carry into cameras, modeling tools, collision code, and shading systems.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

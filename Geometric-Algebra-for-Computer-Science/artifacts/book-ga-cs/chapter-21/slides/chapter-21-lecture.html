@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 21: Fundamental Algorithms for Nonlinear Products</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="chapter-21">
+  <meta name="chapter_title" content="21 - Fundamental Algorithms for Nonlinear Products">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-21-fundamental-algorithms-for-nonlinear-products/21-fundamental-algorithms-for-nonlinear-products.ipynb">
+  <meta name="source_span" content="printed pages 529-540; PDF pages 549-560.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <script type="application/json" id="deck-metadata">
+    {
+      "course": "Geometric Algebra for Computer Science",
+      "chapter_id": "chapter-21",
+      "notebook_path": "Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-21-fundamental-algorithms-for-nonlinear-products/21-fundamental-algorithms-for-nonlinear-products.ipynb",
+      "source_span": "printed pages 529-540; PDF pages 549-560.",
+      "source_pdf": "Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf",
+      "design_system_version": "lecture-design-system-2026-05-23"
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #020617;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    deck-stage:not(:defined) { visibility: hidden; }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 64px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(30, 58, 138, 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.035) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 76px 76px, 76px 76px, auto;
+    }
+
+    .speaker-notes { display: none; }
+    h1, h2, h3, p, ul, ol, figure { margin-top: 0; }
+    h1 {
+      font-size: 60px;
+      line-height: 1.04;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+      color: var(--slide-ink);
+    }
+    h2 {
+      font-size: 50px;
+      line-height: 1.08;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+      color: var(--slide-ink);
+    }
+    h3 {
+      font-size: 32px;
+      line-height: 1.16;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+      color: var(--slide-accent);
+    }
+    p, li {
+      font-size: 26px;
+      line-height: 1.28;
+    }
+    ul, ol {
+      padding-left: 34px;
+      margin-bottom: 0;
+    }
+    li { margin-bottom: 9px; }
+
+    .eyebrow {
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+    }
+    .source-line {
+      font-size: 23px;
+      line-height: 1.25;
+      color: var(--slide-muted);
+      max-width: 1480px;
+      margin-top: 8px;
+    }
+    .rule {
+      width: 116px;
+      height: 6px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+      margin: 10px 0 24px;
+    }
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 34px;
+      flex: 1;
+      min-height: 0;
+      align-items: stretch;
+    }
+    .two.left-wide { grid-template-columns: 1.15fr 0.85fr; }
+    .two.right-wide { grid-template-columns: 0.86fr 1.14fr; }
+    .three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      flex: 1;
+      min-height: 0;
+    }
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 22px 26px;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.indigo { background: var(--math-theorem-bg); border-left: 6px solid var(--slide-accent); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .label {
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--slide-dimmed);
+      letter-spacing: 0;
+      margin-bottom: 10px;
+    }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.22;
+      color: var(--slide-ink);
+      margin: 8px 0 14px;
+    }
+    .code {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      line-height: 1.34;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      padding: 16px 18px;
+      white-space: pre-line;
+    }
+    .tag-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .tag {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--slide-accent);
+      border: 1px solid var(--slide-border);
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 5px 10px;
+    }
+    .note {
+      font-size: 23px;
+      line-height: 1.26;
+      color: var(--slide-muted);
+      margin-bottom: 0;
+    }
+    .mini {
+      font-size: 21px;
+      line-height: 1.22;
+      color: var(--slide-muted);
+    }
+    .visual {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 20px;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+    .svg-label {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      font-weight: 700;
+      fill: var(--slide-ink);
+    }
+    .svg-small {
+      font-family: var(--font-sans);
+      font-size: 21px;
+      font-weight: 600;
+      fill: var(--slide-muted);
+    }
+    .svg-code {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 500;
+      fill: #0f172a;
+    }
+    .svg-math {
+      font-family: var(--font-math);
+      font-size: 26px;
+      fill: #0f172a;
+    }
+    .table {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+    .table div {
+      font-size: 23px;
+      line-height: 1.2;
+      padding: 12px 14px;
+      border-right: 1px solid var(--slide-border-light);
+      border-bottom: 1px solid var(--slide-border-light);
+    }
+    .table div:nth-child(3n) { border-right: 0; }
+    .table div:nth-last-child(-n+3) { border-bottom: 0; }
+    .table .head {
+      font-weight: 700;
+      color: var(--slide-accent);
+      background: #f8fafc;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 22px;
+      color: var(--slide-dimmed);
+      font-size: 21px;
+      line-height: 1.2;
+    }
+    @page { size: 1920px 1080px; margin: 0; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="slide alt">
+    <div class="eyebrow">Geometric Algebra for Computer Science</div>
+    <h1>Fundamental Algorithms For Nonlinear Products</h1>
+    <div class="rule"></div>
+    <p class="source-line">Chapter 21, printed pages 529-540; PDF pages 549-560. Notebook: Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-21-fundamental-algorithms-for-nonlinear-products/21-fundamental-algorithms-for-nonlinear-products.ipynb</p>
+    <div class="content">
+      <div class="two left-wide" style="margin-top: 34px;">
+        <div class="visual">
+          <svg viewBox="0 0 980 520" aria-label="Route from product kernels to nonlinear algorithms">
+            <defs>
+              <marker id="arrow-route" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="40" y="58" width="205" height="108" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="142" y="104" text-anchor="middle" class="svg-label">Product</text>
+            <text x="142" y="137" text-anchor="middle" class="svg-small">signs, metrics</text>
+            <rect x="335" y="58" width="205" height="108" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="438" y="104" text-anchor="middle" class="svg-label">Structure</text>
+            <text x="438" y="137" text-anchor="middle" class="svg-small">grades, factors</text>
+            <rect x="630" y="58" width="260" height="108" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="760" y="104" text-anchor="middle" class="svg-label">Nonlinear</text>
+            <text x="760" y="137" text-anchor="middle" class="svg-small">inverse, meet, join</text>
+            <line x1="245" y1="112" x2="328" y2="112" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-route)"></line>
+            <line x1="540" y1="112" x2="623" y2="112" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-route)"></line>
+            <rect x="80" y="252" width="820" height="170" rx="14" fill="#ffffff" stroke="#CBD5E1" stroke-width="3"></rect>
+            <path d="M160,366 C235,278 330,278 405,366 S575,454 650,366 S800,278 870,366" fill="none" stroke="#2563EB" stroke-width="8"></path>
+            <circle cx="405" cy="366" r="12" fill="#0F766E"></circle>
+            <circle cx="650" cy="366" r="12" fill="#B45309"></circle>
+            <text x="160" y="318" class="svg-small">blade factors</text>
+            <text x="386" y="338" class="svg-small">meet</text>
+            <text x="625" y="338" class="svg-small">delta</text>
+            <text x="420" y="468" text-anchor="middle" class="svg-math">A B -> grade filter -> common and unshared factors</text>
+          </svg>
+        </div>
+        <div class="panel indigo">
+          <div class="label">Lecture Route</div>
+          <ul>
+            <li>Make the coordinate product kernel inspectable.</li>
+            <li>Use fast inverses when the object is a versor.</li>
+            <li>Recover blade factors before incidence work.</li>
+            <li>Use the delta product to predict meet and join grades.</li>
+            <li>Treat thresholds as part of the algorithm contract.</li>
+          </ul>
+          <div class="tag-row">
+            <span class="tag">inverse</span>
+            <span class="tag">factorization</span>
+            <span class="tag">delta product</span>
+            <span class="tag">robust tests</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Chapter 21</div>
+    <aside class="speaker-notes">Open by framing the lecture as implementation work, not a catalogue of products. The nonlinear operations in this chapter are reliable only when the lower product kernels expose signs, metric contractions, grade filters, and sparse accumulation. Preview the route from basis-mask multiplication to structure tests, then to inverses, factorization, delta products, and meet/join algorithms.</aside>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Coordinate Kernel</div>
+    <h2>A Nonlinear Product Starts With Sparse Basis-Blade Arithmetic</h2>
+    <div class="content">
+      <div class="two right-wide">
+        <div class="panel blue">
+          <div class="label">Dense Storage, Sparse Thinking</div>
+          <p>A multivector may be stored as a dense coordinate array, but almost every product loop should skip zeros and reason about blade masks.</p>
+          <div class="code">for I where a[I] != 0
+  for J where b[J] != 0
+    c[K] += sign * metric * a[I] * b[J]</div>
+          <p class="note">The same accumulator feeds geometric products, outer products, inner products, delta products, matrix inverses, and classification checks.</p>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 980 520" aria-label="Sparse accumulation over basis blade masks">
+            <defs>
+              <marker id="arrow-sparse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#0F766E"></path>
+              </marker>
+            </defs>
+            <text x="80" y="50" class="svg-label">basis-mask coordinates</text>
+            <g transform="translate(80,86)">
+              <rect x="0" y="0" width="72" height="58" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <rect x="72" y="0" width="72" height="58" fill="#ffffff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <rect x="144" y="0" width="72" height="58" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <rect x="216" y="0" width="72" height="58" fill="#ffffff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <rect x="288" y="0" width="72" height="58" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <rect x="360" y="0" width="72" height="58" fill="#ffffff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <rect x="432" y="0" width="72" height="58" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <rect x="504" y="0" width="72" height="58" fill="#ffffff" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="36" y="38" text-anchor="middle" class="svg-code">1</text>
+              <text x="108" y="38" text-anchor="middle" class="svg-code">e1</text>
+              <text x="180" y="38" text-anchor="middle" class="svg-code">e2</text>
+              <text x="252" y="38" text-anchor="middle" class="svg-code">e12</text>
+              <text x="324" y="38" text-anchor="middle" class="svg-code">e3</text>
+              <text x="396" y="38" text-anchor="middle" class="svg-code">e13</text>
+              <text x="468" y="38" text-anchor="middle" class="svg-code">e23</text>
+              <text x="540" y="38" text-anchor="middle" class="svg-code">e123</text>
+            </g>
+            <path d="M250,190 C255,260 325,302 410,326" fill="none" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-sparse)"></path>
+            <path d="M570,190 C560,258 500,302 410,326" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-sparse)"></path>
+            <rect x="310" y="320" width="250" height="74" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="435" y="366" text-anchor="middle" class="svg-label">accumulator</text>
+            <text x="435" y="432" text-anchor="middle" class="svg-math">K = I xor J, then grade filter</text>
+            <g transform="translate(680,270)">
+              <rect x="0" y="0" width="220" height="58" rx="8" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="3"></rect>
+              <text x="110" y="38" text-anchor="middle" class="svg-code">skip zeros</text>
+              <rect x="0" y="78" width="220" height="58" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="110" y="116" text-anchor="middle" class="svg-code">add by mask</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Storage format is not the algorithm.</div>
+    <aside class="speaker-notes">Use this slide to separate representation from computation. Students may hear dense array and imagine dense algebra, but the product loops should still walk only occupied coordinates. Emphasize that nonlinear routines reuse this kernel repeatedly, so a small sign, grade, or metric mistake here becomes a false inverse, false blade, or wrong meet later.</aside>
+  </section>
+
+  <section class="slide alt">
+    <div class="eyebrow">Geometric Product</div>
+    <h2>Sign Counting And Metric Contractions Decide Each Term</h2>
+    <div class="content">
+      <div class="two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 980 560" aria-label="Geometric product sign and metric contraction">
+            <defs>
+              <marker id="arrow-gp" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <text x="72" y="56" class="svg-label">multiply basis blades</text>
+            <rect x="86" y="96" width="168" height="70" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="170" y="140" text-anchor="middle" class="svg-code">e2 e3</text>
+            <rect x="350" y="96" width="168" height="70" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="434" y="140" text-anchor="middle" class="svg-code">e1 e3</text>
+            <line x1="254" y1="131" x2="342" y2="131" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-gp)"></line>
+            <rect x="610" y="78" width="260" height="106" rx="10" fill="#ffffff" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="740" y="120" text-anchor="middle" class="svg-small">swap count: 2</text>
+            <text x="740" y="155" text-anchor="middle" class="svg-small">common bit: e3</text>
+            <line x1="448" y1="184" x2="448" y2="246" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-gp)"></line>
+            <rect x="194" y="252" width="508" height="94" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="448" y="294" text-anchor="middle" class="svg-math">(-1)^{swaps} * g3 * e1 e2</text>
+            <text x="448" y="326" text-anchor="middle" class="svg-small">canonical order after contraction</text>
+            <line x1="448" y1="346" x2="448" y2="418" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-gp)"></line>
+            <rect x="258" y="426" width="380" height="70" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="448" y="470" text-anchor="middle" class="svg-code">result coordinate += term</text>
+          </svg>
+        </div>
+        <div class="panel amber">
+          <div class="label">Kernel Formula</div>
+          <p class="formula">\(e_I e_J = \sigma(I,J)\prod_{i\in I\cap J} g_i\, e_{I\oplus J}\)</p>
+          <ul>
+            <li>\(\sigma(I,J)\): parity from moving basis vectors into canonical order.</li>
+            <li>\(g_i\): metric square applied only to duplicate basis vectors.</li>
+            <li>\(I\oplus J\): mask of surviving basis vectors.</li>
+          </ul>
+          <p class="note">This is the mechanical source of grade changes, scalar collapses, and delta-product top grades.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Every nonlinear diagnostic eventually asks whether this term arithmetic was correct.</div>
+    <aside class="speaker-notes">Work through the displayed example slowly. The useful habit is to separate three decisions: count swaps for sign, contract repeated basis vectors through the metric, and accumulate into the mask produced by exclusive-or. This is the engine underneath the versor scalar check, the generic inverse matrix, and the delta product grade selection.</aside>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Outer And Inner Products</div>
+    <h2>Grade Filters Turn The Same Kernel Into Different Products</h2>
+    <div class="content">
+      <div class="three">
+        <div class="panel blue">
+          <div class="label">Outer Product</div>
+          <p class="formula">\(A_r \wedge B_s = \langle A_r B_s\rangle_{r+s}\)</p>
+          <p>If basis masks overlap, the candidate term has a repeated factor and the exterior term is zero.</p>
+        </div>
+        <div class="panel teal">
+          <div class="label">Inner Product</div>
+          <p class="formula">\(A_r \rfloor B_s \approx \langle A_r B_s\rangle_{s-r}\)</p>
+          <p>A contraction is a selected grade after the geometric product has applied the metric to shared factors.</p>
+        </div>
+        <div class="panel violet">
+          <div class="label">Delta Product</div>
+          <p class="formula">\(A\,\Delta\,B = \langle AB\rangle_{\max}\)</p>
+          <p>The highest surviving grade carries the factors not shared by both blades.</p>
+        </div>
+      </div>
+      <div class="visual" style="margin-top: 26px;">
+        <svg viewBox="0 0 1500 280" aria-label="Grade filter flow for outer inner and delta products">
+          <defs>
+            <marker id="arrow-filter" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="70" y="86" width="250" height="90" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+          <text x="195" y="123" text-anchor="middle" class="svg-label">raw terms</text>
+          <text x="195" y="156" text-anchor="middle" class="svg-code">grades 0..n</text>
+          <line x1="320" y1="131" x2="450" y2="131" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-filter)"></line>
+          <rect x="460" y="38" width="260" height="80" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="590" y="87" text-anchor="middle" class="svg-code">keep r+s</text>
+          <rect x="460" y="150" width="260" height="80" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="590" y="199" text-anchor="middle" class="svg-code">keep |s-r|</text>
+          <line x1="720" y1="78" x2="840" y2="78" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-filter)"></line>
+          <line x1="720" y1="190" x2="840" y2="190" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-filter)"></line>
+          <rect x="850" y="38" width="250" height="80" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="975" y="87" text-anchor="middle" class="svg-label">span growth</text>
+          <rect x="850" y="150" width="250" height="80" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="975" y="199" text-anchor="middle" class="svg-label">metric test</text>
+          <line x1="1100" y1="134" x2="1238" y2="134" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-filter)"></line>
+          <rect x="1250" y="86" width="210" height="90" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="1355" y="123" text-anchor="middle" class="svg-label">top grade</text>
+          <text x="1355" y="156" text-anchor="middle" class="svg-small">incidence hint</text>
+        </svg>
+      </div>
+    </div>
+    <div class="footer">Products share a kernel; algorithms differ by the filters they enforce.</div>
+    <aside class="speaker-notes">Make the grade filter the main idea. The outer product is not a separate mysterious multiplication; it is the geometric product with the grade that represents span growth. The inner product keeps contraction grades after the metric has acted. The delta product used later is another grade filter, but it chooses the highest nonzero grade.</aside>
+  </section>
+
+  <section class="slide alt">
+    <div class="eyebrow">Inversion</div>
+    <h2>Use Structure Before Asking For A General Inverse</h2>
+    <div class="content">
+      <div class="two">
+        <div class="panel teal">
+          <div class="label">Fast Path: Versor</div>
+          <p class="formula">\(V^{-1} = \widetilde V / \langle V\widetilde V\rangle_0\)</p>
+          <ul>
+            <li>Reverse cancels vector factors in the opposite order.</li>
+            <li>The denominator should be scalar.</li>
+            <li>A residual check decides whether the fast path is justified.</li>
+          </ul>
+        </div>
+        <div class="panel amber">
+          <div class="label">Fallback: Matrix Solve</div>
+          <p class="formula">\(L_A x = 1\)</p>
+          <ul>
+            <li>Build left multiplication by \(A\).</li>
+            <li>Invert or solve the resulting linear system.</li>
+            <li>Conditioning and roundoff become part of the report.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="visual" style="margin-top: 26px;">
+        <svg viewBox="0 0 1500 310" aria-label="Versor inverse and generic inverse decision paths">
+          <defs>
+            <marker id="arrow-inv" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="80" y="104" width="190" height="84" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+          <text x="175" y="154" text-anchor="middle" class="svg-code">input A</text>
+          <line x1="270" y1="146" x2="400" y2="146" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-inv)"></line>
+          <polygon points="500,70 620,146 500,222 380,146" fill="#ffffff" stroke="#CBD5E1" stroke-width="4"></polygon>
+          <text x="500" y="138" text-anchor="middle" class="svg-small">scalar</text>
+          <text x="500" y="168" text-anchor="middle" class="svg-small">collapse?</text>
+          <line x1="620" y1="146" x2="780" y2="82" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-inv)"></line>
+          <line x1="620" y1="146" x2="780" y2="212" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-inv)"></line>
+          <rect x="790" y="36" width="300" height="92" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="940" y="74" text-anchor="middle" class="svg-code">reverse / scalar</text>
+          <text x="940" y="106" text-anchor="middle" class="svg-small">fast inverse</text>
+          <rect x="790" y="168" width="300" height="92" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="940" y="206" text-anchor="middle" class="svg-code">build L_A</text>
+          <text x="940" y="238" text-anchor="middle" class="svg-small">generic solve</text>
+          <line x1="1090" y1="82" x2="1260" y2="146" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-inv)"></line>
+          <line x1="1090" y1="214" x2="1260" y2="146" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-inv)"></line>
+          <rect x="1270" y="104" width="170" height="84" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="1355" y="154" text-anchor="middle" class="svg-code">A A^-1 = 1</text>
+        </svg>
+      </div>
+    </div>
+    <div class="footer">The inverse is nonlinear, but the right fast path is a structural question.</div>
+    <aside class="speaker-notes">Contrast the two inverses as engineering choices. A versor inverse is cheap because the object is already a product of invertible vectors, so the reverse recovers the inverse up to one scalar. The general multivector inverse is valuable as a fallback and comparison, but it should report conditioning and identity error rather than pretending to be equally stable.</aside>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Elementary Functions</div>
+    <h2>Function Algorithms Split By Scalar-Square Cases</h2>
+    <div class="content">
+      <div class="two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 980 520" aria-label="Decision tree for exponentials of multivectors">
+            <defs>
+              <marker id="arrow-exp" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="70" y="58" width="220" height="78" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="180" y="106" text-anchor="middle" class="svg-code">A</text>
+            <line x1="180" y1="136" x2="180" y2="202" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-exp)"></line>
+            <polygon points="180,200 310,278 180,356 50,278" fill="#ffffff" stroke="#CBD5E1" stroke-width="4"></polygon>
+            <text x="180" y="270" text-anchor="middle" class="svg-small">is A^2</text>
+            <text x="180" y="300" text-anchor="middle" class="svg-small">scalar?</text>
+            <line x1="310" y1="278" x2="498" y2="156" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-exp)"></line>
+            <line x1="310" y1="278" x2="498" y2="400" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-exp)"></line>
+            <rect x="510" y="92" width="370" height="126" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="695" y="136" text-anchor="middle" class="svg-label">closed form</text>
+            <text x="695" y="170" text-anchor="middle" class="svg-math">cos/sin or cosh/sinh</text>
+            <rect x="510" y="336" width="370" height="126" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="695" y="380" text-anchor="middle" class="svg-label">series path</text>
+            <text x="695" y="414" text-anchor="middle" class="svg-small">scale, evaluate, square back</text>
+          </svg>
+        </div>
+        <div class="panel indigo">
+          <div class="label">Implementation Split</div>
+          <ul>
+            <li>Blades and many versor generators often have scalar squares.</li>
+            <li>Special cases use trigonometric or hyperbolic closed forms.</li>
+            <li>General bivectors may require a polynomial series with rescaling.</li>
+            <li>Logarithms are best treated as case libraries, not one universal routine.</li>
+          </ul>
+          <p class="note">This mirrors the chapter principle: exploit recognized structure, then fall back carefully.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Closed forms are algorithmic shortcuts justified by algebraic structure.</div>
+    <aside class="speaker-notes">This slide prevents the lecture from making inverse, meet, and join feel like the only nonlinear operations. The same design rule applies to exponentials: if the square is scalar, choose the closed form; otherwise scale the input, evaluate a bounded series, and square back. Logarithms are presented as specialized families rather than a solved general problem.</aside>
+  </section>
+
+  <section class="slide alt">
+    <div class="eyebrow">Classification</div>
+    <h2>Blade Or Versor Is A Behavioral Test, Not Just A Grade Label</h2>
+    <div class="content">
+      <div class="two right-wide">
+        <div class="panel violet">
+          <div class="label">Three Checks</div>
+          <ol>
+            <li>Does the reverse-based candidate behave like an inverse?</li>
+            <li>Does sandwiching every basis vector preserve grade one?</li>
+            <li>If it passes, is the multivector pure grade?</li>
+          </ol>
+          <p class="note">Pure grade is the last check, not the first conclusion.</p>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 980 520" aria-label="Classification decision flow for versor and blade tests">
+            <defs>
+              <marker id="arrow-class" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="60" y="72" width="210" height="76" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="165" y="120" text-anchor="middle" class="svg-code">V</text>
+            <line x1="270" y1="110" x2="394" y2="110" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-class)"></line>
+            <rect x="405" y="62" width="250" height="96" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="530" y="100" text-anchor="middle" class="svg-small">inverse residual</text>
+            <text x="530" y="132" text-anchor="middle" class="svg-small">commutes with check</text>
+            <line x1="655" y1="110" x2="774" y2="110" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-class)"></line>
+            <rect x="785" y="62" width="140" height="96" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="855" y="100" text-anchor="middle" class="svg-small">fail</text>
+            <text x="855" y="132" text-anchor="middle" class="svg-code">nonversor</text>
+            <line x1="530" y1="158" x2="530" y2="242" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-class)"></line>
+            <rect x="360" y="250" width="340" height="96" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="530" y="288" text-anchor="middle" class="svg-small">sandwich basis vectors</text>
+            <text x="530" y="320" text-anchor="middle" class="svg-code">V e_i V^-1 has grade 1</text>
+            <line x1="530" y1="346" x2="530" y2="416" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-class)"></line>
+            <rect x="350" y="424" width="170" height="64" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="435" y="464" text-anchor="middle" class="svg-code">blade</text>
+            <rect x="550" y="424" width="170" height="64" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="635" y="464" text-anchor="middle" class="svg-code">versor</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Classification tests the action of the multivector.</div>
+    <aside class="speaker-notes">Stress that classification is not a cosmetic label for display. The implementation must know whether fast inverse formulas and geometric transformations are legitimate. A uniform-grade test alone is tempting and wrong, so the algorithm first checks inverse behavior and the grade-one action on vectors before deciding whether the surviving object is a blade or a more general versor.</aside>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Blade Factorization</div>
+    <h2>Recover Vector Factors From Additive Coordinates</h2>
+    <div class="content">
+      <div class="two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 980 540" aria-label="Blade factorization algorithm from coordinates to factors">
+            <defs>
+              <marker id="arrow-factor" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="70" y="60" width="220" height="86" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="180" y="113" text-anchor="middle" class="svg-code">blade B</text>
+            <line x1="290" y1="103" x2="410" y2="103" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-factor)"></line>
+            <rect x="420" y="60" width="250" height="86" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="545" y="94" text-anchor="middle" class="svg-small">largest coordinate</text>
+            <text x="545" y="126" text-anchor="middle" class="svg-code">choose E</text>
+            <line x1="545" y1="146" x2="545" y2="220" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-factor)"></line>
+            <rect x="330" y="230" width="430" height="96" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="545" y="268" text-anchor="middle" class="svg-small">project candidate basis vector</text>
+            <text x="545" y="302" text-anchor="middle" class="svg-math">f = (e_i contraction B_c) B_c^-1</text>
+            <line x1="545" y1="326" x2="545" y2="394" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-factor)"></line>
+            <rect x="250" y="402" width="220" height="74" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="360" y="448" text-anchor="middle" class="svg-code">normalize f</text>
+            <rect x="520" y="402" width="270" height="74" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="655" y="448" text-anchor="middle" class="svg-code">divide factor out</text>
+            <path d="M790,439 C900,380 890,240 676,120" fill="none" stroke="#64748B" stroke-width="4" stroke-dasharray="10 8" marker-end="url(#arrow-factor)"></path>
+          </svg>
+        </div>
+        <div class="panel blue">
+          <div class="label">What Factorization Returns</div>
+          <ul>
+            <li>A list of vector factors for the represented subspace.</li>
+            <li>A separate scale, so unit factors do not hide magnitude.</li>
+            <li>A reconstruction residual, so the routine can refuse nonblades.</li>
+          </ul>
+          <p class="formula">\(B \approx s\, f_1\wedge f_2\wedge \cdots \wedge f_k\)</p>
+          <p class="note">The notebook uses an inspectable nullspace version; the lecture also names the projection loop from the source span.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">A blade stored additively must be turned back into factors before many nonlinear routines are stable.</div>
+    <aside class="speaker-notes">Explain why factorization is a recovery problem. The coordinate array has lost the explicit list of vectors, but meet, join, and geometric display often need those vectors back. The largest-coordinate basis blade gives stable candidates in the source algorithm, while the notebook nullspace view makes the same subspace condition inspectable through the equation x wedge B equals zero.</aside>
+  </section>
+
+  <section class="slide alt">
+    <div class="eyebrow">Negative Tests</div>
+    <h2>Pure Grade Does Not Guarantee A Blade</h2>
+    <div class="content">
+      <div class="two">
+        <div class="visual">
+          <svg viewBox="0 0 760 520" aria-label="Two independent coordinate planes do not form one simple blade">
+            <rect x="90" y="72" width="250" height="170" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <line x1="130" y1="205" x2="300" y2="105" stroke="#2563EB" stroke-width="7"></line>
+            <line x1="130" y1="105" x2="300" y2="205" stroke="#2563EB" stroke-width="7"></line>
+            <text x="215" y="275" text-anchor="middle" class="svg-code">e1 wedge e2</text>
+            <rect x="420" y="72" width="250" height="170" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <line x1="460" y1="205" x2="630" y2="105" stroke="#6D28D9" stroke-width="7"></line>
+            <line x1="460" y1="105" x2="630" y2="205" stroke="#6D28D9" stroke-width="7"></line>
+            <text x="545" y="275" text-anchor="middle" class="svg-code">e3 wedge e4</text>
+            <text x="380" y="355" text-anchor="middle" class="svg-math">e1e2 + e3e4</text>
+            <rect x="180" y="390" width="400" height="70" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="380" y="435" text-anchor="middle" class="svg-label">one grade, two independent plane pieces</text>
+          </svg>
+        </div>
+        <div class="panel amber">
+          <div class="label">Controlled Failure Is A Feature</div>
+          <ul>
+            <li>Uniform grade is necessary, but not sufficient.</li>
+            <li>Factorization must reconstruct the original blade.</li>
+            <li>A non-simple grade-2 multivector should be rejected cleanly.</li>
+          </ul>
+          <div class="table" style="margin-top: 20px;">
+            <div class="head">Input</div><div class="head">Fast test</div><div class="head">Expected</div>
+            <div>versor product</div><div>scalar residual</div><div>accept</div>
+            <div>simple blade</div><div>reconstruct</div><div>accept</div>
+            <div>e12 + e34</div><div>factorization</div><div>reject</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">A robust library needs adversarial examples, not only ideal blades.</div>
+    <aside class="speaker-notes">Use the e12 plus e34 example as a guardrail against shallow implementations. It passes the pure-grade test, but it is not one oriented two-plane, so a factor list would be misleading. The right behavior is a controlled rejection with a residual or exception that tells downstream meet, join, and display routines not to proceed.</aside>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Delta Product</div>
+    <h2>The Highest Grade Of \(AB\) Predicts Incidence</h2>
+    <div class="content">
+      <div class="two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 980 540" aria-label="Delta product as unshared factors between two blades">
+            <defs>
+              <marker id="arrow-delta" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <rect x="100" y="80" width="740" height="110" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+            <circle cx="230" cy="135" r="42" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+            <circle cx="360" cy="135" r="42" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"></circle>
+            <circle cx="490" cy="135" r="42" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"></circle>
+            <circle cx="620" cy="135" r="42" fill="#FFFBEB" stroke="#B45309" stroke-width="5"></circle>
+            <text x="230" y="144" text-anchor="middle" class="svg-code">a1</text>
+            <text x="360" y="144" text-anchor="middle" class="svg-code">a2</text>
+            <text x="490" y="144" text-anchor="middle" class="svg-code">c</text>
+            <text x="620" y="144" text-anchor="middle" class="svg-code">b1</text>
+            <text x="140" y="226" class="svg-small">A has a1, a2, c</text>
+            <text x="600" y="226" class="svg-small">B has c, b1</text>
+            <line x1="490" y1="190" x2="490" y2="276" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-delta)"></line>
+            <rect x="340" y="286" width="300" height="70" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="490" y="330" text-anchor="middle" class="svg-code">meet factor c</text>
+            <path d="M230,190 C210,290 238,400 360,425" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-delta)"></path>
+            <path d="M360,190 C350,300 390,392 490,425" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-delta)"></path>
+            <path d="M620,190 C646,300 610,392 520,425" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-delta)"></path>
+            <rect x="280" y="432" width="420" height="70" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="490" y="476" text-anchor="middle" class="svg-code">delta factors a1, a2, b1</text>
+          </svg>
+        </div>
+        <div class="panel indigo">
+          <div class="label">Grade Arithmetic</div>
+          <p class="formula">\(A\Delta B = \langle AB\rangle_{\max}\)</p>
+          <p class="formula">\(grade(A\cup B)=\frac{a+b+d}{2}\)</p>
+          <p class="formula">\(grade(A\cap B)=\frac{a+b-d}{2}\)</p>
+          <p class="note">Here \(d\) is the grade of the delta product. Shared factors contract away; unshared factors remain visible at the top grade.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Delta product turns geometric product output into a meet/join grade prediction.</div>
+    <aside class="speaker-notes">Connect this slide back to the grade-filter discussion. The delta product does not require first factoring both blades; the geometric product naturally contracts shared factors, and the highest remaining grade records what is unshared. Once that grade is known, the meet and join grades follow before we construct either object.</aside>
+  </section>
+
+  <section class="slide alt">
+    <div class="eyebrow">Meet And Join</div>
+    <h2>Build Either The Meet Or The Join, Then Recover The Other</h2>
+    <div class="content">
+      <div class="two right-wide">
+        <div class="panel teal">
+          <div class="label">Algorithm Skeleton</div>
+          <div class="code">S = dual(A Delta B)
+factor S into s_i
+M = 1
+J = I_n
+for each s_i:
+  project s_i onto A
+  reject s_i from A
+  grow M or shrink J
+  stop when target grade is reached</div>
+          <p class="note">The same factorization supplies both outputs, so the algorithm can terminate when either grade target is met.</p>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 980 540" aria-label="Meet and join construction with projection and rejection">
+            <defs>
+              <marker id="arrow-mj" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <polygon points="150,360 430,230 790,322 510,452" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="5"></polygon>
+            <polygon points="190,180 475,320 790,204 500,64" fill="rgba(15,118,110,0.14)" stroke="#0F766E" stroke-width="5"></polygon>
+            <line x1="290" y1="290" x2="680" y2="292" stroke="#B45309" stroke-width="9"></line>
+            <circle cx="290" cy="290" r="10" fill="#B45309"></circle>
+            <circle cx="680" cy="292" r="10" fill="#B45309"></circle>
+            <text x="236" y="398" class="svg-label" fill="#2563EB">A</text>
+            <text x="720" y="184" class="svg-label" fill="#0F766E">B</text>
+            <text x="480" y="274" text-anchor="middle" class="svg-label" fill="#B45309">meet line</text>
+            <rect x="96" y="426" width="248" height="74" rx="10" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="4"></rect>
+            <text x="220" y="472" text-anchor="middle" class="svg-code">join: 3-space</text>
+            <line x1="344" y1="462" x2="450" y2="420" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-mj)"></line>
+            <rect x="664" y="426" width="248" height="74" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="788" y="472" text-anchor="middle" class="svg-code">delta grade d</text>
+            <line x1="664" y1="462" x2="585" y2="420" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-mj)"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Projection grows the meet; rejection shrinks the join.</div>
+    <aside class="speaker-notes">Walk students through the loop as a paired search. A candidate factor either has a projection that belongs in the common part, or a rejection that helps remove directions outside the join. The practical point is that the routine is allowed to stop early when one target grade is reached, then compute the companion product from the meet or join relation.</aside>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Robustness</div>
+    <h2>Thresholds Decide When Almost Common Means Common</h2>
+    <div class="content">
+      <div class="two left-wide">
+        <div class="visual">
+          <svg viewBox="0 0 980 540" aria-label="Principal angle threshold scan for nearly coincident planes">
+            <rect x="82" y="56" width="796" height="384" rx="10" fill="#ffffff" stroke="#CBD5E1" stroke-width="3"></rect>
+            <line x1="152" y1="382" x2="824" y2="382" stroke="#64748B" stroke-width="4"></line>
+            <line x1="152" y1="382" x2="152" y2="102" stroke="#64748B" stroke-width="4"></line>
+            <text x="488" y="424" text-anchor="middle" class="svg-small">plane angle decreases</text>
+            <text x="104" y="98" text-anchor="middle" class="svg-small" transform="rotate(-90 104 98)">gap from common</text>
+            <path d="M182,126 C260,154 330,184 410,224 S590,314 820,362" fill="none" stroke="#2563EB" stroke-width="7"></path>
+            <line x1="152" y1="214" x2="824" y2="214" stroke="#B45309" stroke-width="4" stroke-dasharray="14 10"></line>
+            <line x1="152" y1="314" x2="824" y2="314" stroke="#6D28D9" stroke-width="4" stroke-dasharray="14 10"></line>
+            <circle cx="316" cy="180" r="12" fill="#2563EB"></circle>
+            <circle cx="615" cy="322" r="12" fill="#2563EB"></circle>
+            <text x="836" y="222" class="svg-small">tol 1</text>
+            <text x="836" y="322" class="svg-small">tol 2</text>
+            <rect x="196" y="452" width="250" height="58" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <text x="321" y="489" text-anchor="middle" class="svg-code">distinct planes</text>
+            <rect x="520" y="452" width="250" height="58" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <text x="645" y="489" text-anchor="middle" class="svg-code">merged by tol</text>
+          </svg>
+        </div>
+        <div class="panel amber">
+          <div class="label">Numerical Contract</div>
+          <ul>
+            <li>Projection or rejection equal to zero becomes projection or rejection below tolerance.</li>
+            <li>Principal angles expose whether two factors are shared or merely close.</li>
+            <li>Tests must cover the transition zone, not only exact incidence.</li>
+          </ul>
+          <p class="formula">gap \(= 1-\cos(\theta)\)</p>
+          <p class="note">Changing tolerance can legitimately change the classified meet grade for nearly coincident inputs.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Robust nonlinear products include tolerances in their public behavior.</div>
+    <aside class="speaker-notes">Use this as the implementation realism slide. Symbolic geometry says two subspaces either share a factor or they do not. Floating point geometry says the decision depends on scale, noise, and tolerance. The threshold plot should make clear why tests around nearly coincident planes are more informative than tests that only use exact coordinate axes.</aside>
+  </section>
+
+  <section class="slide alt">
+    <div class="eyebrow">Sparse Accumulation</div>
+    <h2>Grade Filters Need Auditable Accumulators</h2>
+    <div class="content">
+      <div class="two">
+        <div class="visual">
+          <svg viewBox="0 0 760 520" aria-label="Sparse accumulation buckets and grade filters">
+            <defs>
+              <marker id="arrow-acc" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <g transform="translate(70,64)">
+              <rect x="0" y="0" width="180" height="70" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+              <text x="90" y="44" text-anchor="middle" class="svg-code">term 1</text>
+              <rect x="0" y="96" width="180" height="70" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+              <text x="90" y="140" text-anchor="middle" class="svg-code">term 2</text>
+              <rect x="0" y="192" width="180" height="70" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+              <text x="90" y="236" text-anchor="middle" class="svg-code">term 3</text>
+            </g>
+            <line x1="250" y1="99" x2="355" y2="196" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-acc)"></line>
+            <line x1="250" y1="195" x2="355" y2="216" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-acc)"></line>
+            <line x1="250" y1="291" x2="355" y2="236" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-acc)"></line>
+            <rect x="365" y="166" width="220" height="118" rx="10" fill="#ffffff" stroke="#CBD5E1" stroke-width="4"></rect>
+            <text x="475" y="210" text-anchor="middle" class="svg-label">bucket K</text>
+            <text x="475" y="248" text-anchor="middle" class="svg-code">sum terms</text>
+            <line x1="585" y1="225" x2="670" y2="225" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-acc)"></line>
+            <rect x="520" y="354" width="190" height="70" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="615" y="398" text-anchor="middle" class="svg-code">grade g?</text>
+            <path d="M475,284 C480,324 520,346 595,354" fill="none" stroke="#6D28D9" stroke-width="5" marker-end="url(#arrow-acc)"></path>
+          </svg>
+        </div>
+        <div class="panel indigo">
+          <div class="label">What To Log In A Kernel Test</div>
+          <ul>
+            <li>Input masks \(I,J\), output mask \(K\), and output grade.</li>
+            <li>Swap parity, metric contraction factor, and coefficient product.</li>
+            <li>Accumulator collision cases where several pairs land in the same coordinate.</li>
+            <li>Final grade projection used by outer, inner, and delta products.</li>
+          </ul>
+          <p class="note">This evidence makes nonlinear failures traceable instead of mysterious.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Sparse accumulation is where algebraic signs become executable evidence.</div>
+    <aside class="speaker-notes">This slide is a bridge from mathematical formulas to debuggable code. When a nonlinear routine fails, the error often entered through a product bucket much earlier. Encourage logging or table-driven tests that show masks, signs, contractions, and grade filters for representative collisions, because those records make meet and inverse bugs far easier to localize.</aside>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Test Cases</div>
+    <h2>A Useful Nonlinear Test Suite Mixes Exact And Near-Degenerate Inputs</h2>
+    <div class="content">
+      <div class="table" style="grid-template-columns: 1.1fr 1.2fr 1.1fr;">
+        <div class="head">Case</div><div class="head">Algorithm Target</div><div class="head">Invariant</div>
+        <div>basis blade table</div><div>sign counting and metric contractions</div><div>known product coordinate</div>
+        <div>outer overlap</div><div>grade filter for span growth</div><div>shared factor gives zero</div>
+        <div>versor from vectors</div><div>reverse-over-scalar inverse</div><div>\(VV^{-1}=1\)</div>
+        <div>generic multivector</div><div>matrix inverse fallback</div><div>condition number reported</div>
+        <div>simple blade</div><div>factorization</div><div>reconstruction residual small</div>
+        <div>non-simple pure grade</div><div>blade classifier</div><div>controlled rejection</div>
+        <div>two planes</div><div>delta, meet, join</div><div>grade prediction matches result</div>
+        <div>nearly coincident planes</div><div>threshold-aware meet</div><div>decision changes only by tolerance</div>
+      </div>
+      <div class="visual" style="margin-top: 24px;">
+        <svg viewBox="0 0 1500 190" aria-label="Test harness flow from product checks to nonlinear checks">
+          <defs>
+            <marker id="arrow-tests" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+            </marker>
+          </defs>
+          <rect x="80" y="52" width="230" height="82" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="195" y="103" text-anchor="middle" class="svg-code">product table</text>
+          <line x1="310" y1="93" x2="432" y2="93" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-tests)"></line>
+          <rect x="442" y="52" width="230" height="82" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="557" y="103" text-anchor="middle" class="svg-code">inverse tests</text>
+          <line x1="672" y1="93" x2="794" y2="93" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-tests)"></line>
+          <rect x="804" y="52" width="230" height="82" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="919" y="103" text-anchor="middle" class="svg-code">factor tests</text>
+          <line x1="1034" y1="93" x2="1156" y2="93" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-tests)"></line>
+          <rect x="1166" y="52" width="250" height="82" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="1291" y="103" text-anchor="middle" class="svg-code">incidence tests</text>
+        </svg>
+      </div>
+    </div>
+    <div class="footer">The chapter notebook ends with invariant checks and artifact existence checks.</div>
+    <aside class="speaker-notes">Close the technical development with tests because tests are how these algorithms become trustworthy. The table deliberately starts below the nonlinear layer: product signs, contractions, and grade filters must be correct before higher operations can be interpreted. Then it climbs through inverse, factorization, classifier, meet/join, and threshold cases, matching the notebook's sanity-check philosophy.</aside>
+  </section>
+
+  <section class="slide alt">
+    <div class="eyebrow">Recap</div>
+    <h2>Debug Nonlinear Products By Asking What Structure Was Recognized</h2>
+    <div class="content">
+      <div class="two">
+        <div class="panel blue">
+          <div class="label">Implementation Checklist</div>
+          <ul>
+            <li>Can the product kernel explain each sign, contraction, output mask, and grade?</li>
+            <li>Does the object justify a specialized inverse or exponential path?</li>
+            <li>Can a blade be reconstructed from recovered factors and scale?</li>
+            <li>Does the delta product predict the same meet and join grades the construction returns?</li>
+            <li>Are tolerance choices visible in near-degenerate cases?</li>
+          </ul>
+        </div>
+        <div class="visual">
+          <svg viewBox="0 0 760 520" aria-label="Recap map for nonlinear product debugging">
+            <defs>
+              <marker id="arrow-recap" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 Z" fill="#1E3A8A"></path>
+              </marker>
+            </defs>
+            <circle cx="380" cy="260" r="92" fill="#EEF2FF" stroke="#1E3A8A" stroke-width="5"></circle>
+            <text x="380" y="248" text-anchor="middle" class="svg-label">structure</text>
+            <text x="380" y="282" text-anchor="middle" class="svg-label">recognized?</text>
+            <rect x="60" y="62" width="210" height="74" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+            <text x="165" y="108" text-anchor="middle" class="svg-code">kernel</text>
+            <rect x="490" y="62" width="210" height="74" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+            <text x="595" y="108" text-anchor="middle" class="svg-code">inverse</text>
+            <rect x="60" y="384" width="210" height="74" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+            <text x="165" y="430" text-anchor="middle" class="svg-code">factors</text>
+            <rect x="490" y="384" width="210" height="74" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+            <text x="595" y="430" text-anchor="middle" class="svg-code">incidence</text>
+            <line x1="270" y1="136" x2="320" y2="196" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-recap)"></line>
+            <line x1="490" y1="136" x2="440" y2="196" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-recap)"></line>
+            <line x1="270" y1="384" x2="320" y2="324" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-recap)"></line>
+            <line x1="490" y1="384" x2="440" y2="324" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-recap)"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="footer">The practical win is a geometry kernel that reports why it trusts a nonlinear result.</div>
+    <aside class="speaker-notes">End by giving students a debugging ritual rather than a memory dump. When a nonlinear product looks wrong, ask which structure the implementation claimed to recognize and what evidence supported that claim. The best routines expose product-kernel records, inverse residuals, factorization residuals, delta grade predictions, and threshold decisions, so failures become diagnosable instead of opaque.</aside>
+  </section>
+</deck-stage>
+
+<script type="application/json" id="speaker-notes">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "label": "Route",
+      "notes": "Open by framing the lecture as implementation work, not a catalogue of products. The nonlinear operations in this chapter are reliable only when the lower product kernels expose signs, metric contractions, grade filters, and sparse accumulation. Preview the route from basis-mask multiplication to structure tests, then to inverses, factorization, delta products, and meet/join algorithms."
+    },
+    {
+      "slide": 2,
+      "label": "Coordinate Kernel",
+      "notes": "Use this slide to separate representation from computation. Students may hear dense array and imagine dense algebra, but the product loops should still walk only occupied coordinates. Emphasize that nonlinear routines reuse this kernel repeatedly, so a small sign, grade, or metric mistake here becomes a false inverse, false blade, or wrong meet later."
+    },
+    {
+      "slide": 3,
+      "label": "Geometric Product",
+      "notes": "Work through the displayed example slowly. The useful habit is to separate three decisions: count swaps for sign, contract repeated basis vectors through the metric, and accumulate into the mask produced by exclusive-or. This is the engine underneath the versor scalar check, the generic inverse matrix, and the delta product grade selection."
+    },
+    {
+      "slide": 4,
+      "label": "Outer And Inner Products",
+      "notes": "Make the grade filter the main idea. The outer product is not a separate mysterious multiplication; it is the geometric product with the grade that represents span growth. The inner product keeps contraction grades after the metric has acted. The delta product used later is another grade filter, but it chooses the highest nonzero grade."
+    },
+    {
+      "slide": 5,
+      "label": "Inversion",
+      "notes": "Contrast the two inverses as engineering choices. A versor inverse is cheap because the object is already a product of invertible vectors, so the reverse recovers the inverse up to one scalar. The general multivector inverse is valuable as a fallback and comparison, but it should report conditioning and identity error rather than pretending to be equally stable."
+    },
+    {
+      "slide": 6,
+      "label": "Elementary Functions",
+      "notes": "This slide prevents the lecture from making inverse, meet, and join feel like the only nonlinear operations. The same design rule applies to exponentials: if the square is scalar, choose the closed form; otherwise scale the input, evaluate a bounded series, and square back. Logarithms are presented as specialized families rather than a solved general problem."
+    },
+    {
+      "slide": 7,
+      "label": "Classification",
+      "notes": "Stress that classification is not a cosmetic label for display. The implementation must know whether fast inverse formulas and geometric transformations are legitimate. A uniform-grade test alone is tempting and wrong, so the algorithm first checks inverse behavior and the grade-one action on vectors before deciding whether the surviving object is a blade or a more general versor."
+    },
+    {
+      "slide": 8,
+      "label": "Blade Factorization",
+      "notes": "Explain why factorization is a recovery problem. The coordinate array has lost the explicit list of vectors, but meet, join, and geometric display often need those vectors back. The largest-coordinate basis blade gives stable candidates in the source algorithm, while the notebook nullspace view makes the same subspace condition inspectable through the equation x wedge B equals zero."
+    },
+    {
+      "slide": 9,
+      "label": "Negative Tests",
+      "notes": "Use the e12 plus e34 example as a guardrail against shallow implementations. It passes the pure-grade test, but it is not one oriented two-plane, so a factor list would be misleading. The right behavior is a controlled rejection with a residual or exception that tells downstream meet, join, and display routines not to proceed."
+    },
+    {
+      "slide": 10,
+      "label": "Delta Product",
+      "notes": "Connect this slide back to the grade-filter discussion. The delta product does not require first factoring both blades; the geometric product naturally contracts shared factors, and the highest remaining grade records what is unshared. Once that grade is known, the meet and join grades follow before we construct either object."
+    },
+    {
+      "slide": 11,
+      "label": "Meet And Join",
+      "notes": "Walk students through the loop as a paired search. A candidate factor either has a projection that belongs in the common part, or a rejection that helps remove directions outside the join. The practical point is that the routine is allowed to stop early when one target grade is reached, then compute the companion product from the meet or join relation."
+    },
+    {
+      "slide": 12,
+      "label": "Robustness",
+      "notes": "Use this as the implementation realism slide. Symbolic geometry says two subspaces either share a factor or they do not. Floating point geometry says the decision depends on scale, noise, and tolerance. The threshold plot should make clear why tests around nearly coincident planes are more informative than tests that only use exact coordinate axes."
+    },
+    {
+      "slide": 13,
+      "label": "Sparse Accumulation",
+      "notes": "This slide is a bridge from mathematical formulas to debuggable code. When a nonlinear routine fails, the error often entered through a product bucket much earlier. Encourage logging or table-driven tests that show masks, signs, contractions, and grade filters for representative collisions, because those records make meet and inverse bugs far easier to localize."
+    },
+    {
+      "slide": 14,
+      "label": "Test Cases",
+      "notes": "Close the technical development with tests because tests are how these algorithms become trustworthy. The table deliberately starts below the nonlinear layer: product signs, contractions, and grade filters must be correct before higher operations can be interpreted. Then it climbs through inverse, factorization, classifier, meet/join, and threshold cases, matching the notebook's sanity-check philosophy."
+    },
+    {
+      "slide": 15,
+      "label": "Recap",
+      "notes": "End by giving students a debugging ritual rather than a memory dump. When a nonlinear product looks wrong, ask which structure the implementation claimed to recognize and what evidence supported that claim. The best routines expose product-kernel records, inverse residuals, factorization residuals, delta grade predictions, and threshold decisions, so failures become diagnosable instead of opaque."
+    }
+  ]
+}
+</script>
+</body>
+</html>

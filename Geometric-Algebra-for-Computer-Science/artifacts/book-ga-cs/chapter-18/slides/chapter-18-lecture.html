@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometric Algebra for Computer Science - Chapter 18</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="chapter-18">
+  <meta name="chapter_title" content="18 - Implementation Issues">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-18-implementation-issues/18-implementation-issues.ipynb">
+  <meta name="source_span" content="printed pages 503-509; PDF pages 526-532.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script id="deck-metadata" type="application/json">
+{
+  "course": "Geometric Algebra for Computer Science",
+  "chapter_id": "chapter-18",
+  "chapter_title": "18 - Implementation Issues",
+  "notebook_path": "Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-18-implementation-issues/18-implementation-issues.ipynb",
+  "source_span": "printed pages 503-509; PDF pages 526-532.",
+  "source_pdf": "Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Implementation Issues",
+      "notes": "Open by framing the chapter as the moment where geometric algebra becomes software. The earlier chapters made objects feel coordinate-free, but a program must still choose slots, signs, metrics, tests, and kernels. The promise is practical: representation choices should preserve the geometry while making later algorithms inspectable."
+    },
+    {
+      "slide": 2,
+      "title": "Four Implementation Levels",
+      "notes": "Use the four levels as a mental stack. Basis blades decide names and products, linear multivectors decide coordinate storage and distributive loops, nonlinear algorithms handle operations that need specialized numerical work, and applications should see stable geometric operations rather than raw storage details."
+    },
+    {
+      "slide": 3,
+      "title": "Basis Ordering Contract",
+      "notes": "Pause on the basis order because every downstream table, array, and generated kernel inherits it. A bit mask is compact, but it is not self-explanatory unless the implementation fixes the basis-vector order, grade ordering, and slot names before any product table is trusted."
+    },
+    {
+      "slide": 4,
+      "title": "Product Signs And Metrics",
+      "notes": "Walk through the product as three separate concerns: the surviving basis-vector set, the parity sign from reordering, and the metric factor from repeated vectors. Separating these concerns helps students debug signs without confusing orientation errors with signature-dependent metric behavior."
+    },
+    {
+      "slide": 5,
+      "title": "Dense Coordinates",
+      "notes": "Dense coordinates are attractive because the array shape is fixed and every operation has an obvious loop. The important warning is that fixed shape is not the same as efficient shape. In high dimension, most geometric objects touch only a small fraction of the available slots."
+    },
+    {
+      "slide": 6,
+      "title": "Sparse And Factored Forms",
+      "notes": "Contrast sparse maps with factored blades as two ways of refusing to pay for unused coordinates. Sparse coordinates keep the additive basis-blade language, while factored blades keep the generating vectors. Each representation makes one class of operations pleasant and another class more expensive."
+    },
+    {
+      "slide": 7,
+      "title": "Matrix Representations",
+      "notes": "Treat matrices as a verification tool and a narrow implementation option, not as a replacement for the geometric interface. Matrix multiplication can model the geometric product in small Clifford algebras, but grade projection, outer product, contractions, and model predicates still need explicit attention."
+    },
+    {
+      "slide": 8,
+      "title": "Symbolic Bootstrap",
+      "notes": "Position symbolic algebra as a development-time assistant. It can derive coordinate formulas, expose sign conventions, and generate specialized code, but the runtime path should usually be numeric. The useful workflow is derive, freeze, test, and then execute a compact kernel repeatedly."
+    },
+    {
+      "slide": 9,
+      "title": "Validation Ladder",
+      "notes": "Make testing feel structural rather than anecdotal. A few hand products are necessary, but the reliable implementation checks entire layers: basis table consistency, dense and sparse agreement, matrix representation preservation, nonlinear residuals, and application-level geometric invariants."
+    },
+    {
+      "slide": 10,
+      "title": "Performance Tradeoffs",
+      "notes": "The chart is not meant to settle the representation question by itself. It gives the class a scale sense: full multivectors grow exponentially, fixed grades grow combinatorially, and factored blades grow with the number of stored vectors. Real performance also depends on memory layout and specialization."
+    },
+    {
+      "slide": 11,
+      "title": "Representation Policy",
+      "notes": "Use the policy slide as a decision exercise. Ask what the algorithm actually touches, whether products preserve sparsity, whether grade information matters, and whether the implementation will be run once for derivation or millions of times in an application loop."
+    },
+    {
+      "slide": 12,
+      "title": "Part III Roadmap",
+      "notes": "Connect the chapter to the rest of the part. Chapter 18 names the implementation questions, Chapter 19 makes basis blades reliable, Chapter 20 distributes linear products, Chapter 21 treats nonlinear operations as algorithms, Chapter 22 specializes performance, and Chapter 23 tests the stack in application code."
+    },
+    {
+      "slide": 13,
+      "title": "Carry Forward",
+      "notes": "Close by making the main habit explicit: do not choose a representation only because it is elegant on paper. Choose it because it keeps the required products, signs, metrics, validations, and performance profile visible enough that the geometric code remains trustworthy."
+    }
+  ]
+}
+  </script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    deck-stage > section {
+      width: 1920px;
+      height: 1080px;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      display: flex;
+      flex-direction: column;
+      padding: 64px 92px 66px;
+      border-top: 10px solid var(--slide-accent);
+      background:
+        linear-gradient(90deg, rgba(30, 58, 138, 0.026) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.022) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 76px 76px, 76px 76px, auto;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.034) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(109, 40, 217, 0.026) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px, 72px 72px, auto;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p,
+    ul,
+    figure {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 14px;
+      font-size: 58px;
+      line-height: 1.06;
+      letter-spacing: 0;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: 48px;
+      line-height: 1.1;
+      letter-spacing: 0;
+      font-weight: 700;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: 30px;
+      line-height: 1.14;
+      letter-spacing: 0;
+      font-weight: 700;
+      color: var(--slide-accent);
+    }
+
+    p,
+    li {
+      font-size: 26px;
+      line-height: 1.3;
+    }
+
+    ul {
+      margin-bottom: 0;
+      padding-left: 30px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .eyebrow {
+      margin-bottom: 14px;
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--slide-dimmed);
+    }
+
+    .rule {
+      width: 92px;
+      height: 6px;
+      margin: 16px 0 24px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 30px;
+      align-items: stretch;
+    }
+
+    .cols {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .wide-left {
+      grid-template-columns: 1.12fr 0.88fr;
+    }
+
+    .wide-right {
+      grid-template-columns: 0.88fr 1.12fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .four {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-left: 6px solid var(--slide-accent);
+      border-radius: 8px;
+      padding: 20px 22px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.045);
+    }
+
+    .panel.blue {
+      border-left-color: var(--slide-blue);
+      background: var(--math-definition-bg);
+    }
+
+    .panel.teal {
+      border-left-color: var(--slide-teal);
+      background: var(--math-example-bg);
+    }
+
+    .panel.amber {
+      border-left-color: var(--slide-amber);
+      background: var(--math-warning-bg);
+    }
+
+    .panel.violet {
+      border-left-color: var(--slide-violet);
+      background: var(--math-exercise-bg);
+    }
+
+    .panel + .panel {
+      margin-top: 16px;
+    }
+
+    .formula {
+      margin: 12px 0 0;
+      padding: 14px 16px;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      font-family: var(--font-math);
+      font-size: 32px;
+      line-height: 1.24;
+      text-align: center;
+    }
+
+    .formula.large {
+      font-size: 38px;
+    }
+
+    .code {
+      font-family: var(--font-code);
+      font-size: 22px;
+      line-height: 1.34;
+    }
+
+    .caption {
+      margin-top: 10px;
+      font-size: 22px;
+      line-height: 1.25;
+      color: var(--slide-dimmed);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 28px;
+      margin-top: 16px;
+      font-size: 22px;
+      line-height: 1.2;
+      color: var(--slide-dimmed);
+    }
+
+    .muted {
+      color: var(--slide-muted);
+    }
+
+    .diagram-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .mini-card {
+      min-height: 136px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .mini-card strong {
+      margin-bottom: 8px;
+      font-size: 28px;
+      line-height: 1.14;
+      color: var(--slide-accent);
+    }
+
+    .mini-card span {
+      font-size: 23px;
+      line-height: 1.25;
+      color: var(--slide-muted);
+    }
+
+    .katex-display {
+      margin: 0.2em 0;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section data-label="01 Implementation Issues">
+      <div class="slide alt">
+        <div class="eyebrow">Geometric Algebra for Computer Science</div>
+        <div class="content wide-left">
+          <div>
+            <h1>Implementation Issues: From Algebra To Kernels</h1>
+            <div class="rule"></div>
+            <p class="muted">Chapter 18, printed pages 503-509; PDF pages 526-532.</p>
+            <div class="panel blue">
+              <h3>Lecture Promise</h3>
+              <p>Turn coordinate-free geometric algebra into choices a program can store, multiply, validate, and optimize.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Notebook Grounding</h3>
+              <p class="code">part-03-implementation/chapter-18-implementation-issues/18-implementation-issues.ipynb</p>
+            </div>
+          </div>
+          <div class="diagram-box">
+            <svg viewBox="0 0 760 620" role="img" aria-label="implementation stack from basis blades to application">
+              <defs>
+                <marker id="s1-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="96" y="78" width="568" height="94" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="96" y="208" width="568" height="94" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="96" y="338" width="568" height="94" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <rect x="96" y="468" width="568" height="94" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <line x1="380" y1="172" x2="380" y2="208" stroke="#475569" stroke-width="5" marker-end="url(#s1-arrow)"/>
+              <line x1="380" y1="302" x2="380" y2="338" stroke="#475569" stroke-width="5" marker-end="url(#s1-arrow)"/>
+              <line x1="380" y1="432" x2="380" y2="468" stroke="#475569" stroke-width="5" marker-end="url(#s1-arrow)"/>
+              <text x="142" y="133" font-family="Source Sans 3" font-size="34" font-weight="700" fill="#2563EB">basis blades</text>
+              <text x="142" y="263" font-family="Source Sans 3" font-size="34" font-weight="700" fill="#0F766E">linear multivectors</text>
+              <text x="142" y="393" font-family="Source Sans 3" font-size="34" font-weight="700" fill="#B45309">nonlinear algorithms</text>
+              <text x="142" y="523" font-family="Source Sans 3" font-size="34" font-weight="700" fill="#6D28D9">application geometry</text>
+              <text x="474" y="132" font-family="STIX Two Text" font-size="30" fill="#111827">e_i e_j</text>
+              <text x="474" y="262" font-family="STIX Two Text" font-size="30" fill="#111827">A = \sum a_I e_I</text>
+              <text x="474" y="392" font-family="STIX Two Text" font-size="30" fill="#111827">A^{-1}, meet, exp</text>
+              <text x="474" y="522" font-family="Source Sans 3" font-size="28" fill="#111827">ray tracing, vision, modeling</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>course: Geometric Algebra for Computer Science</span><span>chapter-18</span></div>
+      </div>
+      <aside class="speaker-notes">Open by framing the chapter as the moment where geometric algebra becomes software. The earlier chapters made objects feel coordinate-free, but a program must still choose slots, signs, metrics, tests, and kernels. The promise is practical: representation choices should preserve the geometry while making later algorithms inspectable.</aside>
+    </section>
+
+    <section data-label="02 Four Implementation Levels">
+      <div class="slide">
+        <div class="eyebrow">Implementation stack</div>
+        <h2>Four Levels Separate Storage, Algebra, Algorithms, And Use</h2>
+        <div class="rule"></div>
+        <div class="content four">
+          <div class="panel blue">
+            <h3>1. Basis Blades</h3>
+            <p>Choose blade names, ordering, signs, and metric factors.</p>
+            <div class="formula">\(e_I e_J = s\,m\,e_{I\oplus J}\)</div>
+          </div>
+          <div class="panel teal">
+            <h3>2. Linear Layer</h3>
+            <p>Apply distributive products to dense arrays, sparse maps, or matrices.</p>
+            <div class="formula">\([[A+B]]=[[A]]+[[B]]\)</div>
+          </div>
+          <div class="panel amber">
+            <h3>3. Nonlinear Layer</h3>
+            <p>Use specialized routines for inverse, meet, join, factorization, and exponentials.</p>
+            <div class="formula">\(A^{-1},\; A\vee B,\; e^B\)</div>
+          </div>
+          <div class="panel violet">
+            <h3>4. Application</h3>
+            <p>Expose geometric operations while hiding storage details behind stable APIs.</p>
+            <div class="formula">objects -> operations -> tests</div>
+          </div>
+        </div>
+        <div class="footer"><span>source span focus: implementation levels and alternatives</span><span>each level has different failure modes</span></div>
+      </div>
+      <aside class="speaker-notes">Use the four levels as a mental stack. Basis blades decide names and products, linear multivectors decide coordinate storage and distributive loops, nonlinear algorithms handle operations that need specialized numerical work, and applications should see stable geometric operations rather than raw storage details.</aside>
+    </section>
+
+    <section data-label="03 Basis Ordering Contract">
+      <div class="slide alt">
+        <div class="eyebrow">Basis ordering</div>
+        <h2>A Coordinate Slot Is A Contract, Not Just A Container</h2>
+        <div class="rule"></div>
+        <div class="content wide-left">
+          <div class="diagram-box">
+            <svg viewBox="0 0 900 600" role="img" aria-label="basis ordering and bit mask slots for three-dimensional algebra">
+              <rect x="58" y="76" width="786" height="92" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="58" y="216" width="786" height="92" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="58" y="356" width="786" height="92" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <g font-family="JetBrains Mono" font-size="24" fill="#111827">
+                <text x="92" y="116">000 -> 1</text>
+                <text x="270" y="116">001 -> e1</text>
+                <text x="470" y="116">010 -> e2</text>
+                <text x="670" y="116">100 -> e3</text>
+                <text x="92" y="256">011 -> e12</text>
+                <text x="300" y="256">110 -> e23</text>
+                <text x="510" y="256">101 -> e13</text>
+                <text x="92" y="396">111 -> e123</text>
+              </g>
+              <text x="74" y="64" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#2563EB">grade 0 and 1 slots</text>
+              <text x="74" y="204" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#0F766E">grade 2 slots</text>
+              <text x="74" y="344" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#6D28D9">grade 3 slot</text>
+              <line x1="124" y1="500" x2="780" y2="500" stroke="#CBD5E1" stroke-width="5"/>
+              <circle cx="174" cy="500" r="14" fill="#2563EB"/>
+              <circle cx="374" cy="500" r="14" fill="#0F766E"/>
+              <circle cx="574" cy="500" r="14" fill="#B45309"/>
+              <circle cx="774" cy="500" r="14" fill="#6D28D9"/>
+              <text x="130" y="552" font-family="Source Sans 3" font-size="26" fill="#475569">order</text>
+              <text x="312" y="552" font-family="Source Sans 3" font-size="26" fill="#475569">mask</text>
+              <text x="508" y="552" font-family="Source Sans 3" font-size="26" fill="#475569">grade</text>
+              <text x="702" y="552" font-family="Source Sans 3" font-size="26" fill="#475569">slot</text>
+            </svg>
+          </div>
+          <div>
+            <div class="panel blue">
+              <h3>Fixed Basis Vector Order</h3>
+              <p>The mask `101` only means \(e_1e_3\) after the basis order is fixed.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Grade-Aware Layout</h3>
+              <p>Dense arrays may use all \(2^n\) slots; grade-specialized layouts use selected slots.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Debugging Rule</h3>
+              <p>Every product-table entry should be traceable back to this ordering contract.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>basis blades become integer masks</span><span>ordering controls signs and coordinate names</span></div>
+      </div>
+      <aside class="speaker-notes">Pause on the basis order because every downstream table, array, and generated kernel inherits it. A bit mask is compact, but it is not self-explanatory unless the implementation fixes the basis-vector order, grade ordering, and slot names before any product table is trusted.</aside>
+    </section>
+
+    <section data-label="04 Product Signs And Metrics">
+      <div class="slide">
+        <div class="eyebrow">Basis product kernel</div>
+        <h2>Products Need Surviving Bits, Reordering Sign, And Metric Factor</h2>
+        <div class="rule"></div>
+        <div class="content cols">
+          <div class="diagram-box">
+            <svg viewBox="0 0 820 600" role="img" aria-label="basis blade product as xor sign and metric">
+              <defs>
+                <marker id="s4-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="56" y="66" width="260" height="94" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="504" y="66" width="260" height="94" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="280" y="248" width="260" height="94" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="96" y="432" width="626" height="94" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <line x1="316" y1="113" x2="504" y2="113" stroke="#475569" stroke-width="5" marker-end="url(#s4-arrow)"/>
+              <line x1="186" y1="160" x2="352" y2="248" stroke="#475569" stroke-width="5" marker-end="url(#s4-arrow)"/>
+              <line x1="634" y1="160" x2="468" y2="248" stroke="#475569" stroke-width="5" marker-end="url(#s4-arrow)"/>
+              <line x1="410" y1="342" x2="410" y2="432" stroke="#475569" stroke-width="5" marker-end="url(#s4-arrow)"/>
+              <text x="100" y="125" font-family="STIX Two Text" font-size="36" fill="#2563EB">e12</text>
+              <text x="548" y="125" font-family="STIX Two Text" font-size="36" fill="#2563EB">e23</text>
+              <text x="330" y="307" font-family="JetBrains Mono" font-size="30" fill="#0F766E">011 XOR 110 = 101</text>
+              <text x="140" y="491" font-family="STIX Two Text" font-size="36" fill="#B45309">e12 e23 = + metric(e2) e13</text>
+              <text x="344" y="44" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#475569">multiply</text>
+              <text x="286" y="390" font-family="Source Sans 3" font-size="28" font-weight="700" fill="#475569">canonicalize</text>
+            </svg>
+          </div>
+          <div>
+            <div class="panel blue">
+              <h3>Surviving Basis Vectors</h3>
+              <p>XOR removes repeated basis-vector indices and names the result mask.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Orientation Sign</h3>
+              <p>Count swaps needed to return the concatenated list to canonical order.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Metric Factor</h3>
+              <p>A repeated \(e_i\) contributes \(e_i^2\), so the same masks can behave differently by signature.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>basis product is the source of truth</span><span>sign and metric are separate debugging channels</span></div>
+      </div>
+      <aside class="speaker-notes">Walk through the product as three separate concerns: the surviving basis-vector set, the parity sign from reordering, and the metric factor from repeated vectors. Separating these concerns helps students debug signs without confusing orientation errors with signature-dependent metric behavior.</aside>
+    </section>
+
+    <section data-label="05 Dense Coordinates">
+      <div class="slide alt">
+        <div class="eyebrow">Dense multivectors</div>
+        <h2>Dense Coordinates Make Every Slot Visible</h2>
+        <div class="rule"></div>
+        <div class="content wide-right">
+          <div>
+            <div class="panel blue">
+              <h3>Strength</h3>
+              <p>Simple indexing, predictable array shape, easy addition, and straightforward product loops.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Cost</h3>
+              <p>A pure vector in an \(n\)-dimensional algebra still sits inside a \(2^n\)-slot multivector layout.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Good Fit</h3>
+              <p>Small fixed algebras, mixed-grade objects, debugging, and generated kernels with known dimensions.</p>
+            </div>
+          </div>
+          <div class="diagram-box">
+            <svg viewBox="0 0 900 600" role="img" aria-label="dense coordinate vector with active and zero slots">
+              <g transform="translate(82 118)">
+                <rect x="0" y="0" width="84" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                <rect x="92" y="0" width="84" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                <rect x="184" y="0" width="84" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                <rect x="276" y="0" width="84" height="330" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                <rect x="368" y="0" width="84" height="330" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+                <rect x="460" y="0" width="84" height="330" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+                <rect x="552" y="0" width="84" height="330" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+                <rect x="644" y="0" width="84" height="330" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+                <g font-family="JetBrains Mono" font-size="24" text-anchor="middle" fill="#111827">
+                  <text x="42" y="62">a0</text><text x="134" y="62">a1</text><text x="226" y="62">a2</text><text x="318" y="62">a3</text>
+                  <text x="410" y="62">a12</text><text x="502" y="62">0</text><text x="594" y="62">a13</text><text x="686" y="62">0</text>
+                </g>
+                <g font-family="Source Sans 3" font-size="23" text-anchor="middle" fill="#64748B">
+                  <text x="42" y="306">1</text><text x="134" y="306">e1</text><text x="226" y="306">e2</text><text x="318" y="306">e3</text>
+                  <text x="410" y="306">e12</text><text x="502" y="306">e23</text><text x="594" y="306">e13</text><text x="686" y="306">e123</text>
+                </g>
+              </g>
+              <path d="M156 502 C310 546 564 546 736 502" fill="none" stroke="#B45309" stroke-width="6" stroke-dasharray="14 10"/>
+              <text x="222" y="560" font-family="Source Sans 3" font-size="28" fill="#B45309">the loop sees zeros unless the implementation specializes</text>
+              <text x="74" y="82" font-family="Source Sans 3" font-size="30" font-weight="700" fill="#1E3A8A">Cl(3,0) dense vector: 8 fixed slots</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>dense layout: transparent and predictable</span><span>memory grows with the full algebra</span></div>
+      </div>
+      <aside class="speaker-notes">Dense coordinates are attractive because the array shape is fixed and every operation has an obvious loop. The important warning is that fixed shape is not the same as efficient shape. In high dimension, most geometric objects touch only a small fraction of the available slots.</aside>
+    </section>
+
+    <section data-label="06 Sparse And Factored Forms">
+      <div class="slide">
+        <div class="eyebrow">Alternative coordinate economics</div>
+        <h2>Sparse And Factored Forms Pay For Structure Instead Of Empty Slots</h2>
+        <div class="rule"></div>
+        <div class="content cols">
+          <div class="diagram-box">
+            <svg viewBox="0 0 820 590" role="img" aria-label="sparse map compared with factored blade representation">
+              <rect x="72" y="74" width="306" height="410" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="442" y="74" width="306" height="410" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <text x="104" y="126" font-family="Source Sans 3" font-size="32" font-weight="700" fill="#0F766E">sparse map</text>
+              <text x="474" y="126" font-family="Source Sans 3" font-size="32" font-weight="700" fill="#6D28D9">factored blade</text>
+              <g font-family="JetBrains Mono" font-size="25" fill="#111827">
+                <text x="112" y="192">{</text>
+                <text x="138" y="238">e1: 1.2,</text>
+                <text x="138" y="286">e3: 0.5,</text>
+                <text x="138" y="334">e12: -0.8</text>
+                <text x="112" y="382">}</text>
+              </g>
+              <g stroke-width="5" stroke-linecap="round">
+                <line x1="508" y1="220" x2="662" y2="168" stroke="#2563EB"/>
+                <line x1="508" y1="220" x2="666" y2="278" stroke="#0F766E"/>
+                <line x1="508" y1="220" x2="604" y2="370" stroke="#B45309"/>
+              </g>
+              <circle cx="508" cy="220" r="11" fill="#111827"/>
+              <text x="492" y="430" font-family="Source Sans 3" font-size="25" fill="#475569">store generating vectors</text>
+              <text x="114" y="430" font-family="Source Sans 3" font-size="25" fill="#475569">store active basis slots</text>
+            </svg>
+          </div>
+          <div>
+            <div class="panel teal">
+              <h3>Sparse Coordinates</h3>
+              <p>Natural when active terms are few and products do not immediately fill the whole algebra.</p>
+            </div>
+            <div class="panel violet">
+              <h3>Factored Blades</h3>
+              <p>Natural when an object is best remembered as a span generated by vectors.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Tradeoff</h3>
+              <p>Addition is easy in basis coordinates. Meets, joins, and spans can be easier in factored form.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>same geometry, different costs</span><span>choose representation by operation profile</span></div>
+      </div>
+      <aside class="speaker-notes">Contrast sparse maps with factored blades as two ways of refusing to pay for unused coordinates. Sparse coordinates keep the additive basis-blade language, while factored blades keep the generating vectors. Each representation makes one class of operations pleasant and another class more expensive.</aside>
+    </section>
+
+    <section data-label="07 Matrix Representations">
+      <div class="slide alt">
+        <div class="eyebrow">Isomorphic matrix algebras</div>
+        <h2>Matrix Forms Can Verify Products Without Owning The Whole Interface</h2>
+        <div class="rule"></div>
+        <div class="content wide-right">
+          <div>
+            <div class="panel blue">
+              <h3>Cl(2,0) Example</h3>
+              <div class="formula">\(x_0+x_1e_1+x_2e_2+x_{12}e_{12}\)</div>
+              <div class="formula">\(\begin{bmatrix}x_0+x_2 & x_1-x_{12}\\ x_1+x_{12} & x_0-x_2\end{bmatrix}\)</div>
+            </div>
+            <div class="panel amber">
+              <h3>Limitation</h3>
+              <p>The geometric product is not the only operation a geometric algebra program needs.</p>
+            </div>
+          </div>
+          <div class="diagram-box">
+            <svg viewBox="0 0 860 600" role="img" aria-label="matrix multiplication compared with grade-aware operations">
+              <defs>
+                <marker id="s7-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="70" y="92" width="250" height="154" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="540" y="92" width="250" height="154" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="306" y="326" width="250" height="154" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <line x1="320" y1="168" x2="540" y2="168" stroke="#475569" stroke-width="5" marker-end="url(#s7-arrow)"/>
+              <line x1="430" y1="246" x2="430" y2="326" stroke="#475569" stroke-width="5" marker-end="url(#s7-arrow)"/>
+              <text x="108" y="154" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#2563EB">matrix product</text>
+              <text x="584" y="154" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#2563EB">GA product</text>
+              <text x="350" y="390" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#0F766E">verification</text>
+              <text x="104" y="206" font-family="JetBrains Mono" font-size="25" fill="#111827">M(x) M(y)</text>
+              <text x="590" y="206" font-family="STIX Two Text" font-size="30" fill="#111827">[[xy]]</text>
+              <text x="342" y="442" font-family="Source Sans 3" font-size="25" fill="#475569">same product, extra interface still needed</text>
+              <g fill="#B45309" font-family="Source Sans 3" font-size="25" font-weight="700">
+                <text x="92" y="540">outer product</text>
+                <text x="306" y="540">contraction</text>
+                <text x="522" y="540">grade projection</text>
+                <text x="720" y="540">reverse</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>matrix algebras help with small checks</span><span>grade-aware operations remain first-class</span></div>
+      </div>
+      <aside class="speaker-notes">Treat matrices as a verification tool and a narrow implementation option, not as a replacement for the geometric interface. Matrix multiplication can model the geometric product in small Clifford algebras, but grade projection, outer product, contractions, and model predicates still need explicit attention.</aside>
+    </section>
+
+    <section data-label="08 Symbolic Bootstrap">
+      <div class="slide">
+        <div class="eyebrow">Symbolic versus runtime</div>
+        <h2>Use Symbolic Algebra To Derive Kernels, Then Run Numeric Code</h2>
+        <div class="rule"></div>
+        <div class="content cols">
+          <div class="diagram-box">
+            <svg viewBox="0 0 820 590" role="img" aria-label="symbolic bootstrap to numeric runtime pipeline">
+              <defs>
+                <marker id="s8-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#475569"/>
+                </marker>
+              </defs>
+              <rect x="72" y="90" width="676" height="92" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="72" y="248" width="676" height="92" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="72" y="406" width="676" height="92" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <line x1="410" y1="182" x2="410" y2="248" stroke="#475569" stroke-width="5" marker-end="url(#s8-arrow)"/>
+              <line x1="410" y1="340" x2="410" y2="406" stroke="#475569" stroke-width="5" marker-end="url(#s8-arrow)"/>
+              <text x="118" y="146" font-family="Source Sans 3" font-size="32" font-weight="700" fill="#2563EB">derive coordinate formula</text>
+              <text x="118" y="304" font-family="Source Sans 3" font-size="32" font-weight="700" fill="#0F766E">freeze generated kernel</text>
+              <text x="118" y="462" font-family="Source Sans 3" font-size="32" font-weight="700" fill="#B45309">execute numeric loop</text>
+              <text x="516" y="146" font-family="JetBrains Mono" font-size="24" fill="#111827">SymPy</text>
+              <text x="516" y="304" font-family="JetBrains Mono" font-size="24" fill="#111827">tests + codegen</text>
+              <text x="516" y="462" font-family="JetBrains Mono" font-size="24" fill="#111827">arrays/maps</text>
+            </svg>
+          </div>
+          <div>
+            <div class="panel blue">
+              <h3>Derivation Path</h3>
+              <p>Symbolic expressions reveal sign conventions and simplify product formulas before deployment.</p>
+            </div>
+            <div class="panel teal">
+              <h3>Runtime Path</h3>
+              <p>Numerical kernels do repeated application with fixed memory layout and predictable cost.</p>
+            </div>
+            <div class="panel amber">
+              <h3>Quality Gate</h3>
+              <p>Generated formulas should be checked against the reference coordinate engine before use.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>symbolic bootstrap, numeric runtime</span><span>derive once, test continuously</span></div>
+      </div>
+      <aside class="speaker-notes">Position symbolic algebra as a development-time assistant. It can derive coordinate formulas, expose sign conventions, and generate specialized code, but the runtime path should usually be numeric. The useful workflow is derive, freeze, test, and then execute a compact kernel repeatedly.</aside>
+    </section>
+
+    <section data-label="09 Validation Ladder">
+      <div class="slide alt">
+        <div class="eyebrow">Implementation validation</div>
+        <h2>Tests Should Follow The Same Layering As The Implementation</h2>
+        <div class="rule"></div>
+        <div class="content wide-left">
+          <div class="diagram-box">
+            <svg viewBox="0 0 900 600" role="img" aria-label="validation ladder for geometric algebra implementation">
+              <rect x="122" y="468" width="656" height="68" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <rect x="162" y="372" width="576" height="68" rx="10" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <rect x="202" y="276" width="496" height="68" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <rect x="242" y="180" width="416" height="68" rx="10" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <rect x="282" y="84" width="336" height="68" rx="10" fill="#F8FAFC" stroke="#64748B" stroke-width="4"/>
+              <g font-family="Source Sans 3" font-size="29" font-weight="700" text-anchor="middle">
+                <text x="450" y="512" fill="#2563EB">basis product table</text>
+                <text x="450" y="416" fill="#0F766E">dense sparse parity</text>
+                <text x="450" y="320" fill="#B45309">matrix preservation</text>
+                <text x="450" y="224" fill="#6D28D9">nonlinear residuals</text>
+                <text x="450" y="128" fill="#475569">application invariants</text>
+              </g>
+              <g fill="#111827">
+                <circle cx="92" cy="502" r="10"/><circle cx="132" cy="406" r="10"/><circle cx="172" cy="310" r="10"/><circle cx="212" cy="214" r="10"/><circle cx="252" cy="118" r="10"/>
+              </g>
+            </svg>
+          </div>
+          <div>
+            <div class="panel blue">
+              <h3>Layered Checks</h3>
+              <ul>
+                <li>Associativity and distributivity over random inputs.</li>
+                <li>Agreement between dense and sparse products.</li>
+                <li>Matrix checks for small Clifford algebras.</li>
+              </ul>
+            </div>
+            <div class="panel amber">
+              <h3>Numerical Habit</h3>
+              <p>For nonlinear routines, report residuals and conditioning warnings rather than trusting returned values alone.</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>invariants catch implementation drift</span><span>validation is a design feature</span></div>
+      </div>
+      <aside class="speaker-notes">Make testing feel structural rather than anecdotal. A few hand products are necessary, but the reliable implementation checks entire layers: basis table consistency, dense and sparse agreement, matrix representation preservation, nonlinear residuals, and application-level geometric invariants.</aside>
+    </section>
+
+    <section data-label="10 Performance Tradeoffs">
+      <div class="slide">
+        <div class="eyebrow">Storage and operation scale</div>
+        <h2>Growth Rates Explain Why One Layout Cannot Be Universal</h2>
+        <div class="rule"></div>
+        <div class="content wide-right">
+          <div>
+            <div class="panel blue">
+              <h3>Full Multivector</h3>
+              <div class="formula large">\(2^n\)</div>
+            </div>
+            <div class="panel teal">
+              <h3>Fixed Grade \(k\)</h3>
+              <div class="formula large">\(\binom{n}{k}\)</div>
+            </div>
+            <div class="panel violet">
+              <h3>Factored \(k\)-Blade</h3>
+              <div class="formula large">\(k n\)</div>
+            </div>
+          </div>
+          <div class="diagram-box">
+            <svg viewBox="0 0 900 600" role="img" aria-label="storage growth comparison for dense grade two and factored blades">
+              <line x1="96" y1="502" x2="812" y2="502" stroke="#475569" stroke-width="4"/>
+              <line x1="96" y1="92" x2="96" y2="502" stroke="#475569" stroke-width="4"/>
+              <polyline points="116,486 236,470 356,438 476,374 596,246 716,98" fill="none" stroke="#2563EB" stroke-width="7"/>
+              <polyline points="116,492 236,482 356,466 476,444 596,416 716,382" fill="none" stroke="#0F766E" stroke-width="7"/>
+              <polyline points="116,494 236,488 356,482 476,476 596,470 716,464" fill="none" stroke="#6D28D9" stroke-width="7"/>
+              <g font-family="Source Sans 3" font-size="23" fill="#475569" text-anchor="middle">
+                <text x="116" y="540">2</text><text x="236" y="540">4</text><text x="356" y="540">6</text><text x="476" y="540">8</text><text x="596" y="540">10</text><text x="716" y="540">12</text>
+              </g>
+              <text x="430" y="580" font-family="Source Sans 3" font-size="25" fill="#475569">dimension n</text>
+              <text x="34" y="314" transform="rotate(-90 34 314)" font-family="Source Sans 3" font-size="25" fill="#475569">stored slots, log scale intuition</text>
+              <rect x="578" y="114" width="250" height="126" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+              <line x1="602" y1="150" x2="650" y2="150" stroke="#2563EB" stroke-width="7"/><text x="668" y="158" font-family="Source Sans 3" font-size="24" fill="#111827">full 2^n</text>
+              <line x1="602" y1="186" x2="650" y2="186" stroke="#0F766E" stroke-width="7"/><text x="668" y="194" font-family="Source Sans 3" font-size="24" fill="#111827">grade 2</text>
+              <line x1="602" y1="222" x2="650" y2="222" stroke="#6D28D9" stroke-width="7"/><text x="668" y="230" font-family="Source Sans 3" font-size="24" fill="#111827">factored 2-blade</text>
+            </svg>
+          </div>
+        </div>
+        <div class="footer"><span>counts guide design, but benchmarks still matter</span><span>specialization changes actual runtime</span></div>
+      </div>
+      <aside class="speaker-notes">The chart is not meant to settle the representation question by itself. It gives the class a scale sense: full multivectors grow exponentially, fixed grades grow combinatorially, and factored blades grow with the number of stored vectors. Real performance also depends on memory layout and specialization.</aside>
+    </section>
+
+    <section data-label="11 Representation Policy">
+      <div class="slide alt">
+        <div class="eyebrow">Implementation choice</div>
+        <h2>Let The Object And Algorithm Choose The Representation</h2>
+        <div class="rule"></div>
+        <div class="content three">
+          <div class="panel blue">
+            <h3>Dense</h3>
+            <ul>
+              <li>Small fixed algebra.</li>
+              <li>Mixed-grade objects.</li>
+              <li>Generated kernels.</li>
+            </ul>
+            <div class="formula">best when zeros are few or predictable</div>
+          </div>
+          <div class="panel teal">
+            <h3>Sparse</h3>
+            <ul>
+              <li>Few active basis terms.</li>
+              <li>Products preserve structure.</li>
+              <li>Need grade visibility.</li>
+            </ul>
+            <div class="formula">best when active pairs are few</div>
+          </div>
+          <div class="panel violet">
+            <h3>Factored Or Matrix</h3>
+            <ul>
+              <li>Spans, blades, and versors.</li>
+              <li>Small algebra verification.</li>
+              <li>Special nonlinear algorithms.</li>
+            </ul>
+            <div class="formula">best when structure outranks slots</div>
+          </div>
+        </div>
+        <div class="footer"><span>decision questions: active terms, required products, tests, runtime count</span><span>no universal winner</span></div>
+      </div>
+      <aside class="speaker-notes">Use the policy slide as a decision exercise. Ask what the algorithm actually touches, whether products preserve sparsity, whether grade information matters, and whether the implementation will be run once for derivation or millions of times in an application loop.</aside>
+    </section>
+
+    <section data-label="12 Part III Roadmap">
+      <div class="slide">
+        <div class="eyebrow">Roadmap after Chapter 18</div>
+        <h2>Part III Turns These Choices Into Algorithms And Applications</h2>
+        <div class="rule"></div>
+        <div class="content wide-left">
+          <div class="diagram-box">
+            <svg viewBox="0 0 950 590" role="img" aria-label="roadmap from implementation issues through application level">
+              <defs>
+                <marker id="s12-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M0,0 L12,6 L0,12 Z" fill="#475569"/>
+                </marker>
+              </defs>
+              <g>
+                <rect x="46" y="210" width="142" height="150" rx="12" fill="#F8FAFC" stroke="#64748B" stroke-width="4"/>
+                <rect x="224" y="210" width="142" height="150" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                <rect x="402" y="210" width="142" height="150" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+                <rect x="580" y="210" width="142" height="150" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+                <rect x="758" y="210" width="142" height="150" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+                <line x1="188" y1="285" x2="224" y2="285" stroke="#475569" stroke-width="5" marker-end="url(#s12-arrow)"/>
+                <line x1="366" y1="285" x2="402" y2="285" stroke="#475569" stroke-width="5" marker-end="url(#s12-arrow)"/>
+                <line x1="544" y1="285" x2="580" y2="285" stroke="#475569" stroke-width="5" marker-end="url(#s12-arrow)"/>
+                <line x1="722" y1="285" x2="758" y2="285" stroke="#475569" stroke-width="5" marker-end="url(#s12-arrow)"/>
+              </g>
+              <g font-family="Source Sans 3" text-anchor="middle">
+                <text x="117" y="258" font-size="29" font-weight="700" fill="#64748B">18</text>
+                <text x="117" y="304" font-size="25" fill="#111827">issues</text>
+                <text x="295" y="258" font-size="29" font-weight="700" fill="#2563EB">19</text>
+                <text x="295" y="304" font-size="25" fill="#111827">basis</text>
+                <text x="473" y="258" font-size="29" font-weight="700" fill="#0F766E">20</text>
+                <text x="473" y="304" font-size="25" fill="#111827">linear</text>
+                <text x="651" y="258" font-size="29" font-weight="700" fill="#B45309">21</text>
+                <text x="651" y="304" font-size="25" fill="#111827">nonlinear</text>
+                <text x="829" y="258" font-size="29" font-weight="700" fill="#6D28D9">22-23</text>
+                <text x="829" y="304" font-size="25" fill="#111827">specialize</text>
+              </g>
+              <text x="52" y="96" font-family="Source Sans 3" font-size="31" font-weight="700" fill="#1E3A8A">from representation questions to tested geometric code</text>
+              <text x="112" y="436" font-family="Source Sans 3" font-size="25" fill="#475569">name the choices</text>
+              <text x="278" y="436" font-family="Source Sans 3" font-size="25" fill="#475569">trust products</text>
+              <text x="432" y="436" font-family="Source Sans 3" font-size="25" fill="#475569">distribute sums</text>
+              <text x="600" y="436" font-family="Source Sans 3" font-size="25" fill="#475569">solve routines</text>
+              <text x="778" y="436" font-family="Source Sans 3" font-size="25" fill="#475569">benchmark use</text>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="mini-card"><strong>Next</strong><span>Chapter 19 makes product tables and basis-blade operations reliable.</span></div>
+            <div class="mini-card"><strong>Then</strong><span>Chapter 20 distributes linear products over stored multivectors.</span></div>
+            <div class="mini-card"><strong>Finally</strong><span>Chapters 21-23 specialize nonlinear routines and application code.</span></div>
+          </div>
+        </div>
+        <div class="footer"><span>Chapter 18 is the doorway into implementation</span><span>later chapters instantiate the stack</span></div>
+      </div>
+      <aside class="speaker-notes">Connect the chapter to the rest of the part. Chapter 18 names the implementation questions, Chapter 19 makes basis blades reliable, Chapter 20 distributes linear products, Chapter 21 treats nonlinear operations as algorithms, Chapter 22 specializes performance, and Chapter 23 tests the stack in application code.</aside>
+    </section>
+
+    <section data-label="13 Carry Forward">
+      <div class="slide alt">
+        <div class="eyebrow">Chapter synthesis</div>
+        <h2>Trustworthy GA Code Keeps Geometry And Cost Visible</h2>
+        <div class="rule"></div>
+        <div class="content cols">
+          <div>
+            <div class="panel blue">
+              <h3>Implementation Checklist</h3>
+              <ul>
+                <li>Basis order, signs, and metric factors are explicit.</li>
+                <li>Dense, sparse, factored, and matrix forms have named roles.</li>
+                <li>Validation checks run at every representation layer.</li>
+              </ul>
+            </div>
+            <div class="panel amber">
+              <h3>Common Mistake</h3>
+              <p>Choosing a beautiful representation before asking what products, tests, and application loops it must support.</p>
+            </div>
+          </div>
+          <div>
+            <div class="panel teal">
+              <h3>Practical Rule</h3>
+              <div class="formula large">representation = geometry + operations + cost</div>
+            </div>
+            <div class="diagram-box">
+              <svg viewBox="0 0 780 300" role="img" aria-label="implementation feedback loop among geometry operations tests and performance">
+                <defs>
+                  <marker id="s13-arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                    <path d="M0,0 L12,6 L0,12 Z" fill="#475569"/>
+                  </marker>
+                </defs>
+                <circle cx="168" cy="150" r="70" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+                <circle cx="390" cy="150" r="70" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+                <circle cx="612" cy="150" r="70" fill="#F5F3FF" stroke="#6D28D9" stroke-width="5"/>
+                <line x1="238" y1="150" x2="320" y2="150" stroke="#475569" stroke-width="5" marker-end="url(#s13-arrow)"/>
+                <line x1="460" y1="150" x2="542" y2="150" stroke="#475569" stroke-width="5" marker-end="url(#s13-arrow)"/>
+                <path d="M612 222 C498 282 282 282 168 222" fill="none" stroke="#B45309" stroke-width="5" stroke-dasharray="12 9" marker-end="url(#s13-arrow)"/>
+                <text x="168" y="144" text-anchor="middle" font-family="Source Sans 3" font-size="27" font-weight="700" fill="#2563EB">geometry</text>
+                <text x="168" y="178" text-anchor="middle" font-family="Source Sans 3" font-size="23" fill="#475569">meaning</text>
+                <text x="390" y="144" text-anchor="middle" font-family="Source Sans 3" font-size="27" font-weight="700" fill="#0F766E">operations</text>
+                <text x="390" y="178" text-anchor="middle" font-family="Source Sans 3" font-size="23" fill="#475569">products</text>
+                <text x="612" y="144" text-anchor="middle" font-family="Source Sans 3" font-size="27" font-weight="700" fill="#6D28D9">evidence</text>
+                <text x="612" y="178" text-anchor="middle" font-family="Source Sans 3" font-size="23" fill="#475569">tests + speed</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span>source span complete: printed pages 503-509</span><span>next: basic basis-blade operations</span></div>
+      </div>
+      <aside class="speaker-notes">Close by making the main habit explicit: do not choose a representation only because it is elegant on paper. Choose it because it keeps the required products, signs, metrics, validations, and performance profile visible enough that the geometric code remains trustworthy.</aside>
+    </section>
+  </deck-stage>
+</body>
+</html>

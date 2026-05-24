@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometric Algebra for Computer Science - Chapter 19</title>
+  <meta name="course" content="Geometric Algebra for Computer Science">
+  <meta name="chapter_id" content="chapter-19">
+  <meta name="chapter_title" content="19 - Basis Blades and Operations">
+  <meta name="notebook_path" content="Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-19-basis-blades-and-operations/19-basis-blades-and-operations.ipynb">
+  <meta name="source_span" content="printed pages 521; PDF pages 542.">
+  <meta name="source_pdf" content="Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="../../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script id="deck-metadata" type="application/json">
+{
+  "course": "Geometric Algebra for Computer Science",
+  "chapter_id": "chapter-19",
+  "chapter_title": "19 - Basis Blades and Operations",
+  "notebook_path": "Geometric-Algebra-for-Computer-Science/part-03-implementation/chapter-19-basis-blades-and-operations/19-basis-blades-and-operations.ipynb",
+  "source_span": "printed pages 521; PDF pages 542.",
+  "source_pdf": "Geometric-Algebra-for-Computer-Science/Geometric Algebra for Computer Science.pdf",
+  "design_system_version": "lecture-design-system-2026-05-23"
+}
+  </script>
+  <script id="speaker-notes" type="application/json">
+{
+  "slides": [
+    {
+      "slide": 1,
+      "title": "Basis Blades and Operations",
+      "notes": "Open by lowering the abstraction level deliberately. The lecture is not about a new geometric model; it is about the tiny representation contract that every later product depends on. The key promise is that a blade address, a sign rule, and a metric rule are enough to build reliable sparse multivector operations."
+    },
+    {
+      "slide": 2,
+      "title": "Blade Addresses",
+      "notes": "Emphasize that the bitmap is an address, not a visual drawing of the blade. Bit zero names e1 even though it prints on the right side of a binary string. Once that convention is accepted, grade counting, table indexing, and dependency tests become ordinary integer operations."
+    },
+    {
+      "slide": 3,
+      "title": "Bit Tests Become Algebra Tests",
+      "notes": "Use the three bit operations as the computational vocabulary for the chapter. Popcount reads grade, bitwise and detects shared basis-vector factors, and exclusive-or gives the canonical output address after common factors are removed. The arithmetic looks small because the convention has already stored the algebraic ordering."
+    },
+    {
+      "slide": 4,
+      "title": "Swap Parity Gives The Sign",
+      "notes": "Slow down here because sign bugs are contagious. Concatenate the left blade factors with the right blade factors, then count how many inversions must be swapped to restore canonical order. Odd inversion count flips the coefficient; even inversion count preserves it, independent of the eventual metric factor."
+    },
+    {
+      "slide": 5,
+      "title": "Outer Product Fast Path",
+      "notes": "Present the outer product as the cleanest basis-blade operation. A shared bit means the candidate spanning set repeats a basis vector, so the outer product is zero. With no shared bits, the output bitmap is just xor and the coefficient is only the input scales times the parity sign."
+    },
+    {
+      "slide": 6,
+      "title": "Orthogonal Metric Factors",
+      "notes": "Connect the outer-product skeleton to the geometric product. In an orthogonal metric, repeated bits no longer force zero; they collapse into diagonal metric entries. This keeps the result as a single basis blade, which explains why diagonal Euclidean or mixed-signature tables are fast and compact."
+    },
+    {
+      "slide": 7,
+      "title": "Tables Expose Product Contracts",
+      "notes": "Use the paired tables as a diagnostic lens rather than as memorization. The outer table has structural zeros wherever bitmasks overlap. The geometric-product table has the same sign convention but replaces duplicate factors by metric squares, so Euclidean repeated vectors behave like scalar one."
+    },
+    {
+      "slide": 8,
+      "title": "Metric Products By Grade Selection",
+      "notes": "Explain scalar products, contractions, and commutators as reference operations built on top of the geometric product. The implementation can be optimized later, but grade selection gives a readable specification. If a faster contraction routine disagrees on these small basis-blade cases, the faster routine is suspect."
+    },
+    {
+      "slide": 9,
+      "title": "Nonorthogonal Metrics Expand",
+      "notes": "This is the counterexample to any one-output-bitmap assumption. In a null or skew basis, a vector multiplication can produce an outer part and a contraction part at the same time. A product of two basis blades may therefore be a sparse dictionary, not a single weighted blade."
+    },
+    {
+      "slide": 10,
+      "title": "Sparse Multivectors Distribute",
+      "notes": "Move from one blade pair to the sparse multivector layer. Each nonzero term of A multiplies each nonzero term of B, and equal output bitmaps must be merged. This is intentionally direct: it is slow enough to optimize later but transparent enough to trust as a reference."
+    },
+    {
+      "slide": 11,
+      "title": "Unary Signs Are Grade Tables",
+      "notes": "Point out how much implementation work disappears once grade is a popcount. Reversion, grade involution, and Clifford conjugation do not inspect the individual basis-vector indices; they use periodic grade-dependent signs. These tiny tables are excellent smoke tests for off-by-one and integer-width mistakes."
+    },
+    {
+      "slide": 12,
+      "title": "Operation Diagnostics",
+      "notes": "Turn the final slide sequence into a debugging checklist for a geometric algebra library. Every product routine should be checked against bit order, parity, duplicate handling, metric path, grade projection, coefficient cleanup, and associativity on a small table before it is trusted inside larger geometric algorithms."
+    },
+    {
+      "slide": 13,
+      "title": "Carry Forward",
+      "notes": "Close by linking the assigned source page to the notebook. The source page frames later linear products as either matrix actions or sparse distributions over basis blades. Chapter 19 supplies the second route's foundation: reliable addresses, signs, metric factors, sparse merging, and diagnostic checks."
+    }
+  ]
+}
+  </script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    deck-stage > section {
+      width: 1920px;
+      height: 1080px;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      display: flex;
+      flex-direction: column;
+      padding: 62px 88px 58px;
+      border-top: 10px solid var(--slide-accent);
+      background:
+        linear-gradient(90deg, rgba(37, 99, 235, 0.032) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(15, 118, 110, 0.024) 1px, transparent 1px),
+        var(--slide-bg);
+      background-size: 76px 76px, 76px 76px, auto;
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      letter-spacing: 0;
+    }
+
+    .slide.alt {
+      background:
+        linear-gradient(90deg, rgba(109, 40, 217, 0.032) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(180, 83, 9, 0.02) 1px, transparent 1px),
+        var(--slide-bg-alt);
+      background-size: 78px 78px, 78px 78px, auto;
+    }
+
+    .speaker-notes {
+      display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p,
+    ul,
+    figure {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+      font-size: 58px;
+      line-height: 1.06;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+
+    h2 {
+      margin-bottom: 14px;
+      font-size: 50px;
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-ink);
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: 30px;
+      line-height: 1.12;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--slide-accent);
+    }
+
+    p,
+    li {
+      font-size: 26px;
+      line-height: 1.28;
+      letter-spacing: 0;
+    }
+
+    ul {
+      margin-bottom: 0;
+      padding-left: 30px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    svg text {
+      font-family: var(--font-sans);
+      letter-spacing: 0;
+    }
+
+    .math {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .eyebrow {
+      margin-bottom: 12px;
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-dimmed);
+    }
+
+    .rule {
+      width: 96px;
+      height: 6px;
+      margin: 14px 0 24px;
+      border-radius: 4px;
+      background: var(--slide-accent);
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      gap: 30px;
+      align-items: stretch;
+    }
+
+    .cols {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .wide-left {
+      grid-template-columns: 1.18fr 0.82fr;
+    }
+
+    .wide-right {
+      grid-template-columns: 0.82fr 1.18fr;
+    }
+
+    .three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .panel,
+    .math-box {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 22px 24px;
+    }
+
+    .math-box {
+      border-left: 5px solid var(--slide-blue);
+      background: #EFF6FF;
+    }
+
+    .math-box.teal {
+      border-left-color: var(--slide-teal);
+      background: #F0FDFA;
+    }
+
+    .math-box.amber {
+      border-left-color: var(--slide-amber);
+      background: #FFFBEB;
+    }
+
+    .math-box.violet {
+      border-left-color: var(--slide-violet);
+      background: #F5F3FF;
+    }
+
+    .box-label {
+      margin-bottom: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--slide-accent);
+    }
+
+    .box-body {
+      font-size: 26px;
+      line-height: 1.32;
+    }
+
+    .formula {
+      margin: 12px 0 0;
+      font-family: var(--font-math);
+      font-size: 34px;
+      line-height: 1.25;
+      color: var(--slide-ink);
+    }
+
+    .formula.big {
+      font-size: 42px;
+      text-align: center;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 6px 14px;
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-muted);
+      letter-spacing: 0;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 18px;
+      color: var(--slide-dimmed);
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .footer strong {
+      color: var(--slide-muted);
+      font-weight: 700;
+    }
+
+    .title-grid {
+      grid-template-columns: 0.92fr 1.08fr;
+      align-items: center;
+      gap: 42px;
+    }
+
+    .title-copy {
+      align-self: center;
+    }
+
+    .title-subtitle {
+      max-width: 820px;
+      color: var(--slide-muted);
+      font-size: 30px;
+      line-height: 1.28;
+    }
+
+    .flowline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .flow-step {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px 18px 20px;
+    }
+
+    .flow-step .index {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+      border-radius: 50%;
+      background: var(--slide-accent);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .flow-step p {
+      margin-bottom: 0;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: clip;
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .table th,
+    .table td {
+      padding: 10px 12px;
+      border-right: 1px solid var(--slide-border-light);
+      border-bottom: 1px solid var(--slide-border-light);
+      text-align: center;
+      font-size: 24px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+
+    .table th {
+      background: #F8FAFC;
+      color: var(--slide-accent);
+      font-weight: 700;
+    }
+
+    .table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .table th:last-child,
+    .table td:last-child {
+      border-right: 0;
+    }
+
+    .zero {
+      color: var(--slide-dimmed);
+      background: #F8FAFC;
+    }
+
+    .pos {
+      color: var(--slide-teal);
+      font-weight: 700;
+    }
+
+    .neg {
+      color: var(--slide-amber);
+      font-weight: 700;
+    }
+
+    .diagnostic-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .check {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px 18px;
+    }
+
+    .check-title {
+      margin-bottom: 6px;
+      color: var(--slide-accent);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .check-text {
+      margin: 0;
+      color: var(--slide-muted);
+      font-size: 22px;
+      line-height: 1.24;
+    }
+  </style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+    <section class="slide" data-label="Basis Blades and Operations">
+      <div class="content title-grid">
+        <div class="title-copy">
+          <div class="eyebrow">Geometric Algebra for Computer Science</div>
+          <h1>Basis Blades and Operations</h1>
+          <div class="rule"></div>
+          <p class="title-subtitle">Chapter 19 turns the basis-blade layer into executable infrastructure: bit masks for identity, swap parity for signs, and metric factors for products.</p>
+          <div class="badge-row">
+            <span class="badge">Notebook: chapter 19</span>
+            <span class="badge">Source: printed 521 / PDF 542</span>
+            <span class="badge">Sparse implementation route</span>
+          </div>
+        </div>
+        <figure class="panel">
+          <svg viewBox="0 0 900 620" role="img" aria-label="Pipeline from bitmap to sparse multivector operation">
+            <defs>
+              <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#2563EB"></path>
+              </marker>
+            </defs>
+            <rect x="38" y="44" width="824" height="532" rx="18" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+            <g transform="translate(78 102)">
+              <rect x="0" y="0" width="170" height="126" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="85" y="42" text-anchor="middle" font-size="28" font-weight="700" fill="#1E3A8A">Bitmap</text>
+              <text x="85" y="84" text-anchor="middle" font-size="31" font-family="JetBrains Mono" font-weight="600" fill="#111827">0101</text>
+              <text x="85" y="112" text-anchor="middle" font-size="22" fill="#475569">basis address</text>
+            </g>
+            <g transform="translate(298 102)">
+              <rect x="0" y="0" width="170" height="126" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="85" y="42" text-anchor="middle" font-size="28" font-weight="700" fill="#92400E">Sign</text>
+              <text x="85" y="84" text-anchor="middle" font-size="31" font-family="JetBrains Mono" font-weight="600" fill="#111827">(-1)^s</text>
+              <text x="85" y="112" text-anchor="middle" font-size="22" fill="#475569">swap parity</text>
+            </g>
+            <g transform="translate(518 102)">
+              <rect x="0" y="0" width="170" height="126" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="85" y="42" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">Metric</text>
+              <text x="85" y="84" text-anchor="middle" font-size="31" font-family="STIX Two Text" font-style="italic" fill="#111827">gii</text>
+              <text x="85" y="112" text-anchor="middle" font-size="22" fill="#475569">duplicate bits</text>
+            </g>
+            <path d="M248 165 H292" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"></path>
+            <path d="M468 165 H512" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"></path>
+            <g transform="translate(140 322)">
+              <rect x="0" y="0" width="620" height="142" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="310" y="44" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">Sparse multivector operation</text>
+              <text x="310" y="88" text-anchor="middle" font-size="31" font-family="JetBrains Mono" font-weight="600" fill="#111827">{bitmap: coefficient}</text>
+              <text x="310" y="120" text-anchor="middle" font-size="23" fill="#475569">distribute blade products, then merge equal addresses</text>
+            </g>
+            <path d="M603 232 C603 284 450 284 450 314" fill="none" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"></path>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span><strong>Row 354 scope:</strong> chapter-19 deck and notes only</span><span>Geometry Atlas lecture deck</span></div>
+      <aside class="speaker-notes">Open by lowering the abstraction level deliberately. The lecture is not about a new geometric model; it is about the tiny representation contract that every later product depends on. The key promise is that a blade address, a sign rule, and a metric rule are enough to build reliable sparse multivector operations.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Blade Addresses">
+      <div class="eyebrow">Bitmap convention</div>
+      <h2>Blade Addresses</h2>
+      <div class="content wide-left">
+        <figure class="panel">
+          <svg viewBox="0 0 1040 660" role="img" aria-label="Basis blade bitmap table with grades">
+            <rect x="28" y="28" width="984" height="604" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="78" y="76" font-size="28" font-weight="700" fill="#1E3A8A">4-D basis-blade addresses</text>
+            <text x="646" y="76" font-size="24" fill="#475569">least significant bit names e1</text>
+            <g transform="translate(72 112)">
+              <text x="14" y="30" font-size="23" font-weight="700" fill="#64748B">bitmap</text>
+              <text x="198" y="30" font-size="23" font-weight="700" fill="#64748B">bits e4 e3 e2 e1</text>
+              <text x="540" y="30" font-size="23" font-weight="700" fill="#64748B">grade</text>
+              <text x="704" y="30" font-size="23" font-weight="700" fill="#64748B">blade</text>
+              <g font-size="25">
+                <g transform="translate(0 66)">
+                  <rect x="0" y="-32" width="880" height="48" rx="8" fill="#F8FAFC"></rect>
+                  <text x="14" y="0" font-family="JetBrains Mono" font-weight="600" fill="#111827">0000</text>
+                  <text x="220" y="0" font-family="JetBrains Mono" fill="#94A3B8">0 0 0 0</text>
+                  <text x="560" y="0" fill="#0F766E" font-weight="700">0</text>
+                  <text x="704" y="0" font-family="STIX Two Text" fill="#111827">1</text>
+                </g>
+                <g transform="translate(0 124)">
+                  <text x="14" y="0" font-family="JetBrains Mono" font-weight="600" fill="#111827">0001</text>
+                  <text x="220" y="0" font-family="JetBrains Mono" fill="#2563EB">0 0 0 1</text>
+                  <text x="560" y="0" fill="#0F766E" font-weight="700">1</text>
+                  <text x="704" y="0" font-family="STIX Two Text" font-style="italic" fill="#111827">e1</text>
+                </g>
+                <g transform="translate(0 182)">
+                  <rect x="0" y="-32" width="880" height="48" rx="8" fill="#F8FAFC"></rect>
+                  <text x="14" y="0" font-family="JetBrains Mono" font-weight="600" fill="#111827">0010</text>
+                  <text x="220" y="0" font-family="JetBrains Mono" fill="#2563EB">0 0 1 0</text>
+                  <text x="560" y="0" fill="#0F766E" font-weight="700">1</text>
+                  <text x="704" y="0" font-family="STIX Two Text" font-style="italic" fill="#111827">e2</text>
+                </g>
+                <g transform="translate(0 240)">
+                  <text x="14" y="0" font-family="JetBrains Mono" font-weight="600" fill="#111827">0011</text>
+                  <text x="220" y="0" font-family="JetBrains Mono" fill="#6D28D9">0 0 1 1</text>
+                  <text x="560" y="0" fill="#0F766E" font-weight="700">2</text>
+                  <text x="704" y="0" font-family="STIX Two Text" font-style="italic" fill="#111827">e1^e2</text>
+                </g>
+                <g transform="translate(0 298)">
+                  <rect x="0" y="-32" width="880" height="48" rx="8" fill="#F8FAFC"></rect>
+                  <text x="14" y="0" font-family="JetBrains Mono" font-weight="600" fill="#111827">0101</text>
+                  <text x="220" y="0" font-family="JetBrains Mono" fill="#6D28D9">0 1 0 1</text>
+                  <text x="560" y="0" fill="#0F766E" font-weight="700">2</text>
+                  <text x="704" y="0" font-family="STIX Two Text" font-style="italic" fill="#111827">e1^e3</text>
+                </g>
+                <g transform="translate(0 356)">
+                  <text x="14" y="0" font-family="JetBrains Mono" font-weight="600" fill="#111827">0111</text>
+                  <text x="220" y="0" font-family="JetBrains Mono" fill="#B45309">0 1 1 1</text>
+                  <text x="560" y="0" fill="#0F766E" font-weight="700">3</text>
+                  <text x="704" y="0" font-family="STIX Two Text" font-style="italic" fill="#111827">e1^e2^e3</text>
+                </g>
+                <g transform="translate(0 414)">
+                  <rect x="0" y="-32" width="880" height="48" rx="8" fill="#F8FAFC"></rect>
+                  <text x="14" y="0" font-family="JetBrains Mono" font-weight="600" fill="#111827">1111</text>
+                  <text x="220" y="0" font-family="JetBrains Mono" fill="#B45309">1 1 1 1</text>
+                  <text x="560" y="0" fill="#0F766E" font-weight="700">4</text>
+                  <text x="704" y="0" font-family="STIX Two Text" font-style="italic" fill="#111827">e1^e2^e3^e4</text>
+                </g>
+              </g>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box">
+            <div class="box-label">Representation Contract</div>
+            <div class="box-body">A basis blade is stored as <span class="mono">BasisBlade(bitmap, scale)</span>. The bitmap names the canonical blade; the scale carries weight and orientation.</div>
+          </div>
+          <div class="math-box teal">
+            <div class="box-label">Grade Test</div>
+            <div class="formula">\( \operatorname{grade}(E_a)=\operatorname{popcount}(a) \)</div>
+            <p>The grade is not recomputed from a symbolic label. It is the number of set bits in the address.</p>
+          </div>
+          <div class="math-box violet">
+            <div class="box-label">Human Label</div>
+            <p><span class="mono">0101</span> decodes to <span class="math">e1^e3</span>, even though the printed binary string places bit zero on the right.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: bitmap and grade map</span><span>Chapter 19 basis-blade layer</span></div>
+      <aside class="speaker-notes">Emphasize that the bitmap is an address, not a visual drawing of the blade. Bit zero names e1 even though it prints on the right side of a binary string. Once that convention is accepted, grade counting, table indexing, and dependency tests become ordinary integer operations.</aside>
+    </section>
+
+    <section class="slide" data-label="Bit Tests Become Algebra Tests">
+      <div class="eyebrow">Integer operations with geometric meaning</div>
+      <h2>Bit Tests Become Algebra Tests</h2>
+      <div class="content three">
+        <div class="panel stack">
+          <h3>Grade: <span class="mono">bit_count()</span></h3>
+          <svg viewBox="0 0 470 270" role="img" aria-label="Popcount reads grade">
+            <rect x="36" y="44" width="398" height="128" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+            <text x="235" y="92" text-anchor="middle" font-size="34" font-family="JetBrains Mono" font-weight="600" fill="#111827">0110</text>
+            <circle cx="205" cy="130" r="16" fill="#2563EB"></circle>
+            <circle cx="262" cy="130" r="16" fill="#2563EB"></circle>
+            <circle cx="148" cy="130" r="16" fill="#CBD5E1"></circle>
+            <circle cx="319" cy="130" r="16" fill="#CBD5E1"></circle>
+            <text x="235" y="222" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">grade 2</text>
+          </svg>
+          <p>Two set bits means a bivector address.</p>
+        </div>
+        <div class="panel stack">
+          <h3>Overlap: <span class="mono">a &amp; b</span></h3>
+          <svg viewBox="0 0 470 270" role="img" aria-label="Bitwise and detects shared factors">
+            <rect x="42" y="42" width="386" height="172" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+            <text x="118" y="92" font-size="30" font-family="JetBrains Mono" font-weight="600" fill="#111827">0101</text>
+            <text x="118" y="142" font-size="30" font-family="JetBrains Mono" font-weight="600" fill="#111827">0110</text>
+            <line x1="110" y1="160" x2="290" y2="160" stroke="#64748B" stroke-width="3"></line>
+            <text x="118" y="204" font-size="30" font-family="JetBrains Mono" font-weight="600" fill="#B45309">0100</text>
+            <text x="306" y="144" font-size="28" font-weight="700" fill="#92400E">shared e3</text>
+          </svg>
+          <p>A nonzero overlap means repeated basis-vector factors.</p>
+        </div>
+        <div class="panel stack">
+          <h3>Output Address: <span class="mono">a ^ b</span></h3>
+          <svg viewBox="0 0 470 270" role="img" aria-label="Exclusive-or gives remaining output bits">
+            <rect x="42" y="42" width="386" height="172" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+            <text x="118" y="92" font-size="30" font-family="JetBrains Mono" font-weight="600" fill="#111827">0011</text>
+            <text x="118" y="142" font-size="30" font-family="JetBrains Mono" font-weight="600" fill="#111827">0100</text>
+            <line x1="110" y1="160" x2="290" y2="160" stroke="#64748B" stroke-width="3"></line>
+            <text x="118" y="204" font-size="30" font-family="JetBrains Mono" font-weight="600" fill="#0F766E">0111</text>
+            <text x="306" y="144" font-size="28" font-weight="700" fill="#0F766E">e1^e2^e3</text>
+          </svg>
+          <p>Xor combines independent factors and removes common ones.</p>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: bit masks as algebra tests</span><span><span class="mono">&amp;</span>, <span class="mono">^</span>, and popcount are the kernel</span></div>
+      <aside class="speaker-notes">Use the three bit operations as the computational vocabulary for the chapter. Popcount reads grade, bitwise and detects shared basis-vector factors, and exclusive-or gives the canonical output address after common factors are removed. The arithmetic looks small because the convention has already stored the algebraic ordering.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Swap Parity Gives The Sign">
+      <div class="eyebrow">Canonical ordering</div>
+      <h2>Swap Parity Gives The Sign</h2>
+      <div class="content wide-left">
+        <figure class="panel">
+          <svg viewBox="0 0 1040 650" role="img" aria-label="Swap parity cases for basis blade signs">
+            <defs>
+              <marker id="arrow-amber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#B45309"></path>
+              </marker>
+            </defs>
+            <rect x="30" y="30" width="980" height="590" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="76" y="78" font-size="30" font-weight="700" fill="#1E3A8A">Count inversions from left factors over right factors</text>
+            <g transform="translate(82 124)">
+              <rect x="0" y="0" width="860" height="126" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="3"></rect>
+              <text x="32" y="46" font-size="28" font-weight="700" fill="#92400E">e3 then e1</text>
+              <text x="292" y="50" font-size="34" font-family="STIX Two Text" font-style="italic" fill="#111827">e3 e1</text>
+              <path d="M362 70 C420 130 508 130 566 70" fill="none" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-amber)"></path>
+              <text x="626" y="50" font-size="34" font-family="STIX Two Text" font-style="italic" fill="#111827">-e1^e3</text>
+              <text x="626" y="92" font-size="25" fill="#92400E">1 swap, sign -</text>
+            </g>
+            <g transform="translate(82 274)">
+              <rect x="0" y="0" width="860" height="126" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="32" y="46" font-size="28" font-weight="700" fill="#0F766E">e2^e3 then e1</text>
+              <text x="292" y="50" font-size="34" font-family="STIX Two Text" font-style="italic" fill="#111827">e2 e3 e1</text>
+              <path d="M402 72 C446 124 510 124 554 72" fill="none" stroke="#0F766E" stroke-width="5"></path>
+              <path d="M358 78 C430 146 560 146 632 78" fill="none" stroke="#0F766E" stroke-width="5"></path>
+              <text x="664" y="50" font-size="34" font-family="STIX Two Text" font-style="italic" fill="#111827">+e1^e2^e3</text>
+              <text x="664" y="92" font-size="25" fill="#0F766E">2 swaps, sign +</text>
+            </g>
+            <g transform="translate(82 424)">
+              <rect x="0" y="0" width="860" height="126" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="32" y="46" font-size="28" font-weight="700" fill="#6D28D9">e1^e3 then e2</text>
+              <text x="292" y="50" font-size="34" font-family="STIX Two Text" font-style="italic" fill="#111827">e1 e3 e2</text>
+              <path d="M424 70 C474 126 548 126 598 70" fill="none" stroke="#6D28D9" stroke-width="5"></path>
+              <text x="664" y="50" font-size="34" font-family="STIX Two Text" font-style="italic" fill="#111827">-e1^e2^e3</text>
+              <text x="664" y="92" font-size="25" fill="#6D28D9">1 swap, sign -</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box amber">
+            <div class="box-label">Sign Rule</div>
+            <div class="formula">\( \operatorname{sign}(a,b)=(-1)^{N(a,b)} \)</div>
+            <p>Here <span class="math">N(a,b)</span> counts pairs <span class="math">(i,j)</span> with <span class="math">i</span> in the left bitmap, <span class="math">j</span> in the right bitmap, and <span class="math">i&gt;j</span>.</p>
+          </div>
+          <div class="math-box">
+            <div class="box-label">Why It Matters</div>
+            <p>The output bitmap can be correct while the coefficient is wrong. A single missed inversion changes signs throughout product tables, contractions, commutators, and sparse products.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: swap arcs and parity cases</span><span>Canonical order: e1 before e2 before e3</span></div>
+      <aside class="speaker-notes">Slow down here because sign bugs are contagious. Concatenate the left blade factors with the right blade factors, then count how many inversions must be swapped to restore canonical order. Odd inversion count flips the coefficient; even inversion count preserves it, independent of the eventual metric factor.</aside>
+    </section>
+
+    <section class="slide" data-label="Outer Product Fast Path">
+      <div class="eyebrow">Exterior product of basis blades</div>
+      <h2>Outer Product Fast Path</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box">
+            <div class="box-label">Basis-Blade Rule</div>
+            <div class="formula">$$E_a \wedge E_b =
+              \begin{cases}
+              0, & a \mathbin{\&} b \ne 0,\\
+              \operatorname{sign}(a,b)E_{a\oplus b}, & a \mathbin{\&} b = 0.
+              \end{cases}$$</div>
+          </div>
+          <div class="math-box teal">
+            <div class="box-label">Example</div>
+            <p><span class="math">e2^e3 \wedge e1 = +e1^e2^e3</span> because the masks are disjoint and the two required swaps give a positive sign.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="box-label">Zero Case</div>
+            <p><span class="math">e1 \wedge e1^e3 = 0</span> because the shared <span class="math">e1</span> bit means the candidate span is dependent.</p>
+          </div>
+        </div>
+        <figure class="panel">
+          <svg viewBox="0 0 1040 640" role="img" aria-label="Outer product decision pipeline">
+            <defs>
+              <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#0F766E"></path>
+              </marker>
+              <marker id="arrow-warn" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#B45309"></path>
+              </marker>
+            </defs>
+            <rect x="34" y="34" width="972" height="572" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <g transform="translate(92 92)">
+              <rect x="0" y="0" width="250" height="116" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="125" y="42" text-anchor="middle" font-size="28" font-weight="700" fill="#1E3A8A">Input masks</text>
+              <text x="125" y="84" text-anchor="middle" font-size="31" font-family="JetBrains Mono" font-weight="600" fill="#111827">a, b</text>
+            </g>
+            <path d="M344 150 H430" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-teal)"></path>
+            <g transform="translate(438 70)">
+              <polygon points="140,0 280,100 140,200 0,100" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></polygon>
+              <text x="140" y="88" text-anchor="middle" font-size="30" font-family="JetBrains Mono" font-weight="600" fill="#111827">a &amp; b</text>
+              <text x="140" y="126" text-anchor="middle" font-size="26" font-weight="700" fill="#92400E">shared?</text>
+            </g>
+            <path d="M718 170 H814" stroke="#B45309" stroke-width="5" marker-end="url(#arrow-warn)"></path>
+            <g transform="translate(822 108)">
+              <rect x="0" y="0" width="150" height="118" rx="14" fill="#FFF7ED" stroke="#B45309" stroke-width="3"></rect>
+              <text x="75" y="48" text-anchor="middle" font-size="34" font-weight="700" fill="#B45309">0</text>
+              <text x="75" y="86" text-anchor="middle" font-size="24" fill="#92400E">dependent</text>
+            </g>
+            <path d="M578 270 V352" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-teal)"></path>
+            <text x="612" y="324" font-size="25" font-weight="700" fill="#0F766E">disjoint</text>
+            <g transform="translate(268 366)">
+              <rect x="0" y="0" width="620" height="142" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="310" y="46" text-anchor="middle" font-size="29" font-weight="700" fill="#0F766E">canonical output</text>
+              <text x="310" y="92" text-anchor="middle" font-size="35" font-family="STIX Two Text" font-style="italic" fill="#111827">scale * sign(a,b) * E(a xor b)</text>
+              <text x="310" y="124" text-anchor="middle" font-size="23" fill="#475569">one basis blade, unless the zero gate fired first</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Original visual: outer-product decision gate</span><span>Dependence test: <span class="mono">a &amp; b</span></span></div>
+      <aside class="speaker-notes">Present the outer product as the cleanest basis-blade operation. A shared bit means the candidate spanning set repeats a basis vector, so the outer product is zero. With no shared bits, the output bitmap is just xor and the coefficient is only the input scales times the parity sign.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Orthogonal Metric Factors">
+      <div class="eyebrow">Geometric product in a diagonal metric</div>
+      <h2>Orthogonal Metric Factors</h2>
+      <div class="content wide-left">
+        <figure class="panel">
+          <svg viewBox="0 0 1040 650" role="img" aria-label="Orthogonal geometric product metric factor diagram">
+            <rect x="30" y="30" width="980" height="590" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="74" y="82" font-size="30" font-weight="700" fill="#1E3A8A">Repeated bits contribute diagonal metric squares</text>
+            <g transform="translate(96 132)">
+              <rect x="0" y="0" width="276" height="132" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="138" y="42" text-anchor="middle" font-size="28" font-weight="700" fill="#1E3A8A">left</text>
+              <text x="138" y="88" text-anchor="middle" font-size="34" font-family="JetBrains Mono" font-weight="600" fill="#111827">0011</text>
+              <text x="138" y="118" text-anchor="middle" font-size="23" fill="#475569">e1^e2</text>
+            </g>
+            <g transform="translate(430 132)">
+              <rect x="0" y="0" width="276" height="132" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="138" y="42" text-anchor="middle" font-size="28" font-weight="700" fill="#0F766E">right</text>
+              <text x="138" y="88" text-anchor="middle" font-size="34" font-family="JetBrains Mono" font-weight="600" fill="#111827">0010</text>
+              <text x="138" y="118" text-anchor="middle" font-size="23" fill="#475569">e2</text>
+            </g>
+            <g transform="translate(764 132)">
+              <rect x="0" y="0" width="178" height="132" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="89" y="42" text-anchor="middle" font-size="28" font-weight="700" fill="#92400E">common</text>
+              <text x="89" y="88" text-anchor="middle" font-size="34" font-family="JetBrains Mono" font-weight="600" fill="#111827">0010</text>
+              <text x="89" y="118" text-anchor="middle" font-size="23" fill="#475569">metric g22</text>
+            </g>
+            <g transform="translate(94 332)">
+              <rect x="0" y="0" width="260" height="122" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="130" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#64748B">xor</text>
+              <text x="130" y="84" text-anchor="middle" font-size="34" font-family="JetBrains Mono" font-weight="600" fill="#111827">0001</text>
+            </g>
+            <text x="394" y="402" font-size="38" font-weight="700" fill="#2563EB">x</text>
+            <g transform="translate(444 332)">
+              <rect x="0" y="0" width="240" height="122" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="120" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#64748B">sign</text>
+              <text x="120" y="84" text-anchor="middle" font-size="34" font-family="JetBrains Mono" font-weight="600" fill="#0F766E">+1</text>
+            </g>
+            <text x="724" y="402" font-size="38" font-weight="700" fill="#2563EB">x</text>
+            <g transform="translate(774 332)">
+              <rect x="0" y="0" width="168" height="122" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="84" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#64748B">metric</text>
+              <text x="84" y="84" text-anchor="middle" font-size="34" font-family="STIX Two Text" font-style="italic" fill="#B45309">g22</text>
+            </g>
+            <g transform="translate(236 510)">
+              <rect x="0" y="0" width="568" height="68" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="284" y="45" text-anchor="middle" font-size="31" font-family="STIX Two Text" font-style="italic" fill="#111827">e1^e2 e2 = g22 e1</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box">
+            <div class="box-label">Diagonal Formula</div>
+            <div class="formula">\( E_aE_b=\operatorname{sign}(a,b)\left(\prod_{i\in a\mathbin{\&}b}g_{ii}\right)E_{a\oplus b} \)</div>
+          </div>
+          <div class="math-box teal">
+            <div class="box-label">Euclidean Fast Path</div>
+            <p>When all diagonal entries are <span class="math">+1</span>, the metric factor disappears and the product remains a signed single blade.</p>
+          </div>
+          <div class="math-box amber">
+            <div class="box-label">Mixed Signature</div>
+            <p>For <span class="math">diag(1,-1,1)</span>, the repeated <span class="math">e2</span> bit contributes <span class="math">-1</span>, so <span class="math">e2e2=-1</span>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: metric factor extraction</span><span>Geometric product keeps duplicate bits meaningful</span></div>
+      <aside class="speaker-notes">Connect the outer-product skeleton to the geometric product. In an orthogonal metric, repeated bits no longer force zero; they collapse into diagonal metric entries. This keeps the result as a single basis blade, which explains why diagonal Euclidean or mixed-signature tables are fast and compact.</aside>
+    </section>
+
+    <section class="slide" data-label="Tables Expose Product Contracts">
+      <div class="eyebrow">Multiplication tables as diagnostics</div>
+      <h2>Tables Expose Product Contracts</h2>
+      <div class="content cols">
+        <div class="stack">
+          <h3>Outer Product, Selected 2-D Blades</h3>
+          <table class="table" aria-label="Outer product table for selected blades">
+            <thead>
+              <tr><th>&wedge;</th><th>1</th><th>e1</th><th>e2</th><th>e12</th></tr>
+            </thead>
+            <tbody>
+              <tr><th>1</th><td class="pos">1</td><td class="pos">e1</td><td class="pos">e2</td><td class="pos">e12</td></tr>
+              <tr><th>e1</th><td class="pos">e1</td><td class="zero">0</td><td class="pos">e12</td><td class="zero">0</td></tr>
+              <tr><th>e2</th><td class="pos">e2</td><td class="neg">-e12</td><td class="zero">0</td><td class="zero">0</td></tr>
+              <tr><th>e12</th><td class="pos">e12</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td></tr>
+            </tbody>
+          </table>
+          <div class="math-box amber">
+            <div class="box-label">Outer Diagnostic</div>
+            <p>Every zero beyond the scalar row or column comes from <span class="mono">a &amp; b</span> detecting a repeated basis-vector bit.</p>
+          </div>
+        </div>
+        <div class="stack">
+          <h3>Geometric Product, Euclidean 2-D</h3>
+          <table class="table" aria-label="Geometric product table for selected blades">
+            <thead>
+              <tr><th>GP</th><th>1</th><th>e1</th><th>e2</th><th>e12</th></tr>
+            </thead>
+            <tbody>
+              <tr><th>1</th><td class="pos">1</td><td class="pos">e1</td><td class="pos">e2</td><td class="pos">e12</td></tr>
+              <tr><th>e1</th><td class="pos">e1</td><td class="pos">1</td><td class="pos">e12</td><td class="pos">e2</td></tr>
+              <tr><th>e2</th><td class="pos">e2</td><td class="neg">-e12</td><td class="pos">1</td><td class="neg">-e1</td></tr>
+              <tr><th>e12</th><td class="pos">e12</td><td class="neg">-e2</td><td class="pos">e1</td><td class="neg">-1</td></tr>
+            </tbody>
+          </table>
+          <div class="math-box teal">
+            <div class="box-label">Geometric Diagnostic</div>
+            <p>Duplicate bits collapse through metric squares. Signs still come from the same canonical reordering rule.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: side-by-side product tables</span><span>Tables catch zero, sign, and metric-factor bugs</span></div>
+      <aside class="speaker-notes">Use the paired tables as a diagnostic lens rather than as memorization. The outer table has structural zeros wherever bitmasks overlap. The geometric-product table has the same sign convention but replaces duplicate factors by metric squares, so Euclidean repeated vectors behave like scalar one.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Metric Products By Grade Selection">
+      <div class="eyebrow">Reference products from the geometric product</div>
+      <h2>Metric Products By Grade Selection</h2>
+      <div class="content wide-left">
+        <figure class="panel">
+          <svg viewBox="0 0 1040 650" role="img" aria-label="Grade selection diagnostics for metric products">
+            <rect x="30" y="30" width="980" height="590" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="72" y="80" font-size="30" font-weight="700" fill="#1E3A8A">Compute GP once, then keep the requested grade</text>
+            <g transform="translate(96 126)">
+              <rect x="0" y="0" width="848" height="86" rx="12" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="36" y="54" font-size="30" font-family="STIX Two Text" font-style="italic" fill="#111827">AB = scalar + vector + bivector + trivector</text>
+            </g>
+            <g transform="translate(98 264)">
+              <rect x="0" y="0" width="250" height="210" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="125" y="48" text-anchor="middle" font-size="27" font-weight="700" fill="#2563EB">scalar product</text>
+              <rect x="40" y="86" width="170" height="52" rx="8" fill="#2563EB" opacity="0.16"></rect>
+              <text x="125" y="121" text-anchor="middle" font-size="28" font-family="STIX Two Text" fill="#111827">grade 0</text>
+              <text x="125" y="174" text-anchor="middle" font-size="24" fill="#475569">keep scalar terms</text>
+            </g>
+            <g transform="translate(395 264)">
+              <rect x="0" y="0" width="250" height="210" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="125" y="48" text-anchor="middle" font-size="27" font-weight="700" fill="#0F766E">left contraction</text>
+              <rect x="40" y="86" width="170" height="52" rx="8" fill="#0F766E" opacity="0.16"></rect>
+              <text x="125" y="121" text-anchor="middle" font-size="28" font-family="STIX Two Text" fill="#111827">grade b-a</text>
+              <text x="125" y="174" text-anchor="middle" font-size="24" fill="#475569">when a &lt;= b</text>
+            </g>
+            <g transform="translate(692 264)">
+              <rect x="0" y="0" width="250" height="210" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="125" y="48" text-anchor="middle" font-size="27" font-weight="700" fill="#6D28D9">commutator</text>
+              <rect x="40" y="86" width="170" height="52" rx="8" fill="#6D28D9" opacity="0.16"></rect>
+              <text x="125" y="121" text-anchor="middle" font-size="28" font-family="STIX Two Text" fill="#111827">(AB - BA)/2</text>
+              <text x="125" y="174" text-anchor="middle" font-size="24" fill="#475569">antisymmetric part</text>
+            </g>
+            <g transform="translate(244 534)">
+              <rect x="0" y="0" width="552" height="54" rx="10" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="276" y="36" text-anchor="middle" font-size="24" fill="#92400E" font-weight="700">Reference-first implementation: optimize only after table checks pass</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box">
+            <div class="box-label">Grade Projection</div>
+            <div class="formula">\( \langle AB\rangle_k \)</div>
+            <p>Basis-blade products can feed scalar products, contractions, and grade-filtered operations by selecting output grades.</p>
+          </div>
+          <div class="math-box teal">
+            <div class="box-label">Notebook Checks</div>
+            <p>Small cases such as \(e1 \rfloor e123 = e23\) and \(e12 \cdot e12 = -1\) make good implementation tests.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: grade-selection operation diagnostics</span><span>Reference path before specialization</span></div>
+      <aside class="speaker-notes">Explain scalar products, contractions, and commutators as reference operations built on top of the geometric product. The implementation can be optimized later, but grade selection gives a readable specification. If a faster contraction routine disagrees on these small basis-blade cases, the faster routine is suspect.</aside>
+    </section>
+
+    <section class="slide" data-label="Nonorthogonal Metrics Expand">
+      <div class="eyebrow">When one blade pair produces several terms</div>
+      <h2>Nonorthogonal Metrics Expand</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box amber">
+            <div class="box-label">Null Basis Metric</div>
+            <div class="formula">$$G =
+            \begin{bmatrix}
+            0 & -1\\
+            -1 & 0
+            \end{bmatrix}$$</div>
+          </div>
+          <div class="math-box">
+            <div class="box-label">Expansion</div>
+            <div class="formula">\( o\,\infty = -1 + o\wedge\infty \)</div>
+            <div class="formula">\( \infty\,o = -1 - o\wedge\infty \)</div>
+          </div>
+          <div class="math-box teal">
+            <div class="box-label">Storage Consequence</div>
+            <p>The product result is a sparse dictionary such as <span class="mono">{0: -1, 3: 1}</span>, not one weighted address.</p>
+          </div>
+        </div>
+        <figure class="panel">
+          <svg viewBox="0 0 1040 640" role="img" aria-label="Nonorthogonal product expansion into scalar and bivector terms">
+            <defs>
+              <marker id="arrow-violet" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#6D28D9"></path>
+              </marker>
+            </defs>
+            <rect x="34" y="34" width="972" height="572" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <g transform="translate(92 108)">
+              <rect x="0" y="0" width="300" height="132" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="150" y="44" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">basis pair</text>
+              <text x="150" y="90" text-anchor="middle" font-size="38" font-family="STIX Two Text" font-style="italic" fill="#111827">o infinity</text>
+            </g>
+            <path d="M396 174 H504" stroke="#6D28D9" stroke-width="5" marker-end="url(#arrow-violet)"></path>
+            <g transform="translate(520 84)">
+              <rect x="0" y="0" width="390" height="330" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="195" y="48" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">two contributions</text>
+              <g transform="translate(48 92)">
+                <rect x="0" y="0" width="294" height="82" rx="12" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+                <text x="147" y="52" text-anchor="middle" font-size="30" font-family="STIX Two Text" fill="#111827">contraction: -1</text>
+              </g>
+              <g transform="translate(48 204)">
+                <rect x="0" y="0" width="294" height="82" rx="12" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+                <text x="147" y="52" text-anchor="middle" font-size="30" font-family="STIX Two Text" fill="#111827">outer: o^infinity</text>
+              </g>
+            </g>
+            <g transform="translate(152 456)">
+              <rect x="0" y="0" width="736" height="88" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="368" y="36" text-anchor="middle" font-size="28" font-weight="700" fill="#6D28D9">Diagnostic question</text>
+              <text x="368" y="68" text-anchor="middle" font-size="25" fill="#475569">Does the product routine allow more than one output bitmap?</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Original visual: nonorthogonal expansion branch</span><span>Off-diagonal metric entries create lower-grade terms</span></div>
+      <aside class="speaker-notes">This is the counterexample to any one-output-bitmap assumption. In a null or skew basis, a vector multiplication can produce an outer part and a contraction part at the same time. A product of two basis blades may therefore be a sparse dictionary, not a single weighted blade.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Sparse Multivectors Distribute">
+      <div class="eyebrow">From basis-blade products to sparse multivectors</div>
+      <h2>Sparse Multivectors Distribute</h2>
+      <div class="content wide-left">
+        <figure class="panel">
+          <svg viewBox="0 0 1040 650" role="img" aria-label="Sparse multivector product distribution and merge">
+            <defs>
+              <marker id="arrow-sparse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#2563EB"></path>
+              </marker>
+            </defs>
+            <rect x="30" y="30" width="980" height="590" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="72" y="78" font-size="30" font-weight="700" fill="#1E3A8A">Distribute over nonzero terms, then merge equal bitmaps</text>
+            <g transform="translate(90 126)">
+              <rect x="0" y="0" width="248" height="280" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="124" y="46" text-anchor="middle" font-size="30" font-weight="700" fill="#1E3A8A">A</text>
+              <text x="42" y="98" font-size="27" font-family="JetBrains Mono" fill="#111827">001: 2</text>
+              <text x="42" y="154" font-size="27" font-family="JetBrains Mono" fill="#111827">011: -1</text>
+              <text x="42" y="210" font-size="27" font-family="JetBrains Mono" fill="#111827">100: 0.5</text>
+            </g>
+            <g transform="translate(398 126)">
+              <rect x="0" y="0" width="248" height="280" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="124" y="46" text-anchor="middle" font-size="30" font-weight="700" fill="#0F766E">B</text>
+              <text x="42" y="98" font-size="27" font-family="JetBrains Mono" fill="#111827">010: 3</text>
+              <text x="42" y="154" font-size="27" font-family="JetBrains Mono" fill="#111827">110: 1</text>
+            </g>
+            <path d="M660 266 H742" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-sparse)"></path>
+            <g transform="translate(760 112)">
+              <rect x="0" y="0" width="202" height="336" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="101" y="46" text-anchor="middle" font-size="28" font-weight="700" fill="#92400E">pair products</text>
+              <text x="32" y="98" font-size="24" font-family="JetBrains Mono" fill="#111827">001*010</text>
+              <text x="32" y="142" font-size="24" font-family="JetBrains Mono" fill="#111827">001*110</text>
+              <text x="32" y="186" font-size="24" font-family="JetBrains Mono" fill="#111827">011*010</text>
+              <text x="32" y="230" font-size="24" font-family="JetBrains Mono" fill="#111827">011*110</text>
+              <text x="32" y="274" font-size="24" font-family="JetBrains Mono" fill="#111827">100*010</text>
+              <text x="32" y="318" font-size="24" font-family="JetBrains Mono" fill="#111827">100*110</text>
+            </g>
+            <g transform="translate(250 482)">
+              <rect x="0" y="0" width="540" height="78" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="270" y="34" text-anchor="middle" font-size="28" font-weight="700" fill="#6D28D9">merge like output addresses</text>
+              <text x="270" y="62" text-anchor="middle" font-size="23" fill="#475569">cleanup removes tiny coefficients after summation</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="stack">
+          <div class="math-box">
+            <div class="box-label">Sparse Representation</div>
+            <div class="formula">\( A = \sum_a A_aE_a,\quad B = \sum_b B_bE_b \)</div>
+            <div class="formula">\( AB = \sum_{a,b} A_aB_b(E_aE_b) \)</div>
+          </div>
+          <div class="math-box teal">
+            <div class="box-label">Why Reference Code Matters</div>
+            <p>The direct double loop is not the fastest possible method, but it is transparent enough to validate optimized tables, generated kernels, and matrix product operators.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: sparse-product distribution grid</span><span>Basis-blade product is the inner kernel</span></div>
+      <aside class="speaker-notes">Move from one blade pair to the sparse multivector layer. Each nonzero term of A multiplies each nonzero term of B, and equal output bitmaps must be merged. This is intentionally direct: it is slow enough to optimize later but transparent enough to trust as a reference.</aside>
+    </section>
+
+    <section class="slide" data-label="Unary Signs Are Grade Tables">
+      <div class="eyebrow">Cheap unary operations</div>
+      <h2>Unary Signs Are Grade Tables</h2>
+      <div class="content wide-right">
+        <div class="stack">
+          <div class="math-box">
+            <div class="box-label">Closed Forms</div>
+            <div class="formula">\( \operatorname{reverse}: (-1)^{k(k-1)/2} \)</div>
+            <div class="formula">\( \operatorname{grade\;involution}: (-1)^k \)</div>
+            <div class="formula">\( \operatorname{Clifford\;conjugation}: (-1)^{k(k+1)/2} \)</div>
+          </div>
+          <div class="math-box violet">
+            <div class="box-label">Implementation Point</div>
+            <p>Once <span class="math">k = popcount(bitmap)</span>, these operations need no basis-index loop. They only multiply coefficients by grade-dependent signs.</p>
+          </div>
+        </div>
+        <figure class="panel">
+          <svg viewBox="0 0 1040 650" role="img" aria-label="Grade-dependent sign table">
+            <rect x="30" y="30" width="980" height="590" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="74" y="78" font-size="30" font-weight="700" fill="#1E3A8A">Grade sign patterns through grade 8</text>
+            <g transform="translate(100 122)">
+              <text x="0" y="34" font-size="24" font-weight="700" fill="#64748B">grade</text>
+              <text x="176" y="34" font-size="24" font-weight="700" fill="#64748B">reversion</text>
+              <text x="420" y="34" font-size="24" font-weight="700" fill="#64748B">grade involution</text>
+              <text x="724" y="34" font-size="24" font-weight="700" fill="#64748B">Clifford conj.</text>
+              <g font-size="25" font-weight="700">
+                <g transform="translate(0 82)"><text x="20" y="0" fill="#111827">0</text><text x="222" y="0" fill="#0F766E">+</text><text x="500" y="0" fill="#0F766E">+</text><text x="800" y="0" fill="#0F766E">+</text></g>
+                <g transform="translate(0 132)"><rect x="-22" y="-30" width="870" height="42" rx="8" fill="#F8FAFC"></rect><text x="20" y="0" fill="#111827">1</text><text x="222" y="0" fill="#0F766E">+</text><text x="500" y="0" fill="#B45309">-</text><text x="800" y="0" fill="#B45309">-</text></g>
+                <g transform="translate(0 182)"><text x="20" y="0" fill="#111827">2</text><text x="222" y="0" fill="#B45309">-</text><text x="500" y="0" fill="#0F766E">+</text><text x="800" y="0" fill="#B45309">-</text></g>
+                <g transform="translate(0 232)"><rect x="-22" y="-30" width="870" height="42" rx="8" fill="#F8FAFC"></rect><text x="20" y="0" fill="#111827">3</text><text x="222" y="0" fill="#B45309">-</text><text x="500" y="0" fill="#B45309">-</text><text x="800" y="0" fill="#0F766E">+</text></g>
+                <g transform="translate(0 282)"><text x="20" y="0" fill="#111827">4</text><text x="222" y="0" fill="#0F766E">+</text><text x="500" y="0" fill="#0F766E">+</text><text x="800" y="0" fill="#0F766E">+</text></g>
+                <g transform="translate(0 332)"><rect x="-22" y="-30" width="870" height="42" rx="8" fill="#F8FAFC"></rect><text x="20" y="0" fill="#111827">5</text><text x="222" y="0" fill="#0F766E">+</text><text x="500" y="0" fill="#B45309">-</text><text x="800" y="0" fill="#B45309">-</text></g>
+                <g transform="translate(0 382)"><text x="20" y="0" fill="#111827">6</text><text x="222" y="0" fill="#B45309">-</text><text x="500" y="0" fill="#0F766E">+</text><text x="800" y="0" fill="#B45309">-</text></g>
+                <g transform="translate(0 432)"><rect x="-22" y="-30" width="870" height="42" rx="8" fill="#F8FAFC"></rect><text x="20" y="0" fill="#111827">7</text><text x="222" y="0" fill="#B45309">-</text><text x="500" y="0" fill="#B45309">-</text><text x="800" y="0" fill="#0F766E">+</text></g>
+                <g transform="translate(0 482)"><text x="20" y="0" fill="#111827">8</text><text x="222" y="0" fill="#0F766E">+</text><text x="500" y="0" fill="#0F766E">+</text><text x="800" y="0" fill="#0F766E">+</text></g>
+              </g>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Original visual: grade-dependent sign table</span><span>Unary operations are popcount plus coefficient sign</span></div>
+      <aside class="speaker-notes">Point out how much implementation work disappears once grade is a popcount. Reversion, grade involution, and Clifford conjugation do not inspect the individual basis-vector indices; they use periodic grade-dependent signs. These tiny tables are excellent smoke tests for off-by-one and integer-width mistakes.</aside>
+    </section>
+
+    <section class="slide alt" data-label="Operation Diagnostics">
+      <div class="eyebrow">Implementation checklist</div>
+      <h2>Operation Diagnostics</h2>
+      <div class="content wide-left">
+        <figure class="panel">
+          <svg viewBox="0 0 1040 650" role="img" aria-label="Operation diagnostics dashboard">
+            <rect x="30" y="30" width="980" height="590" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <text x="76" y="78" font-size="30" font-weight="700" fill="#1E3A8A">Basis-blade operation diagnostic board</text>
+            <g transform="translate(86 122)">
+              <rect x="0" y="0" width="396" height="120" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="34" y="42" font-size="27" font-weight="700" fill="#1E3A8A">Bit order</text>
+              <text x="34" y="82" font-size="24" fill="#475569">0101 must decode to e1^e3</text>
+            </g>
+            <g transform="translate(558 122)">
+              <rect x="0" y="0" width="396" height="120" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="34" y="42" font-size="27" font-weight="700" fill="#92400E">Parity</text>
+              <text x="34" y="82" font-size="24" fill="#475569">e3 e1 must be negative</text>
+            </g>
+            <g transform="translate(86 278)">
+              <rect x="0" y="0" width="396" height="120" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="34" y="42" font-size="27" font-weight="700" fill="#0F766E">Metric path</text>
+              <text x="34" y="82" font-size="24" fill="#475569">orthogonal one-term result only</text>
+            </g>
+            <g transform="translate(558 278)">
+              <rect x="0" y="0" width="396" height="120" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="34" y="42" font-size="27" font-weight="700" fill="#6D28D9">Expansion</text>
+              <text x="34" y="82" font-size="24" fill="#475569">null basis may return many terms</text>
+            </g>
+            <g transform="translate(86 434)">
+              <rect x="0" y="0" width="396" height="120" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="34" y="42" font-size="27" font-weight="700" fill="#1E3A8A">Grade filter</text>
+              <text x="34" y="82" font-size="24" fill="#475569">projection keeps exactly chosen grades</text>
+            </g>
+            <g transform="translate(558 434)">
+              <rect x="0" y="0" width="396" height="120" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+              <text x="34" y="42" font-size="27" font-weight="700" fill="#1E3A8A">Associativity</text>
+              <text x="34" y="82" font-size="24" fill="#475569">small tables catch product drift</text>
+            </g>
+          </svg>
+        </figure>
+        <div class="diagnostic-grid">
+          <div class="check">
+            <div class="check-title">1. Decode</div>
+            <p class="check-text">Every printed label must round-trip through bitmap indices.</p>
+          </div>
+          <div class="check">
+            <div class="check-title">2. Sign</div>
+            <p class="check-text">Canonical reordering signs must match inversion parity.</p>
+          </div>
+          <div class="check">
+            <div class="check-title">3. Duplicate Bits</div>
+            <p class="check-text">Outer products zero duplicates; geometric products metric them.</p>
+          </div>
+          <div class="check">
+            <div class="check-title">4. Metric Branch</div>
+            <p class="check-text">General metrics must allow sparse sums of output blades.</p>
+          </div>
+          <div class="check">
+            <div class="check-title">5. Cleanup</div>
+            <p class="check-text">Tiny coefficients need an explicit simplification policy.</p>
+          </div>
+          <div class="check">
+            <div class="check-title">6. Table Tests</div>
+            <p class="check-text">Associativity and grade patterns should pass on small bases.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Original visual: operation diagnostics dashboard</span><span>Make the low-level layer boringly reliable</span></div>
+      <aside class="speaker-notes">Turn the final slide sequence into a debugging checklist for a geometric algebra library. Every product routine should be checked against bit order, parity, duplicate handling, metric path, grade projection, coefficient cleanup, and associativity on a small table before it is trusted inside larger geometric algorithms.</aside>
+    </section>
+
+    <section class="slide" data-label="Carry Forward">
+      <div class="eyebrow">From Chapter 19 to the product machinery</div>
+      <h2>Carry Forward</h2>
+      <div class="content cols">
+        <div class="stack">
+          <div class="math-box">
+            <div class="box-label">What Chapter 19 Supplies</div>
+            <ul>
+              <li>Integer addresses for canonical basis blades.</li>
+              <li>Swap parity for orientation and sign.</li>
+              <li>Metric factors for duplicate basis vectors.</li>
+              <li>Sparse dictionaries for nonorthogonal expansions.</li>
+              <li>Diagnostics before optimization and specialization.</li>
+            </ul>
+          </div>
+          <div class="math-box teal">
+            <div class="box-label">Assigned Source Page</div>
+            <p>Printed page 521 / PDF page 542 frames later linear products as either matrix actions or sparse distribution over basis blades. This lecture builds the sparse route's basis-blade kernel.</p>
+          </div>
+        </div>
+        <figure class="panel">
+          <svg viewBox="0 0 1040 650" role="img" aria-label="Implementation ladder from basis blades to optimized products">
+            <defs>
+              <marker id="arrow-carry" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M1,1 L11,6 L1,11 Z" fill="#2563EB"></path>
+              </marker>
+            </defs>
+            <rect x="30" y="30" width="980" height="590" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"></rect>
+            <g transform="translate(168 78)">
+              <rect x="0" y="0" width="704" height="82" rx="14" fill="#EFF6FF" stroke="#2563EB" stroke-width="3"></rect>
+              <text x="352" y="53" text-anchor="middle" font-size="31" font-weight="700" fill="#1E3A8A">Basis-blade product kernel</text>
+            </g>
+            <path d="M520 168 V220" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-carry)"></path>
+            <g transform="translate(168 232)">
+              <rect x="0" y="0" width="704" height="82" rx="14" fill="#F0FDFA" stroke="#0F766E" stroke-width="3"></rect>
+              <text x="352" y="53" text-anchor="middle" font-size="31" font-weight="700" fill="#0F766E">Sparse multivector distribution</text>
+            </g>
+            <path d="M520 322 V374" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-carry)"></path>
+            <g transform="translate(168 386)">
+              <rect x="0" y="0" width="704" height="82" rx="14" fill="#F5F3FF" stroke="#6D28D9" stroke-width="3"></rect>
+              <text x="352" y="53" text-anchor="middle" font-size="31" font-weight="700" fill="#6D28D9">Product matrices and generated tables</text>
+            </g>
+            <path d="M520 476 V528" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-carry)"></path>
+            <g transform="translate(168 540)">
+              <rect x="0" y="0" width="704" height="60" rx="14" fill="#FFFBEB" stroke="#B45309" stroke-width="3"></rect>
+              <text x="352" y="40" text-anchor="middle" font-size="28" font-weight="700" fill="#92400E">Optimization is safe only after diagnostics pass</text>
+            </g>
+          </svg>
+        </figure>
+      </div>
+      <div class="footer"><span>Original visual: implementation ladder</span><span>Next layer: linear products and operations</span></div>
+      <aside class="speaker-notes">Close by linking the assigned source page to the notebook. The source page frames later linear products as either matrix actions or sparse distributions over basis blades. Chapter 19 supplies the second route's foundation: reliable addresses, signs, metric factors, sparse merging, and diagnostic checks.</aside>
+    </section>
+  </deck-stage>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+</body>
+</html>

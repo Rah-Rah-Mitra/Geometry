@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 11: Intersection in 3D</title>
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-11">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-03-3d-geometric-tools/chapter-11-intersection-in-3d/11-intersection-in-3d.ipynb">
+  <meta name="source_span" content="printed pages 481-662; PDF pages 528-709.">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <meta name="manifest_index" content="395">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      background: #000000;
+    }
+
+    deck-stage:not(:defined) {
+      visibility: hidden;
+    }
+
+    section {
+      width: 1920px;
+      height: 1080px;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: clip;
+      padding: 70px 96px 64px;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      position: relative;
+    }
+
+    .slide.alt {
+      background: var(--slide-bg-alt);
+    }
+
+    .slide.has-grid {
+      background-color: var(--slide-bg-alt);
+      background-image:
+        linear-gradient(to right, rgba(30, 58, 138, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.025) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--slide-accent);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 1300px;
+      font-size: 68px;
+      line-height: 1.06;
+      font-weight: 700;
+      color: var(--slide-ink);
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 50px;
+      line-height: 1.13;
+      font-weight: 700;
+      color: var(--slide-ink);
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 30px;
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--slide-accent);
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 22px;
+      max-width: 1260px;
+      color: var(--slide-muted);
+      font-size: 31px;
+      line-height: 1.35;
+    }
+
+    .source-line {
+      margin-top: 24px;
+      color: var(--slide-dimmed);
+      font-size: 24px;
+      line-height: 1.35;
+    }
+
+    .title-layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 64px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 42px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid-60-40 {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 44px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid-55-45 {
+      display: grid;
+      grid-template-columns: 1fr 0.82fr;
+      gap: 42px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .lead {
+      margin-top: 18px;
+      color: var(--slide-muted);
+      font-size: 29px;
+      line-height: 1.42;
+    }
+
+    .body {
+      color: var(--slide-ink);
+      font-size: 28px;
+      line-height: 1.44;
+    }
+
+    .small {
+      color: var(--slide-muted);
+      font-size: 24px;
+      line-height: 1.42;
+    }
+
+    .tight-list {
+      margin: 0;
+      padding-left: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .tight-list li {
+      font-size: 27px;
+      line-height: 1.36;
+      padding-left: 4px;
+    }
+
+    .compact-list {
+      margin: 0;
+      padding-left: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .compact-list li {
+      font-size: 24px;
+      line-height: 1.34;
+      padding-left: 4px;
+    }
+
+    .math-box {
+      border-left: 5px solid var(--slide-blue);
+      border-radius: 6px;
+      padding: 22px 26px;
+      background: var(--math-definition-bg);
+      color: var(--slide-ink);
+    }
+
+    .math-box.theorem {
+      background: var(--math-theorem-bg);
+      border-left-color: var(--slide-accent);
+    }
+
+    .math-box.example {
+      background: var(--math-example-bg);
+      border-left-color: var(--slide-teal);
+    }
+
+    .math-box.warning {
+      background: var(--math-warning-bg);
+      border-left-color: var(--slide-amber);
+    }
+
+    .math-box.exercise {
+      background: var(--math-exercise-bg);
+      border-left-color: var(--slide-violet);
+    }
+
+    .box-label {
+      margin-bottom: 9px;
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 700;
+      color: var(--slide-accent);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .math-box.example .box-label {
+      color: var(--slide-teal);
+    }
+
+    .math-box.warning .box-label {
+      color: var(--slide-amber);
+    }
+
+    .math-box.exercise .box-label {
+      color: var(--slide-violet);
+    }
+
+    .formula {
+      font-family: var(--font-math);
+      font-size: 33px;
+      line-height: 1.35;
+      color: var(--slide-ink);
+    }
+
+    .formula.center {
+      text-align: center;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .stack-tight {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 22px 24px;
+    }
+
+    .diagram-panel {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .tag {
+      border: 1px solid var(--slide-border);
+      border-radius: 999px;
+      padding: 7px 16px;
+      background: #ffffff;
+      color: var(--slide-muted);
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 600;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .pipe-step {
+      border-top: 5px solid var(--slide-blue);
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 18px 18px 20px;
+      min-height: 116px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pipe-step:nth-child(2) {
+      border-top-color: var(--slide-teal);
+    }
+
+    .pipe-step:nth-child(3) {
+      border-top-color: var(--slide-amber);
+    }
+
+    .pipe-step:nth-child(4) {
+      border-top-color: var(--slide-violet);
+    }
+
+    .pipe-step strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1.15;
+      margin-bottom: 8px;
+      color: var(--slide-ink);
+    }
+
+    .pipe-step span {
+      display: block;
+      font-size: 22px;
+      line-height: 1.32;
+      color: var(--slide-muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 24px;
+      line-height: 1.28;
+    }
+
+    th {
+      color: var(--slide-accent);
+      font-size: 23px;
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--slide-border);
+      background: var(--slide-bg-alt);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--slide-border-light);
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--slide-border-light);
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 18px 20px;
+    }
+
+    .mini-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 25px;
+      color: var(--slide-ink);
+    }
+
+    .mini-card span {
+      display: block;
+      color: var(--slide-muted);
+      font-size: 22px;
+      line-height: 1.32;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    svg text {
+      font-family: "Source Sans 3", Arial, sans-serif;
+    }
+
+    .svg-math {
+      font-family: "STIX Two Text", Georgia, serif;
+      font-style: italic;
+    }
+
+    .katex {
+      font-size: 1em !important;
+    }
+
+    .katex-display {
+      margin: 8px 0 !important;
+    }
+
+    aside.speaker-notes {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="speaker-notes">
+{
+  "slides": [
+    "Open by framing this chapter as a catalog that becomes manageable only when students see the repeated structure. I would point to the four verbs on the right and say that almost every primitive pair in the source span is a variation on those verbs. The goal of the lecture is not memorizing cases; it is learning to demand a useful certificate from every intersection query.",
+    "Use this map to prevent the chapter from feeling like a long list of unrelated recipes. The left column follows the source orientation, while the right column names the computational move the notebook emphasizes. Tell students that a production codebase often mixes these families, so recognizing which family they are in is already a debugging advantage.",
+    "This slide establishes the contract we will reuse. A representation says what equation is being solved, a domain filter says which formal solutions survive the finite primitive, and a certificate explains why the answer should be trusted. Stress that a bare Boolean is often enough for speed, but it is too weak for teaching, testing, and diagnosing edge cases.",
+    "Walk through the line-plane equation slowly because it is the seed of the whole chapter. The denominator identifies the geometric case before the numerator gives a parameter. Once students see that parallel and coplanar behavior is a classification problem rather than a special annoyance, later degeneracies become much less mysterious.",
+    "Here the supporting plane gives the candidate point, and barycentric coordinates decide whether the point belongs to the triangle rather than merely to its plane. I would emphasize that the barycentric triple is both a domain test and an interpolation certificate, which is why ray tracers and collision routines keep it instead of throwing it away.",
+    "This is the first place where mesh thinking and solid thinking diverge usefully. A polygon wants a reliable point-in-polygon test after projection, while a convex solid wants inequalities that clip a parameter interval. Students should notice that both paths are domain filters, just expressed in different coordinate systems.",
+    "Use the box slab picture to make interval clipping concrete. Each coordinate direction contributes an allowed range of ray parameters, and the intersection survives only if the ranges have a common overlap. For an oriented box, the same idea works after transforming the ray into the box frame, so the algorithm is less special than it first appears.",
+    "This slide connects planar intersections to section geometry. Two nonparallel planes produce a line, three planes may produce a point or a degenerate family, and a plane cutting a polyhedron is recovered by edge crossings. I would ask students what certificate each row should return before revealing that signs, ordered vertices, and residuals play that role.",
+    "The important shift is that an implicit surface turns a geometric intersection into a one-variable root problem. The residual plot on the right is deliberately more informative than just drawing hit points. It lets students see misses, tangencies, and two crossings as changes in a scalar function after line substitution.",
+    "Cylinders, cones, and tori are a good test of whether the unifying story is working. The line is first moved into a local frame, then substituted into the implicit equation, then filtered by height, caps, or periodic parameters. The degree column warns students about the numerical solver before they even write code.",
+    "The source span includes polynomial and free-form surfaces, where exact closed forms often give way to subdivision, lattice evaluation, analytic special cases, or marching. I would present this as a spectrum of guarantees: coarse bounding tests avoid impossible work, local refinement searches for candidates, and residual checks decide what is credible.",
+    "Separating axes invert the intersection question. Instead of solving for the hit set, we search for a direction in which the projected intervals are disjoint. For oriented boxes, the fifteen candidate directions are memorable because they come from face normals and edge cross products. The useful certificate is the signed gap, not just the final yes or no.",
+    "This slide is about return types and software design. A point, segment, polygon, curve, or empty set should come with enough evidence for downstream code to classify contact. Encourage students to think of certificates as a debugging API: they can be plotted, asserted, compared under perturbation, and used to explain apparent rendering failures.",
+    "Pause here and make the tolerance policy explicit. Exact branch diagrams are mathematically clean, but floating-point implementations see near-parallel, near-coplanar, and grazing cases. The point is not to sprinkle epsilons randomly; it is to decide which residuals are measured, which comparisons are tolerant, and what ambiguous cases should return.",
+    "Close by turning the lecture back into a lab habit. For any primitive pair, students should write the representation, solve the reduced equation, filter to the primitive domain, classify the returned set, and preserve the certificate. That five-part checklist is portable across the entire chapter and is the best antidote to memorized intersection snippets."
+  ]
+}
+  </script>
+
+  <deck-stage width="1920" height="1080">
+    <section data-label="Title">
+      <div class="slide alt has-grid">
+        <div class="content title-layout">
+          <div>
+            <p class="eyebrow">Geometric Tools for Computer Graphics</p>
+            <h1>Chapter 11: Intersection in 3D</h1>
+            <p class="subtitle">A reusable workflow for rays, planes, triangles, polyhedra, quadrics, polynomial surfaces, bounding volumes, and separating axes.</p>
+            <p class="source-line">Source orientation: printed pages 481-662; PDF pages 528-709. Notebook: part-03-3d-geometric-tools/chapter-11-intersection-in-3d.</p>
+          </div>
+          <div class="diagram-panel">
+            <svg viewBox="0 0 780 520" width="780" role="img" aria-label="Four stage intersection workflow">
+              <defs>
+                <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+                </marker>
+              </defs>
+              <rect x="42" y="54" width="696" height="410" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+              <path d="M 80 376 C 170 272, 282 260, 390 310 C 506 365, 610 270, 700 134" fill="none" stroke="#CBD5E1" stroke-width="5" stroke-dasharray="14 12"/>
+              <circle cx="126" cy="330" r="42" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+              <circle cx="298" cy="286" r="42" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+              <circle cx="470" cy="330" r="42" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+              <circle cx="642" cy="210" r="42" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+              <line x1="168" y1="330" x2="252" y2="296" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"/>
+              <line x1="340" y1="296" x2="424" y2="320" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"/>
+              <line x1="512" y1="316" x2="604" y2="232" stroke="#2563EB" stroke-width="5" marker-end="url(#arrow-blue)"/>
+              <text x="126" y="338" text-anchor="middle" font-size="28" fill="#2563EB" font-weight="700">1</text>
+              <text x="298" y="294" text-anchor="middle" font-size="28" fill="#0F766E" font-weight="700">2</text>
+              <text x="470" y="338" text-anchor="middle" font-size="28" fill="#B45309" font-weight="700">3</text>
+              <text x="642" y="218" text-anchor="middle" font-size="28" fill="#6D28D9" font-weight="700">4</text>
+              <text x="126" y="420" text-anchor="middle" font-size="25" fill="#111827" font-weight="700">solve</text>
+              <text x="298" y="378" text-anchor="middle" font-size="25" fill="#111827" font-weight="700">restrict</text>
+              <text x="470" y="420" text-anchor="middle" font-size="25" fill="#111827" font-weight="700">classify</text>
+              <text x="642" y="298" text-anchor="middle" font-size="25" fill="#111827" font-weight="700">certify</text>
+              <text x="390" y="118" text-anchor="middle" font-size="30" fill="#1E3A8A" font-weight="700">One pattern, many primitive pairs</text>
+              <text x="390" y="156" text-anchor="middle" font-size="23" fill="#475569">parameters, signs, roots, intervals, gaps</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Open by framing this chapter as a catalog that becomes manageable only when students see the repeated structure. I would point to the four verbs on the right and say that almost every primitive pair in the source span is a variation on those verbs. The goal of the lecture is not memorizing cases; it is learning to demand a useful certificate from every intersection query.</aside>
+    </section>
+
+    <section data-label="Chapter Map">
+      <div class="slide">
+        <div class="content">
+          <p class="eyebrow">Lecture route</p>
+          <h2>Read the chapter as families of reductions</h2>
+          <p class="lead">The source span is broad, but the notebook groups it by the computational work each query asks us to do.</p>
+          <div class="grid-2" style="margin-top: 32px;">
+            <div class="stack">
+              <div class="math-box">
+                <div class="box-label">Family A</div>
+                <p class="body"><strong>Linear component against a primitive.</strong> Substitute \(X(t)=P+td\), solve for \(t\), then filter by ray, segment, polygon, or finite-solid domains.</p>
+              </div>
+              <div class="math-box example">
+                <div class="box-label">Family B</div>
+                <p class="body"><strong>Planar component against solids or surfaces.</strong> Use signs, edge crossings, conic sections, or local surface parameters to describe the intersection set.</p>
+              </div>
+              <div class="math-box theorem">
+                <div class="box-label">Family C</div>
+                <p class="body"><strong>Convex pair tests.</strong> Turn overlap into interval comparisons on candidate axes; a positive projection gap is the certificate of separation.</p>
+              </div>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 780 650" width="760" role="img" aria-label="Chapter family map">
+                <rect x="36" y="42" width="708" height="566" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+                <line x1="390" y1="102" x2="390" y2="550" stroke="#CBD5E1" stroke-width="3"/>
+                <line x1="110" y1="326" x2="670" y2="326" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="390" y="84" text-anchor="middle" font-size="30" fill="#1E3A8A" font-weight="700">Intersection reductions</text>
+                <text x="250" y="144" text-anchor="middle" font-size="24" fill="#2563EB" font-weight="700">linear components</text>
+                <text x="530" y="144" text-anchor="middle" font-size="24" fill="#0F766E" font-weight="700">planar components</text>
+                <text x="250" y="368" text-anchor="middle" font-size="24" fill="#B45309" font-weight="700">implicit surfaces</text>
+                <text x="530" y="368" text-anchor="middle" font-size="24" fill="#6D28D9" font-weight="700">convex volumes</text>
+                <g fill="#EFF6FF" stroke="#2563EB" stroke-width="3">
+                  <rect x="128" y="174" width="244" height="52" rx="8"/>
+                  <rect x="128" y="244" width="244" height="52" rx="8"/>
+                </g>
+                <g fill="#F0FDFA" stroke="#0F766E" stroke-width="3">
+                  <rect x="408" y="174" width="244" height="52" rx="8"/>
+                  <rect x="408" y="244" width="244" height="52" rx="8"/>
+                </g>
+                <g fill="#FFFBEB" stroke="#B45309" stroke-width="3">
+                  <rect x="128" y="398" width="244" height="52" rx="8"/>
+                  <rect x="128" y="468" width="244" height="52" rx="8"/>
+                </g>
+                <g fill="#F5F3FF" stroke="#6D28D9" stroke-width="3">
+                  <rect x="408" y="398" width="244" height="52" rx="8"/>
+                  <rect x="408" y="468" width="244" height="52" rx="8"/>
+                </g>
+                <text x="250" y="208" text-anchor="middle" font-size="23" fill="#111827">planes, triangles</text>
+                <text x="250" y="278" text-anchor="middle" font-size="23" fill="#111827">polygons, boxes</text>
+                <text x="530" y="208" text-anchor="middle" font-size="23" fill="#111827">planes, triangles</text>
+                <text x="530" y="278" text-anchor="middle" font-size="23" fill="#111827">polyhedra, quadrics</text>
+                <text x="250" y="432" text-anchor="middle" font-size="23" fill="#111827">quadratic roots</text>
+                <text x="250" y="502" text-anchor="middle" font-size="23" fill="#111827">quartic and residuals</text>
+                <text x="530" y="432" text-anchor="middle" font-size="23" fill="#111827">SAT axes</text>
+                <text x="530" y="502" text-anchor="middle" font-size="23" fill="#111827">contact sets</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use this map to prevent the chapter from feeling like a long list of unrelated recipes. The left column follows the source orientation, while the right column names the computational move the notebook emphasizes. Tell students that a production codebase often mixes these families, so recognizing which family they are in is already a debugging advantage.</aside>
+    </section>
+
+    <section data-label="Query Contract">
+      <div class="slide alt">
+        <div class="content">
+          <p class="eyebrow">Core invariant</p>
+          <h2>Every useful query returns more than true or false</h2>
+          <div class="pipeline">
+            <div class="pipe-step">
+              <strong>1. Representation</strong>
+              <span>Choose parametric, implicit, barycentric, half-space, or local-frame coordinates.</span>
+            </div>
+            <div class="pipe-step">
+              <strong>2. Solve</strong>
+              <span>Reduce geometry to a scalar equation, interval overlap, or sign pattern.</span>
+            </div>
+            <div class="pipe-step">
+              <strong>3. Restrict</strong>
+              <span>Apply the primitive domain: \(t\) range, barycentric weights, caps, slabs, or trim curves.</span>
+            </div>
+            <div class="pipe-step">
+              <strong>4. Certify</strong>
+              <span>Return residuals, roots, intervals, face ids, ordered vertices, or SAT gaps.</span>
+            </div>
+          </div>
+          <div class="grid-60-40" style="margin-top: 40px;">
+            <div class="math-box theorem">
+              <div class="box-label">Reusable contract</div>
+              <p class="formula center">\[
+              \text{intersection} =
+              \text{classify}\left(\text{filter}_{D}\left(\text{solve}(R)\right)\right)
+              \]</p>
+              <p class="body">The domain \(D\) belongs to the primitive, not to the algebra. A line root is not automatically a ray hit, and a plane point is not automatically inside a triangle.</p>
+            </div>
+            <div class="stack-tight">
+              <div class="panel">
+                <h3>Minimal debug record</h3>
+                <ul class="compact-list" style="margin-top: 14px;">
+                  <li>input frame and normalized directions</li>
+                  <li>candidate parameter or root list</li>
+                  <li>domain filter inequalities</li>
+                  <li>residuals against all defining equations</li>
+                  <li>classification of the returned set</li>
+                </ul>
+              </div>
+              <div class="math-box warning">
+                <div class="box-label">Common failure</div>
+                <p class="body">A Boolean says nothing about why a near-tangent or near-parallel case changed state under a tiny perturbation.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This slide establishes the contract we will reuse. A representation says what equation is being solved, a domain filter says which formal solutions survive the finite primitive, and a certificate explains why the answer should be trusted. Stress that a bare Boolean is often enough for speed, but it is too weak for teaching, testing, and diagnosing edge cases.</aside>
+    </section>
+
+    <section data-label="Line Plane">
+      <div class="slide">
+        <div class="content">
+          <p class="eyebrow">Linear component and plane</p>
+          <h2>The smallest 3D intersection algorithm</h2>
+          <div class="grid-55-45" style="margin-top: 30px;">
+            <div class="stack">
+              <div class="math-box">
+                <div class="box-label">Substitution</div>
+                <p class="formula">\[
+                X(t)=P+td,\qquad \langle n,X\rangle=c
+                \]</p>
+                <p class="formula">\[
+                t=\frac{c-\langle n,P\rangle}{\langle n,d\rangle}
+                \]</p>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Denominator</th><th>Classification</th><th>Certificate</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>\(\langle n,d\rangle \ne 0\)</td><td>one point on the supporting line</td><td>plane residual near zero</td></tr>
+                  <tr><td>\(\langle n,d\rangle = 0\), numerator nonzero</td><td>parallel and disjoint</td><td>signed distance is stable</td></tr>
+                  <tr><td>both vanish</td><td>line lies in the plane</td><td>all sampled points satisfy plane</td></tr>
+                </tbody>
+              </table>
+              <p class="small">Rays and segments add \(t\ge 0\) or \(0\le t\le 1\) after the algebraic solve.</p>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 720 610" width="700" role="img" aria-label="Line crossing a plane">
+                <defs>
+                  <marker id="arrow-line" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+                  </marker>
+                </defs>
+                <polygon points="100,420 420,230 650,340 330,540" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/>
+                <line x1="150" y1="130" x2="590" y2="520" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow-line)"/>
+                <circle cx="380" cy="334" r="12" fill="#B45309"/>
+                <line x1="380" y1="334" x2="380" y2="210" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-line)"/>
+                <text x="178" y="122" font-size="26" fill="#2563EB" font-weight="700">line X(t)</text>
+                <text x="420" y="202" font-size="26" fill="#0F766E" font-weight="700">normal n</text>
+                <text x="414" y="356" font-size="25" fill="#B45309" font-weight="700">hit Q</text>
+                <text x="134" y="462" font-size="25" fill="#1E3A8A" font-weight="700">plane &lt;n,X&gt; = c</text>
+                <text x="502" y="544" font-size="23" fill="#475569">then filter t</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Walk through the line-plane equation slowly because it is the seed of the whole chapter. The denominator identifies the geometric case before the numerator gives a parameter. Once students see that parallel and coplanar behavior is a classification problem rather than a special annoyance, later degeneracies become much less mysterious.</aside>
+    </section>
+
+    <section data-label="Ray Triangle">
+      <div class="slide alt">
+        <div class="content">
+          <p class="eyebrow">Linear component and triangle</p>
+          <h2>A plane hit still needs a triangle-domain test</h2>
+          <div class="grid-60-40" style="margin-top: 28px;">
+            <div class="diagram-panel">
+              <svg viewBox="0 0 900 660" width="860" role="img" aria-label="Ray triangle barycentric test">
+                <defs>
+                  <marker id="arrow-ray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+                  </marker>
+                </defs>
+                <polygon points="210,500 650,470 490,170" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+                <line x1="110" y1="160" x2="505" y2="382" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow-ray)"/>
+                <line x1="505" y1="382" x2="728" y2="508" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 12"/>
+                <circle cx="505" cy="382" r="13" fill="#B45309"/>
+                <circle cx="210" cy="500" r="9" fill="#0F766E"/>
+                <circle cx="650" cy="470" r="9" fill="#0F766E"/>
+                <circle cx="490" cy="170" r="9" fill="#0F766E"/>
+                <text x="184" y="546" font-size="26" fill="#0F766E" font-weight="700">A</text>
+                <text x="666" y="486" font-size="26" fill="#0F766E" font-weight="700">B</text>
+                <text x="502" y="154" font-size="26" fill="#0F766E" font-weight="700">C</text>
+                <text x="526" y="374" font-size="26" fill="#B45309" font-weight="700">Q</text>
+                <text x="120" y="140" font-size="26" fill="#2563EB" font-weight="700">ray P + td</text>
+                <path d="M 505 382 L 210 500" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="8 9"/>
+                <path d="M 505 382 L 650 470" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="8 9"/>
+                <path d="M 505 382 L 490 170" stroke="#CBD5E1" stroke-width="3" stroke-dasharray="8 9"/>
+                <rect x="134" y="66" width="632" height="64" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="450" y="108" text-anchor="middle" font-size="28" fill="#111827">inside if u,v,w &gt;= 0 and u+v+w = 1</text>
+              </svg>
+            </div>
+            <div class="stack">
+              <div class="math-box example">
+                <div class="box-label">Candidate point</div>
+                <p class="formula">\[
+                Q=P+td,\qquad t\ge 0
+                \]</p>
+                <p class="body">The supporting plane supplies \(Q\). The triangle supplies the barycentric domain.</p>
+              </div>
+              <div class="math-box theorem">
+                <div class="box-label">Barycentric certificate</div>
+                <p class="formula">\[
+                Q=uA+vB+wC,\quad u+v+w=1
+                \]</p>
+                <p class="body">Keep \(u,v,w\) with the hit. They certify containment and carry interpolation weights for normals, texture coordinates, and attributes.</p>
+              </div>
+              <div class="math-box warning">
+                <div class="box-label">Edge cases</div>
+                <p class="body">A weight near zero is a geometric statement: the ray is near an edge or vertex. Treat it as data, not as an afterthought.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Here the supporting plane gives the candidate point, and barycentric coordinates decide whether the point belongs to the triangle rather than merely to its plane. I would emphasize that the barycentric triple is both a domain test and an interpolation certificate, which is why ray tracers and collision routines keep it instead of throwing it away.</aside>
+    </section>
+
+    <section data-label="Domains">
+      <div class="slide">
+        <div class="content">
+          <p class="eyebrow">Polygons and polyhedra</p>
+          <h2>After solving, most work is domain membership</h2>
+          <div class="grid-2" style="margin-top: 30px;">
+            <div class="stack">
+              <div class="math-box">
+                <div class="box-label">Polygon route</div>
+                <p class="body">Intersect the supporting plane, then project to a stable 2D coordinate plane and run a point-in-polygon test.</p>
+                <p class="formula center" style="margin-top: 12px;">\[
+                Q\in \Pi,\quad \pi(Q)\in \pi(\text{polygon})
+                \]</p>
+              </div>
+              <div class="diagram-panel">
+                <svg viewBox="0 0 760 330" width="740" role="img" aria-label="Polygon projection domain">
+                  <polygon points="100,245 230,96 462,76 604,190 420,270" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                  <circle cx="352" cy="176" r="11" fill="#B45309"/>
+                  <line x1="352" y1="176" x2="610" y2="272" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"/>
+                  <rect x="560" y="132" width="120" height="120" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+                  <circle cx="624" cy="196" r="9" fill="#B45309"/>
+                  <text x="118" y="82" font-size="25" fill="#2563EB" font-weight="700">3D polygon plane</text>
+                  <text x="548" y="112" font-size="25" fill="#475569" font-weight="700">2D test</text>
+                  <text x="368" y="170" font-size="24" fill="#B45309" font-weight="700">Q</text>
+                </svg>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="math-box example">
+                <div class="box-label">Convex solid route</div>
+                <p class="body">Represent the polyhedron as intersecting half-spaces. A line parameter survives exactly when it satisfies every face inequality.</p>
+                <p class="formula center" style="margin-top: 12px;">\[
+                a_i \le \langle n_i,P+td\rangle \le b_i
+                \]</p>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>View</th><th>Natural operation</th><th>What to return</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>mesh</td><td>edge-face crossings</td><td>points with face ids</td></tr>
+                  <tr><td>half-space</td><td>clip \(t\) interval</td><td>\([t_{\min},t_{\max}]\)</td></tr>
+                  <tr><td>local frame</td><td>slab inequalities</td><td>entry and exit axes</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This is the first place where mesh thinking and solid thinking diverge usefully. A polygon wants a reliable point-in-polygon test after projection, while a convex solid wants inequalities that clip a parameter interval. Students should notice that both paths are domain filters, just expressed in different coordinate systems.</aside>
+    </section>
+
+    <section data-label="Box Slabs">
+      <div class="slide alt">
+        <div class="content">
+          <p class="eyebrow">Bounding boxes</p>
+          <h2>Slabs convert a ray-box test into interval arithmetic</h2>
+          <div class="grid-60-40" style="margin-top: 28px;">
+            <div class="stack">
+              <div class="math-box theorem">
+                <div class="box-label">AABB slab update</div>
+                <p class="formula">\[
+                t_i^-=\frac{m_i-P_i}{d_i},\qquad
+                t_i^+=\frac{M_i-P_i}{d_i}
+                \]</p>
+                <p class="formula">\[
+                t_{\rm enter}=\max_i \min(t_i^-,t_i^+),\qquad
+                t_{\rm exit}=\min_i \max(t_i^-,t_i^+)
+                \]</p>
+              </div>
+              <div class="math-box warning">
+                <div class="box-label">Classification</div>
+                <p class="body">Hit if \(t_{\rm enter}\le t_{\rm exit}\) and the interval intersects the ray or segment domain. A nearly zero direction component needs a parallel-slab branch.</p>
+              </div>
+              <p class="small">For an OBB, transform \(P\) and \(d\) into the box's orthonormal frame, then reuse the same slab equations.</p>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 760 650" width="730" role="img" aria-label="Ray clipped by box slabs">
+                <defs>
+                  <marker id="arrow-slab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+                  </marker>
+                </defs>
+                <polygon points="250,170 548,220 548,472 250,420" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/>
+                <polygon points="250,170 330,96 628,146 548,220" fill="#F8FAFC" stroke="#1E3A8A" stroke-width="4"/>
+                <polygon points="548,220 628,146 628,398 548,472" fill="#E0F2FE" stroke="#1E3A8A" stroke-width="4"/>
+                <line x1="92" y1="512" x2="690" y2="150" stroke="#CBD5E1" stroke-width="9"/>
+                <line x1="318" y1="374" x2="548" y2="236" stroke="#B45309" stroke-width="11"/>
+                <line x1="92" y1="512" x2="318" y2="374" stroke="#2563EB" stroke-width="7" marker-end="url(#arrow-slab)"/>
+                <circle cx="318" cy="374" r="12" fill="#B45309"/>
+                <circle cx="548" cy="236" r="12" fill="#B45309"/>
+                <text x="266" y="386" font-size="25" fill="#B45309" font-weight="700">enter</text>
+                <text x="564" y="232" font-size="25" fill="#B45309" font-weight="700">exit</text>
+                <text x="102" y="548" font-size="25" fill="#2563EB" font-weight="700">ray</text>
+                <text x="326" y="88" font-size="25" fill="#1E3A8A" font-weight="700">box as 3 pairs of slabs</text>
+                <rect x="112" y="54" width="524" height="58" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="374" y="92" text-anchor="middle" font-size="25" fill="#475569">keep the common t-interval</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Use the box slab picture to make interval clipping concrete. Each coordinate direction contributes an allowed range of ray parameters, and the intersection survives only if the ranges have a common overlap. For an oriented box, the same idea works after transforming the ray into the box frame, so the algorithm is less special than it first appears.</aside>
+    </section>
+
+    <section data-label="Planar Sections">
+      <div class="slide">
+        <div class="content">
+          <p class="eyebrow">Planar components</p>
+          <h2>Plane intersections are sign patterns plus reconstruction</h2>
+          <div class="grid-55-45" style="margin-top: 30px;">
+            <div class="stack">
+              <table>
+                <thead>
+                  <tr><th>Primitive pair</th><th>Reduced question</th><th>Returned set</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>two planes</td><td>are normals parallel?</td><td>none, one plane, or a line</td></tr>
+                  <tr><td>three planes</td><td>solve a \(3\times 3\) linear system</td><td>point, line, plane, or empty</td></tr>
+                  <tr><td>triangle-plane</td><td>vertex signed distances</td><td>empty, point, segment, or triangle</td></tr>
+                  <tr><td>plane-polyhedron</td><td>edge signs and crossings</td><td>ordered section polygon</td></tr>
+                </tbody>
+              </table>
+              <div class="math-box example">
+                <div class="box-label">Section polygon recipe</div>
+                <p class="body">Evaluate each vertex signed distance, interpolate along crossed edges, then sort the surviving points in a basis of the cutting plane.</p>
+              </div>
+              <div class="math-box">
+                <div class="box-label">Certificate</div>
+                <p class="body">All section vertices should have near-zero plane residuals, and the ordered polygon should be consistent with the face or edge adjacency used to create it.</p>
+              </div>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 720 650" width="700" role="img" aria-label="Plane slicing a polyhedron">
+                <polygon points="230,160 502,112 608,292 340,346" fill="#F8FAFC" stroke="#1E3A8A" stroke-width="4"/>
+                <polygon points="230,160 340,346 350,548 130,374" fill="#EFF6FF" stroke="#1E3A8A" stroke-width="4"/>
+                <polygon points="340,346 608,292 530,506 350,548" fill="#E0F2FE" stroke="#1E3A8A" stroke-width="4"/>
+                <polygon points="180,350 360,236 558,314 364,462" fill="rgba(180,83,9,0.16)" stroke="#B45309" stroke-width="5"/>
+                <circle cx="180" cy="350" r="9" fill="#B45309"/>
+                <circle cx="360" cy="236" r="9" fill="#B45309"/>
+                <circle cx="558" cy="314" r="9" fill="#B45309"/>
+                <circle cx="364" cy="462" r="9" fill="#B45309"/>
+                <text x="398" y="226" font-size="25" fill="#B45309" font-weight="700">cutting plane</text>
+                <text x="226" y="588" font-size="25" fill="#1E3A8A" font-weight="700">convex polyhedron</text>
+                <text x="92" y="336" font-size="23" fill="#B45309" font-weight="700">edge crossings</text>
+                <text x="378" y="426" font-size="23" fill="#475569">ordered polygon</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This slide connects planar intersections to section geometry. Two nonparallel planes produce a line, three planes may produce a point or a degenerate family, and a plane cutting a polyhedron is recovered by edge crossings. I would ask students what certificate each row should return before revealing that signs, ordered vertices, and residuals play that role.</aside>
+    </section>
+
+    <section data-label="Implicit Roots">
+      <div class="slide alt">
+        <div class="content">
+          <p class="eyebrow">Quadrics and implicit surfaces</p>
+          <h2>Line substitution turns geometry into root finding</h2>
+          <div class="grid-60-40" style="margin-top: 28px;">
+            <div class="stack">
+              <div class="math-box theorem">
+                <div class="box-label">Implicit reduction</div>
+                <p class="formula">\[
+                F(X)=0,\quad X(t)=P+td
+                \quad\Longrightarrow\quad g(t)=F(P+td)=0
+                \]</p>
+              </div>
+              <div class="math-box">
+                <div class="box-label">Quadric case</div>
+                <p class="formula">\[
+                g(t)=at^2+bt+c
+                \]</p>
+                <p class="body">The discriminant classifies no real crossing, tangency, or two crossings before ray, segment, height, or cap filters are applied.</p>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Root pattern</th><th>Geometry</th><th>Debug check</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>none</td><td>line misses surface</td><td>minimum residual stays signed</td></tr>
+                  <tr><td>double</td><td>tangent contact</td><td>residual touches zero</td></tr>
+                  <tr><td>two roots</td><td>enter and exit</td><td>both residuals near zero</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 760 620" width="730" role="img" aria-label="Residual curve with roots">
+                <line x1="86" y1="318" x2="684" y2="318" stroke="#CBD5E1" stroke-width="4"/>
+                <line x1="120" y1="86" x2="120" y2="540" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 120 160 C 206 450, 292 472, 380 318 C 462 176, 552 182, 660 430" fill="none" stroke="#2563EB" stroke-width="7"/>
+                <circle cx="380" cy="318" r="12" fill="#B45309"/>
+                <circle cx="612" cy="318" r="12" fill="#B45309"/>
+                <path d="M 612 318 C 620 336, 636 376, 660 430" fill="none" stroke="#0F766E" stroke-width="7"/>
+                <text x="388" y="354" font-size="25" fill="#B45309" font-weight="700">root t1</text>
+                <text x="622" y="300" font-size="25" fill="#B45309" font-weight="700">root t2</text>
+                <text x="156" y="116" font-size="26" fill="#2563EB" font-weight="700">residual g(t)</text>
+                <text x="600" y="362" font-size="23" fill="#0F766E" font-weight="700">domain filter accepts?</text>
+                <text x="642" y="350" font-size="24" fill="#475569">t</text>
+                <rect x="156" y="456" width="464" height="68" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="388" y="498" text-anchor="middle" font-size="25" fill="#111827">trust the point only after F(Q) is near 0</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The important shift is that an implicit surface turns a geometric intersection into a one-variable root problem. The residual plot on the right is deliberately more informative than just drawing hit points. It lets students see misses, tangencies, and two crossings as changes in a scalar function after line substitution.</aside>
+    </section>
+
+    <section data-label="Local Frames">
+      <div class="slide">
+        <div class="content">
+          <p class="eyebrow">Cylinders, cones, and tori</p>
+          <h2>Use a local frame, then let the polynomial degree guide the solver</h2>
+          <div class="grid-2" style="margin-top: 30px;">
+            <div class="stack">
+              <div class="math-box example">
+                <div class="box-label">Transform first</div>
+                <p class="body">Move the line into object coordinates. The standard equation becomes simple; the root points are transformed back afterward.</p>
+                <p class="formula center" style="margin-top: 12px;">\[
+                \widetilde{X}(t)=M^{-1}(P+td)
+                \]</p>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Surface</th><th>Degree in \(t\)</th><th>Domain filters</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>sphere, cylinder, cone</td><td>2</td><td>ray range, height, caps</td></tr>
+                  <tr><td>ellipsoid</td><td>2 after affine transform</td><td>ray range and residual</td></tr>
+                  <tr><td>torus</td><td>4</td><td>real roots, residual, parameter domain</td></tr>
+                </tbody>
+              </table>
+              <p class="small">The notebook's symbolic scaffold checks degree before the numeric root routine is trusted.</p>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 820 610" width="790" role="img" aria-label="Local frame and degree examples">
+                <defs>
+                  <marker id="arrow-frame" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#1E3A8A"/>
+                  </marker>
+                </defs>
+                <ellipse cx="212" cy="320" rx="90" ry="148" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+                <line x1="212" y1="496" x2="212" y2="120" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-frame)"/>
+                <text x="230" y="142" font-size="25" fill="#1E3A8A" font-weight="700">local z</text>
+                <path d="M 432 486 L 552 164 L 674 486 Z" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+                <line x1="552" y1="486" x2="552" y2="144" stroke="#0F766E" stroke-width="5" stroke-dasharray="14 10"/>
+                <path d="M 120 220 C 260 116, 496 166, 720 70" fill="none" stroke="#B45309" stroke-width="6"/>
+                <circle cx="566" cy="262" r="80" fill="none" stroke="#6D28D9" stroke-width="15"/>
+                <circle cx="566" cy="262" r="34" fill="#FFFFFF" stroke="#6D28D9" stroke-width="5"/>
+                <text x="120" y="552" font-size="25" fill="#2563EB" font-weight="700">cylinder: quadratic plus caps</text>
+                <text x="456" y="552" font-size="25" fill="#0F766E" font-weight="700">cone: quadratic plus height</text>
+                <text x="474" y="352" font-size="25" fill="#6D28D9" font-weight="700">torus: quartic</text>
+                <text x="156" y="82" font-size="25" fill="#B45309" font-weight="700">same world line, simpler object equations</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Cylinders, cones, and tori are a good test of whether the unifying story is working. The line is first moved into a local frame, then substituted into the implicit equation, then filtered by height, caps, or periodic parameters. The degree column warns students about the numerical solver before they even write code.</aside>
+    </section>
+
+    <section data-label="Polynomial Surfaces">
+      <div class="slide alt">
+        <div class="content">
+          <p class="eyebrow">Polynomial and free-form surfaces</p>
+          <h2>When exact formulas get costly, combine bounding, refinement, and residual checks</h2>
+          <div class="grid-60-40" style="margin-top: 28px;">
+            <div class="stack">
+              <div class="mini-grid">
+                <div class="mini-card">
+                  <strong>Subdivision</strong>
+                  <span>Split patches until simple bounds isolate possible intersections.</span>
+                </div>
+                <div class="mini-card">
+                  <strong>Lattice evaluation</strong>
+                  <span>Evaluate a grid of control or sample data to detect candidate cells.</span>
+                </div>
+                <div class="mini-card">
+                  <strong>Analytic cases</strong>
+                  <span>Use special structure when the equations admit a compact reduction.</span>
+                </div>
+                <div class="mini-card">
+                  <strong>Marching</strong>
+                  <span>Trace an intersection curve from a seed while controlling step size.</span>
+                </div>
+              </div>
+              <div class="math-box theorem">
+                <div class="box-label">Parametric surface condition</div>
+                <p class="formula">\[
+                X(u,v)\in \ell
+                \quad\Longleftrightarrow\quad
+                (X(u,v)-P)\times d=0
+                \]</p>
+                <p class="body">Solving this exactly can be much harder than detecting and refining credible candidate regions.</p>
+              </div>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 760 650" width="730" role="img" aria-label="Patch refinement for surface intersection">
+                <rect x="94" y="110" width="500" height="380" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 114 184 C 230 92, 356 258, 574 154" fill="none" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 112 286 C 238 194, 360 350, 574 252" fill="none" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 112 390 C 256 284, 364 454, 574 356" fill="none" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 178 118 C 118 230, 214 356, 162 488" fill="none" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 306 112 C 246 222, 336 360, 286 488" fill="none" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 452 114 C 390 230, 486 354, 432 488" fill="none" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 122 438 C 246 312, 368 270, 598 206" fill="none" stroke="#2563EB" stroke-width="7"/>
+                <rect x="328" y="250" width="126" height="104" rx="4" fill="rgba(180,83,9,0.16)" stroke="#B45309" stroke-width="5"/>
+                <rect x="468" y="188" width="86" height="70" rx="4" fill="rgba(15,118,110,0.16)" stroke="#0F766E" stroke-width="5"/>
+                <text x="150" y="548" font-size="25" fill="#2563EB" font-weight="700">trace candidate curve</text>
+                <text x="318" y="236" font-size="23" fill="#B45309" font-weight="700">subdivide</text>
+                <text x="460" y="174" font-size="23" fill="#0F766E" font-weight="700">refine</text>
+                <text x="112" y="82" font-size="26" fill="#1E3A8A" font-weight="700">patch domain and candidate cells</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">The source span includes polynomial and free-form surfaces, where exact closed forms often give way to subdivision, lattice evaluation, analytic special cases, or marching. I would present this as a spectrum of guarantees: coarse bounding tests avoid impossible work, local refinement searches for candidates, and residual checks decide what is credible.</aside>
+    </section>
+
+    <section data-label="Separating Axes">
+      <div class="slide">
+        <div class="content">
+          <p class="eyebrow">Separating-axis diagnostics</p>
+          <h2>Convex disjointness is certified by one projection gap</h2>
+          <div class="grid-55-45" style="margin-top: 30px;">
+            <div class="stack">
+              <div class="math-box theorem">
+                <div class="box-label">SAT statement</div>
+                <p class="body">Two stationary convex objects are disjoint if there exists an axis \(a\) whose projection intervals are separated.</p>
+                <p class="formula center" style="margin-top: 12px;">\[
+                \max I_A(a) < \min I_B(a)\quad \text{or}\quad
+                \max I_B(a) < \min I_A(a)
+                \]</p>
+              </div>
+              <div class="math-box example">
+                <div class="box-label">OBB candidate axes</div>
+                <p class="body">For two boxes: \(A_0,A_1,A_2\), \(B_0,B_1,B_2\), and the nine axes \(A_i\times B_j\), after discarding near-zero cross products.</p>
+              </div>
+              <div class="math-box">
+                <div class="box-label">Certificate</div>
+                <p class="body">A signed gap per axis. Positive means separation; negative means overlap depth along that axis.</p>
+              </div>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 760 650" width="720" role="img" aria-label="Projection intervals on a separating axis">
+                <defs>
+                  <marker id="arrow-axis" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#1E3A8A"/>
+                  </marker>
+                </defs>
+                <polygon points="128,230 300,170 374,320 202,384" fill="#EFF6FF" stroke="#2563EB" stroke-width="5"/>
+                <polygon points="470,272 620,202 694,356 544,428" fill="#F0FDFA" stroke="#0F766E" stroke-width="5"/>
+                <line x1="96" y1="514" x2="684" y2="514" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-axis)"/>
+                <line x1="160" y1="482" x2="332" y2="482" stroke="#2563EB" stroke-width="14"/>
+                <line x1="468" y1="482" x2="650" y2="482" stroke="#0F766E" stroke-width="14"/>
+                <line x1="332" y1="482" x2="468" y2="482" stroke="#B45309" stroke-width="7" stroke-dasharray="12 10"/>
+                <text x="204" y="430" font-size="25" fill="#2563EB" font-weight="700">box A</text>
+                <text x="540" y="462" font-size="25" fill="#0F766E" font-weight="700">box B</text>
+                <text x="358" y="460" font-size="25" fill="#B45309" font-weight="700">positive gap</text>
+                <text x="614" y="548" font-size="25" fill="#1E3A8A" font-weight="700">axis a</text>
+                <text x="136" y="118" font-size="26" fill="#111827" font-weight="700">No hit set needed to reject</text>
+                <text x="136" y="154" font-size="23" fill="#475569">one separating axis is enough</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Separating axes invert the intersection question. Instead of solving for the hit set, we search for a direction in which the projected intervals are disjoint. For oriented boxes, the fifteen candidate directions are memorable because they come from face normals and edge cross products. The useful certificate is the signed gap, not just the final yes or no.</aside>
+    </section>
+
+    <section data-label="Return Types">
+      <div class="slide alt">
+        <div class="content">
+          <p class="eyebrow">From predicates to find-intersection queries</p>
+          <h2>The returned set has geometry, not just status</h2>
+          <div class="grid-2" style="margin-top: 30px;">
+            <div class="stack">
+              <table>
+                <thead>
+                  <tr><th>Returned set</th><th>Typical source</th><th>Useful certificate</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>empty</td><td>separated intervals, no real roots</td><td>gap or signed residual</td></tr>
+                  <tr><td>point</td><td>line-plane, tangent quadric, vertex contact</td><td>parameter and residuals</td></tr>
+                  <tr><td>segment</td><td>ray-box, triangle-plane, coplanar overlap</td><td>end parameters or endpoints</td></tr>
+                  <tr><td>polygon</td><td>plane-polyhedron section</td><td>ordered vertices and face signs</td></tr>
+                  <tr><td>curve</td><td>plane-quadric or surface-surface</td><td>implicit residual and curve parameters</td></tr>
+                </tbody>
+              </table>
+              <div class="math-box exercise">
+                <div class="box-label">Design prompt</div>
+                <p class="body">For every Boolean routine, sketch the smallest certificate that would let you debug a wrong answer from one rendered frame.</p>
+              </div>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 760 650" width="720" role="img" aria-label="Return types for intersections">
+                <rect x="92" y="82" width="576" height="478" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+                <circle cx="190" cy="196" r="13" fill="#B45309"/>
+                <line x1="332" y1="196" x2="476" y2="196" stroke="#2563EB" stroke-width="12"/>
+                <polygon points="172,392 294,326 440,356 398,474 222,486" fill="rgba(15,118,110,0.18)" stroke="#0F766E" stroke-width="5"/>
+                <path d="M 496 440 C 558 318, 656 342, 642 222" fill="none" stroke="#6D28D9" stroke-width="7"/>
+                <text x="168" y="236" font-size="25" fill="#B45309" font-weight="700">point</text>
+                <text x="350" y="236" font-size="25" fill="#2563EB" font-weight="700">segment</text>
+                <text x="240" y="526" font-size="25" fill="#0F766E" font-weight="700">polygon</text>
+                <text x="522" y="486" font-size="25" fill="#6D28D9" font-weight="700">curve</text>
+                <text x="178" y="126" font-size="27" fill="#1E3A8A" font-weight="700">classify the set</text>
+                <text x="178" y="160" font-size="23" fill="#475569">then return data that proves it</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">This slide is about return types and software design. A point, segment, polygon, curve, or empty set should come with enough evidence for downstream code to classify contact. Encourage students to think of certificates as a debugging API: they can be plotted, asserted, compared under perturbation, and used to explain apparent rendering failures.</aside>
+    </section>
+
+    <section data-label="Degeneracies">
+      <div class="slide">
+        <div class="content">
+          <p class="eyebrow">Robustness</p>
+          <h2>Degeneracies are classification boundaries</h2>
+          <div class="grid-60-40" style="margin-top: 28px;">
+            <div class="stack">
+              <div class="math-box warning">
+                <div class="box-label">Tolerance policy</div>
+                <p class="body">Do not branch on exact zero in floating-point code unless the input model promises exact predicates. Name the residual, name the tolerance, and decide what ambiguous cases return.</p>
+              </div>
+              <table>
+                <thead>
+                  <tr><th>Boundary case</th><th>Measured quantity</th><th>Diagnostic response</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>near-parallel line and plane</td><td>\(|\langle n,d\rangle|\)</td><td>report denominator and signed distance</td></tr>
+                  <tr><td>grazing triangle edge</td><td>small barycentric weight</td><td>preserve weights and edge label</td></tr>
+                  <tr><td>tangent quadric</td><td>discriminant near zero</td><td>verify residual minimum</td></tr>
+                  <tr><td>almost touching boxes</td><td>SAT gap near zero</td><td>return axis and signed gap</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="diagram-panel">
+              <svg viewBox="0 0 760 650" width="720" role="img" aria-label="Degeneracy boundary as signed residual">
+                <line x1="118" y1="338" x2="648" y2="338" stroke="#CBD5E1" stroke-width="4"/>
+                <path d="M 118 210 C 244 330, 310 360, 384 338 C 474 310, 548 334, 648 456" fill="none" stroke="#2563EB" stroke-width="7"/>
+                <rect x="330" y="282" width="108" height="112" rx="8" fill="rgba(180,83,9,0.13)" stroke="#B45309" stroke-width="4"/>
+                <line x1="330" y1="282" x2="438" y2="394" stroke="#B45309" stroke-width="4" stroke-dasharray="10 9"/>
+                <text x="146" y="188" font-size="26" fill="#2563EB" font-weight="700">residual curve</text>
+                <text x="454" y="356" font-size="25" fill="#B45309" font-weight="700">ambiguous band</text>
+                <text x="170" y="406" font-size="24" fill="#475569">outside</text>
+                <text x="542" y="514" font-size="24" fill="#475569">inside</text>
+                <rect x="116" y="84" width="532" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="3"/>
+                <text x="382" y="128" text-anchor="middle" font-size="26" fill="#111827">make the boundary visible in the certificate</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Pause here and make the tolerance policy explicit. Exact branch diagrams are mathematically clean, but floating-point implementations see near-parallel, near-coplanar, and grazing cases. The point is not to sprinkle epsilons randomly; it is to decide which residuals are measured, which comparisons are tolerant, and what ambiguous cases should return.</aside>
+    </section>
+
+    <section data-label="Recap">
+      <div class="slide alt">
+        <div class="content">
+          <p class="eyebrow">Applied lab recap</p>
+          <h2>A portable checklist for 3D intersection code</h2>
+          <div class="grid-2" style="margin-top: 30px;">
+            <div class="stack">
+              <div class="math-box theorem">
+                <div class="box-label">Five questions before coding</div>
+                <ul class="tight-list">
+                  <li>What representation makes the equations smallest?</li>
+                  <li>What unknown is being solved for?</li>
+                  <li>Which primitive-domain filters remain?</li>
+                  <li>What is the possible returned set?</li>
+                  <li>Which certificate makes the result auditable?</li>
+                </ul>
+              </div>
+              <div class="math-box exercise">
+                <div class="box-label">Lab extension</div>
+                <p class="body">Choose one primitive pair, perturb it toward a degeneracy, and plot the certificate as the Boolean changes.</p>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="panel">
+                <h3>Takeaways</h3>
+                <ul class="tight-list" style="margin-top: 18px;">
+                  <li>Intersections are solve, restrict, classify, and certify.</li>
+                  <li>Parameters, barycentric weights, intervals, roots, and gaps are first-class outputs.</li>
+                  <li>Polyhedra need both mesh and half-space viewpoints.</li>
+                  <li>Polynomial degree predicts the numerical work ahead.</li>
+                  <li>Diagnostics make degeneracies inspectable before they become bugs.</li>
+                </ul>
+              </div>
+              <div class="diagram-panel" style="min-height: 220px;">
+                <svg viewBox="0 0 760 220" width="720" role="img" aria-label="Checklist pipeline">
+                  <line x1="84" y1="110" x2="676" y2="110" stroke="#CBD5E1" stroke-width="6"/>
+                  <circle cx="112" cy="110" r="28" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"/>
+                  <circle cx="258" cy="110" r="28" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"/>
+                  <circle cx="404" cy="110" r="28" fill="#FFFBEB" stroke="#B45309" stroke-width="4"/>
+                  <circle cx="550" cy="110" r="28" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"/>
+                  <text x="112" y="118" text-anchor="middle" font-size="24" fill="#2563EB" font-weight="700">R</text>
+                  <text x="258" y="118" text-anchor="middle" font-size="24" fill="#0F766E" font-weight="700">S</text>
+                  <text x="404" y="118" text-anchor="middle" font-size="24" fill="#B45309" font-weight="700">D</text>
+                  <text x="550" y="118" text-anchor="middle" font-size="24" fill="#6D28D9" font-weight="700">C</text>
+                  <text x="112" y="168" text-anchor="middle" font-size="22" fill="#475569">represent</text>
+                  <text x="258" y="168" text-anchor="middle" font-size="22" fill="#475569">solve</text>
+                  <text x="404" y="168" text-anchor="middle" font-size="22" fill="#475569">domain</text>
+                  <text x="550" y="168" text-anchor="middle" font-size="22" fill="#475569">certify</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="speaker-notes">Close by turning the lecture back into a lab habit. For any primitive pair, students should write the representation, solve the reduced equation, filter to the primitive domain, classify the returned set, and preserve the certificate. That five-part checklist is portable across the entire chapter and is the best antidote to memorized intersection snippets.</aside>
+    </section>
+  </deck-stage>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMathInElement === 'function') {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
+</body>
+</html>

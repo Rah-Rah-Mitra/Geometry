@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 06 Lecture: Distance in 2D</title>
+  <meta name="course" content="Geometric Tools for Computer Graphics">
+  <meta name="chapter_id" content="chapter-06">
+  <meta name="notebook_path" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/part-02-2d-geometric-tools/chapter-06-distance-in-2d/06-distance-in-2d.ipynb">
+  <meta name="source_span" content="printed pages 189-240; PDF pages 236-287.">
+  <meta name="source_pdf" content="D:/Geometry/Geometric-Tools-for-Computer-Graphics/Geometric Tools for Computer Graphics.pdf">
+  <meta name="design_system_version" content="lecture-design-system-2026-05-23">
+  <link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+  <style>
+    body { margin: 0; background: #000; }
+    deck-stage:not(:defined) { visibility: hidden; }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: var(--slide-bg);
+      color: var(--slide-ink);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      padding: 70px 96px 56px;
+      border-top: 10px solid var(--slide-accent);
+    }
+    .slide.alt {
+      background:
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 118, 110, 0.045) 1px, transparent 1px),
+        radial-gradient(circle at 86% 16%, rgba(180, 83, 9, 0.07), transparent 260px),
+        var(--slide-bg-alt);
+      background-size: 72px 72px, 72px 72px, auto, auto;
+    }
+    .speaker-notes { display: none; }
+    h1 { margin: 0; font-size: 60px; line-height: 1.05; letter-spacing: 0; color: var(--slide-ink); }
+    h2 { margin: 0; font-size: 48px; line-height: 1.12; letter-spacing: 0; color: var(--slide-ink); }
+    h3 { margin: 0 0 12px; font-size: 32px; line-height: 1.18; color: var(--slide-accent); }
+    p, li { font-size: 27px; line-height: 1.31; }
+    p { margin: 0 0 16px; }
+    ul, ol { margin: 0; padding-left: 32px; }
+    li { margin-bottom: 10px; }
+    a { color: var(--slide-blue); }
+    .eyebrow {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--slide-dimmed);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+    .rule { width: 104px; height: 6px; background: var(--slide-accent); border-radius: 4px; margin: 20px 0 28px; }
+    .subtitle { font-size: 31px; color: var(--slide-muted); max-width: 1200px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 42px; flex: 1; min-height: 0; }
+    .cols.wide-left { grid-template-columns: 1.12fr 0.88fr; }
+    .cols.wide-right { grid-template-columns: 0.88fr 1.12fr; }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .panel {
+      border: 1px solid var(--slide-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      background: #fff;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    }
+    .panel.blue { background: var(--math-definition-bg); border-left: 6px solid var(--slide-blue); }
+    .panel.teal { background: var(--math-example-bg); border-left: 6px solid var(--slide-teal); }
+    .panel.amber { background: var(--math-warning-bg); border-left: 6px solid var(--slide-amber); }
+    .panel.violet { background: var(--math-exercise-bg); border-left: 6px solid var(--slide-violet); }
+    .panel.slate { background: var(--slide-bg-alt); border-left: 6px solid var(--slide-border); }
+    .formula {
+      font-family: var(--font-math);
+      font-size: 36px;
+      line-height: 1.32;
+      text-align: center;
+      padding: 15px 18px;
+      border-radius: 8px;
+      background: var(--slide-bg-alt);
+      border: 1px solid var(--slide-border-light);
+    }
+    .mathline { font-family: var(--font-math); font-size: 31px; line-height: 1.34; }
+    .code {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      line-height: 1.35;
+      background: #0F172A;
+      color: #E2E8F0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      white-space: pre-line;
+    }
+    .caption { font-size: 22px; line-height: 1.3; color: var(--slide-dimmed); margin-top: 10px; }
+    .footer { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-top: 22px; font-size: 21px; color: var(--slide-dimmed); }
+    .badge-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .badge { border: 1px solid var(--slide-border); border-radius: 6px; padding: 6px 10px; font-size: 21px; font-weight: 700; color: var(--slide-muted); background: #fff; }
+    .badge.ok { color: var(--slide-teal); border-color: rgba(15, 118, 110, 0.34); background: #F0FDFA; }
+    .badge.warn { color: var(--slide-amber); border-color: rgba(180, 83, 9, 0.34); background: #FFFBEB; }
+    .artifact { width: 100%; max-height: 610px; object-fit: contain; border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; }
+    .artifact.tall { max-height: 720px; }
+    .diagram { width: 100%; height: 560px; border: 1px solid var(--slide-border); border-radius: 8px; background: #fff; }
+    .diagram.short { height: 430px; }
+    .diagram.full { height: 690px; }
+    .soft-note { font-size: 24px; color: var(--slide-muted); line-height: 1.32; }
+    .step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 16px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+    .num {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: var(--slide-accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 25px; }
+    .mini-table th, .mini-table td { border-bottom: 1px solid var(--slide-border); padding: 12px 10px; text-align: left; vertical-align: top; }
+    .mini-table th { color: var(--slide-accent); font-weight: 700; }
+    .mini-table td:last-child { color: var(--slide-muted); }
+    .compact p, .compact li { font-size: 25px; }
+    .katex { font-size: 1em; }
+  </style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+  <section class="slide alt" data-label="Title">
+    <div class="eyebrow">Geometric Tools for Computer Graphics · Chapter 06</div>
+    <h1>Distance in 2D</h1>
+    <div class="rule"></div>
+    <p class="subtitle">Closest points, active features, constrained parameters, and convex distance algorithms for planar graphics geometry.</p>
+    <div class="cols wide-left" style="margin-top: 34px;">
+      <div>
+        <p>Printed pages 189-240; PDF pages 236-287.</p>
+        <p>Notebook: <strong>06-distance-in-2d.ipynb</strong></p>
+        <p>Lecture aim: make every distance number carry the feature and parameter data needed for robust graphics code.</p>
+      </div>
+      <div class="panel blue">
+        <h3>Chapter Spine</h3>
+        <ul>
+          <li>Represent a primitive with a parameter domain.</li>
+          <li>Minimize squared distance over that domain.</li>
+          <li>Classify the active boundary or interior feature.</li>
+          <li>Return enough state to debug degeneracy.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>D:/Geometry/Geometric-Tools-for-Computer-Graphics</span><span>Canonical HTML deck</span></div>
+    <aside class="speaker-notes">Open the lecture by separating the geometric problem from the numerical return value. A distance query is not just a scalar; it is a statement about which features are closest, which parameters were legal, and which constraints became active during minimization.</aside>
+  </section>
+
+  <section class="slide" data-label="Distance Query Contract">
+    <div class="eyebrow">Computational Contract</div>
+    <h2>A Distance Query Is A Constrained Minimization Problem</h2>
+    <div class="cols wide-left" style="margin-top: 28px;">
+      <div>
+        <p class="formula">Minimize \(F(u)=\|X(u)-Y\|^2\) subject to \(u\in D\).</p>
+        <div class="three" style="margin-top: 24px;">
+          <div class="panel blue"><h3>Domain</h3><p>Line: free parameter. Ray: lower bounded. Segment: clamped interval.</p></div>
+          <div class="panel teal"><h3>Feature</h3><p>The minimizer may live on an endpoint, an edge, or an interior region.</p></div>
+          <div class="panel amber"><h3>Residual</h3><p>The final vector should be perpendicular to every free direction.</p></div>
+        </div>
+      </div>
+      <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Distance query as constrained minimization">
+        <defs>
+          <marker id="arrow-contract" markerWidth="14" markerHeight="14" refX="11" refY="4" orient="auto">
+            <path d="M0,0 L12,4 L0,8 Z" fill="#2563EB"></path>
+          </marker>
+        </defs>
+        <rect x="70" y="80" width="620" height="360" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"></rect>
+        <line x1="120" y1="360" x2="640" y2="200" stroke="#2563EB" stroke-width="8" stroke-linecap="round"></line>
+        <circle cx="220" cy="329" r="9" fill="#111827"></circle>
+        <circle cx="540" cy="231" r="9" fill="#111827"></circle>
+        <circle cx="444" cy="261" r="11" fill="#0F766E"></circle>
+        <circle cx="390" cy="110" r="13" fill="#B45309"></circle>
+        <line x1="390" y1="110" x2="444" y2="261" stroke="#B45309" stroke-width="5" stroke-dasharray="16 12"></line>
+        <line x1="444" y1="261" x2="505" y2="242" stroke="#2563EB" stroke-width="4" marker-end="url(#arrow-contract)"></line>
+        <text x="150" y="405" font-family="Source Sans 3" font-size="30" fill="#475569">parameter domain \(D\)</text>
+        <text x="410" y="100" font-family="Source Sans 3" font-size="30" fill="#B45309">query point \(Y\)</text>
+        <text x="466" y="292" font-family="Source Sans 3" font-size="30" fill="#0F766E">closest point \(X(t)\)</text>
+        <text x="70" y="505" font-family="STIX Two Text" font-size="34" fill="#111827">free directions force orthogonality; clamped directions force boundary tests</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Source span visible grounding: printed pages 189-240</span><span>Notebook invariant: clamped parameter in [0, 1]</span></div>
+    <aside class="speaker-notes">Set up the reusable data contract before any formula. The representation gives a parameter domain, the squared distance gives an objective, and the result must identify the closest feature. This contract will repeat for lines, rays, segments, polygons, curves, and GJK.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Point To Linear Components">
+    <div class="eyebrow">Point To Linear Component</div>
+    <h2>One Projection Formula, Three Domains</h2>
+    <div class="cols" style="margin-top: 26px;">
+      <div>
+        <p class="formula">\(t_\ast=\dfrac{(Y-P)\cdot d}{d\cdot d},\qquad X(t)=P+t\,d\)</p>
+        <table class="mini-table" aria-label="Projection domains">
+          <thead><tr><th>Primitive</th><th>Legal parameter</th><th>Closest parameter</th></tr></thead>
+          <tbody>
+            <tr><td>Line</td><td>\(t\in\mathbb{R}\)</td><td>\(t=t_\ast\)</td></tr>
+            <tr><td>Ray</td><td>\(t\ge 0\)</td><td>\(t=\max(0,t_\ast)\)</td></tr>
+            <tr><td>Segment</td><td>\(0\le t\le 1\)</td><td>\(t=\min(1,\max(0,t_\ast))\)</td></tr>
+          </tbody>
+        </table>
+        <p class="soft-note" style="margin-top: 20px;">The formula is the same until the domain interrupts it. Robust implementations make that interruption explicit.</p>
+      </div>
+      <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Line ray and segment parameter clamping">
+        <line x1="110" y1="160" x2="650" y2="160" stroke="#2563EB" stroke-width="6"></line>
+        <line x1="110" y1="280" x2="650" y2="280" stroke="#0F766E" stroke-width="6"></line>
+        <line x1="190" y1="400" x2="570" y2="400" stroke="#B45309" stroke-width="8" stroke-linecap="round"></line>
+        <circle cx="380" cy="160" r="10" fill="#111827"></circle>
+        <circle cx="110" cy="280" r="10" fill="#0F766E"></circle>
+        <circle cx="380" cy="280" r="10" fill="#111827"></circle>
+        <circle cx="190" cy="400" r="11" fill="#B45309"></circle>
+        <circle cx="570" cy="400" r="11" fill="#B45309"></circle>
+        <circle cx="455" cy="400" r="10" fill="#111827"></circle>
+        <line x1="380" y1="70" x2="380" y2="160" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></line>
+        <line x1="380" y1="190" x2="380" y2="280" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></line>
+        <line x1="455" y1="310" x2="455" y2="400" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></line>
+        <circle cx="380" cy="70" r="12" fill="#6D28D9"></circle>
+        <circle cx="380" cy="190" r="12" fill="#6D28D9"></circle>
+        <circle cx="455" cy="310" r="12" fill="#6D28D9"></circle>
+        <text x="84" y="142" font-family="Source Sans 3" font-size="30" fill="#2563EB">line</text>
+        <text x="84" y="262" font-family="Source Sans 3" font-size="30" fill="#0F766E">ray</text>
+        <text x="84" y="384" font-family="Source Sans 3" font-size="30" fill="#B45309">segment</text>
+        <text x="410" y="78" font-family="Source Sans 3" font-size="28" fill="#6D28D9">same perpendicular projection</text>
+        <text x="214" y="466" font-family="STIX Two Text" font-size="34" fill="#111827">distance uses \(Y-X(t)\) after clamping</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Sections 6.1.1-6.1.3 orientation</span><span>Core check: perpendicular when interior</span></div>
+    <aside class="speaker-notes">Use the table to show that line, ray, and segment queries are the same projection viewed through different legal domains. The expensive bug is usually not the dot product; it is forgetting which boundary case changed the minimizer.</aside>
+  </section>
+
+  <section class="slide" data-label="Clamped Segment Example">
+    <div class="eyebrow">Notebook Artifact</div>
+    <h2>Clamping Turns A Projection Into A Feature Label</h2>
+    <div class="cols wide-right" style="margin-top: 26px;">
+      <div class="panel teal">
+        <h3>Worked Segment Query</h3>
+        <p class="mathline">\(Q(t)=P_0+t(P_1-P_0)\)</p>
+        <p class="mathline">\(t=\operatorname{clamp}(t_\ast,0,1)\)</p>
+        <p>The returned state is not just a distance. It also tells whether the closest point is \(P_0\), \(P_1\), or an interior point on the segment.</p>
+        <div class="badge-row"><span class="badge ok">notebook parameter: 0.625</span><span class="badge ok">max error: 0.0</span></div>
+      </div>
+      <div>
+        <img class="artifact tall" src="../figures/distance-in-2d-construction-scene.png" alt="Point projected to a closest point on a segment with a clamped parameter">
+        <p class="caption">The dashed residual meets the segment at the computed closest point.</p>
+      </div>
+    </div>
+    <div class="footer"><span>Artifact: distance-in-2d-construction-scene.png</span><span>Check file: final-sanity.json</span></div>
+    <aside class="speaker-notes">This slide connects the formula to the notebook check. The example reports a legal segment parameter and a zero residual against the intended invariant. Ask students what the output should contain if the projection had landed beyond either endpoint.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Feature Regions">
+    <div class="eyebrow">Boundary Logic</div>
+    <h2>Closest-Feature Regions Partition The Plane</h2>
+    <div class="cols wide-left" style="margin-top: 24px;">
+      <svg class="diagram full" viewBox="0 0 880 660" role="img" aria-label="Triangle closest feature regions">
+        <polygon points="210,430 610,400 440,140" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="7"></polygon>
+        <circle cx="210" cy="430" r="12" fill="#111827"></circle>
+        <circle cx="610" cy="400" r="12" fill="#111827"></circle>
+        <circle cx="440" cy="140" r="12" fill="#111827"></circle>
+        <line x1="210" y1="430" x2="104" y2="560" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="12 10"></line>
+        <line x1="610" y1="400" x2="760" y2="520" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="12 10"></line>
+        <line x1="440" y1="140" x2="436" y2="34" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="12 10"></line>
+        <path d="M210 430 C270 520, 520 520, 610 400" fill="rgba(37,99,235,0.07)" stroke="#2563EB" stroke-width="4"></path>
+        <path d="M210 430 C150 315, 210 190, 440 140" fill="rgba(180,83,9,0.07)" stroke="#B45309" stroke-width="4"></path>
+        <path d="M440 140 C610 190, 700 270, 610 400" fill="rgba(109,40,217,0.07)" stroke="#6D28D9" stroke-width="4"></path>
+        <circle cx="390" cy="320" r="11" fill="#2563EB"></circle>
+        <circle cx="120" cy="520" r="11" fill="#B45309"></circle>
+        <circle cx="710" cy="486" r="11" fill="#6D28D9"></circle>
+        <text x="350" y="346" font-family="Source Sans 3" font-size="30" fill="#2563EB">interior</text>
+        <text x="94" y="596" font-family="Source Sans 3" font-size="30" fill="#B45309">vertex region</text>
+        <text x="606" y="560" font-family="Source Sans 3" font-size="30" fill="#6D28D9">edge or vertex</text>
+        <text x="282" y="478" font-family="STIX Two Text" font-size="32" fill="#111827">active constraints decide the feature</text>
+      </svg>
+      <div class="panel blue compact">
+        <h3>Triangle And Polygon Pattern</h3>
+        <ul>
+          <li>Interior: closest point uses barycentric weights inside the primitive.</li>
+          <li>Edge: one inequality becomes active and the problem becomes point-to-segment.</li>
+          <li>Vertex: two neighboring inequalities are active and the endpoint is returned.</li>
+          <li>Medial boundaries are where small input changes can change the feature label.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>Sections 6.3.1-6.3.4 orientation</span><span>Notebook visual: triangle closest-feature regions</span></div>
+    <aside class="speaker-notes">Move from formulas to regions. For polygons, the question is which constraints are active at the minimizer. This is why closest-point code often looks like a decision tree: each branch is identifying a vertex, an edge, or an interior feature.</aside>
+  </section>
+
+  <section class="slide" data-label="Polyline And Polygon">
+    <div class="eyebrow">Composed Primitives</div>
+    <h2>Polyline And Polygon Distance Are Feature Searches</h2>
+    <div class="cols" style="margin-top: 26px;">
+      <div>
+        <img class="artifact" src="../figures/storyboard-gallery.png" alt="Storyboard gallery of segment, triangle, polygon, and GJK distance visuals">
+        <p class="caption">The notebook storyboard shows the same active-feature idea across several 2D primitives.</p>
+      </div>
+      <div>
+        <div class="step"><div class="num">1</div><p>Break a polyline or polygon boundary into candidate segments.</p></div>
+        <div class="step"><div class="num">2</div><p>Run a point-to-segment query on candidates, using bounding or convexity shortcuts when available.</p></div>
+        <div class="step"><div class="num">3</div><p>Compare squared distances and preserve the winning feature label, not only the numeric minimum.</p></div>
+        <div class="panel amber">
+          <h3>Implementation Risk</h3>
+          <p>The scalar minimum can be correct while the feature label is unstable near a Voronoi boundary. That instability matters for contact normals and continuous collision logic.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Sections 6.2 and 6.3 orientation</span><span>Artifact: storyboard-gallery.png</span></div>
+    <aside class="speaker-notes">Present polylines and polygon boundaries as searches over simpler distance queries. The scalar distance is the easy aggregate. The useful graphics result is the winning segment or vertex, because later code needs a contact point, normal direction, or stable cache key.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Product Domains">
+    <div class="eyebrow">Linear Components Against Linear Components</div>
+    <h2>Pairwise Distance Lives On A Product Domain</h2>
+    <div class="cols wide-left" style="margin-top: 26px;">
+      <div>
+        <p class="formula">Minimize \(F(s,t)=\|P_0+s\,d_0-(P_1+t\,d_1)\|^2\).</p>
+        <table class="mini-table" aria-label="Linear component product domains">
+          <thead><tr><th>Pair</th><th>Domain shape</th><th>Active feature cue</th></tr></thead>
+          <tbody>
+            <tr><td>line-line</td><td>\(\mathbb{R}^2\)</td><td>interior stationary point or parallel offset</td></tr>
+            <tr><td>line-ray</td><td>half-plane</td><td>ray endpoint may activate</td></tr>
+            <tr><td>ray-segment</td><td>strip with one lower bound</td><td>endpoint or side boundary</td></tr>
+            <tr><td>segment-segment</td><td>unit square</td><td>edge-edge, edge-vertex, or vertex-vertex</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Product domain for two segment parameters">
+        <rect x="150" y="90" width="430" height="430" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"></rect>
+        <line x1="150" y1="520" x2="580" y2="520" stroke="#111827" stroke-width="4"></line>
+        <line x1="150" y1="520" x2="150" y2="90" stroke="#111827" stroke-width="4"></line>
+        <path d="M160 500 C260 335, 350 250, 560 130" fill="none" stroke="#2563EB" stroke-width="8"></path>
+        <circle cx="160" cy="500" r="10" fill="#B45309"></circle>
+        <circle cx="360" cy="250" r="12" fill="#0F766E"></circle>
+        <circle cx="560" cy="130" r="10" fill="#B45309"></circle>
+        <path d="M360 250 L360 520 M360 250 L150 250" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></path>
+        <text x="596" y="532" font-family="STIX Two Text" font-size="32" fill="#111827">s</text>
+        <text x="116" y="82" font-family="STIX Two Text" font-size="32" fill="#111827">t</text>
+        <text x="270" y="548" font-family="Source Sans 3" font-size="28" fill="#475569">segment parameter</text>
+        <text x="210" y="64" font-family="Source Sans 3" font-size="30" fill="#1E3A8A">unit-square domain for segment-segment</text>
+        <text x="386" y="248" font-family="Source Sans 3" font-size="28" fill="#0F766E">interior candidate</text>
+        <text x="72" y="502" font-family="Source Sans 3" font-size="28" fill="#B45309">corner</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Section 6.6 orientation</span><span>Decision logic: stationary point, then boundary cases</span></div>
+    <aside class="speaker-notes">Reframe the many line, ray, and segment combinations as one quadratic minimization over different product domains. Once students see the unit square picture, the long list of cases becomes active-set logic rather than a memorization exercise.</aside>
+  </section>
+
+  <section class="slide" data-label="Curves">
+    <div class="eyebrow">Curved Primitives</div>
+    <h2>Curve Distance Converts Geometry Into Root Finding</h2>
+    <div class="cols" style="margin-top: 26px;">
+      <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Point to curve distance root finding">
+        <defs>
+          <marker id="arrow-curve" markerWidth="14" markerHeight="14" refX="11" refY="4" orient="auto">
+            <path d="M0,0 L12,4 L0,8 Z" fill="#0F766E"></path>
+          </marker>
+        </defs>
+        <path d="M90 390 C190 130, 360 130, 430 305 C500 470, 610 420, 690 190" fill="none" stroke="#2563EB" stroke-width="8"></path>
+        <circle cx="468" cy="358" r="12" fill="#0F766E"></circle>
+        <circle cx="530" cy="130" r="14" fill="#B45309"></circle>
+        <line x1="530" y1="130" x2="468" y2="358" stroke="#B45309" stroke-width="5" stroke-dasharray="14 10"></line>
+        <line x1="468" y1="358" x2="540" y2="386" stroke="#0F766E" stroke-width="5" marker-end="url(#arrow-curve)"></line>
+        <line x1="468" y1="358" x2="425" y2="292" stroke="#94A3B8" stroke-width="4"></line>
+        <text x="92" y="90" font-family="STIX Two Text" font-size="34" fill="#111827">solve \((C(u)-Y)\cdot C'(u)=0\)</text>
+        <text x="552" y="128" font-family="Source Sans 3" font-size="30" fill="#B45309">query point</text>
+        <text x="492" y="394" font-family="Source Sans 3" font-size="30" fill="#0F766E">candidate root</text>
+        <text x="100" y="494" font-family="Source Sans 3" font-size="28" fill="#475569">endpoints and multiple stationary points remain candidates</text>
+      </svg>
+      <div class="panel blue compact">
+        <h3>Quadratic And Polynomial Curves</h3>
+        <ul>
+          <li>For a curve \(C(u)\), minimize \(\|C(u)-Y\|^2\) over its parameter interval.</li>
+          <li>Interior candidates satisfy an orthogonality equation involving \(C'(u)\).</li>
+          <li>Polynomial curves can produce several roots; the algorithm must evaluate all legal candidates.</li>
+          <li>Endpoints matter because the parameter domain is still constrained.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>Sections 6.4 and 6.5 orientation</span><span>Same contract: objective, domain, residual, feature</span></div>
+    <aside class="speaker-notes">For curves, the mental model should stay the same even though the algebra changes. The residual vector at an interior closest point is perpendicular to the tangent. What changes is that the stationary equation may have several legal roots.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Minkowski Difference">
+    <div class="eyebrow">Convex Distance</div>
+    <h2>Minkowski Difference Moves Shape-Shape Distance To The Origin</h2>
+    <div class="cols wide-right" style="margin-top: 26px;">
+      <div class="panel teal compact">
+        <h3>Convex Rephrasing</h3>
+        <p class="formula">\(d(A,B)=\min_{a\in A,\ b\in B}\|a-b\|=\operatorname{dist}(0,A-B)\)</p>
+        <ul>
+          <li>If the origin lies inside \(A-B\), the convex sets intersect.</li>
+          <li>If not, the closest point of \(A-B\) to the origin encodes the separating direction.</li>
+          <li>Support mappings let algorithms search \(A-B\) without explicitly building it.</li>
+        </ul>
+      </div>
+      <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Minkowski difference origin distance">
+        <polygon points="110,210 260,130 360,240 245,360 125,330" fill="rgba(37,99,235,0.12)" stroke="#2563EB" stroke-width="6"></polygon>
+        <polygon points="450,250 610,190 670,330 540,410 430,350" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="6"></polygon>
+        <line x1="338" y1="282" x2="426" y2="306" stroke="#B45309" stroke-width="5" stroke-dasharray="14 10"></line>
+        <text x="170" y="110" font-family="Source Sans 3" font-size="30" fill="#2563EB">A</text>
+        <text x="590" y="176" font-family="Source Sans 3" font-size="30" fill="#0F766E">B</text>
+        <g transform="translate(0,0)">
+          <line x1="330" y1="455" x2="600" y2="455" stroke="#CBD5E1" stroke-width="4"></line>
+          <line x1="465" y1="520" x2="465" y2="390" stroke="#CBD5E1" stroke-width="4"></line>
+          <circle cx="465" cy="455" r="10" fill="#111827"></circle>
+          <polygon points="385,505 550,490 612,420 500,380 360,410" fill="rgba(109,40,217,0.10)" stroke="#6D28D9" stroke-width="6"></polygon>
+          <circle cx="420" cy="495" r="10" fill="#B45309"></circle>
+          <line x1="465" y1="455" x2="420" y2="495" stroke="#B45309" stroke-width="5"></line>
+          <text x="575" y="396" font-family="Source Sans 3" font-size="30" fill="#6D28D9">A-B</text>
+          <text x="486" y="448" font-family="Source Sans 3" font-size="28" fill="#111827">0</text>
+        </g>
+      </svg>
+    </div>
+    <div class="footer"><span>Notebook concept: Minkowski difference origin distance</span><span>Bridge to GJK</span></div>
+    <aside class="speaker-notes">Use this slide to explain why convex distance algorithms care so much about the origin. The shape pair becomes one derived convex set. Intersecting the origin means overlap, while the closest point to the origin gives a separating vector.</aside>
+  </section>
+
+  <section class="slide" data-label="GJK Simplex Walk">
+    <div class="eyebrow">GJK Algorithm</div>
+    <h2>GJK Searches The Minkowski Difference With A Small Simplex</h2>
+    <div class="cols wide-left" style="margin-top: 26px;">
+      <svg class="diagram full" viewBox="0 0 880 660" role="img" aria-label="GJK simplex walk toward origin">
+        <line x1="88" y1="330" x2="800" y2="330" stroke="#E2E8F0" stroke-width="4"></line>
+        <line x1="440" y1="610" x2="440" y2="60" stroke="#E2E8F0" stroke-width="4"></line>
+        <circle cx="440" cy="330" r="10" fill="#111827"></circle>
+        <polygon points="180,180 610,120 760,420 370,560 130,430" fill="rgba(109,40,217,0.08)" stroke="#6D28D9" stroke-width="5"></polygon>
+        <polyline points="650,160 520,300 390,260 440,330" fill="none" stroke="#2563EB" stroke-width="7" stroke-linejoin="round"></polyline>
+        <polygon points="520,300 390,260 460,430" fill="rgba(15,118,110,0.16)" stroke="#0F766E" stroke-width="6"></polygon>
+        <line x1="440" y1="330" x2="460" y2="430" stroke="#B45309" stroke-width="5" stroke-dasharray="14 10"></line>
+        <circle cx="650" cy="160" r="11" fill="#2563EB"></circle>
+        <circle cx="520" cy="300" r="11" fill="#2563EB"></circle>
+        <circle cx="390" cy="260" r="11" fill="#2563EB"></circle>
+        <circle cx="460" cy="430" r="11" fill="#0F766E"></circle>
+        <text x="464" y="326" font-family="Source Sans 3" font-size="30" fill="#111827">origin</text>
+        <text x="540" y="292" font-family="Source Sans 3" font-size="30" fill="#2563EB">support points</text>
+        <text x="464" y="476" font-family="Source Sans 3" font-size="30" fill="#0F766E">current simplex</text>
+        <text x="144" y="108" font-family="STIX Two Text" font-size="34" fill="#111827">support direction is chosen from the current closest point</text>
+      </svg>
+      <div>
+        <div class="step"><div class="num">1</div><p>Choose a search direction and request an extreme point of \(A-B\).</p></div>
+        <div class="step"><div class="num">2</div><p>Keep the smallest simplex whose convex hull can improve the origin distance.</p></div>
+        <div class="step"><div class="num">3</div><p>Stop when the simplex contains the origin or when no support point can reduce the distance.</p></div>
+        <div class="panel violet">
+          <h3>Key Memory</h3>
+          <p>GJK is not drawing the full Minkowski difference. It is asking only for support points that matter to the current origin-distance certificate.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>Section 6.10 orientation</span><span>Notebook visual: GJK simplex walk toward the origin</span></div>
+    <aside class="speaker-notes">Keep GJK concrete. The algorithm never needs to construct the entire Minkowski difference. It samples support points, keeps a simplex, and repeatedly asks whether that simplex proves intersection or supplies a closest direction back to the origin.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Diagnostic Curve">
+    <div class="eyebrow">Numeric Diagnostic</div>
+    <h2>The Distance Function Reveals Active-Set Transitions</h2>
+    <div class="cols wide-right" style="margin-top: 26px;">
+      <div class="panel amber">
+        <h3>What To Inspect</h3>
+        <ul>
+          <li>Smooth interior segment: perpendicular residual and unconstrained minimizer agree.</li>
+          <li>Flat endpoint plateaus: clamping has taken over from projection.</li>
+          <li>Kinks: the active feature changes and derivative-based code needs care.</li>
+        </ul>
+      </div>
+      <div>
+        <img class="artifact tall" src="../figures/numeric-diagnostic.png" alt="Numeric diagnostic curve showing valid parameter domain and clamping behavior">
+        <p class="caption">The shaded interval is the legal parameter domain; outside it, the boundary feature controls the distance.</p>
+      </div>
+    </div>
+    <div class="footer"><span>Artifact: numeric-diagnostic.png</span><span>Invariant: max_error <= tolerance</span></div>
+    <aside class="speaker-notes">The diagnostic curve is useful because it exposes more than a final answer. The smooth middle reflects an interior projection, while the outer parts show boundary control. This picture helps students recognize when a derivative or normal jumps.</aside>
+  </section>
+
+  <section class="slide" data-label="Output State">
+    <div class="eyebrow">Robust Return Values</div>
+    <h2>Return The Certificate, Not Only The Distance</h2>
+    <div class="cols" style="margin-top: 26px;">
+      <div>
+        <div class="code">DistanceResult {
+  squared_distance
+  closest_point_a
+  closest_point_b
+  parameters
+  feature_a, feature_b
+  status
+}</div>
+        <p class="soft-note" style="margin-top: 20px;">A contact solver, picking tool, or curve editor usually needs the certificate more than the square root.</p>
+      </div>
+      <div class="panel blue compact">
+        <h3>Certificate Checks</h3>
+        <ul>
+          <li>Parameters lie in the declared domain.</li>
+          <li>Interior residuals are orthogonal to free directions.</li>
+          <li>Boundary residuals point into the feasible normal cone.</li>
+          <li>Feature labels remain stable away from medial boundaries.</li>
+          <li>Degenerate primitives report a status instead of hiding a convention.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>Notebook check list: four executable invariants</span><span>Production habit: keep debug state</span></div>
+    <aside class="speaker-notes">Stress that a production distance routine should return a certificate. The closest points, parameters, feature labels, and status flags are what make downstream debugging possible. Without them, correct distances can still produce unstable normals or broken caches.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Degeneracy And Tolerances">
+    <div class="eyebrow">Failure Modes</div>
+    <h2>Tolerances Should Protect Geometry, Not Replace It</h2>
+    <div class="four" style="margin-top: 28px;">
+      <div class="panel amber">
+        <h3>Zero Length</h3>
+        <p>A segment can collapse to a point; the algorithm should route to point distance deliberately.</p>
+      </div>
+      <div class="panel amber">
+        <h3>Parallel Lines</h3>
+        <p>Small denominators require a branch that preserves the intended geometry.</p>
+      </div>
+      <div class="panel amber">
+        <h3>Boundary Ties</h3>
+        <p>Several features may be equally close; deterministic tie handling helps caching.</p>
+      </div>
+      <div class="panel amber">
+        <h3>Multiple Roots</h3>
+        <p>Polynomial curves can provide several stationary candidates inside the domain.</p>
+      </div>
+    </div>
+    <div class="panel slate" style="margin-top: 34px;">
+      <h3>Debug Rule</h3>
+      <p>Every tolerance branch should still produce a recognizable feature, a legal parameter, and a residual that explains why the branch was accepted.</p>
+    </div>
+    <div class="footer"><span>Applies across Sections 6.1-6.10</span><span>Same modeling loop: represent, draw, perturb, measure, check</span></div>
+    <aside class="speaker-notes">Use this slide to slow down around robustness. A tolerance is not a magic eraser; it is a decision about which nearby geometric model the program will use. The returned status should make that decision visible during testing.</aside>
+  </section>
+
+  <section class="slide" data-label="Implementation Recipe">
+    <div class="eyebrow">Algorithm Pattern</div>
+    <h2>A Reusable Recipe For 2D Distance Code</h2>
+    <div class="cols wide-left" style="margin-top: 26px;">
+      <div>
+        <div class="step"><div class="num">1</div><p>Declare representations and legal parameter domains before computing.</p></div>
+        <div class="step"><div class="num">2</div><p>Minimize squared distance and keep the unconstrained candidate visible.</p></div>
+        <div class="step"><div class="num">3</div><p>Clamp, branch, or enumerate boundary candidates as the domain requires.</p></div>
+        <div class="step"><div class="num">4</div><p>Select the minimum by squared distance and attach feature labels.</p></div>
+        <div class="step"><div class="num">5</div><p>Assert the residual, domain membership, and feature stability checks.</p></div>
+      </div>
+      <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Distance implementation pipeline">
+        <defs>
+          <marker id="arrow-pipeline" markerWidth="14" markerHeight="14" refX="11" refY="4" orient="auto">
+            <path d="M0,0 L12,4 L0,8 Z" fill="#1E3A8A"></path>
+          </marker>
+        </defs>
+        <g font-family="Source Sans 3" font-size="29" fill="#111827">
+          <rect x="80" y="80" width="220" height="86" rx="8" fill="#EFF6FF" stroke="#2563EB" stroke-width="4"></rect>
+          <text x="122" y="132">represent</text>
+          <rect x="460" y="80" width="220" height="86" rx="8" fill="#F0FDFA" stroke="#0F766E" stroke-width="4"></rect>
+          <text x="520" y="132">minimize</text>
+          <rect x="460" y="250" width="220" height="86" rx="8" fill="#FFFBEB" stroke="#B45309" stroke-width="4"></rect>
+          <text x="528" y="302">classify</text>
+          <rect x="80" y="250" width="220" height="86" rx="8" fill="#F5F3FF" stroke="#6D28D9" stroke-width="4"></rect>
+          <text x="150" y="302">return</text>
+          <rect x="270" y="410" width="220" height="86" rx="8" fill="#F8FAFC" stroke="#64748B" stroke-width="4"></rect>
+          <text x="336" y="462">check</text>
+        </g>
+        <line x1="302" y1="123" x2="450" y2="123" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipeline)"></line>
+        <line x1="570" y1="168" x2="570" y2="240" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipeline)"></line>
+        <line x1="458" y1="293" x2="310" y2="293" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipeline)"></line>
+        <line x1="210" y1="338" x2="330" y2="408" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipeline)"></line>
+        <line x1="430" y1="410" x2="528" y2="338" stroke="#1E3A8A" stroke-width="5" marker-end="url(#arrow-pipeline)"></line>
+        <text x="120" y="540" font-family="STIX Two Text" font-size="34" fill="#111827">the same loop serves segments, polygons, curves, and GJK</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Notebook route: model, draw, perturb, measure, check</span><span>Implementation recipe</span></div>
+    <aside class="speaker-notes">Summarize the implementation strategy as a loop. This is the practical payoff of the chapter: the programmer can approach many different primitives with the same sequence of representation, minimization, active-feature classification, return state, and verification.</aside>
+  </section>
+
+  <section class="slide alt" data-label="Exercise">
+    <div class="eyebrow">Lecture Exercise</div>
+    <h2>Classify The Closest Feature Before Computing The Distance</h2>
+    <div class="cols wide-right" style="margin-top: 26px;">
+      <div class="panel violet">
+        <h3>Prompt</h3>
+        <p>Given a query point and a triangle, predict whether the closest feature is a vertex, an edge, or the interior. Then write the minimum set of dot-product tests that would certify your answer.</p>
+        <p class="soft-note">Extension: move the query point across a boundary between two regions and describe which returned fields should change.</p>
+      </div>
+      <svg class="diagram" viewBox="0 0 760 560" role="img" aria-label="Triangle closest feature exercise">
+        <polygon points="210,400 590,420 420,150" fill="rgba(15,118,110,0.12)" stroke="#0F766E" stroke-width="7"></polygon>
+        <circle cx="210" cy="400" r="12" fill="#111827"></circle>
+        <circle cx="590" cy="420" r="12" fill="#111827"></circle>
+        <circle cx="420" cy="150" r="12" fill="#111827"></circle>
+        <circle cx="160" cy="280" r="13" fill="#B45309"></circle>
+        <circle cx="398" cy="300" r="13" fill="#2563EB"></circle>
+        <circle cx="610" cy="250" r="13" fill="#6D28D9"></circle>
+        <path d="M160 280 L210 400 M398 300 L392 309 M610 250 L522 308" stroke="#94A3B8" stroke-width="4" stroke-dasharray="12 10"></path>
+        <text x="132" y="260" font-family="Source Sans 3" font-size="30" fill="#B45309">Q1</text>
+        <text x="416" y="300" font-family="Source Sans 3" font-size="30" fill="#2563EB">Q2</text>
+        <text x="626" y="248" font-family="Source Sans 3" font-size="30" fill="#6D28D9">Q3</text>
+        <text x="86" y="500" font-family="Source Sans 3" font-size="28" fill="#475569">Predict the active feature, then compute only enough to certify it.</text>
+      </svg>
+    </div>
+    <div class="footer"><span>Designed from Chapter 06 active-feature logic</span><span>No textbook exercises or solutions used</span></div>
+    <aside class="speaker-notes">Use the exercise to reverse the usual order. Students should first reason geometrically about the active feature, then decide which computations certify that choice. This prevents distance formulas from becoming uninspected black-box evaluations during implementation reviews.</aside>
+  </section>
+
+  <section class="slide" data-label="Takeaways">
+    <div class="eyebrow">Recap</div>
+    <h2>Distance in 2D Is Active Geometry Plus Verification</h2>
+    <div class="cols" style="margin-top: 30px;">
+      <div class="panel blue">
+        <h3>Core Ideas</h3>
+        <ul>
+          <li>Squared distance is minimized over explicit domains.</li>
+          <li>Boundaries create feature cases.</li>
+          <li>Curves add root finding but preserve the same residual idea.</li>
+          <li>Convex shape distance can be searched through \(A-B\).</li>
+        </ul>
+      </div>
+      <div class="panel teal">
+        <h3>Engineering Habits</h3>
+        <ul>
+          <li>Return closest points, parameters, features, and status.</li>
+          <li>Assert domain membership and orthogonality residuals.</li>
+          <li>Treat degeneracies as named branches.</li>
+          <li>Use diagnostics to reveal active-set transitions.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="panel slate" style="margin-top: 30px;">
+      <p class="formula">The durable pattern is: represent the primitive, minimize on its legal domain, name the active feature, and check the certificate.</p>
+    </div>
+    <div class="footer"><span>Chapter 06: Distance in 2D</span><span>Next: intersection queries reuse many of the same representation choices</span></div>
+    <aside class="speaker-notes">Close by returning to the durable pattern. The chapter is not a pile of unrelated formulas; it is a family of constrained minimization problems. The implementation goal is a checked certificate that remains meaningful under perturbation, degeneracy, and downstream use.</aside>
+  </section>
+</deck-stage>
+<script type="application/json" id="speaker-notes">
+{"slides":["Open the lecture by separating the geometric problem from the numerical return value. A distance query is not just a scalar; it is a statement about which features are closest, which parameters were legal, and which constraints became active during minimization.","Set up the reusable data contract before any formula. The representation gives a parameter domain, the squared distance gives an objective, and the result must identify the closest feature. This contract will repeat for lines, rays, segments, polygons, curves, and GJK.","Use the table to show that line, ray, and segment queries are the same projection viewed through different legal domains. The expensive bug is usually not the dot product; it is forgetting which boundary case changed the minimizer.","This slide connects the formula to the notebook check. The example reports a legal segment parameter and a zero residual against the intended invariant. Ask students what the output should contain if the projection had landed beyond either endpoint.","Move from formulas to regions. For polygons, the question is which constraints are active at the minimizer. This is why closest-point code often looks like a decision tree: each branch is identifying a vertex, an edge, or an interior feature.","Present polylines and polygon boundaries as searches over simpler distance queries. The scalar distance is the easy aggregate. The useful graphics result is the winning segment or vertex, because later code needs a contact point, normal direction, or stable cache key.","Reframe the many line, ray, and segment combinations as one quadratic minimization over different product domains. Once students see the unit square picture, the long list of cases becomes active-set logic rather than a memorization exercise.","For curves, the mental model should stay the same even though the algebra changes. The residual vector at an interior closest point is perpendicular to the tangent. What changes is that the stationary equation may have several legal roots.","Use this slide to explain why convex distance algorithms care so much about the origin. The shape pair becomes one derived convex set. Intersecting the origin means overlap, while the closest point to the origin gives a separating vector.","Keep GJK concrete. The algorithm never needs to construct the entire Minkowski difference. It samples support points, keeps a simplex, and repeatedly asks whether that simplex proves intersection or supplies a closest direction back to the origin.","The diagnostic curve is useful because it exposes more than a final answer. The smooth middle reflects an interior projection, while the outer parts show boundary control. This picture helps students recognize when a derivative or normal jumps.","Stress that a production distance routine should return a certificate. The closest points, parameters, feature labels, and status flags are what make downstream debugging possible. Without them, correct distances can still produce unstable normals or broken caches.","Use this slide to slow down around robustness. A tolerance is not a magic eraser; it is a decision about which nearby geometric model the program will use. The returned status should make that decision visible during testing.","Summarize the implementation strategy as a loop. This is the practical payoff of the chapter: the programmer can approach many different primitives with the same sequence of representation, minimization, active-feature classification, return state, and verification.","Use the exercise to reverse the usual order. Students should first reason geometrically about the active feature, then decide which computations certify that choice. This prevents distance formulas from becoming uninspected black-box evaluations during implementation reviews.","Close by returning to the durable pattern. The chapter is not a pile of unrelated formulas; it is a family of constrained minimization problems. The implementation goal is a checked certificate that remains meaningful under perturbation, degeneracy, and downstream use."]}
+</script>
+</body>
+</html>
