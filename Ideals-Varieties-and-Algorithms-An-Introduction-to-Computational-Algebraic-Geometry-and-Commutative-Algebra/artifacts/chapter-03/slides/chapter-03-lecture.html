@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Ideals, Varieties, and Algorithms">
+<meta name="chapter_id" content="chapter-03">
+<meta name="chapter_title" content="Chapter 3: Elimination Theory">
+<meta name="notebook_path" content="Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra/chapter-03-elimination-theory/03-elimination-theory.ipynb">
+<meta name="source_span" content="printed pages 121-176; PDF pages 134-188.">
+<meta name="source_pdf" content="Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra/Ideals, Varieties, and Algorithms, An Introduction to Computational Algebraic Geometry and Commutative Algebra.pdf">
+<meta name="design_system_version" content="1.0">
+<title>Chapter 3: Elimination Theory</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Ideals, Varieties, and Algorithms","chapter_id":"chapter-03","chapter_title":"Chapter 3: Elimination Theory","notebook_path":"Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra/chapter-03-elimination-theory/03-elimination-theory.ipynb","source_span":"printed pages 121-176; PDF pages 134-188.","design_system_version":"1.0"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Elimination Theory","notes":"This chapter runs from printed pages 121 through 176 and applies Grobner bases to solving systems. Elimination theory systematically removes variables from a system of polynomial equations, reducing it to fewer variables so that solutions can be found by back-substitution, much as Gaussian elimination triangulates a linear system."},
+{"slide":2,"label":"Elimination and Extension","notes":"The elimination ideal collects all consequences of a system that involve only the later variables. The Elimination Theorem says a lexicographic Grobner basis instantly exposes this ideal, while the Extension Theorem governs when a partial solution of the eliminated system extends to a full solution upstairs."},
+{"slide":3,"label":"Lex Order Eliminates","notes":"With lexicographic order the Grobner basis is structured so that some generators involve only the variables we wish to keep. Intersecting the basis with the smaller polynomial ring yields the elimination ideal directly, turning the geometric act of projecting away variables into a purely mechanical computation."},
+{"slide":4,"label":"Geometry of Elimination","notes":"Geometrically, eliminating variables projects a variety onto a coordinate subspace. The projection's closure is the variety of the elimination ideal, but the projection itself may miss points where leading coefficients vanish. The Extension Theorem characterizes precisely which partial solutions lift back to the full variety."},
+{"slide":5,"label":"Implicitization","notes":"A parametrized surface or curve can be converted to defining equations by elimination. Introducing the parameters as extra variables and eliminating them produces the implicit polynomial equations of the image, solving the implicitization problem central to computer-aided geometric design and modeling."},
+{"slide":6,"label":"Resultants","notes":"The resultant of two polynomials is a single polynomial in their coefficients that vanishes exactly when they share a common root. Resultants give a determinant-based route to elimination, complementing Grobner bases and providing explicit degree bounds. Next: the algebra-geometry dictionary."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Elimination Theory">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 3</span></div>
+<h1>Elimination Theory</h1>
+<p class="lead">Solving systems by removing variables</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Idea</h3><p>Reduce a system to fewer variables.</p></div>
+<div class="panel teal"><h3>Then</h3><p>Back-substitute to recover solutions.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Projection of a space curve onto a coordinate plane"><rect x="0" y="0" width="360" height="200" fill="#eff6ff"/><path d="M70 60 C 150 20, 230 120, 300 70" fill="none" stroke="#1d4ed8" stroke-width="4"/><path d="M70 150 C 150 110, 230 150, 300 150" fill="none" stroke="#0d9488" stroke-width="3" stroke-dasharray="6 5"/><line x1="70" y1="60" x2="70" y2="150" stroke="#94a3b8" stroke-width="1"/><line x1="300" y1="70" x2="300" y2="150" stroke="#94a3b8" stroke-width="1"/></svg><figcaption class="small">Eliminating a variable projects the variety.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 121-176</span><span>Elimination Theory</span></div>
+<aside class="speaker-notes">This chapter runs from printed pages 121 through 176 and applies Grobner bases to solving systems. Elimination theory systematically removes variables from a system of polynomial equations, reducing it to fewer variables so that solutions can be found by back-substitution, much as Gaussian elimination triangulates a linear system.</aside>
+</section>
+<section class="slide alt" data-label="Elimination and Extension">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 3</span></div>
+<h2>Elimination and Extension</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Elimination ideal</h3><p>Consequences in the later variables only.</p></div>
+<div class="panel amber"><h3>Extension</h3><p>When partial solutions lift to full ones.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Elimination ideal</div><p class="formula">$I_\ell = I \cap k[x_{\ell+1},\dots,x_n]$</p></div>
+<div class="panel teal"><h3>Two theorems</h3><p>Elimination plus Extension theorems.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 121-176</span><span>Elimination and Extension</span></div>
+<aside class="speaker-notes">The elimination ideal collects all consequences of a system that involve only the later variables. The Elimination Theorem says a lexicographic Grobner basis instantly exposes this ideal, while the Extension Theorem governs when a partial solution of the eliminated system extends to a full solution upstairs.</aside>
+</section>
+<section class="slide" data-label="Lex Order Eliminates">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 3</span></div>
+<h2>Lex Order Eliminates</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Structure</h3><p>Some generators drop the leading variables.</p></div>
+<div class="panel violet"><h3>Recipe</h3><p>Intersect the basis with the smaller ring.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Elimination Theorem</div><p class="formula">$G \cap k[x_{\ell+1},\dots,x_n]$</p></div>
+<div class="panel teal"><h3>Payoff</h3><p>Projection becomes mechanical.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 121-176</span><span>Lex Order Eliminates</span></div>
+<aside class="speaker-notes">With lexicographic order the Grobner basis is structured so that some generators involve only the variables we wish to keep. Intersecting the basis with the smaller polynomial ring yields the elimination ideal directly, turning the geometric act of projecting away variables into a purely mechanical computation.</aside>
+</section>
+<section class="slide alt" data-label="Geometry of Elimination">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 3</span></div>
+<h2>Geometry of Elimination</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Projection</h3><p>Eliminating drops to a coordinate subspace.</p></div>
+<div class="panel amber"><h3>Closure</h3><p>The image's closure is a variety.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Projection</div><p class="formula">$\pi(V)\subseteq V(I_\ell)$</p></div>
+<div class="panel teal"><h3>Missing points</h3><p>Where leading coefficients vanish.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 121-176</span><span>Geometry of Elimination</span></div>
+<aside class="speaker-notes">Geometrically, eliminating variables projects a variety onto a coordinate subspace. The projection's closure is the variety of the elimination ideal, but the projection itself may miss points where leading coefficients vanish. The Extension Theorem characterizes precisely which partial solutions lift back to the full variety.</aside>
+</section>
+<section class="slide" data-label="Implicitization">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 3</span></div>
+<h2>Implicitization</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Problem</h3><p>From parametric to implicit equations.</p></div>
+<div class="panel amber"><h3>Method</h3><p>Eliminate the parameters.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Parametrization</div><p class="formula">$x_i = f_i(t_1,\dots,t_m)$</p></div>
+<div class="panel teal"><h3>Use</h3><p>Core of geometric design.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 121-176</span><span>Implicitization</span></div>
+<aside class="speaker-notes">A parametrized surface or curve can be converted to defining equations by elimination. Introducing the parameters as extra variables and eliminating them produces the implicit polynomial equations of the image, solving the implicitization problem central to computer-aided geometric design and modeling.</aside>
+</section>
+<section class="slide alt" data-label="Resultants">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 3</span></div>
+<h2>Resultants</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Definition</h3><p>Polynomial in coefficients detecting a common root.</p></div>
+<div class="panel amber"><h3>Form</h3><p>Determinant of the Sylvester matrix.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Resultant</div><p class="formula">$\mathrm{Res}(f,g)=0 \iff \gcd \neq 1$</p></div>
+<div class="panel violet"><h3>Next</h3><p>The algebra-geometry dictionary.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 121-176</span><span>Resultants</span></div>
+<aside class="speaker-notes">The resultant of two polynomials is a single polynomial in their coefficients that vanishes exactly when they share a common root. Resultants give a determinant-based route to elimination, complementing Grobner bases and providing explicit degree bounds. Next: the algebra-geometry dictionary.</aside>
+</section>
+</deck-stage>
+</body>
+</html>

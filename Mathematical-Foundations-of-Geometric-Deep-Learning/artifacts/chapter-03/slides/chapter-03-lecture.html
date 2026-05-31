@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Mathematical Foundations of Geometric Deep Learning">
+<meta name="chapter_id" content="chapter-03">
+<meta name="chapter_title" content="Chapter 03: Vector Calculus">
+<meta name="notebook_path" content="Mathematical-Foundations-of-Geometric-Deep-Learning/chapter-03-vector-calculus/03-vector-calculus.ipynb">
+<meta name="source_span" content="PDF pages 26-36.">
+<meta name="source_pdf" content="Mathematical-Foundations-of-Geometric-Deep-Learning/Mathematical Foundations of Geometric Deep Learning.pdf">
+<meta name="design_system_version" content="1.0">
+<title>Chapter 03: Vector Calculus</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Mathematical Foundations of Geometric Deep Learning","chapter_id":"chapter-03","chapter_title":"Chapter 03: Vector Calculus","notebook_path":"Mathematical-Foundations-of-Geometric-Deep-Learning/chapter-03-vector-calculus/03-vector-calculus.ipynb","source_span":"PDF pages 26-36.","design_system_version":"1.0"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Vector Calculus","notes":"Open the chapter. Vector calculus turns analytic structure into differential operators on fields. The deck follows PDF pages 26 through 36 and covers derivatives and the Jacobian, gradient and directional derivative, divergence and curl, the chain rule, and the integral theorems that connect local and global behavior in geometric deep learning."},
+{"slide":2,"label":"Derivatives and the Jacobian","notes":"Define the derivative of a multivariate map as the best linear approximation, encoded by the Jacobian matrix of partial derivatives. Differentiability means the linear map approximates the function to first order. Backpropagation is exactly repeated application of the Jacobian through composed layers, so this object is foundational to learning."},
+{"slide":3,"label":"Gradient and Directional Derivative","notes":"Specialize to scalar fields. The gradient is the vector of partials pointing in the direction of steepest ascent; the directional derivative projects it onto a chosen direction. Gradient descent follows the negative gradient, making this the engine of optimization in every neural network."},
+{"slide":4,"label":"Divergence and Curl","notes":"Introduce divergence and curl on vector fields. Divergence measures net outflow at a point; curl measures local rotation. The Laplacian is divergence of the gradient and reappears throughout spectral theory and diffusion on graphs and manifolds, linking calculus to later chapters."},
+{"slide":5,"label":"Chain Rule and Integral Theorems","notes":"State the multivariate chain rule as composition of Jacobians, then the integral theorems of Green, Stokes, and Gauss that relate a field on a region to its behavior on the boundary. These theorems generalize to differential forms and underpin conservation laws and message-passing aggregation."},
+{"slide":6,"label":"Recap","notes":"Close the chapter. The Jacobian linearizes maps, the gradient drives optimization, divergence and curl describe flow and rotation, and the integral theorems tie local derivatives to global boundary behavior. Chapter 04 lifts this calculus onto manifolds via differential geometry."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Vector Calculus">
+<div class="topline"><span class="eyebrow">Mathematical Foundations of Geometric Deep Learning</span><span>Chapter 03</span></div>
+<h1>Vector Calculus</h1>
+<p class="lead">Differential operators on scalar and vector fields</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Why calculus</h3><p>Learning is optimization, and optimization is differentiation. Vector calculus supplies the gradients and Jacobians that drive every gradient-based method.</p></div>
+<div class="panel teal"><h3>Roadmap</h3><ul><li>Derivatives and the Jacobian</li><li>Gradient and directional derivative</li><li>Divergence and curl</li><li>Chain rule and integral theorems</li></ul></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Vector field with arrows"><rect x="0" y="0" width="360" height="240" fill="#eff6ff"/><g stroke="#2563eb" stroke-width="2" fill="none"><line x1="60" y1="60" x2="90" y2="50"/><line x1="160" y1="60" x2="190" y2="55"/><line x1="260" y1="60" x2="290" y2="65"/><line x1="60" y1="140" x2="90" y2="135"/><line x1="160" y1="140" x2="190" y2="150"/><line x1="260" y1="140" x2="290" y2="160"/></g><g fill="#2563eb"><circle cx="90" cy="50" r="3"/><circle cx="190" cy="55" r="3"/><circle cx="290" cy="65" r="3"/><circle cx="90" cy="135" r="3"/><circle cx="190" cy="150" r="3"/><circle cx="290" cy="160" r="3"/></g></svg><figcaption class="small">A vector field assigns a vector to each point.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>PDF pages 26-36</span><span>Vector Calculus</span></div>
+<aside class="speaker-notes">Open the chapter. Vector calculus turns analytic structure into differential operators on fields. The deck follows PDF pages 26 through 36 and covers derivatives and the Jacobian, gradient and directional derivative, divergence and curl, the chain rule, and the integral theorems that connect local and global behavior in geometric deep learning.</aside>
+</section>
+<section class="slide alt" data-label="Derivatives and the Jacobian">
+<div class="topline"><span class="eyebrow">Linearization</span><span>Chapter 03</span></div>
+<h2>Derivatives and the Jacobian</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Best linear approximation</div><p class="formula">$f(x+h)=f(x)+J_f(x)\,h+o(\|h\|)$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Jacobian</div><p class="formula">$(J_f)_{ij}=\dfrac{\partial f_i}{\partial x_j}$</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Backpropagation</h3><p>Reverse-mode differentiation multiplies layer Jacobians from output to input, giving gradients for every parameter efficiently.</p></div>
+<div class="panel"><p>Differentiability means the linear map captures the function to first order near a point.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 26-36</span><span>Derivatives &amp; Jacobian</span></div>
+<aside class="speaker-notes">Define the derivative of a multivariate map as the best linear approximation, encoded by the Jacobian matrix of partial derivatives. Differentiability means the linear map approximates the function to first order. Backpropagation is exactly repeated application of the Jacobian through composed layers, so this object is foundational to learning.</aside>
+</section>
+<section class="slide" data-label="Gradient and Directional Derivative">
+<div class="topline"><span class="eyebrow">Scalar fields</span><span>Chapter 03</span></div>
+<h2>Gradient and Directional Derivative</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Gradient</div><p class="formula">$\nabla f=\left(\tfrac{\partial f}{\partial x_1},\dots,\tfrac{\partial f}{\partial x_n}\right)$</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Directional derivative</div><p class="formula">$D_v f=\nabla f\cdot v$</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Steepest ascent</h3><p>The gradient points where $f$ increases fastest; its negative is the descent direction.</p></div>
+<div class="panel amber"><h3>Gradient descent</h3><p>$x_{t+1}=x_t-\eta\,\nabla f(x_t)$ is the optimization engine of every neural network.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 26-36</span><span>Gradient</span></div>
+<aside class="speaker-notes">Specialize to scalar fields. The gradient is the vector of partials pointing in the direction of steepest ascent; the directional derivative projects it onto a chosen direction. Gradient descent follows the negative gradient, making this the engine of optimization in every neural network.</aside>
+</section>
+<section class="slide alt" data-label="Divergence and Curl">
+<div class="topline"><span class="eyebrow">Vector fields</span><span>Chapter 03</span></div>
+<h2>Divergence and Curl</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Divergence</div><p class="formula">$\nabla\cdot F=\sum_i \tfrac{\partial F_i}{\partial x_i}$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Curl</div><p class="formula">$\nabla\times F$ measures local rotation</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Laplacian</h3><p>$\Delta f=\nabla\cdot\nabla f$ is divergence of the gradient and governs diffusion.</p></div>
+<div class="panel violet"><h3>Forward link</h3><p>The Laplacian reappears in spectral theory and graph diffusion in later chapters.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 26-36</span><span>Divergence &amp; Curl</span></div>
+<aside class="speaker-notes">Introduce divergence and curl on vector fields. Divergence measures net outflow at a point; curl measures local rotation. The Laplacian is divergence of the gradient and reappears throughout spectral theory and diffusion on graphs and manifolds, linking calculus to later chapters.</aside>
+</section>
+<section class="slide" data-label="Chain Rule and Integral Theorems">
+<div class="topline"><span class="eyebrow">Composition and boundaries</span><span>Chapter 03</span></div>
+<h2>Chain Rule and Integral Theorems</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Chain rule</div><p class="formula">$J_{g\circ f}(x)=J_g(f(x))\,J_f(x)$</p></div>
+<div class="panel"><p>Composition of maps is multiplication of Jacobians; this is precisely what autodiff exploits.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Integral theorems</h3><ul><li>Green: circulation and area</li><li>Stokes: curl and boundary</li><li>Gauss: divergence and flux</li></ul></div>
+<div class="panel violet"><p>They generalize to differential forms and underpin conservation laws and aggregation.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 26-36</span><span>Chain Rule &amp; Theorems</span></div>
+<aside class="speaker-notes">State the multivariate chain rule as composition of Jacobians, then the integral theorems of Green, Stokes, and Gauss that relate a field on a region to its behavior on the boundary. These theorems generalize to differential forms and underpin conservation laws and message-passing aggregation.</aside>
+</section>
+<section class="slide alt" data-label="Recap">
+<div class="topline"><span class="eyebrow">Summary</span><span>Chapter 03</span></div>
+<h2>Recap</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>What we built</h3><ul><li>Jacobian: linearizes maps</li><li>Gradient: drives optimization</li><li>Divergence and curl: flow and rotation</li><li>Chain rule and integral theorems</li></ul></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Next</h3><p>Chapter 04 lifts calculus onto manifolds through topology and differential geometry.</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Gradient descent path on a bowl"><rect x="0" y="0" width="360" height="200" fill="#fffbeb"/><ellipse cx="180" cy="100" rx="150" ry="70" fill="none" stroke="#d97706"/><ellipse cx="180" cy="100" rx="95" ry="44" fill="none" stroke="#d97706"/><ellipse cx="180" cy="100" rx="45" ry="20" fill="none" stroke="#d97706"/><polyline points="60,40 120,70 165,90 180,100" fill="none" stroke="#1d4ed8" stroke-width="3"/><circle cx="180" cy="100" r="4" fill="#1d4ed8"/></svg><figcaption class="small">Descent follows $-\nabla f$ to the minimum.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>PDF pages 26-36</span><span>Recap</span></div>
+<aside class="speaker-notes">Close the chapter. The Jacobian linearizes maps, the gradient drives optimization, divergence and curl describe flow and rotation, and the integral theorems tie local derivatives to global boundary behavior. Chapter 04 lifts this calculus onto manifolds via differential geometry.</aside>
+</section>
+</deck-stage>
+</body>
+</html>

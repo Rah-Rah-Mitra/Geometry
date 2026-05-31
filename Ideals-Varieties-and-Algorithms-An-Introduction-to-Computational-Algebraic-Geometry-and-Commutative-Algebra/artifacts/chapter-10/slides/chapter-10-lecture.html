@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Ideals, Varieties, and Algorithms">
+<meta name="chapter_id" content="chapter-10">
+<meta name="chapter_title" content="Chapter 10: Additional Grobner Basis Algorithms">
+<meta name="notebook_path" content="Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra/chapter-10-additional-grobner-basis-algorithms/10-additional-grobner-basis-algorithms.ipynb">
+<meta name="source_span" content="printed pages 547-600; PDF pages 557-610.">
+<meta name="source_pdf" content="Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra/Ideals, Varieties, and Algorithms, An Introduction to Computational Algebraic Geometry and Commutative Algebra.pdf">
+<meta name="design_system_version" content="1.0">
+<title>Chapter 10: Additional Grobner Basis Algorithms</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Ideals, Varieties, and Algorithms","chapter_id":"chapter-10","chapter_title":"Chapter 10: Additional Grobner Basis Algorithms","notebook_path":"Ideals-Varieties-and-Algorithms-An-Introduction-to-Computational-Algebraic-Geometry-and-Commutative-Algebra/chapter-10-additional-grobner-basis-algorithms/10-additional-grobner-basis-algorithms.ipynb","source_span":"printed pages 547-600; PDF pages 557-610.","design_system_version":"1.0"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Faster Grobner Bases","notes":"This chapter spans printed pages 547 through 600 and confronts the practical cost of Buchberger's algorithm. Most S-polynomials reduce to zero and waste effort, so refined criteria, better selection strategies, and order conversion make Grobner basis computation feasible on substantial problems."},
+{"slide":2,"label":"Buchberger's Criteria","notes":"Two criteria of Buchberger let us skip many S-polynomial reductions in advance. Pairs whose leading terms are relatively prime reduce to zero automatically, and a chain criterion discards pairs already covered by others, dramatically pruning the work without affecting correctness."},
+{"slide":3,"label":"Selection Strategies","notes":"The order in which S-pairs are processed greatly affects performance. The normal selection strategy, choosing pairs of least leading common multiple, and the sugar strategy, tracking a degree surrogate, keep intermediate polynomials small and speed termination in practice."},
+{"slide":4,"label":"The FGLM Algorithm","notes":"For a zero-dimensional ideal the FGLM algorithm converts a Grobner basis from one monomial order to another using linear algebra in the finite-dimensional quotient ring. This makes it cheap to obtain an elimination-friendly lexicographic basis from a fast graded one."},
+{"slide":5,"label":"Improved Computation","notes":"Modern systems combine these criteria with signature-based methods and modular arithmetic to control coefficient growth, the dominant cost over the rationals. Computing modulo primes and reconstructing answers keeps intermediate numbers small while preserving the exact result."},
+{"slide":6,"label":"Complexity and Practice","notes":"Grobner basis computation has high worst-case complexity, doubly exponential in the number of variables, yet performs well on the structured systems arising in applications. Understanding these limits guides realistic expectations. This closes the main text. Next: the appendices on algebra, pseudocode, and software."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Faster Grobner Bases">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 10</span></div>
+<h1>Additional Grobner Basis Algorithms</h1>
+<p class="lead">Making the computation practical</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Problem</h3><p>Most S-polynomials reduce to zero.</p></div>
+<div class="panel teal"><h3>Remedy</h3><p>Criteria, strategies, order conversion.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="A bar chart showing reduced work after pruning"><rect x="0" y="0" width="360" height="200" fill="#eff6ff"/><rect x="60" y="40" width="60" height="130" fill="#1d4ed8"/><rect x="160" y="110" width="60" height="60" fill="#0d9488"/><rect x="260" y="140" width="60" height="30" fill="#d97706"/><line x1="30" y1="170" x2="340" y2="170" stroke="#94a3b8" stroke-width="2"/></svg><figcaption class="small">Pruning slashes wasted reductions.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 547-600</span><span>Faster Grobner Bases</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 547 through 600 and confronts the practical cost of Buchberger's algorithm. Most S-polynomials reduce to zero and waste effort, so refined criteria, better selection strategies, and order conversion make Grobner basis computation feasible on substantial problems.</aside>
+</section>
+<section class="slide alt" data-label="Buchberger's Criteria">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 10</span></div>
+<h2>Buchberger's Criteria</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Coprime criterion</h3><p>Disjoint leading terms reduce to zero.</p></div>
+<div class="panel amber"><h3>Chain criterion</h3><p>Skip pairs covered by others.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Coprime case</div><p class="formula">$\gcd(\mathrm{LT}(f),\mathrm{LT}(g))=1$</p></div>
+<div class="panel teal"><h3>Effect</h3><p>Prunes work, keeps correctness.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 547-600</span><span>Buchberger's Criteria</span></div>
+<aside class="speaker-notes">Two criteria of Buchberger let us skip many S-polynomial reductions in advance. Pairs whose leading terms are relatively prime reduce to zero automatically, and a chain criterion discards pairs already covered by others, dramatically pruning the work without affecting correctness.</aside>
+</section>
+<section class="slide" data-label="Selection Strategies">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 10</span></div>
+<h2>Selection Strategies</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Normal strategy</h3><p>Least common multiple first.</p></div>
+<div class="panel violet"><h3>Sugar strategy</h3><p>Track a degree surrogate.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Goal</div><p class="formula">$\min \deg \mathrm{lcm}(\mathrm{LT}(f),\mathrm{LT}(g))$</p></div>
+<div class="panel teal"><h3>Benefit</h3><p>Keeps polynomials small.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 547-600</span><span>Selection Strategies</span></div>
+<aside class="speaker-notes">The order in which S-pairs are processed greatly affects performance. The normal selection strategy, choosing pairs of least leading common multiple, and the sugar strategy, tracking a degree surrogate, keep intermediate polynomials small and speed termination in practice.</aside>
+</section>
+<section class="slide alt" data-label="The FGLM Algorithm">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 10</span></div>
+<h2>The FGLM Algorithm</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Setting</h3><p>Zero-dimensional ideals.</p></div>
+<div class="panel amber"><h3>Method</h3><p>Linear algebra in the quotient.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Order conversion</div><p class="formula">$G_{\mathrm{grevlex}} \longrightarrow G_{\mathrm{lex}}$</p></div>
+<div class="panel teal"><h3>Payoff</h3><p>Cheap elimination-friendly basis.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 547-600</span><span>The FGLM Algorithm</span></div>
+<aside class="speaker-notes">For a zero-dimensional ideal the FGLM algorithm converts a Grobner basis from one monomial order to another using linear algebra in the finite-dimensional quotient ring. This makes it cheap to obtain an elimination-friendly lexicographic basis from a fast graded one.</aside>
+</section>
+<section class="slide" data-label="Improved Computation">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 10</span></div>
+<h2>Improved Computation</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Signatures</h3><p>Avoid redundant reductions.</p></div>
+<div class="panel amber"><h3>Modular</h3><p>Compute modulo primes, reconstruct.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Coefficient control</div><p class="formula">$\mathbb{Q} \;\leftrightarrow\; \mathbb{F}_p$</p></div>
+<div class="panel teal"><h3>Effect</h3><p>Tames coefficient growth.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 547-600</span><span>Improved Computation</span></div>
+<aside class="speaker-notes">Modern systems combine these criteria with signature-based methods and modular arithmetic to control coefficient growth, the dominant cost over the rationals. Computing modulo primes and reconstructing answers keeps intermediate numbers small while preserving the exact result.</aside>
+</section>
+<section class="slide alt" data-label="Complexity and Practice">
+<div class="topline"><span class="eyebrow">Ideals, Varieties, and Algorithms</span><span>Chapter 10</span></div>
+<h2>Complexity and Practice</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Worst case</h3><p>Doubly exponential in variables.</p></div>
+<div class="panel amber"><h3>In practice</h3><p>Structured systems behave well.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Bound</div><p class="formula">$2^{2^{O(n)}}$</p></div>
+<div class="panel violet"><h3>Next</h3><p>Appendices on algebra and software.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 547-600</span><span>Complexity and Practice</span></div>
+<aside class="speaker-notes">Grobner basis computation has high worst-case complexity, doubly exponential in the number of variables, yet performs well on the structured systems arising in applications. Understanding these limits guides realistic expectations. This closes the main text. Next: the appendices on algebra, pseudocode, and software.</aside>
+</section>
+</deck-stage>
+</body>
+</html>

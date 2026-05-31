@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Mathematical Foundations of Geometric Deep Learning">
+<meta name="chapter_id" content="chapter-07">
+<meta name="chapter_title" content="Chapter 07: Graph Theory">
+<meta name="notebook_path" content="Mathematical-Foundations-of-Geometric-Deep-Learning/chapter-07-graph-theory/07-graph-theory.ipynb">
+<meta name="source_span" content="PDF pages 65-77.">
+<meta name="source_pdf" content="Mathematical-Foundations-of-Geometric-Deep-Learning/Mathematical Foundations of Geometric Deep Learning.pdf">
+<meta name="design_system_version" content="1.0">
+<title>Chapter 07: Graph Theory</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Mathematical Foundations of Geometric Deep Learning","chapter_id":"chapter-07","chapter_title":"Chapter 07: Graph Theory","notebook_path":"Mathematical-Foundations-of-Geometric-Deep-Learning/chapter-07-graph-theory/07-graph-theory.ipynb","source_span":"PDF pages 65-77.","design_system_version":"1.0"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Graph Theory","notes":"Open the chapter. Graphs are the combinatorial data structure at the center of geometric deep learning. The deck follows PDF pages 65 through 77 and covers graph definitions and representations, walks and connectivity, key matrices, and the message-passing abstraction that defines graph neural networks."},
+{"slide":2,"label":"Graphs and Representations","notes":"Define a graph as a set of vertices and edges, with directed, weighted, and attributed variants. Representations include adjacency matrix, adjacency list, and edge list, each with different storage and access trade-offs. The chosen representation shapes the efficiency of learning algorithms on the graph."},
+{"slide":3,"label":"Walks, Paths, and Connectivity","notes":"Cover walks, paths, cycles, and connectivity, including connected components and shortest paths. The k-th power of the adjacency matrix counts walks of length k, linking combinatorics to linear algebra and explaining how information propagates over multiple hops in a graph network."},
+{"slide":4,"label":"Graph Matrices","notes":"Introduce the adjacency, degree, and Laplacian matrices and their spectra. These matrices connect graph theory to the spectral methods of the previous chapter. Eigenvalues reveal connectivity, bipartiteness, and clustering structure that guide both analysis and architecture design."},
+{"slide":5,"label":"Message Passing","notes":"Define the message-passing framework: each node aggregates transformed features from its neighbors and updates its own representation, repeated over layers. This permutation-equivariant scheme is the unifying abstraction of graph neural networks and ties together the algebraic and spectral foundations of the book."},
+{"slide":6,"label":"Recap","notes":"Close the chapter and the foundations. Graphs give a flexible combinatorial domain, walks and matrices connect structure to linear algebra and spectra, and message passing turns these foundations into learnable, symmetry-respecting architectures. The algebraic, analytic, geometric, and combinatorial threads now form one toolkit."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Graph Theory">
+<div class="topline"><span class="eyebrow">Mathematical Foundations of Geometric Deep Learning</span><span>Chapter 07</span></div>
+<h1>Graph Theory</h1>
+<p class="lead">The combinatorial domain of geometric deep learning</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Why graphs</h3><p>Molecules, social networks, meshes, and knowledge bases are graphs. They unify the book's structures into one learnable domain.</p></div>
+<div class="panel teal"><h3>Roadmap</h3><ul><li>Graphs and representations</li><li>Walks, paths, connectivity</li><li>Graph matrices</li><li>Message passing</li></ul></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Message passing on a small graph"><rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/><g stroke="#0d9488" stroke-width="2"><line x1="180" y1="110" x2="90" y2="50"/><line x1="180" y1="110" x2="280" y2="60"/><line x1="180" y1="110" x2="110" y2="170"/><line x1="180" y1="110" x2="270" y2="170"/></g><g fill="#0f766e"><circle cx="90" cy="50" r="10"/><circle cx="280" cy="60" r="10"/><circle cx="110" cy="170" r="10"/><circle cx="270" cy="170" r="10"/></g><circle cx="180" cy="110" r="13" fill="#1d4ed8"/></svg><figcaption class="small">A node aggregates messages from its neighbors.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>PDF pages 65-77</span><span>Graph Theory</span></div>
+<aside class="speaker-notes">Open the chapter. Graphs are the combinatorial data structure at the center of geometric deep learning. The deck follows PDF pages 65 through 77 and covers graph definitions and representations, walks and connectivity, key matrices, and the message-passing abstraction that defines graph neural networks.</aside>
+</section>
+<section class="slide alt" data-label="Graphs and Representations">
+<div class="topline"><span class="eyebrow">Structure</span><span>Chapter 07</span></div>
+<h2>Graphs and Representations</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Graph</div><p class="formula">$G=(V,E),\quad E\subseteq V\times V$</p></div>
+<div class="panel"><p>Variants: directed, weighted, and attributed graphs carrying node and edge features.</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Representations</h3><ul><li>Adjacency matrix</li><li>Adjacency list</li><li>Edge list</li></ul></div>
+<div class="panel amber"><h3>Trade-offs</h3><p>The representation chosen shapes storage cost and the efficiency of learning algorithms.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 65-77</span><span>Representations</span></div>
+<aside class="speaker-notes">Define a graph as a set of vertices and edges, with directed, weighted, and attributed variants. Representations include adjacency matrix, adjacency list, and edge list, each with different storage and access trade-offs. The chosen representation shapes the efficiency of learning algorithms on the graph.</aside>
+</section>
+<section class="slide" data-label="Walks, Paths, and Connectivity">
+<div class="topline"><span class="eyebrow">Propagation</span><span>Chapter 07</span></div>
+<h2>Walks, Paths, and Connectivity</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Definitions</h3><p>Walks repeat vertices; paths do not; cycles return to start. Components are maximal connected pieces.</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Walk counting</div><p class="formula">$(A^k)_{ij}=\#\text{walks }i\to j\text{ of length }k$</p></div>
+</div>
+<div class="stack">
+<div class="panel"><p>The adjacency power links combinatorics to linear algebra.</p></div>
+<div class="panel amber"><h3>Why it matters</h3><p>It explains how information propagates over multiple hops in a graph network.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 65-77</span><span>Walks &amp; Connectivity</span></div>
+<aside class="speaker-notes">Cover walks, paths, cycles, and connectivity, including connected components and shortest paths. The k-th power of the adjacency matrix counts walks of length k, linking combinatorics to linear algebra and explaining how information propagates over multiple hops in a graph network.</aside>
+</section>
+<section class="slide alt" data-label="Graph Matrices">
+<div class="topline"><span class="eyebrow">Linear algebra of graphs</span><span>Chapter 07</span></div>
+<h2>Graph Matrices</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Core matrices</div><p class="formula">$A,\quad D,\quad L=D-A$</p></div>
+<div class="panel"><p>Adjacency, degree, and Laplacian matrices summarize structure algebraically.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>Spectra reveal</h3><ul><li>Connectivity</li><li>Bipartiteness</li><li>Clustering structure</li></ul></div>
+<div class="panel"><p>These matrices connect graph theory to the spectral methods of Chapter 06.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 65-77</span><span>Graph Matrices</span></div>
+<aside class="speaker-notes">Introduce the adjacency, degree, and Laplacian matrices and their spectra. These matrices connect graph theory to the spectral methods of the previous chapter. Eigenvalues reveal connectivity, bipartiteness, and clustering structure that guide both analysis and architecture design.</aside>
+</section>
+<section class="slide" data-label="Message Passing">
+<div class="topline"><span class="eyebrow">Graph neural networks</span><span>Chapter 07</span></div>
+<h2>Message Passing</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Update rule</div><p class="formula">$h_v^{(l+1)}=\phi\!\left(h_v^{(l)},\bigoplus_{u\in N(v)}\psi(h_u^{(l)})\right)$</p></div>
+<div class="panel"><p>Each node aggregates transformed neighbor features and updates itself, layer by layer.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Symmetry</h3><p>Permutation-equivariant aggregation respects the graph's lack of node ordering.</p></div>
+<div class="panel teal"><h3>Unifying view</h3><p>This abstraction ties together the algebraic and spectral foundations of the book.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 65-77</span><span>Message Passing</span></div>
+<aside class="speaker-notes">Define the message-passing framework: each node aggregates transformed features from its neighbors and updates its own representation, repeated over layers. This permutation-equivariant scheme is the unifying abstraction of graph neural networks and ties together the algebraic and spectral foundations of the book.</aside>
+</section>
+<section class="slide alt" data-label="Recap">
+<div class="topline"><span class="eyebrow">Summary</span><span>Chapter 07</span></div>
+<h2>Recap</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>What we built</h3><ul><li>Graphs and representations</li><li>Walks, paths, connectivity</li><li>Graph matrices and spectra</li><li>Message passing as the GNN abstraction</li></ul></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Foundations complete</h3><p>Algebraic, analytic, geometric, and combinatorial threads now form one coherent toolkit for geometric deep learning.</p></div>
+</div>
+</div>
+<div class="footer"><span>PDF pages 65-77</span><span>Recap</span></div>
+<aside class="speaker-notes">Close the chapter and the foundations. Graphs give a flexible combinatorial domain, walks and matrices connect structure to linear algebra and spectra, and message passing turns these foundations into learnable, symmetry-respecting architectures. The algebraic, analytic, geometric, and combinatorial threads now form one toolkit.</aside>
+</section>
+</deck-stage>
+</body>
+</html>
