@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Information Geometry and Its Applications">
+<meta name="chapter_id" content="chapter-11">
+<meta name="chapter_title" content="Chapter 11: Machine Learning">
+<meta name="notebook_path" content="Information-Geometry-and-Its-Applications/part-04-applications-of-information-geometry/chapter-11-machine-learning/11-machine-learning.ipynb">
+<meta name="source_span" content="printed pages 231-278; PDF pages 234-281.">
+<meta name="source_pdf" content="Information-Geometry-and-Its-Applications/Information Geometry and Its Applications.pdf">
+<meta name="design_system_version" content="1.0">
+<title>Chapter 11: Machine Learning</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Information Geometry and Its Applications","chapter_id":"chapter-11","chapter_title":"Chapter 11: Machine Learning","notebook_path":"Information-Geometry-and-Its-Applications/part-04-applications-of-information-geometry/chapter-11-machine-learning/11-machine-learning.ipynb","source_span":"printed pages 231-278; PDF pages 234-281.","design_system_version":"1.0"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Machine Learning Through Geometry","notes":"This chapter spans printed pages 231 through 278 and rereads familiar learning algorithms as moves on manifolds of distributions. Clustering, support vectors, message passing, and Boltzmann machines all become projections or metric-aware paths, so the geometry decides the shape of each update rather than the loss alone."},
+{"slide":2,"label":"Algorithms as Projections","notes":"The unifying claim is that a learning step is a projection of a data point or empirical distribution onto a model family. Whether the projection is exponential or mixture decides which Pythagorean relation holds, and that choice governs uniqueness, monotonic descent, and the geometry of every algorithm in this chapter."},
+{"slide":3,"label":"Bregman Clustering","notes":"Bregman divergences generalize squared distance while keeping the mean as the optimal center. Hard clustering alternates assigning each point to its nearest divergence center and recomputing centers as right-sided Bregman averages, which is an m-projection. The squared-Euclidean special case recovers ordinary k-means and Voronoi cells."},
+{"slide":4,"label":"Divergence Centers and Voronoi","notes":"With a Bregman divergence the decision boundary between two centers stays an affine hyperplane, so the partition is a genuine Voronoi tessellation. The notebook surface plots the nearest-center cost and checks that every point's assignment matches its true label, confirming the centers behave as stable divergence representatives."},
+{"slide":5,"label":"Support Vectors as Margin Geometry","notes":"A support-vector machine maximizes the margin, the gap between the separating hyperplane and the closest points. Only the support vectors touching the margin determine the solution. Geometrically the classifier is the perpendicular bisector geometry of the two convex hulls of the labeled point clouds."},
+{"slide":6,"label":"Kernels and Feature Geometry","notes":"A kernel computes inner products in a feature space without mapping points explicitly. The Gram matrix must be positive semidefinite, which makes it a valid metric on the data. The notebook checks the smallest eigenvalue stays nonnegative, certifying the induced feature-space geometry is well posed."},
+{"slide":7,"label":"Graphical Models and Projection","notes":"Belief propagation and mean-field both approximate an intractable distribution by projecting onto a tractable family. Mean-field performs an e-projection onto independent factorizations, minimizing reversed divergence, while loopy belief propagation seeks a stationary point of the Bethe free energy. Both are projection algorithms in disguise."},
+{"slide":8,"label":"Mean-Field and Message Passing","notes":"On a small factor graph each message is a normalized vector summarizing a neighbor's influence. The product of incoming messages with the local potential gives the belief, renormalized to a distribution. The notebook verifies every message and belief sums to one, the invariant that keeps the projection on the simplex."},
+{"slide":9,"label":"Boosting as Dual Projection","notes":"Boosting alternates two projections. The m-step reweights examples so the current model's expectations match the data, an m-projection onto a constraint surface. The e-step adds a weak learner, an e-projection onto the expanded model. AdaBoost is exactly this e- and m-projection cycle on the exponential family."},
+{"slide":10,"label":"AdaBoost Reweighting","notes":"Each AdaBoost round computes a weak learner's weighted error, sets its coefficient from the log-odds of that error, and reweights examples by an exponential factor before renormalizing. The notebook confirms the weights sum to one and the coefficient stays positive whenever the learner beats chance, matching the dual-projection picture."},
+{"slide":11,"label":"Restricted Boltzmann Machines","notes":"A restricted Boltzmann machine is a bipartite energy model whose visible and hidden layers carry no within-layer edges, so each conditional factorizes. The model defines an exponential family over binary states, and learning moves its parameters to reduce the divergence between the data distribution and the model marginals."},
+{"slide":12,"label":"Contrastive Divergence","notes":"Maximum likelihood for a Boltzmann machine needs the model expectation, which is intractable. Contrastive divergence approximates the gradient with a short Gibbs chain, so the update is the data moment minus a model moment. The notebook records that this difference has the expected sign, the geometric direction of the learning path."},
+{"slide":13,"label":"Divergence-Based Learning","notes":"Across the chapter every algorithm reduces a divergence between data and model along a metric-aware path. The Fisher metric reshapes gradients into natural gradients that follow short routes through parameter space, avoiding the singular valleys where ordinary Euclidean descent crawls slowly and ill-conditioned directions dominate."},
+{"slide":14,"label":"Recap and Habits","notes":"Leave with three habits. First identify the geometric object an algorithm represents. Second name the divergence or metric that decides the update's shape. Third pair every visual claim with a numerical invariant: positive eigenvalues, normalized messages, descending objectives. These habits transfer to models too large to draw directly."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Machine Learning Through Geometry">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h1>Machine Learning Through Geometry</h1>
+<p class="lead">Learning algorithms as projections and metric-aware paths</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Models as surfaces</h3><p>Predictors and distributions become points on a manifold.</p></div>
+<div class="panel teal"><h3>Updates as motion</h3><p>An algorithm is a path whose shape the metric decides.</p></div>
+<div class="panel amber"><h3>Checks guard claims</h3><p>Every visual is paired with a numerical invariant.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Curved model manifold with a projection arrow from a data point"><rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/><path d="M30 150 C110 90 250 90 330 150" fill="none" stroke="#0f766e" stroke-width="3"/><path d="M30 175 C110 120 250 120 330 175" fill="none" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="4 4"/><circle cx="200" cy="40" r="6" fill="#b45309"/><text x="210" y="38" font-size="14" fill="#b45309">data q</text><line x1="200" y1="46" x2="200" y2="112" stroke="#2563eb" stroke-width="2.5" marker-end="url(#a11)"/><circle cx="200" cy="118" r="5" fill="#2563eb"/><text x="208" y="132" font-size="13" fill="#2563eb">projection</text><text x="250" y="170" font-size="14" fill="#0f766e">model family M</text><defs><marker id="a11" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#2563eb"/></marker></defs></svg><figcaption class="small">Learning projects data onto a model manifold.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Machine Learning Through Geometry</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 231 through 278 and rereads familiar learning algorithms as moves on manifolds of distributions. Clustering, support vectors, message passing, and Boltzmann machines all become projections or metric-aware paths, so the geometry decides the shape of each update rather than the loss alone.</aside>
+</section>
+<section class="slide alt" data-label="Algorithms as Projections">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Algorithms as Projections</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>e-projection</h3><p>Minimize $D[q:p]$ over an e-flat model in $\theta$.</p></div>
+<div class="panel teal"><h3>m-projection</h3><p>Minimize $D[p:q]$ over an m-flat constraint in $\eta$.</p></div>
+<div class="panel violet"><h3>Pythagoras decides</h3><p>Which decomposition holds fixes uniqueness and descent.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Projection theorem</div><p class="formula">$D[q:r]=D[q:p^*]+D[p^*:r]$</p></div>
+<div class="panel amber"><h3>Reading map</h3><p>Cluster, classify, infer, and boost are all projections below.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Algorithms as Projections</span></div>
+<aside class="speaker-notes">The unifying claim is that a learning step is a projection of a data point or empirical distribution onto a model family. Whether the projection is exponential or mixture decides which Pythagorean relation holds, and that choice governs uniqueness, monotonic descent, and the geometry of every algorithm in this chapter.</aside>
+</section>
+<section class="slide" data-label="Bregman Clustering">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Bregman Clustering</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Bregman divergence</h3><p>Convex potential $\phi$ measures distance to centers.</p></div>
+<div class="panel teal"><h3>Mean stays optimal</h3><p>The right-sided average minimizes total divergence.</p></div>
+<div class="panel amber"><h3>Special case</h3><p>Squared $\phi$ recovers ordinary k-means.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Divergence</div><p class="formula">$D_\phi[x:c]=\phi(x)-\phi(c)-\nabla\phi(c)^{\!\top}(x-c)$</p></div>
+<div class="panel violet"><h3>Alternation</h3><p>Assign to nearest center, then recompute centers.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Bregman Clustering</span></div>
+<aside class="speaker-notes">Bregman divergences generalize squared distance while keeping the mean as the optimal center. Hard clustering alternates assigning each point to its nearest divergence center and recomputing centers as right-sided Bregman averages, which is an m-projection. The squared-Euclidean special case recovers ordinary k-means and Voronoi cells.</aside>
+</section>
+<section class="slide alt" data-label="Divergence Centers and Voronoi">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Divergence Centers and Voronoi</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Affine boundaries</h3><p>Bregman cells are separated by hyperplanes.</p></div>
+<div class="panel teal"><h3>Stable assignment</h3><p>Each point joins its nearest representative.</p></div>
+<div class="panel amber"><h3>Check</h3><p>Assignments must equal nearest-center labels.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Two cluster centers with points colored by side and a straight Voronoi boundary"><rect x="0" y="0" width="360" height="220" fill="#eff6ff"/><line x1="180" y1="15" x2="180" y2="205" stroke="#475569" stroke-width="2.5" stroke-dasharray="6 5"/><circle cx="95" cy="110" r="7" fill="#2563eb"/><text x="60" y="100" font-size="13" fill="#2563eb">center A</text><circle cx="265" cy="110" r="7" fill="#b45309"/><text x="248" y="100" font-size="13" fill="#b45309">center B</text><circle cx="70" cy="70" r="4" fill="#60a5fa"/><circle cx="120" cy="150" r="4" fill="#60a5fa"/><circle cx="90" cy="140" r="4" fill="#60a5fa"/><circle cx="130" cy="90" r="4" fill="#60a5fa"/><circle cx="240" cy="80" r="4" fill="#f59e0b"/><circle cx="290" cy="140" r="4" fill="#f59e0b"/><circle cx="250" cy="150" r="4" fill="#f59e0b"/><circle cx="280" cy="85" r="4" fill="#f59e0b"/><text x="135" y="205" font-size="13" fill="#475569">Voronoi boundary</text></svg><figcaption class="small">Bregman cells partition the space by nearest center.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Divergence Centers and Voronoi</span></div>
+<aside class="speaker-notes">With a Bregman divergence the decision boundary between two centers stays an affine hyperplane, so the partition is a genuine Voronoi tessellation. The notebook surface plots the nearest-center cost and checks that every point's assignment matches its true label, confirming the centers behave as stable divergence representatives.</aside>
+</section>
+<section class="slide" data-label="Support Vectors as Margin Geometry">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Support Vectors as Margin Geometry</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Max margin</h3><p>Widen the gap between hyperplane and nearest points.</p></div>
+<div class="panel teal"><h3>Support vectors</h3><p>Only points on the margin set the solution.</p></div>
+<div class="panel amber"><h3>Hull picture</h3><p>Boundary bisects the two convex hulls.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Separating hyperplane with two parallel margins and support vectors highlighted"><rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/><line x1="40" y1="180" x2="320" y2="60" stroke="#111827" stroke-width="3"/><line x1="40" y1="150" x2="320" y2="30" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/><line x1="40" y1="210" x2="320" y2="90" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/><circle cx="110" cy="60" r="5" fill="#2563eb"/><circle cx="160" cy="45" r="5" fill="#2563eb"/><circle cx="120" cy="95" r="7" fill="#2563eb" stroke="#1e3a8a" stroke-width="2"/><circle cx="230" cy="160" r="5" fill="#b45309"/><circle cx="280" cy="150" r="5" fill="#b45309"/><circle cx="215" cy="135" r="7" fill="#b45309" stroke="#7c2d12" stroke-width="2"/><text x="250" y="48" font-size="13" fill="#111827">margin</text><text x="60" y="120" font-size="13" fill="#1e3a8a">support vectors</text></svg><figcaption class="small">Ringed points are the margin-defining support vectors.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Support Vectors as Margin Geometry</span></div>
+<aside class="speaker-notes">A support-vector machine maximizes the margin, the gap between the separating hyperplane and the closest points. Only the support vectors touching the margin determine the solution. Geometrically the classifier is the perpendicular bisector geometry of the two convex hulls of the labeled point clouds.</aside>
+</section>
+<section class="slide alt" data-label="Kernels and Feature Geometry">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Kernels and Feature Geometry</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Implicit features</h3><p>Kernel gives inner products without the map.</p></div>
+<div class="panel teal"><h3>Gram metric</h3><p>The Gram matrix must be positive semidefinite.</p></div>
+<div class="panel amber"><h3>Check</h3><p>Smallest eigenvalue stays nonnegative.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">RBF kernel</div><p class="formula">$K_{ij}=\exp\!\big(-\gamma\,\lVert x_i-x_j\rVert^2\big)\succeq 0$</p></div>
+<div class="panel violet"><h3>Why it matters</h3><p>A valid kernel is a well-posed feature-space geometry.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Kernels and Feature Geometry</span></div>
+<aside class="speaker-notes">A kernel computes inner products in a feature space without mapping points explicitly. The Gram matrix must be positive semidefinite, which makes it a valid metric on the data. The notebook checks the smallest eigenvalue stays nonnegative, certifying the induced feature-space geometry is well posed.</aside>
+</section>
+<section class="slide" data-label="Graphical Models and Projection">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Graphical Models and Projection</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Intractable target</h3><p>Exact inference on a loopy model is costly.</p></div>
+<div class="panel teal"><h3>Mean-field</h3><p>e-projection onto independent factorizations.</p></div>
+<div class="panel amber"><h3>Belief propagation</h3><p>Stationary point of the Bethe free energy.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Variational view</div><p class="formula">$q^*=\arg\min_{q\in\mathcal{Q}} D[q:p]$</p></div>
+<div class="panel violet"><h3>Takeaway</h3><p>Both methods project onto a tractable family.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Graphical Models and Projection</span></div>
+<aside class="speaker-notes">Belief propagation and mean-field both approximate an intractable distribution by projecting onto a tractable family. Mean-field performs an e-projection onto independent factorizations, minimizing reversed divergence, while loopy belief propagation seeks a stationary point of the Bethe free energy. Both are projection algorithms in disguise.</aside>
+</section>
+<section class="slide alt" data-label="Mean-Field and Message Passing">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Mean-Field and Message Passing</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Messages</h3><p>Normalized vectors summarize a neighbor's pull.</p></div>
+<div class="panel teal"><h3>Beliefs</h3><p>Local potential times incoming messages.</p></div>
+<div class="panel amber"><h3>Check</h3><p>Every message and belief sums to one.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Three node chain with messages flowing toward the center node"><rect x="0" y="0" width="360" height="200" fill="#fffbeb"/><circle cx="60" cy="100" r="26" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="60" y="106" font-size="16" fill="#1e3a8a" text-anchor="middle">x0</text><circle cx="180" cy="100" r="26" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/><text x="180" y="106" font-size="16" fill="#0f766e" text-anchor="middle">x1</text><circle cx="300" cy="100" r="26" fill="#fde68a" stroke="#b45309" stroke-width="2"/><text x="300" y="106" font-size="16" fill="#7c2d12" text-anchor="middle">x2</text><line x1="88" y1="100" x2="152" y2="100" stroke="#2563eb" stroke-width="2.5" marker-end="url(#m11)"/><line x1="272" y1="100" x2="208" y2="100" stroke="#b45309" stroke-width="2.5" marker-end="url(#m12)"/><text x="120" y="88" font-size="13" fill="#2563eb">m₀₁</text><text x="232" y="88" font-size="13" fill="#b45309">m₂₁</text><text x="180" y="160" font-size="13" fill="#0f766e" text-anchor="middle">belief = pot · m₀₁ · m₂₁</text><defs><marker id="m11" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#2563eb"/></marker><marker id="m12" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker></defs></svg><figcaption class="small">Messages converge on the center node to form its belief.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Mean-Field and Message Passing</span></div>
+<aside class="speaker-notes">On a small factor graph each message is a normalized vector summarizing a neighbor's influence. The product of incoming messages with the local potential gives the belief, renormalized to a distribution. The notebook verifies every message and belief sums to one, the invariant that keeps the projection on the simplex.</aside>
+</section>
+<section class="slide" data-label="Boosting as Dual Projection">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Boosting as Dual Projection</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>m-step</h3><p>Reweight examples to match data expectations.</p></div>
+<div class="panel blue"><h3>e-step</h3><p>Add a weak learner to extend the model.</p></div>
+<div class="panel amber"><h3>AdaBoost</h3><p>The exact e- and m-projection cycle.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Alternating m-projection and e-projection between a constraint surface and a model curve"><rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/><path d="M40 60 C140 40 240 40 330 60" fill="none" stroke="#0f766e" stroke-width="3"/><text x="250" y="40" font-size="13" fill="#0f766e">data constraint (m-flat)</text><path d="M40 180 C140 200 240 200 330 180" fill="none" stroke="#2563eb" stroke-width="3"/><text x="245" y="205" font-size="13" fill="#2563eb">model (e-flat)</text><line x1="110" y1="178" x2="130" y2="64" stroke="#b45309" stroke-width="2.5" marker-end="url(#b11)"/><line x1="130" y1="60" x2="210" y2="176" stroke="#6d28d9" stroke-width="2.5" marker-end="url(#b12)"/><line x1="210" y1="180" x2="250" y2="66" stroke="#b45309" stroke-width="2.5" marker-end="url(#b13)"/><text x="92" y="125" font-size="12" fill="#b45309">m-proj</text><text x="168" y="125" font-size="12" fill="#6d28d9">e-proj</text><defs><marker id="b11" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker><marker id="b12" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#6d28d9"/></marker><marker id="b13" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker></defs></svg><figcaption class="small">Boosting zig-zags between data constraint and model.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Boosting as Dual Projection</span></div>
+<aside class="speaker-notes">Boosting alternates two projections. The m-step reweights examples so the current model's expectations match the data, an m-projection onto a constraint surface. The e-step adds a weak learner, an e-projection onto the expanded model. AdaBoost is exactly this e- and m-projection cycle on the exponential family.</aside>
+</section>
+<section class="slide alt" data-label="AdaBoost Reweighting">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>AdaBoost Reweighting</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Weighted error</h3><p>Sum the weights of misclassified points.</p></div>
+<div class="panel teal"><h3>Coefficient</h3><p>Log-odds of the error sets the weak learner's vote.</p></div>
+<div class="panel amber"><h3>Check</h3><p>Weights renormalize; $\alpha>0$ when better than chance.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Update</div><p class="formula">$\alpha=\tfrac12\ln\frac{1-\varepsilon}{\varepsilon},\quad w_i\!\leftarrow\! w_i\,e^{-\alpha y_i h_i}$</p></div>
+<div class="panel violet"><h3>Reading</h3><p>Exponential reweighting is the m-projection step.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>AdaBoost Reweighting</span></div>
+<aside class="speaker-notes">Each AdaBoost round computes a weak learner's weighted error, sets its coefficient from the log-odds of that error, and reweights examples by an exponential factor before renormalizing. The notebook confirms the weights sum to one and the coefficient stays positive whenever the learner beats chance, matching the dual-projection picture.</aside>
+</section>
+<section class="slide" data-label="Restricted Boltzmann Machines">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Restricted Boltzmann Machines</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Bipartite energy</h3><p>Visible and hidden layers, no within-layer edges.</p></div>
+<div class="panel teal"><h3>Factorized conditionals</h3><p>Each layer is independent given the other.</p></div>
+<div class="panel amber"><h3>Exponential family</h3><p>An energy model over binary states.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Energy</div><p class="formula">$E(v,h)=-b^{\!\top}v-c^{\!\top}h-v^{\!\top}Wh$</p></div>
+<div class="panel violet"><h3>Goal</h3><p>Move parameters to match data marginals.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Restricted Boltzmann Machines</span></div>
+<aside class="speaker-notes">A restricted Boltzmann machine is a bipartite energy model whose visible and hidden layers carry no within-layer edges, so each conditional factorizes. The model defines an exponential family over binary states, and learning moves its parameters to reduce the divergence between the data distribution and the model marginals.</aside>
+</section>
+<section class="slide alt" data-label="Contrastive Divergence">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Contrastive Divergence</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Intractable gradient</h3><p>The model expectation cannot be summed exactly.</p></div>
+<div class="panel teal"><h3>Short Gibbs chain</h3><p>A few sampling steps approximate the model moment.</p></div>
+<div class="panel amber"><h3>Check</h3><p>The moment difference has the expected sign.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Update direction</div><p class="formula">$\Delta W \propto \langle vh^{\!\top}\rangle_{\text{data}}-\langle vh^{\!\top}\rangle_{\text{model}}$</p></div>
+<div class="panel violet"><h3>Geometry</h3><p>Data moment minus model moment is the learning path.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Contrastive Divergence</span></div>
+<aside class="speaker-notes">Maximum likelihood for a Boltzmann machine needs the model expectation, which is intractable. Contrastive divergence approximates the gradient with a short Gibbs chain, so the update is the data moment minus a model moment. The notebook records that this difference has the expected sign, the geometric direction of the learning path.</aside>
+</section>
+<section class="slide" data-label="Divergence-Based Learning">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Divergence-Based Learning</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Common shape</h3><p>Every method reduces a data-model divergence.</p></div>
+<div class="panel teal"><h3>Natural gradient</h3><p>Fisher metric reshapes the descent direction.</p></div>
+<div class="panel amber"><h3>Failure mode</h3><p>Euclidean steps crawl in singular valleys.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Natural gradient</div><p class="formula">$\dot\theta = -G(\theta)^{-1}\,\nabla_\theta D$</p></div>
+<div class="panel violet"><h3>Payoff</h3><p>Metric-aware moves follow short, well-conditioned routes.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Divergence-Based Learning</span></div>
+<aside class="speaker-notes">Across the chapter every algorithm reduces a divergence between data and model along a metric-aware path. The Fisher metric reshapes gradients into natural gradients that follow short routes through parameter space, avoiding the singular valleys where ordinary Euclidean descent crawls slowly and ill-conditioned directions dominate.</aside>
+</section>
+<section class="slide alt" data-label="Recap and Habits">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 11</span></div>
+<h2>Recap and Habits</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Name the object</h3><p>What geometric object does the algorithm represent?</p></div>
+<div class="panel teal"><h3>Name the metric</h3><p>Which divergence or metric shapes the update?</p></div>
+<div class="panel amber"><h3>Guard the claim</h3><p>Pair every visual with a numerical invariant.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>The chapter in one line</h3><p>Clustering, margins, message passing, and Boltzmann machines are all projections or metric-aware paths.</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Invariants we checked</div><p class="formula">$\lambda_{\min}(K)\ge 0,\;\textstyle\sum_i m_i=1,\;\alpha>0$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 231-278</span><span>Recap and Habits</span></div>
+<aside class="speaker-notes">Leave with three habits. First identify the geometric object an algorithm represents. Second name the divergence or metric that decides the update's shape. Third pair every visual claim with a numerical invariant: positive eigenvalues, normalized messages, descending objectives. These habits transfer to models too large to draw directly.</aside>
+</section>
+</deck-stage>
+</body>
+</html>

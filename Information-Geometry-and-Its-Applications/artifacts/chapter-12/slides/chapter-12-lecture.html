@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Information Geometry and Its Applications">
+<meta name="chapter_id" content="chapter-12">
+<meta name="chapter_title" content="Chapter 12: Natural Gradient Learning and Singular Learning">
+<meta name="notebook_path" content="Information-Geometry-and-Its-Applications/part-04-applications-of-information-geometry/chapter-12-natural-gradient-and-singular-learning/12-natural-gradient-and-singular-learning.ipynb">
+<meta name="source_span" content="printed pages 279-314; PDF pages 282-317.">
+<meta name="source_pdf" content="Information-Geometry-and-Its-Applications/Information Geometry and Its Applications.pdf">
+<meta name="design_system_version" content="1.0">
+<title>Chapter 12: Natural Gradient Learning and Singular Learning</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Information Geometry and Its Applications","chapter_id":"chapter-12","chapter_title":"Chapter 12: Natural Gradient Learning and Singular Learning","notebook_path":"Information-Geometry-and-Its-Applications/part-04-applications-of-information-geometry/chapter-12-natural-gradient-and-singular-learning/12-natural-gradient-and-singular-learning.ipynb","source_span":"printed pages 279-314; PDF pages 282-317.","design_system_version":"1.0"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Natural Gradient and Singular Learning","notes":"This chapter spans printed pages 279 through 314 and asks how learning changes when parameter space is a Riemannian statistical manifold rather than a Euclidean box. Natural gradient is steepest descent in the Fisher metric, and the same metric exposes the singular regions where ordinary learning stalls."},
+{"slide":2,"label":"Steepest Descent Needs a Metric","notes":"Steepest descent is only well defined after we fix what a unit step means. In Euclidean coordinates the fair ball is a sphere and the steepest direction is minus the gradient. On a statistical manifold the fair ball is the Fisher ellipse, so the honest steepest direction is reweighted by the inverse metric."},
+{"slide":3,"label":"The Natural Gradient","notes":"Solving the constrained steepest-descent problem in the Fisher metric gives the natural gradient: the ordinary gradient multiplied by the inverse Fisher matrix. It is the direction that decreases loss fastest per unit of movement in distribution space, making it invariant to smooth reparameterization of the model."},
+{"slide":4,"label":"Euclidean vs Natural Paths","notes":"On a quadratic loss with anisotropic curvature, ordinary descent zig-zags across narrow valleys and must take tiny steps for stability. Natural gradient rescales by the metric, turning the elongated bowl into an isotropic one, so the path heads almost straight to the optimum in far fewer iterations."},
+{"slide":5,"label":"Why Natural Gradient Wins","notes":"The metric view explains the advantage: natural gradient is a coordinate-free contraction in distribution space. The Fisher matrix corrects for how stretched each direction is statistically, so anisotropy that traps ordinary descent is absorbed. The same rescaling restores informative directions when activations saturate and Euclidean gradients vanish."},
+{"slide":6,"label":"Hessian Geometry and the Saddle Trap","notes":"Newton geometry uses the Hessian, which can be indefinite away from a minimum. At a saddle the signed Hessian points the negative-curvature coordinate toward the saddle, stalling escape. Replacing each Hessian eigenvalue by its absolute value keeps curvature scaling while flipping the unstable direction into an escape direction."},
+{"slide":7,"label":"Mirror Descent as Dual Natural Gradient","notes":"Mirror descent with negative entropy on the simplex is natural gradient in disguise. The mirror map sends probabilities to log coordinates, where each step is an ordinary gradient update plus a renormalizing constant. The primal simplex path stays positive and normalized while the dual increments are straight, with metric equal to the Hessian of the potential."},
+{"slide":8,"label":"Singular Models and Non-Identifiability","notes":"A singular model has parameters that produce identical distributions, so the Fisher matrix degenerates and loses rank. The one-hidden-unit map v tanh(w x) shows this: when v is zero, w is invisible, and when w is zero, v is invisible. These unidentifiable axes are exactly where regular asymptotic theory breaks down."},
+{"slide":9,"label":"The Geometry of the Singular Set","notes":"The unidentifiable directions form a singular set, a cross of axes in the parameter plane where Fisher eigenvalues collapse to zero. Along these axes the metric ellipse degenerates into a flat sliver. The heatmap of the smallest eigenvalue shows the cross directly, marking where the inverse metric blows up."},
+{"slide":10,"label":"Plateaus and Blow-Down Coordinates","notes":"Near the singular set ordinary gradients shrink in the identifiable direction, producing long plateaus where loss barely moves yet many iterations pass. Blow-down coordinates treat the collapsed set as a single behavior point, restoring ordinary dynamics. The metric tells us which directions are redundant rather than genuinely flat."},
+{"slide":11,"label":"Learning Coefficient and RLCT","notes":"Singular learning theory replaces the parameter count by the real log canonical threshold, the learning coefficient lambda. The Bayes free energy grows like lambda times log n, and for singular models lambda is smaller than half the dimension, so singular models can generalize better than their parameter count suggests."},
+{"slide":12,"label":"Damping and Takeaways","notes":"Practical natural gradient solves a damped system with the inverse of the Fisher matrix plus lambda times the identity, trading a tiny bias for stability near collapsed eigenvalues. The chapter lesson: choose the metric deliberately, watch rank and eigenvalues, and move in behavior space rather than wandering through redundant parameters."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Natural Gradient and Singular Learning">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h1>Natural Gradient &amp; Singular Learning</h1>
+<p class="lead">Steepest descent in the Fisher metric, and the geometry of singularities</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Natural gradient</h3><p>Steepest descent measured by the Fisher metric, not the screen.</p></div>
+<div class="panel violet"><h3>Singular learning</h3><p>Where the metric degenerates and ordinary learning stalls.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="A curved manifold with a tangent ellipse and descent arrow"><rect x="0" y="0" width="360" height="210" fill="#eff6ff"/><path d="M20 170 Q120 40 200 110 T340 70" fill="none" stroke="#1d4ed8" stroke-width="3"/><ellipse cx="180" cy="118" rx="46" ry="20" transform="rotate(-22 180 118)" fill="#0f766e" fill-opacity="0.12" stroke="#0f766e" stroke-width="2"/><circle cx="180" cy="118" r="4" fill="#111827"/><line x1="180" y1="118" x2="138" y2="92" stroke="#b45309" stroke-width="3" marker-end="url(#a1)"/><defs><marker id="a1" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#b45309"/></marker></defs><text x="116" y="86" font-size="13" fill="#b45309" font-style="italic">natural step</text><text x="250" y="60" font-size="13" fill="#1d4ed8">manifold</text></svg><figcaption class="small">Fair step size is the Fisher ellipse, not a circle.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Natural Gradient &amp; Singular Learning</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 279 through 314 and asks how learning changes when parameter space is a Riemannian statistical manifold rather than a Euclidean box. Natural gradient is steepest descent in the Fisher metric, and the same metric exposes the singular regions where ordinary learning stalls.</aside>
+</section>
+
+<section class="slide alt" data-label="Steepest Descent Needs a Metric">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Steepest Descent Needs a Metric</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The fair unit ball</h3><p>"Steepest" is undefined until we say what a unit step is. Euclidean: a sphere. Statistical: the Fisher ellipse $d\theta^\top G\, d\theta = \varepsilon$.</p></div>
+<div class="panel amber"><h3>Same arrow, different length</h3><p>Equal screen length is not equal statistical length on a curved manifold.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Constrained descent</div><p class="formula">$\min_{d\theta}\, \nabla L^\top d\theta \;\; \text{s.t.}\;\; d\theta^\top G\, d\theta = \varepsilon^2$</p></div>
+<div class="panel teal"><h3>Solution shape</h3><p>The minimizer points along $-G^{-1}\nabla L$, not $-\nabla L$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Steepest Descent Needs a Metric</span></div>
+<aside class="speaker-notes">Steepest descent is only well defined after we fix what a unit step means. In Euclidean coordinates the fair ball is a sphere and the steepest direction is minus the gradient. On a statistical manifold the fair ball is the Fisher ellipse, so the honest steepest direction is reweighted by the inverse metric.</aside>
+</section>
+
+<section class="slide" data-label="The Natural Gradient">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>The Natural Gradient</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Definition</div><p class="formula">$\tilde{\nabla} L = G(\theta)^{-1}\, \nabla L$</p></div>
+<div class="panel teal"><h3>Fisher metric</h3><p class="formula" style="font-size:24px">$G_{ij} = \mathbb{E}\big[\partial_i \log p\, \partial_j \log p\big]$</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Distribution space</h3><p>Decreases loss fastest per unit of movement measured in KL, not in coordinates.</p></div>
+<div class="panel violet"><h3>Invariance</h3><p>Unchanged under smooth reparameterization $\theta \mapsto \xi(\theta)$ of the model.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>The Natural Gradient</span></div>
+<aside class="speaker-notes">Solving the constrained steepest-descent problem in the Fisher metric gives the natural gradient: the ordinary gradient multiplied by the inverse Fisher matrix. It is the direction that decreases loss fastest per unit of movement in distribution space, making it invariant to smooth reparameterization of the model.</aside>
+</section>
+
+<section class="slide alt" data-label="Euclidean vs Natural Paths">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Euclidean vs Natural-Gradient Paths</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Contour ellipses with a zig-zag Euclidean path and a direct natural path to the minimum"><rect x="0" y="0" width="380" height="240" fill="#ffffff"/><g fill="none" stroke="#cbd5e1" stroke-width="1.5"><ellipse cx="300" cy="120" rx="240" ry="42"/><ellipse cx="300" cy="120" rx="170" ry="30"/><ellipse cx="300" cy="120" rx="100" ry="18"/><ellipse cx="300" cy="120" rx="40" ry="8"/></g><circle cx="300" cy="120" r="5" fill="#0f766e"/><text x="308" y="116" font-size="13" fill="#0f766e">min</text><polyline points="60,60 90,170 130,72 170,160 205,86 240,144 268,104 290,128" fill="none" stroke="#b45309" stroke-width="3" marker-end="url(#a2)"/><polyline points="60,60 300,120" fill="none" stroke="#1d4ed8" stroke-width="3" marker-end="url(#a3)"/><circle cx="60" cy="60" r="5" fill="#111827"/><text x="40" y="50" font-size="13" fill="#111827">start</text><defs><marker id="a2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#b45309"/></marker><marker id="a3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#1d4ed8"/></marker></defs><text x="120" y="200" font-size="13" fill="#b45309">ordinary (zig-zag)</text><text x="120" y="40" font-size="13" fill="#1d4ed8">natural (direct)</text></svg><figcaption class="small">Anisotropic bowl: ordinary descent crawls, natural descent goes straight.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Ordinary descent</h3><p>Sees long narrow contours directly; tiny step needed for stability.</p></div>
+<div class="panel blue"><h3>Natural descent</h3><p>Metric rescaling makes the bowl isotropic, so the path is near-straight.</p></div>
+<div class="panel teal"><h3>Result</h3><p>Low loss in far fewer iterations on the same surface.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Euclidean vs Natural-Gradient Paths</span></div>
+<aside class="speaker-notes">On a quadratic loss with anisotropic curvature, ordinary descent zig-zags across narrow valleys and must take tiny steps for stability. Natural gradient rescales by the metric, turning the elongated bowl into an isotropic one, so the path heads almost straight to the optimum in far fewer iterations.</aside>
+</section>
+
+<section class="slide" data-label="Why Natural Gradient Wins">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Why It Beats Ordinary Gradient</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Coordinate-free</h3><p>A contraction in distribution space, absorbing the anisotropy that traps ordinary descent.</p></div>
+<div class="panel teal"><h3>Saturated units</h3><p>When activations flatten, Euclidean gradients vanish; the Fisher scaling restores the behavior-level direction.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Asymptotic efficiency</div><p class="formula" style="font-size:25px">$\theta_{t+1} = \theta_t - \tfrac{1}{t}\, G^{-1}\nabla \ell$</p></div>
+<div class="panel amber"><h3>Caveat</h3><p>Near singular regions $G^{-1}$ is unstable; implementations regularize the inverse.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Why It Beats Ordinary Gradient</span></div>
+<aside class="speaker-notes">The metric view explains the advantage: natural gradient is a coordinate-free contraction in distribution space. The Fisher matrix corrects for how stretched each direction is statistically, so anisotropy that traps ordinary descent is absorbed. The same rescaling restores informative directions when activations saturate and Euclidean gradients vanish.</aside>
+</section>
+
+<section class="slide alt" data-label="Hessian Geometry and the Saddle Trap">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Hessian Geometry &amp; the Saddle Safeguard</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Indefinite Hessian</h3><p>Away from a minimum, $H$ has mixed-sign eigenvalues.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Saddle</div><p class="formula">$L(x,y) = \tfrac{1}{2}(x^2 - y^2)$</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Newton fails</h3><p>Signed $H^{-1}$ aims the negative-curvature axis toward the saddle, stalling escape.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Absolute-Hessian fix</div><p class="formula" style="font-size:25px">$|H| = U\,|\Lambda|\,U^\top$</p></div>
+<div class="panel teal"><h3>Effect</h3><p>Keeps curvature scaling, flips the unstable axis into an escape.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Hessian Geometry &amp; the Saddle Safeguard</span></div>
+<aside class="speaker-notes">Newton geometry uses the Hessian, which can be indefinite away from a minimum. At a saddle the signed Hessian points the negative-curvature coordinate toward the saddle, stalling escape. Replacing each Hessian eigenvalue by its absolute value keeps curvature scaling while flipping the unstable direction into an escape direction.</aside>
+</section>
+
+<section class="slide" data-label="Mirror Descent as Dual Natural Gradient">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Mirror Descent = Dual Natural Gradient</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Mirror map</h3><p>Negative entropy sends probabilities to log coordinates on the simplex.</p></div>
+<div class="panel teal"><h3>Primal path</h3><p>Stays positive and normalized inside the simplex.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Dual update</div><p class="formula" style="font-size:24px">$\log p_i^{t+1} = \log p_i^{t} - \alpha\, \partial_i L + c$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Same mechanism</div><p class="formula" style="font-size:25px">$G(\theta) = \nabla^2 \psi(\theta)$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Mirror Descent = Dual Natural Gradient</span></div>
+<aside class="speaker-notes">Mirror descent with negative entropy on the simplex is natural gradient in disguise. The mirror map sends probabilities to log coordinates, where each step is an ordinary gradient update plus a renormalizing constant. The primal simplex path stays positive and normalized while the dual increments are straight, with metric equal to the Hessian of the potential.</aside>
+</section>
+
+<section class="slide alt" data-label="Singular Models and Non-Identifiability">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Singular Models &amp; Non-Identifiability</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">One hidden unit</div><p class="formula">$f(x;w,v) = v\,\tanh(w x)$</p></div>
+<div class="panel violet"><h3>Hidden axes</h3><p>If $v=0$, $w$ is invisible. If $w=0$, $v$ is invisible since $\tanh 0 = 0$.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Rank loss</h3><p>Distinct parameters give the same distribution, so the Fisher matrix degenerates.</p></div>
+<div class="panel blue"><h3>Consequence</h3><p>Regular asymptotic theory (AIC, $\chi^2$) breaks on these axes.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Singular Models &amp; Non-Identifiability</span></div>
+<aside class="speaker-notes">A singular model has parameters that produce identical distributions, so the Fisher matrix degenerates and loses rank. The one-hidden-unit map v tanh(w x) shows this: when v is zero, w is invisible, and when w is zero, v is invisible. These unidentifiable axes are exactly where regular asymptotic theory breaks down.</aside>
+</section>
+
+<section class="slide" data-label="The Geometry of the Singular Set">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>The Singular Set in Parameter Space</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Parameter plane with a cross-shaped singular set where Fisher eigenvalues collapse"><rect x="0" y="0" width="360" height="240" fill="#f5f3ff"/><line x1="30" y1="120" x2="330" y2="120" stroke="#cbd5e1" stroke-width="1.5"/><line x1="180" y1="20" x2="180" y2="220" stroke="#cbd5e1" stroke-width="1.5"/><rect x="30" y="113" width="300" height="14" fill="#6d28d9" fill-opacity="0.5"/><rect x="173" y="20" width="14" height="200" fill="#6d28d9" fill-opacity="0.5"/><ellipse cx="100" cy="70" rx="26" ry="13" transform="rotate(-18 100 70)" fill="none" stroke="#0f766e" stroke-width="2"/><ellipse cx="260" cy="175" rx="24" ry="11" transform="rotate(20 260 175)" fill="none" stroke="#0f766e" stroke-width="2"/><line x1="60" y1="120" x2="150" y2="120" stroke="#b45309" stroke-width="4"/><text x="300" y="135" font-size="13" fill="#475569">w</text><text x="190" y="36" font-size="13" fill="#475569">v</text><text x="80" y="100" font-size="12" fill="#6d28d9">singular set</text><text x="60" y="55" font-size="12" fill="#0f766e">full-rank ellipse</text></svg><figcaption class="small">Cross of axes: smallest Fisher eigenvalue collapses to zero.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>The cross</h3><p>$w=0$ and $v=0$ axes are where the model is non-identifiable.</p></div>
+<div class="panel teal"><h3>Degenerate metric</h3><p>The Fisher ellipse flattens into a sliver along the set.</p></div>
+<div class="panel amber"><h3>Blow-up</h3><p>$G^{-1}$ diverges, so a raw natural-gradient step explodes.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>The Singular Set in Parameter Space</span></div>
+<aside class="speaker-notes">The unidentifiable directions form a singular set, a cross of axes in the parameter plane where Fisher eigenvalues collapse to zero. Along these axes the metric ellipse degenerates into a flat sliver. The heatmap of the smallest eigenvalue shows the cross directly, marking where the inverse metric blows up.</aside>
+</section>
+
+<section class="slide alt" data-label="Plateaus and Blow-Down Coordinates">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Plateaus &amp; Blow-Down Coordinates</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Plateaus</h3><p>Near the singular set, identifiable-direction gradients shrink; loss barely moves over many iterations.</p></div>
+<div class="panel blue"><h3>Blow-down</h3><p>Collapse the singular set to one behavior point; dynamics become ordinary again.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Slow vs fast</div><p class="formula" style="font-size:24px">$\dot\theta_{\text{ord}} \sim 0 \;\;\Rightarrow\;\; \text{plateau}$</p></div>
+<div class="panel teal"><h3>Diagnosis</h3><p>The metric reveals which flat directions are redundant rather than genuinely optimal.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Plateaus &amp; Blow-Down Coordinates</span></div>
+<aside class="speaker-notes">Near the singular set ordinary gradients shrink in the identifiable direction, producing long plateaus where loss barely moves yet many iterations pass. Blow-down coordinates treat the collapsed set as a single behavior point, restoring ordinary dynamics. The metric tells us which directions are redundant rather than genuinely flat.</aside>
+</section>
+
+<section class="slide" data-label="Learning Coefficient and RLCT">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Learning Coefficient &amp; RLCT</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Bayes free energy</div><p class="formula" style="font-size:25px">$F_n \approx n L_0 + \lambda \log n$</p></div>
+<div class="panel blue"><h3>Learning coefficient</h3><p>$\lambda$ is the real log canonical threshold (RLCT) of the singularity.</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Regular case</h3><p>$\lambda = d/2$ recovers the BIC penalty for $d$ parameters.</p></div>
+<div class="panel violet"><h3>Singular case</h3><p>$\lambda < d/2$: singular models generalize better than parameter counts suggest.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Learning Coefficient &amp; RLCT</span></div>
+<aside class="speaker-notes">Singular learning theory replaces the parameter count by the real log canonical threshold, the learning coefficient lambda. The Bayes free energy grows like lambda times log n, and for singular models lambda is smaller than half the dimension, so singular models can generalize better than their parameter count suggests.</aside>
+</section>
+
+<section class="slide alt" data-label="Damping and Takeaways">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 12</span></div>
+<h2>Damping &amp; Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Damped natural gradient</div><p class="formula" style="font-size:24px">$(G + \lambda I)\,d = \nabla L$</p></div>
+<div class="panel amber"><h3>Tradeoff</h3><p>Too little damping: huge steps near a collapsed eigenvalue. Too much: erases the metric correction.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Choose the metric</h3><p>Natural gradient is the gradient after the statistical metric defines equal movement.</p></div>
+<div class="panel violet"><h3>Watch the rank</h3><p>Track eigenvalues and behavior-level coordinates, not just parameter counts.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 279-314</span><span>Damping &amp; Takeaways</span></div>
+<aside class="speaker-notes">Practical natural gradient solves a damped system with the inverse of the Fisher matrix plus lambda times the identity, trading a tiny bias for stability near collapsed eigenvalues. The chapter lesson: choose the metric deliberately, watch rank and eigenvalues, and move in behavior space rather than wandering through redundant parameters.</aside>
+</section>
+</deck-stage>
+</body>
+</html>

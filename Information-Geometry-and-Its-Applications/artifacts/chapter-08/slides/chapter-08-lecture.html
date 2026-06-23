@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Information Geometry and Its Applications">
+<meta name="chapter_id" content="chapter-08">
+<meta name="chapter_title" content="Chapter 08: Hidden Variables and EM">
+<meta name="notebook_path" content="Information-Geometry-and-Its-Applications/part-03-statistical-inference/chapter-08-hidden-variables-and-em/08-hidden-variables-and-em.ipynb">
+<meta name="source_span" content="printed pages 179-189; PDF pages 186-196.">
+<meta name="source_pdf" content="Information-Geometry-and-Its-Applications/Information Geometry and Its Applications.pdf">
+<meta name="design_system_version" content="1.0">
+<title>Chapter 08: Hidden Variables and EM</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Information Geometry and Its Applications","chapter_id":"chapter-08","chapter_title":"Chapter 08: Hidden Variables and EM","notebook_path":"Information-Geometry-and-Its-Applications/part-03-statistical-inference/chapter-08-hidden-variables-and-em/08-hidden-variables-and-em.ipynb","source_span":"printed pages 179-189; PDF pages 186-196.","design_system_version":"1.0"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Hidden Variables and EM","notes":"This chapter spans printed pages 179 through 189 and treats observed data as a shadow of richer complete data. The EM algorithm fills in a compatible hidden-variable distribution, then refits the visible model. We will read both steps as alternating geometric projections between two manifolds."},
+{"slide":2,"label":"Complete Data and Its Shadow","notes":"A hidden-variable model carries complete data x and z, but observation exposes only x. The missing label z enlarges the complete-data space, and the observed law is a marginal. Inference must recover model parameters while the latent coordinate remains unseen, which is exactly what makes the likelihood awkward."},
+{"slide":3,"label":"EM as Alternating Projection","notes":"Place complete-data distributions in a large ambient simplex. The data manifold collects every completion that marginalizes to what we saw; the model manifold is the parametric family lifted to complete data. EM alternates projections between these two sets, zig-zagging toward their meeting point rather than following a straight path."},
+{"slide":4,"label":"The E-Step: m-Projection","notes":"The E-step holds the current parameter fixed and chooses hidden conditionals from the model, completing the empirical distribution. Geometrically this is an m-projection that lands on the data manifold. In a Gaussian mixture it produces responsibilities: the conditional probability that each observed point came from each component."},
+{"slide":5,"label":"The M-Step: e-Projection","notes":"The M-step holds the completed empirical distribution fixed and finds the model point closest to it, maximizing the expected complete-data log likelihood. Geometrically this is an e-projection back onto the model manifold. For a mixture it reduces to responsibility-weighted means and variances, the same updates a known label would give."},
+{"slide":6,"label":"Free Energy and KL Decomposition","notes":"Introduce a variational distribution q over hidden variables. The observed log likelihood splits into a free-energy bound plus a non-negative KL gap between q and the true posterior. The E-step zeroes that gap; the M-step raises the bound. This decomposition is the engine behind every monotonicity claim."},
+{"slide":7,"label":"Monotone Likelihood Ascent","notes":"Because each step solves a local projection that never decreases the bound, the observed log likelihood rises until improvement becomes negligible. The notebook trace climbs from roughly minus six hundred and saturates. EM is a local method: each step is principled, but multimodality and label switching mean the starting point still matters."},
+{"slide":8,"label":"Responsibilities and Missing Information","notes":"On the mixture boundary responsibilities are nearly zero or one, so labels are almost known. In the overlap band the same point fits both components, and that fuzziness is missing information made visible. Observed information is smaller than complete information because curvature is spent explaining label uncertainty."},
+{"slide":9,"label":"Data Processing and KL Contraction","notes":"Hidden variables are a non-invertible observation map; coarse-graining that merges states is another. KL divergence cannot increase under such many-to-one maps. The notebook collapses six states into three bins and watches the divergence shrink. A statistic is sufficient exactly when this loss vanishes for the family in question."},
+{"slide":10,"label":"Misspecification as KL Projection","notes":"A hidden-variable model can still be wrong. Fit one fixed-variance Gaussian to two-component mixture data and the best mean is not a component mean; it is the KL projection of the truth onto the restricted family, namely the mixture average. Misspecification redefines the estimation target as the closest available model point."},
+{"slide":11,"label":"Recap and Sanity Checks","notes":"EM lifts the problem to complete data, then alternates an m-projection E-step and an e-projection M-step, ascending the observed likelihood via the free-energy and KL decomposition. The notebook verifies normalized responsibilities, a monotone trace, KL contraction, and a misspecified projection landing near the mixture mean."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Hidden Variables and EM">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h1>Hidden Variables and EM</h1>
+<p class="lead">EM as alternating projection between a data manifold and a model manifold</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Hidden variable</h3><p>Observation $x$ is a shadow of complete data $(x,z)$.</p></div>
+<div class="panel teal"><h3>EM loop</h3><p>Fill in $z$ (E-step), then refit the model (M-step).</p></div>
+<div class="panel violet"><h3>Geometry</h3><p>Two steps, two projections, monotone ascent.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 240" width="100%" role="img" aria-label="Two curved manifolds with a zig-zag path of alternating projections between them"><rect x="0" y="0" width="420" height="240" fill="#f0fdfa"/><path d="M30 60 C 140 30, 280 30, 390 64" fill="none" stroke="#2563eb" stroke-width="3"/><path d="M30 196 C 140 168, 280 168, 390 200" fill="none" stroke="#0f766e" stroke-width="3"/><text x="34" y="48" font-size="15" fill="#2563eb">data manifold</text><text x="34" y="224" font-size="15" fill="#0f766e">model manifold</text><line x1="90" y1="180" x2="120" y2="62" stroke="#b45309" stroke-width="2.4"/><line x1="120" y1="62" x2="200" y2="178" stroke="#b45309" stroke-width="2.4"/><line x1="200" y1="178" x2="270" y2="58" stroke="#b45309" stroke-width="2.4"/><line x1="270" y1="58" x2="320" y2="180" stroke="#b45309" stroke-width="2.4"/><circle cx="90" cy="180" r="4" fill="#0f766e"/><circle cx="120" cy="62" r="4" fill="#2563eb"/><circle cx="200" cy="178" r="4" fill="#0f766e"/><circle cx="270" cy="58" r="4" fill="#2563eb"/><circle cx="320" cy="180" r="4" fill="#0f766e"/><text x="98" y="124" font-size="13" fill="#b45309" font-weight="bold">E</text><text x="158" y="124" font-size="13" fill="#b45309" font-weight="bold">M</text></svg><figcaption class="small">Alternating E and M projections zig-zag between the two manifolds.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Hidden Variables and EM</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 179 through 189 and treats observed data as a shadow of richer complete data. The EM algorithm fills in a compatible hidden-variable distribution, then refits the visible model. We will read both steps as alternating geometric projections between two manifolds.</aside>
+</section>
+<section class="slide alt" data-label="Complete Data and Its Shadow">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>Complete Data and Its Shadow</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Complete data</h3><p>The pair $(x,z)$ lives in an enlarged space.</p></div>
+<div class="panel amber"><h3>Observation map</h3><p>Only $x$ is seen; $z$ is marginalized out.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Observed law</div><p class="formula">$p(x;\theta) = \sum_z p(x,z;\theta)$</p></div>
+<div class="panel teal"><h3>Difficulty</h3><p>A log of a sum makes the likelihood non-convex.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Complete Data and Its Shadow</span></div>
+<aside class="speaker-notes">A hidden-variable model carries complete data x and z, but observation exposes only x. The missing label z enlarges the complete-data space, and the observed law is a marginal. Inference must recover model parameters while the latent coordinate remains unseen, which is exactly what makes the likelihood awkward.</aside>
+</section>
+<section class="slide" data-label="EM as Alternating Projection">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>EM as Alternating Projection</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Data manifold</h3><p>Completions consistent with the observed marginal.</p></div>
+<div class="panel teal"><h3>Model manifold</h3><p>The parametric family lifted to complete data.</p></div>
+<div class="panel violet"><h3>Path</h3><p>Not a Euclidean shortest line, but it converges.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 240" width="100%" role="img" aria-label="Convergent zig-zag of alternating projections homing on the manifold intersection"><rect x="0" y="0" width="420" height="240" fill="#eff6ff"/><path d="M20 70 C 150 36, 300 40, 400 96" fill="none" stroke="#2563eb" stroke-width="3"/><path d="M20 206 C 150 150, 300 150, 400 110" fill="none" stroke="#0f766e" stroke-width="3"/><circle cx="388" cy="103" r="6" fill="#6d28d9"/><text x="330" y="92" font-size="14" fill="#6d28d9">fixed point</text><polyline points="60,196 86,58 150,184 196,60 250,168 290,72 326,150 350,96" fill="none" stroke="#b45309" stroke-width="2.4" stroke-dasharray="2 0"/><circle cx="60" cy="196" r="4" fill="#0f766e"/><circle cx="86" cy="58" r="4" fill="#2563eb"/><circle cx="150" cy="184" r="4" fill="#0f766e"/><circle cx="196" cy="60" r="4" fill="#2563eb"/><circle cx="250" cy="168" r="4" fill="#0f766e"/><circle cx="290" cy="72" r="4" fill="#2563eb"/><text x="22" y="62" font-size="15" fill="#2563eb">data manifold</text><text x="22" y="228" font-size="15" fill="#0f766e">model manifold</text></svg><figcaption class="small">Projections shrink as the iterates approach the intersection.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>EM as Alternating Projection</span></div>
+<aside class="speaker-notes">Place complete-data distributions in a large ambient simplex. The data manifold collects every completion that marginalizes to what we saw; the model manifold is the parametric family lifted to complete data. EM alternates projections between these two sets, zig-zagging toward their meeting point rather than following a straight path.</aside>
+</section>
+<section class="slide alt" data-label="The E-Step: m-Projection">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>The E-Step: m-Projection</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Fix $\theta$</h3><p>Complete the empirical law using the model posterior.</p></div>
+<div class="panel teal"><h3>Responsibilities</h3><p>$p(z\mid x;\theta)$ for each component.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">m-Projection</div><p class="formula">$q^{\star}(z) = p(z\mid x;\theta_t)$</p></div>
+<div class="panel amber"><h3>Lands on</h3><p>The data manifold, marginal held fixed.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>The E-Step: m-Projection</span></div>
+<aside class="speaker-notes">The E-step holds the current parameter fixed and chooses hidden conditionals from the model, completing the empirical distribution. Geometrically this is an m-projection that lands on the data manifold. In a Gaussian mixture it produces responsibilities: the conditional probability that each observed point came from each component.</aside>
+</section>
+<section class="slide" data-label="The M-Step: e-Projection">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>The M-Step: e-Projection</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Fix $q$</h3><p>Maximize the expected complete-data log likelihood.</p></div>
+<div class="panel violet"><h3>Closed form</h3><p>Weighted means and variances for a mixture.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">e-Projection</div><p class="formula">$\theta_{t+1} = \arg\max_\theta\; \mathbb{E}_{q}\big[\log p(x,z;\theta)\big]$</p></div>
+<div class="panel teal"><h3>Lands on</h3><p>The model manifold, completion held fixed.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>The M-Step: e-Projection</span></div>
+<aside class="speaker-notes">The M-step holds the completed empirical distribution fixed and finds the model point closest to it, maximizing the expected complete-data log likelihood. Geometrically this is an e-projection back onto the model manifold. For a mixture it reduces to responsibility-weighted means and variances, the same updates a known label would give.</aside>
+</section>
+<section class="slide alt" data-label="Free Energy and KL Decomposition">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>Free Energy and KL Decomposition</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Variational $q$</h3><p>Any distribution over the hidden variables.</p></div>
+<div class="panel amber"><h3>Two terms</h3><p>A free-energy bound plus a non-negative gap.</p></div>
+<div class="panel teal"><h3>Roles</h3><p>E-step zeroes the gap; M-step raises the bound.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Decomposition</div><p class="formula">$\log p(x;\theta) = \mathcal{F}(q,\theta) + \mathrm{KL}\!\big(q \,\Vert\, p(z\mid x;\theta)\big)$</p></div>
+<figure class="diagram"><svg viewBox="0 0 420 150" width="100%" role="img" aria-label="A bar showing the free-energy bound and the KL gap stacked up to the log likelihood"><rect x="0" y="0" width="420" height="150" fill="#fffbeb"/><line x1="40" y1="30" x2="380" y2="30" stroke="#111827" stroke-width="2"/><text x="40" y="22" font-size="14" fill="#111827">log p(x)</text><rect x="60" y="48" width="200" height="34" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="70" y="70" font-size="14" fill="#2563eb">free energy F(q,&#952;)</text><rect x="260" y="48" width="100" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="2"/><text x="270" y="70" font-size="13" fill="#b45309">KL gap</text><line x1="60" y1="100" x2="360" y2="100" stroke="#0f766e" stroke-width="2"/><text x="60" y="120" font-size="13" fill="#0f766e">E-step closes the gap, M-step grows F</text></svg></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Free Energy and KL Decomposition</span></div>
+<aside class="speaker-notes">Introduce a variational distribution q over hidden variables. The observed log likelihood splits into a free-energy bound plus a non-negative KL gap between q and the true posterior. The E-step zeroes that gap; the M-step raises the bound. This decomposition is the engine behind every monotonicity claim.</aside>
+</section>
+<section class="slide" data-label="Monotone Likelihood Ascent">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>Monotone Likelihood Ascent</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Guarantee</h3><p>Each cycle cannot decrease $\log p(x;\theta)$.</p></div>
+<div class="panel amber"><h3>Caveat</h3><p>Local optima and label switching persist.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 220" width="100%" role="img" aria-label="A monotonically rising and saturating log-likelihood curve across EM iterations"><rect x="0" y="0" width="420" height="220" fill="#eff6ff"/><line x1="50" y1="190" x2="400" y2="190" stroke="#94a3b8" stroke-width="2"/><line x1="50" y1="20" x2="50" y2="190" stroke="#94a3b8" stroke-width="2"/><text x="200" y="212" font-size="14" fill="#475569">iteration</text><text x="8" y="105" font-size="14" fill="#475569" transform="rotate(-90 12 105)">log L</text><path d="M55 178 C 90 150, 120 80, 170 56 S 280 40, 395 36" fill="none" stroke="#2563eb" stroke-width="3"/><circle cx="55" cy="178" r="4" fill="#b45309"/><circle cx="98" cy="120" r="4" fill="#b45309"/><circle cx="150" cy="64" r="4" fill="#b45309"/><circle cx="240" cy="42" r="4" fill="#b45309"/><circle cx="380" cy="36" r="4" fill="#b45309"/></svg><figcaption class="small">Notebook trace climbs from about $-617$ and saturates.</figcaption></figure>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Ascent</div><p class="formula">$\log p(x;\theta_{t+1}) \;\ge\; \log p(x;\theta_t)$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Monotone Likelihood Ascent</span></div>
+<aside class="speaker-notes">Because each step solves a local projection that never decreases the bound, the observed log likelihood rises until improvement becomes negligible. The notebook trace climbs from roughly minus six hundred and saturates. EM is a local method: each step is principled, but multimodality and label switching mean the starting point still matters.</aside>
+</section>
+<section class="slide alt" data-label="Responsibilities and Missing Information">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>Responsibilities and Missing Information</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Boundary</h3><p>Responsibilities near $0$ or $1$: labels almost known.</p></div>
+<div class="panel amber"><h3>Overlap</h3><p>A point fits both components: information is missing.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Missing information</div><p class="formula">$I_{\text{miss}} = I_{\text{complete}} - I_{\text{observed}} \;\succeq\; 0$</p></div>
+<div class="panel teal"><h3>Curvature</h3><p>Observed information is flatter where labels are uncertain.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Responsibilities and Missing Information</span></div>
+<aside class="speaker-notes">On the mixture boundary responsibilities are nearly zero or one, so labels are almost known. In the overlap band the same point fits both components, and that fuzziness is missing information made visible. Observed information is smaller than complete information because curvature is spent explaining label uncertainty.</aside>
+</section>
+<section class="slide" data-label="Data Processing and KL Contraction">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>Data Processing and KL Contraction</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Coarse-graining</h3><p>A many-to-one map merges states before we see them.</p></div>
+<div class="panel violet"><h3>Sufficiency</h3><p>No loss exactly when the statistic is sufficient.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Data-processing inequality</div><p class="formula">$\mathrm{KL}(P\Vert Q) \;\ge\; \mathrm{KL}(TP \Vert TQ)$</p></div>
+<div class="panel teal"><h3>Notebook</h3><p>Six states merged into three bins: KL shrinks.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Data Processing and KL Contraction</span></div>
+<aside class="speaker-notes">Hidden variables are a non-invertible observation map; coarse-graining that merges states is another. KL divergence cannot increase under such many-to-one maps. The notebook collapses six states into three bins and watches the divergence shrink. A statistic is sufficient exactly when this loss vanishes for the family in question.</aside>
+</section>
+<section class="slide alt" data-label="Misspecification as KL Projection">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>Misspecification as KL Projection</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Wrong family</h3><p>One fixed-variance Gaussian for mixture data.</p></div>
+<div class="panel blue"><h3>Shadow point</h3><p>The optimum mean is the mixture average.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Projection target</div><p class="formula">$\theta^{\star} = \arg\min_{\theta\in M}\; \mathrm{KL}\!\big(p_{\text{true}} \,\Vert\, p_\theta\big)$</p></div>
+<div class="panel teal"><h3>Lesson</h3><p>Model checking decides what the estimator means.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Misspecification as KL Projection</span></div>
+<aside class="speaker-notes">A hidden-variable model can still be wrong. Fit one fixed-variance Gaussian to two-component mixture data and the best mean is not a component mean; it is the KL projection of the truth onto the restricted family, namely the mixture average. Misspecification redefines the estimation target as the closest available model point.</aside>
+</section>
+<section class="slide" data-label="Recap and Sanity Checks">
+<div class="topline"><span class="eyebrow">Information Geometry and Its Applications</span><span>Chapter 08</span></div>
+<h2>Recap and Sanity Checks</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>EM picture</h3><p>m-projection E-step, e-projection M-step, monotone ascent.</p></div>
+<div class="panel teal"><h3>Information</h3><p>Overlap hides labels; coarse-graining contracts KL.</p></div>
+<div class="panel amber"><h3>Misspecification</h3><p>Estimator targets the closest model point.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Verified identities</div><p class="formula">$\textstyle\sum_z q(z)=1,\quad \Delta\log L \ge 0,\quad \mathrm{KL}\downarrow$</p></div>
+<div class="panel violet"><h3>Sanity JSON</h3><p>Responsibilities normalized, trace monotone, projection near mixture mean.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 179-189</span><span>Recap and Sanity Checks</span></div>
+<aside class="speaker-notes">EM lifts the problem to complete data, then alternates an m-projection E-step and an e-projection M-step, ascending the observed likelihood via the free-energy and KL decomposition. The notebook verifies normalized responsibilities, a monotone trace, KL contraction, and a misspecified projection landing near the mixture mean.</aside>
+</section>
+</deck-stage>
+</body>
+</html>
