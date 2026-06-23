@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Statistics on Special Manifolds">
+<meta name="chapter_id" content="chapter-09">
+<meta name="chapter_title" content="Chapter 09: Procrustes Methods and Shape Analysis">
+<meta name="notebook_path" content="Statistics-on-Special-Manifolds/chapter-09-procrustes-methods-and-shape-analysis/09-procrustes-methods-and-shape-analysis.ipynb">
+<meta name="source_span" content="Printed pages verify; physical source pages verify. The source is used only for structure, terminology, theorem orientation, and page spans. Prose, code, examples, visuals, and checks are original.">
+<meta name="source_pdf" content="Statistics-on-Special-Manifolds/Statistics on Special Manifolds.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 09: Procrustes Methods and Shape Analysis</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Statistics on Special Manifolds","chapter_id":"chapter-09","chapter_title":"Chapter 09: Procrustes Methods and Shape Analysis","notebook_path":"Statistics-on-Special-Manifolds/chapter-09-procrustes-methods-and-shape-analysis/09-procrustes-methods-and-shape-analysis.ipynb","source_span":"Printed pages verify; physical source pages verify. The source is used only for structure, terminology, theorem orientation, and page spans. Prose, code, examples, visuals, and checks are original.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Procrustes Methods and Shape Analysis","notes":"Welcome to the chapter on shape. We will strip rotation, translation, and scale from landmark configurations until only geometry remains. The orthogonal Procrustes problem supplies the rotation step, and its singular value decomposition solution threads every construction that follows, from generalized alignment to Kendall's shape space."},
+{"slide":2,"label":"Landmark Configurations","notes":"A configuration is a matrix of labelled landmark coordinates. Two such matrices describe the same shape when one becomes the other after rotation, translation, and rescaling. Our task is to quotient out exactly those three nuisance transformations so that the residual difference measures genuine shape, not pose or size."},
+{"slide":3,"label":"The Orthogonal Procrustes Problem","notes":"Here is the central optimization. Holding both configurations fixed, we seek the orthogonal matrix that rotates B onto A with least squared error. Because the rotation is constrained to the orthogonal group, this is a constrained least squares problem whose closed form solution is the payoff of the next slide."},
+{"slide":4,"label":"SVD Solution","notes":"Expand the Frobenius objective; the only term that depends on the rotation is the trace of Q transpose times B transpose A. Maximizing that trace over orthogonal matrices is solved by the singular value decomposition of B transpose A. The optimal rotation is simply U times V transpose, a remarkably clean result."},
+{"slide":5,"label":"Removing Translation","notes":"Translation is removed first because it decouples cleanly from rotation and scale. Centering each configuration at its centroid, equivalently multiplying by the centering matrix, sends both clouds to a common origin. After centering, the optimal translation is automatically zero, so the remaining work concerns only rotation and scale."},
+{"slide":6,"label":"Removing Scale","notes":"With configurations centered, size is captured by the centroid size, the Frobenius norm of the centered matrix. Dividing by centroid size places every configuration on the unit pre-shape sphere. Scale is now normalized, and only rotation separates two pre-shapes, which is exactly the orthogonal Procrustes problem we already solved."},
+{"slide":7,"label":"Ordinary Procrustes Analysis","notes":"Ordinary Procrustes analysis aligns one configuration onto a fixed target by composing the three steps: center, scale, then rotate by the singular value decomposition. The optimal scaling factor is the ratio of the relevant singular value sum to the squared norm. The result is the best matched copy and its residual."},
+{"slide":8,"label":"Generalized Procrustes Analysis","notes":"When many configurations must be aligned simultaneously, no single target is privileged. Generalized Procrustes analysis iterates: align every configuration to the current mean, recompute the mean, and repeat until the mean stabilizes. This alternating scheme decreases the total residual sum of squares monotonically and converges to a consensus shape."},
+{"slide":9,"label":"The Pre-Shape Sphere","notes":"Centering removes translation and leaves a subspace; normalizing by centroid size lands us on a sphere within that subspace, the pre-shape sphere. Points still differ by rotation, so shape is the quotient of this sphere by the rotation group. The fibers of that quotient are the rotation orbits."},
+{"slide":10,"label":"Kendall's Shape Space","notes":"Kendall's shape space is the pre-shape sphere modulo rotation. Each shape is an orbit, a whole circle or higher dimensional fiber of rotated pre-shapes collapsed to one point. This quotient carries a natural Riemannian metric, making shape space a curved manifold rather than a flat Euclidean parameter set."},
+{"slide":11,"label":"Procrustes Distance","notes":"Procrustes distance measures the geodesic separation of two shapes on Kendall's space. Operationally it is the angle between optimally aligned pre-shapes, computed from the singular values of the cross product matrix. Full Procrustes distance uses optimal scaling; partial Procrustes uses fixed unit size. Both quantify residual shape difference after alignment."},
+{"slide":12,"label":"Synthesis and Outlook","notes":"We assembled a pipeline: landmarks, remove translation, remove scale, remove rotation by singular value decomposition, then read distance on Kendall's space. The same trace maximization recurs at every stage. Next steps include tangent space statistics, Frechet means of shapes, and asymptotic tests that live on this curved manifold."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Procrustes Methods and Shape Analysis">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h1>Procrustes Methods and Shape Analysis</h1>
+<p class="lead">Aligning configurations and the geometry of shape</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The problem</h3><p>Find the rotation that best superimposes one labelled point cloud onto another.</p></div>
+<div class="panel teal"><h3>The tool</h3><p>The singular value decomposition of $B^{\top}A$ solves it in closed form.</p></div>
+<div class="panel violet"><h3>The destination</h3><p>Kendall's shape space, a quotient manifold of pre-shapes.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Two triangles, one rotated to align with the other, with shrinking residual arrows">
+<rect x="0" y="0" width="380" height="240" fill="#f0fdfa"/>
+<polygon points="120,60 70,160 200,150" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+<polygon points="150,75 110,175 240,140" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="6 4"/>
+<line x1="120" y1="60" x2="150" y2="75" stroke="#b45309" stroke-width="1.6"/>
+<line x1="70" y1="160" x2="110" y2="175" stroke="#b45309" stroke-width="1.6"/>
+<line x1="200" y1="150" x2="240" y2="140" stroke="#b45309" stroke-width="1.6"/>
+<circle cx="120" cy="60" r="3.5" fill="#2563eb"/><circle cx="70" cy="160" r="3.5" fill="#2563eb"/><circle cx="200" cy="150" r="3.5" fill="#2563eb"/>
+<circle cx="150" cy="75" r="3.5" fill="#0f766e"/><circle cx="110" cy="175" r="3.5" fill="#0f766e"/><circle cx="240" cy="140" r="3.5" fill="#0f766e"/>
+<text x="20" y="30" font-size="15" fill="#2563eb">A (target)</text>
+<text x="250" y="200" font-size="15" fill="#0f766e">B rotated</text>
+<text x="180" y="100" font-size="14" fill="#b45309">residuals</text>
+</svg><figcaption class="small">Optimal rotation shrinks the residual vectors between matched landmarks.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Procrustes structure and shape</span><span>Procrustes Methods and Shape Analysis</span></div>
+<aside class="speaker-notes">Welcome to the chapter on shape. We will strip rotation, translation, and scale from landmark configurations until only geometry remains. The orthogonal Procrustes problem supplies the rotation step, and its singular value decomposition solution threads every construction that follows, from generalized alignment to Kendall's shape space.</aside>
+</section>
+
+<section class="slide alt" data-label="Landmark Configurations">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Landmark Configurations</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Configuration matrix</h3><p>$k$ landmarks in $m$ dimensions stacked as a $k\times m$ matrix $X$.</p></div>
+<div class="panel amber"><h3>Nuisance group</h3><p>Translation, scale, and rotation carry no shape information.</p></div>
+<div class="panel teal"><h3>Same shape</h3><p>$X$ and $Y$ share a shape when one maps to the other under those three.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Shape equivalence</div><p class="formula">$Y = \beta\,(X - \mathbf{1}_k t^{\top})\,Q$</p></div>
+<div class="panel violet"><h3>Goal</h3><p>Quotient out $\beta>0$, $t\in\mathbb{R}^m$, and $Q\in O(m)$ to isolate shape.</p></div>
+</div>
+</div>
+<div class="footer"><span>From points to shape</span><span>Landmark Configurations</span></div>
+<aside class="speaker-notes">A configuration is a matrix of labelled landmark coordinates. Two such matrices describe the same shape when one becomes the other after rotation, translation, and rescaling. Our task is to quotient out exactly those three nuisance transformations so that the residual difference measures genuine shape, not pose or size.</aside>
+</section>
+
+<section class="slide" data-label="The Orthogonal Procrustes Problem">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>The Orthogonal Procrustes Problem</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Objective</h3><p>Rotate $B$ onto $A$ with least squared Frobenius error.</p></div>
+<div class="panel amber"><h3>Constraint</h3><p>$Q$ lives on the orthogonal group $O(m)$, so $Q^{\top}Q = I$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Problem</div><p class="formula">$\min_{Q^{\top}Q=I}\; \lVert A - BQ \rVert_F^{2}$</p></div>
+<div class="panel teal"><h3>Reading</h3><p>A constrained least squares fit; the constraint forbids stretching, only turning.</p></div>
+</div>
+</div>
+<div class="footer"><span>Constrained least squares on $O(m)$</span><span>The Orthogonal Procrustes Problem</span></div>
+<aside class="speaker-notes">Here is the central optimization. Holding both configurations fixed, we seek the orthogonal matrix that rotates B onto A with least squared error. Because the rotation is constrained to the orthogonal group, this is a constrained least squares problem whose closed form solution is the payoff of the next slide.</aside>
+</section>
+
+<section class="slide alt" data-label="SVD Solution">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Solving by the SVD of $B^{\top}A$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Reduce to a trace</div><p class="formula">$\lVert A-BQ\rVert_F^{2} = c - 2\,\mathrm{tr}\!\big(Q^{\top}B^{\top}A\big)$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Optimal rotation</div><p class="formula">$B^{\top}A = U\Sigma V^{\top}\;\Rightarrow\; \hat{Q} = U V^{\top}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Factorization of B transpose A into U, Sigma, V transpose blocks">
+<rect x="0" y="0" width="360" height="230" fill="#eff6ff"/>
+<rect x="30" y="80" width="70" height="70" fill="none" stroke="#1e3a8a" stroke-width="2"/>
+<text x="48" y="120" font-size="18" fill="#1e3a8a">$B^{\top}A$</text>
+<text x="108" y="120" font-size="22" fill="#475569">=</text>
+<rect x="130" y="80" width="55" height="70" fill="none" stroke="#2563eb" stroke-width="2"/>
+<text x="150" y="120" font-size="18" fill="#2563eb">U</text>
+<rect x="195" y="80" width="55" height="70" fill="none" stroke="#b45309" stroke-width="2"/>
+<line x1="200" y1="90" x2="245" y2="140" stroke="#b45309" stroke-width="1.4"/>
+<text x="210" y="120" font-size="16" fill="#b45309">&#931;</text>
+<rect x="260" y="80" width="70" height="70" fill="none" stroke="#0f766e" stroke-width="2"/>
+<text x="278" y="120" font-size="16" fill="#0f766e">$V^{\top}$</text>
+<text x="130" y="185" font-size="15" fill="#6d28d9">drop &#931;: $\hat{Q}=UV^{\top}$</text>
+</svg><figcaption class="small">Maximizing the trace over $O(m)$ drops the diagonal $\Sigma$ entirely.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Trace maximization gives a closed form</span><span>SVD Solution</span></div>
+<aside class="speaker-notes">Expand the Frobenius objective; the only term that depends on the rotation is the trace of Q transpose times B transpose A. Maximizing that trace over orthogonal matrices is solved by the singular value decomposition of B transpose A. The optimal rotation is simply U times V transpose, a remarkably clean result.</aside>
+</section>
+
+<section class="slide" data-label="Removing Translation">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Step 1: Remove Translation</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Center each cloud</h3><p>Subtract the centroid so both configurations share the origin.</p></div>
+<div class="panel teal"><h3>Centering matrix</h3><p>$C = I_k - \tfrac{1}{k}\mathbf{1}_k\mathbf{1}_k^{\top}$ projects out the mean.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Centered configuration</div><p class="formula">$X_c = C X,\qquad \mathbf{1}_k^{\top}X_c = 0$</p></div>
+<div class="panel amber"><h3>Consequence</h3><p>After centering, the optimal translation is exactly zero.</p></div>
+</div>
+</div>
+<div class="footer"><span>Translation decouples first</span><span>Removing Translation</span></div>
+<aside class="speaker-notes">Translation is removed first because it decouples cleanly from rotation and scale. Centering each configuration at its centroid, equivalently multiplying by the centering matrix, sends both clouds to a common origin. After centering, the optimal translation is automatically zero, so the remaining work concerns only rotation and scale.</aside>
+</section>
+
+<section class="slide alt" data-label="Removing Scale">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Step 2: Remove Scale</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Centroid size</h3><p>The Frobenius norm $\lVert X_c\rVert_F$ of the centered cloud measures size.</p></div>
+<div class="panel violet"><h3>Normalize</h3><p>Divide by centroid size to land on the pre-shape sphere.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Pre-shape</div><p class="formula">$Z = \dfrac{X_c}{\lVert X_c\rVert_F},\qquad \lVert Z\rVert_F = 1$</p></div>
+<div class="panel teal"><h3>Remaining freedom</h3><p>Only rotation now separates two pre-shapes.</p></div>
+</div>
+</div>
+<div class="footer"><span>Scale normalized by centroid size</span><span>Removing Scale</span></div>
+<aside class="speaker-notes">With configurations centered, size is captured by the centroid size, the Frobenius norm of the centered matrix. Dividing by centroid size places every configuration on the unit pre-shape sphere. Scale is now normalized, and only rotation separates two pre-shapes, which is exactly the orthogonal Procrustes problem we already solved.</aside>
+</section>
+
+<section class="slide" data-label="Ordinary Procrustes Analysis">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Ordinary Procrustes Analysis</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>One onto one</h3><p>Match a single configuration to a fixed target.</p></div>
+<div class="panel amber"><h3>Recipe</h3><p>Center, scale, then rotate by the SVD of the cross product.</p></div>
+<div class="panel teal"><h3>Optimal scale</h3><p>$\hat{\beta} = \dfrac{\sum_i \sigma_i}{\lVert B_c\rVert_F^{2}}$ from the singular values.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Best matched copy</div><p class="formula">$\hat{B} = \hat{\beta}\,B_c\,\hat{Q},\quad \hat{Q}=UV^{\top}$</p></div>
+<div class="panel violet"><h3>Residual</h3><p>$\lVert A_c - \hat{B}\rVert_F$ is the ordinary Procrustes residual.</p></div>
+</div>
+</div>
+<div class="footer"><span>Center, scale, rotate</span><span>Ordinary Procrustes Analysis</span></div>
+<aside class="speaker-notes">Ordinary Procrustes analysis aligns one configuration onto a fixed target by composing the three steps: center, scale, then rotate by the singular value decomposition. The optimal scaling factor is the ratio of the relevant singular value sum to the squared norm. The result is the best matched copy and its residual.</aside>
+</section>
+
+<section class="slide alt" data-label="Generalized Procrustes Analysis">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Generalized Procrustes Analysis</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Many configurations</h3><p>No single target is privileged when aligning a whole sample.</p></div>
+<div class="panel amber"><h3>Iterate</h3><p>Align all to the current mean, recompute the mean, repeat.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Several scattered configurations converging toward a central consensus mean shape">
+<rect x="0" y="0" width="380" height="240" fill="#fffbeb"/>
+<polygon points="60,60 40,120 110,100" fill="none" stroke="#2563eb" stroke-width="1.8"/>
+<polygon points="300,70 330,130 260,120" fill="none" stroke="#0f766e" stroke-width="1.8"/>
+<polygon points="80,190 60,150 140,170" fill="none" stroke="#6d28d9" stroke-width="1.8"/>
+<polygon points="290,200 320,160 250,165" fill="none" stroke="#b45309" stroke-width="1.8"/>
+<polygon points="170,110 155,150 215,140" fill="#0f766e" fill-opacity="0.12" stroke="#0f766e" stroke-width="2.6"/>
+<line x1="90" y1="90" x2="170" y2="125" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="295" y1="105" x2="195" y2="130" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="95" y1="170" x2="175" y2="140" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="285" y1="180" x2="200" y2="140" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="150" y="95" font-size="14" fill="#0f766e">consensus mean</text>
+</svg><figcaption class="small">Alternating alignment pulls every configuration toward a shared mean shape.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Iterate to a consensus</span><span>Generalized Procrustes Analysis</span></div>
+<aside class="speaker-notes">When many configurations must be aligned simultaneously, no single target is privileged. Generalized Procrustes analysis iterates: align every configuration to the current mean, recompute the mean, and repeat until the mean stabilizes. This alternating scheme decreases the total residual sum of squares monotonically and converges to a consensus shape.</aside>
+</section>
+
+<section class="slide" data-label="The Pre-Shape Sphere">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>The Pre-Shape Sphere</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>After centering</h3><p>Configurations live in a $(k-1)m$-dimensional subspace.</p></div>
+<div class="panel violet"><h3>After scaling</h3><p>Unit norm confines them to a sphere in that subspace.</p></div>
+<div class="panel amber"><h3>Still left</h3><p>Rotation, whose orbits are the fibers over each shape.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 250" width="100%" role="img" aria-label="A sphere with a marked point and a rotation orbit fiber projecting down to a single shape point">
+<rect x="0" y="0" width="360" height="250" fill="#f5f3ff"/>
+<circle cx="150" cy="100" r="70" fill="none" stroke="#6d28d9" stroke-width="2"/>
+<ellipse cx="150" cy="100" rx="70" ry="24" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+<path d="M 110 78 A 30 12 0 0 0 190 88" fill="none" stroke="#0f766e" stroke-width="2.2"/>
+<circle cx="110" cy="78" r="3.5" fill="#2563eb"/><circle cx="190" cy="88" r="3.5" fill="#2563eb"/>
+<text x="95" y="60" font-size="14" fill="#0f766e">rotation orbit (fiber)</text>
+<line x1="150" y1="170" x2="150" y2="210" stroke="#b45309" stroke-width="1.6" stroke-dasharray="5 4"/>
+<circle cx="150" cy="218" r="5" fill="#b45309"/>
+<text x="170" y="222" font-size="14" fill="#b45309">one shape</text>
+<text x="35" y="30" font-size="15" fill="#6d28d9">pre-shape sphere</text>
+</svg><figcaption class="small">Each rotation orbit on the sphere collapses to a single shape below.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Sphere modulo rotation</span><span>The Pre-Shape Sphere</span></div>
+<aside class="speaker-notes">Centering removes translation and leaves a subspace; normalizing by centroid size lands us on a sphere within that subspace, the pre-shape sphere. Points still differ by rotation, so shape is the quotient of this sphere by the rotation group. The fibers of that quotient are the rotation orbits.</aside>
+</section>
+
+<section class="slide alt" data-label="Kendall's Shape Space">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Kendall's Shape Space</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Quotient</h3><p>Shape space is the pre-shape sphere modulo the rotation group.</p></div>
+<div class="panel teal"><h3>A point is an orbit</h3><p>Each shape gathers all rotated pre-shapes into one class.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Shape space</div><p class="formula">$\Sigma_m^k = S^{\,(k-1)m-1} \,/\, SO(m)$</p></div>
+<div class="panel violet"><h3>Geometry</h3><p>The quotient inherits a Riemannian metric; shape space is a curved manifold.</p></div>
+</div>
+</div>
+<div class="footer"><span>Pre-shapes modulo rotation</span><span>Kendall's Shape Space</span></div>
+<aside class="speaker-notes">Kendall's shape space is the pre-shape sphere modulo rotation. Each shape is an orbit, a whole circle or higher dimensional fiber of rotated pre-shapes collapsed to one point. This quotient carries a natural Riemannian metric, making shape space a curved manifold rather than a flat Euclidean parameter set.</aside>
+</section>
+
+<section class="slide" data-label="Procrustes Distance">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Procrustes Distance</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Geodesic separation</h3><p>The distance between two shapes on Kendall's space.</p></div>
+<div class="panel amber"><h3>From singular values</h3><p>It is the angle set by the singular values of the cross product.</p></div>
+<div class="panel teal"><h3>Full vs partial</h3><p>Full uses optimal scaling; partial fixes unit size.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Procrustes distance</div><p class="formula">$\rho(Z_1,Z_2) = \arccos\!\Big(\textstyle\sum_i \sigma_i\Big)$</p></div>
+<div class="panel violet"><h3>Meaning</h3><p>Residual shape difference after optimal alignment.</p></div>
+</div>
+</div>
+<div class="footer"><span>Angle between aligned pre-shapes</span><span>Procrustes Distance</span></div>
+<aside class="speaker-notes">Procrustes distance measures the geodesic separation of two shapes on Kendall's space. Operationally it is the angle between optimally aligned pre-shapes, computed from the singular values of the cross product matrix. Full Procrustes distance uses optimal scaling; partial Procrustes uses fixed unit size. Both quantify residual shape difference after alignment.</aside>
+</section>
+
+<section class="slide alt" data-label="Synthesis and Outlook">
+<div class="topline"><span class="eyebrow">Statistics on Special Manifolds</span><span>Chapter 09</span></div>
+<h2>Synthesis and Outlook</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The pipeline</h3><p>Landmarks &rarr; remove translation &rarr; remove scale &rarr; remove rotation by SVD.</p></div>
+<div class="panel teal"><h3>One recurring engine</h3><p>Trace maximization over $O(m)$ appears at every alignment step.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Then measure</h3><p>Read Procrustes distance as a geodesic on Kendall's shape space.</p></div>
+<div class="panel violet"><h3>Next</h3><p>Tangent statistics, Frechet means of shapes, and asymptotic tests on the manifold.</p></div>
+</div>
+</div>
+<div class="footer"><span>Recap and onward</span><span>Synthesis and Outlook</span></div>
+<aside class="speaker-notes">We assembled a pipeline: landmarks, remove translation, remove scale, remove rotation by singular value decomposition, then read distance on Kendall's space. The same trace maximization recurs at every stage. Next steps include tangent space statistics, Frechet means of shapes, and asymptotic tests that live on this curved manifold.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
