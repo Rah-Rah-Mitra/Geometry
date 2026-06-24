@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-07-kinematics-of-closed-chains">
+<meta name="chapter_title" content="Kinematics of Closed Chains">
+<meta name="notebook_path" content="Modern-Robotics/part-02-manipulator-kinematics/chapter-07-kinematics-of-closed-chains/07-kinematics-of-closed-chains.ipynb">
+<meta name="source_span" content="printed pages 245-270; PDF pages 263-288.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Kinematics of Closed Chains</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-07-kinematics-of-closed-chains","chapter_title":"Kinematics of Closed Chains","notebook_path":"Modern-Robotics/part-02-manipulator-kinematics/chapter-07-kinematics-of-closed-chains/07-kinematics-of-closed-chains.ipynb","source_span":"printed pages 245-270; PDF pages 263-288.","source_pdf":"Modern-Robotics/Mordern Robotics.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Kinematics of Closed Chains","notes":"This chapter spans printed pages 245 through 270 and shifts the mental model from composition to constraint. A closed chain forces several kinematic paths to agree on one body pose, so the configuration must live on the zero set of a loop equation rather than at the end of a single product of transforms."},
+{"slide":2,"label":"From Open to Closed","notes":"Open chains compose transforms forward and the joint vector freely chooses the pose. Closing the loop adds equations the joint values must jointly satisfy, dropping the mobility below the joint count. We name actuated and passive joints because only the actuated ones are commanded while the passive ones settle into an assembly."},
+{"slide":3,"label":"Loop-Closure Constraints","notes":"Loop closure writes the requirement that two paths reach the same frame as a vector equation in the joint coordinates. Stacking one equation per independent loop gives the constraint system whose solution set is the mechanism's configuration space, generally a curved implicit surface rather than a flat coordinate box."},
+{"slide":4,"label":"Mobility by Counting","notes":"Gruebler's formula estimates degrees of freedom from link and joint counts minus the constraints each joint imposes. It is a quick budget, not a guarantee: special geometries create overconstrained or paradoxically mobile linkages where the actual mobility differs from the count, so the formula is a first estimate to be checked against the constraint Jacobian."},
+{"slide":5,"label":"Forward vs Inverse","notes":"Parallel mechanisms invert the usual difficulty. Given a platform pose, each leg's required length or angle often follows from a direct geometric solve, making inverse kinematics easy. Going the other way, from actuator values to platform pose, can demand solving coupled polynomials with several real assembly modes, so forward kinematics is the harder problem."},
+{"slide":6,"label":"The Planar Five-Bar","notes":"The planar five-bar grounds two actuated revolute joints and joins them through three moving links to a shared end point. With two actuators and one loop it has two degrees of freedom. The same actuator pair can place the coupler point in distinct elbow configurations, the simplest example of multiple assembly modes."},
+{"slide":7,"label":"The Stewart-Gough Platform","notes":"The Stewart-Gough platform connects a fixed base to a moving platform through six legs whose lengths are the actuators. Inverse kinematics gives each length directly from the platform pose by a distance computation, while forward kinematics is famously hard, admitting up to forty assembly solutions for a general six-six geometry."},
+{"slide":8,"label":"The Constraint Jacobian","notes":"Differentiating the loop equation in time gives a linear relation between joint velocities through the constraint Jacobian. Splitting columns into actuated and passive parts yields two blocks. Allowed instantaneous motions are the null space of the full Jacobian, and the actuated block must be invertible to map commanded rates into platform velocity."},
+{"slide":9,"label":"Three Kinds of Singularity","notes":"Closed chains fail in three distinct ways. An actuator singularity makes the actuated Jacobian block drop rank, so commanded velocity cannot control the platform. An end-effector singularity lets the platform lose a freedom or resist a wrench for free. A configuration-space singularity is where assembly branches meet and the constraint surface stops being smooth."},
+{"slide":10,"label":"Singular Geometry of the Loop","notes":"Singularities have a geometric signature in the planar loop. When the elbow stretches fully or folds back, small changes in one coordinate stop producing independent endpoint motion and the Jacobian determinant crosses zero. The reach boundary and the fold curve mark where branches pinch together and conditioning degrades sharply near the surface."},
+{"slide":11,"label":"Actuation and Branches","notes":"An actuator vector alone does not pin down the configuration. The passive variables and the chosen branch complete it, and one actuator command can correspond to several physically distinct assemblies. Trajectory planning must therefore track which branch the mechanism occupies and avoid configuration-space singularities where an unintended branch switch could occur."},
+{"slide":12,"label":"Recap and Takeaways","notes":"Closed-chain kinematics is implicit geometry: configurations satisfy loop equations rather than a forward product. Inverse kinematics is usually easy and forward kinematics hard for parallel robots. The constraint Jacobian is the local diagnostic, and its rank loss flags the actuator, configuration-space, and end-effector singularities that bound safe operation."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Kinematics of Closed Chains">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h1>Kinematics of Closed Chains</h1>
+<p class="lead">From composition to constraint solving in parallel mechanisms</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Open chain</h3><p>Pose is a forward product of joint transforms.</p></div>
+<div class="panel teal"><h3>Closed chain</h3><p>Pose must satisfy loop-closure equations.</p></div>
+<div class="panel amber"><h3>Chapter question</h3><p>How do loops turn kinematics into constraint solving?</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A closed loop of four links forming a four-bar mechanism over a fixed base"><rect x="0" y="0" width="360" height="230" fill="#f0fdfa"/><line x1="40" y1="190" x2="320" y2="190" stroke="#94a3b8" stroke-width="3"/><line x1="60" y1="190" x2="120" y2="70" stroke="#2563eb" stroke-width="5"/><line x1="120" y1="70" x2="250" y2="60" stroke="#0f766e" stroke-width="5"/><line x1="250" y1="60" x2="300" y2="190" stroke="#2563eb" stroke-width="5"/><circle cx="60" cy="190" r="7" fill="#b45309"/><circle cx="300" cy="190" r="7" fill="#b45309"/><circle cx="120" cy="70" r="6" fill="#6d28d9"/><circle cx="250" cy="60" r="6" fill="#6d28d9"/><text x="48" y="215" font-size="13" fill="#b45309">actuated</text><text x="250" y="215" font-size="13" fill="#b45309">actuated</text><text x="150" y="48" font-size="13" fill="#6d28d9">passive</text></svg><figcaption class="small">A four-bar loop: grounded actuated joints, passive coupler joints.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Kinematics of Closed Chains</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 245 through 270 and shifts the mental model from composition to constraint. A closed chain forces several kinematic paths to agree on one body pose, so the configuration must live on the zero set of a loop equation rather than at the end of a single product of transforms.</aside>
+</section>
+
+<section class="slide alt" data-label="From Open to Closed">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>From Open to Closed Chains</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Open chain</h3><p>Joint vector freely chooses the end-effector pose.</p></div>
+<div class="panel amber"><h3>Closing a loop</h3><p>Adds equations the joint values must jointly obey.</p></div>
+<div class="panel violet"><h3>Joint roles</h3><p>Actuated joints are commanded; passive joints settle.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Mobility drop</div><p class="formula">$\dim \mathcal{C} = n_{\text{joints}} - \#\,\text{constraints}$</p></div>
+<div class="panel teal"><h3>Consequence</h3><p>Fewer degrees of freedom than the joint count alone suggests.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>From Open to Closed</span></div>
+<aside class="speaker-notes">Open chains compose transforms forward and the joint vector freely chooses the pose. Closing the loop adds equations the joint values must jointly satisfy, dropping the mobility below the joint count. We name actuated and passive joints because only the actuated ones are commanded while the passive ones settle into an assembly.</aside>
+</section>
+
+<section class="slide" data-label="Loop-Closure Constraints">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Loop-Closure Constraints</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Two paths, one frame</h3><p>Both kinematic routes must reach the same pose.</p></div>
+<div class="panel teal"><h3>One equation per loop</h3><p>Independent loops stack into a constraint system.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Loop equation</div><p class="formula">$\Phi(q_a, q_p) = 0$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Configuration space</div><p class="formula">$\mathcal{C} = \{\, q : \Phi(q) = 0 \,\}$</p></div>
+<div class="panel amber"><h3>Geometry</h3><p>The solution set is a curved implicit surface.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Loop-Closure Constraints</span></div>
+<aside class="speaker-notes">Loop closure writes the requirement that two paths reach the same frame as a vector equation in the joint coordinates. Stacking one equation per independent loop gives the constraint system whose solution set is the mechanism's configuration space, generally a curved implicit surface rather than a flat coordinate box.</aside>
+</section>
+
+<section class="slide alt" data-label="Mobility by Counting">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Mobility by Counting</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Gruebler's formula</h3><p>Estimate DoF from links and joints minus constraints.</p></div>
+<div class="panel amber"><h3>Just a budget</h3><p>Special geometry can break the count.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Planar / spatial mobility</div><p class="formula">$\mathrm{dof} = m(N - 1 - J) + \sum_{i} f_i$</p></div>
+<div class="panel teal"><h3>Caveats</h3><p>Overconstrained and paradoxically mobile linkages defy the estimate.</p></div>
+<div class="panel violet"><h3>Check</h3><p>Confirm against the constraint Jacobian rank.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Mobility by Counting</span></div>
+<aside class="speaker-notes">Gruebler's formula estimates degrees of freedom from link and joint counts minus the constraints each joint imposes. It is a quick budget, not a guarantee: special geometries create overconstrained or paradoxically mobile linkages where the actual mobility differs from the count, so the formula is a first estimate to be checked against the constraint Jacobian.</aside>
+</section>
+
+<section class="slide" data-label="Forward vs Inverse">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Forward vs Inverse Kinematics</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Inverse (easy)</h3><p>Pose &rarr; leg lengths by direct geometry.</p></div>
+<div class="panel blue"><h3>Forward (hard)</h3><p>Actuators &rarr; pose via coupled polynomials.</p></div>
+<div class="panel amber"><h3>Multiplicity</h3><p>Several real assembly modes per actuator vector.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Inverse map</div><p class="formula">$\ell_i = \lVert\, p_i - b_i \,\rVert$</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Forward map</div><p class="formula">$\text{solve } \Phi(x_{\text{platform}}; \ell) = 0$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Forward vs Inverse</span></div>
+<aside class="speaker-notes">Parallel mechanisms invert the usual difficulty. Given a platform pose, each leg's required length or angle often follows from a direct geometric solve, making inverse kinematics easy. Going the other way, from actuator values to platform pose, can demand solving coupled polynomials with several real assembly modes, so forward kinematics is the harder problem.</aside>
+</section>
+
+<section class="slide alt" data-label="The Planar Five-Bar">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Worked Example: The Planar Five-Bar</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="A planar five-bar linkage with two grounded actuated joints, two passive joints, and a coupler point"><rect x="0" y="0" width="360" height="240" fill="#fffbeb"/><line x1="40" y1="210" x2="320" y2="210" stroke="#94a3b8" stroke-width="3"/><line x1="80" y1="210" x2="130" y2="90" stroke="#2563eb" stroke-width="5"/><line x1="130" y1="90" x2="200" y2="50" stroke="#0f766e" stroke-width="5"/><line x1="200" y1="50" x2="260" y2="100" stroke="#0f766e" stroke-width="5"/><line x1="260" y1="100" x2="290" y2="210" stroke="#2563eb" stroke-width="5"/><circle cx="80" cy="210" r="7" fill="#b45309"/><circle cx="290" cy="210" r="7" fill="#b45309"/><circle cx="130" cy="90" r="6" fill="#6d28d9"/><circle cx="260" cy="100" r="6" fill="#6d28d9"/><circle cx="200" cy="50" r="7" fill="#1e3a8a"/><text x="60" y="232" font-size="13" fill="#b45309">θ₁ act</text><text x="262" y="232" font-size="13" fill="#b45309">θ₂ act</text><text x="178" y="38" font-size="13" fill="#1e3a8a">coupler</text></svg><figcaption class="small">Two actuated base joints, two passive joints, one coupler point.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Two actuators</h3><p>Grounded revolute joints $\theta_1,\theta_2$.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Two degrees of freedom</div><p class="formula">$\mathrm{dof} = 5 - 1 \cdot 2 - 0 = 2$</p></div>
+<div class="panel violet"><h3>Assembly modes</h3><p>One actuator pair, distinct elbow configurations.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>The Planar Five-Bar</span></div>
+<aside class="speaker-notes">The planar five-bar grounds two actuated revolute joints and joins them through three moving links to a shared end point. With two actuators and one loop it has two degrees of freedom. The same actuator pair can place the coupler point in distinct elbow configurations, the simplest example of multiple assembly modes.</aside>
+</section>
+
+<section class="slide" data-label="The Stewart-Gough Platform">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>The Stewart-Gough Platform (6-UPS)</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 250" width="100%" role="img" aria-label="A Stewart-Gough platform with a hexagonal base and moving platform joined by six variable-length legs"><rect x="0" y="0" width="360" height="250" fill="#eff6ff"/><polygon points="40,210 130,225 230,215 320,205 250,185 110,190" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3"/><polygon points="120,70 200,62 250,78 215,100 140,103" fill="#ccfbf1" stroke="#0f766e" stroke-width="3"/><line x1="40" y1="210" x2="120" y2="70" stroke="#2563eb" stroke-width="3"/><line x1="110" y1="190" x2="140" y2="103" stroke="#2563eb" stroke-width="3"/><line x1="130" y1="225" x2="200" y2="62" stroke="#2563eb" stroke-width="3"/><line x1="230" y1="215" x2="250" y2="78" stroke="#2563eb" stroke-width="3"/><line x1="320" y1="205" x2="215" y2="100" stroke="#2563eb" stroke-width="3"/><line x1="250" y1="185" x2="200" y2="62" stroke="#2563eb" stroke-width="3"/><text x="150" y="55" font-size="13" fill="#0f766e">moving platform</text><text x="150" y="245" font-size="13" fill="#64748b">fixed base</text><text x="60" y="150" font-size="13" fill="#2563eb">leg ℓᵢ</text></svg><figcaption class="small">Six variable-length legs join the fixed base to the moving platform.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Inverse easy</h3><p>Each leg length is a distance from pose.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Forward kinematics</div><p class="formula">$\ell_i^2 = \lVert R\,a_i + p - b_i \rVert^2$</p></div>
+<div class="panel amber"><h3>Up to 40 solutions</h3><p>General 6-6 forward kinematics is famously hard.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>The Stewart-Gough Platform</span></div>
+<aside class="speaker-notes">The Stewart-Gough platform connects a fixed base to a moving platform through six legs whose lengths are the actuators. Inverse kinematics gives each length directly from the platform pose by a distance computation, while forward kinematics is famously hard, admitting up to forty assembly solutions for a general six-six geometry.</aside>
+</section>
+
+<section class="slide alt" data-label="The Constraint Jacobian">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>The Constraint Jacobian</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Differentiate the loop</h3><p>Time-derivative of $\Phi=0$ is linear in rates.</p></div>
+<div class="panel violet"><h3>Split the columns</h3><p>Actuated block $H_a$, passive block $H_p$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Velocity constraint</div><p class="formula">$J_c(q)\,\dot q = 0$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Block form</div><p class="formula">$H_a\,\dot q_a + H_p\,\dot q_p = 0$</p></div>
+<div class="panel teal"><h3>Allowed motion</h3><p>Instantaneous velocities span the null space of $J_c$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>The Constraint Jacobian</span></div>
+<aside class="speaker-notes">Differentiating the loop equation in time gives a linear relation between joint velocities through the constraint Jacobian. Splitting columns into actuated and passive parts yields two blocks. Allowed instantaneous motions are the null space of the full Jacobian, and the actuated block must be invertible to map commanded rates into platform velocity.</aside>
+</section>
+
+<section class="slide" data-label="Three Kinds of Singularity">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Three Kinds of Singularity</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Actuator</h3><p>$H_a$ drops rank; commands cannot drive the platform.</p></div>
+<div class="panel amber"><h3>End-effector</h3><p>Platform gains a freedom or resists a wrench for free.</p></div>
+<div class="panel violet"><h3>Configuration-space</h3><p>Assembly branches meet; surface stops being smooth.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Rank test</div><p class="formula">$\det H_a = 0 \;\;\text{or}\;\; \det H_p = 0$</p></div>
+<div class="panel teal"><h3>Diagnostic</h3><p>Each type is a distinct rank loss of a Jacobian block.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Three Kinds of Singularity</span></div>
+<aside class="speaker-notes">Closed chains fail in three distinct ways. An actuator singularity makes the actuated Jacobian block drop rank, so commanded velocity cannot control the platform. An end-effector singularity lets the platform lose a freedom or resist a wrench for free. A configuration-space singularity is where assembly branches meet and the constraint surface stops being smooth.</aside>
+</section>
+
+<section class="slide alt" data-label="Singular Geometry of the Loop">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Singular Geometry of the Loop</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="A two-link reach region with its boundary circle and a folded singular configuration"><rect x="0" y="0" width="360" height="240" fill="#f0fdfa"/><circle cx="180" cy="130" r="95" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/><circle cx="180" cy="130" r="35" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 5"/><line x1="180" y1="130" x2="120" y2="60" stroke="#2563eb" stroke-width="5"/><line x1="120" y1="60" x2="250" y2="75" stroke="#0f766e" stroke-width="5"/><line x1="180" y1="130" x2="275" y2="130" stroke="#b45309" stroke-width="4" stroke-dasharray="4 4"/><circle cx="180" cy="130" r="6" fill="#1e3a8a"/><circle cx="275" cy="130" r="6" fill="#b45309"/><text x="120" y="225" font-size="13" fill="#64748b">reach boundary</text><text x="215" y="120" font-size="13" fill="#b45309">stretched: fold</text></svg><figcaption class="small">At full stretch the determinant crosses zero; branches pinch.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Singular curve</div><p class="formula">$\det J_c(q) = 0$</p></div>
+<div class="panel blue"><h3>Fold</h3><p>Fully stretched or folded elbow loses independent motion.</p></div>
+<div class="panel violet"><h3>Conditioning</h3><p>Numerical fragility grows near the surface.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Singular Geometry of the Loop</span></div>
+<aside class="speaker-notes">Singularities have a geometric signature in the planar loop. When the elbow stretches fully or folds back, small changes in one coordinate stop producing independent endpoint motion and the Jacobian determinant crosses zero. The reach boundary and the fold curve mark where branches pinch together and conditioning degrades sharply near the surface.</aside>
+</section>
+
+<section class="slide" data-label="Actuation and Branches">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Actuation and Assembly Branches</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Actuators underspecify</h3><p>The actuator vector is not the full configuration.</p></div>
+<div class="panel teal"><h3>Branch completes it</h3><p>Passive variables and branch choice fix the assembly.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Multiplicity</div><p class="formula">$q_a \mapsto \{\, q^{(1)}, q^{(2)}, \dots \,\}$</p></div>
+<div class="panel amber"><h3>Planning rule</h3><p>Track the occupied branch along a trajectory.</p></div>
+<div class="panel violet"><h3>Avoid</h3><p>Configuration-space singularities risk a branch switch.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Actuation and Branches</span></div>
+<aside class="speaker-notes">An actuator vector alone does not pin down the configuration. The passive variables and the chosen branch complete it, and one actuator command can correspond to several physically distinct assemblies. Trajectory planning must therefore track which branch the mechanism occupies and avoid configuration-space singularities where an unintended branch switch could occur.</aside>
+</section>
+
+<section class="slide alt" data-label="Recap and Takeaways">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 7</span></div>
+<h2>Recap and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Implicit geometry</h3><p>Configurations satisfy $\Phi(q)=0$, not a forward product.</p></div>
+<div class="panel teal"><h3>Inverse easy, forward hard</h3><p>The parallel-mechanism trade is the rule.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>Jacobian is the diagnostic</h3><p>Rank loss flags every singularity type.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Three singularities</div><p class="formula">$\text{actuator} \;/\; \text{config-space} \;/\; \text{end-effector}$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 245-270</span><span>Recap and Takeaways</span></div>
+<aside class="speaker-notes">Closed-chain kinematics is implicit geometry: configurations satisfy loop equations rather than a forward product. Inverse kinematics is usually easy and forward kinematics hard for parallel robots. The constraint Jacobian is the local diagnostic, and its rank loss flags the actuator, configuration-space, and end-effector singularities that bound safe operation.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

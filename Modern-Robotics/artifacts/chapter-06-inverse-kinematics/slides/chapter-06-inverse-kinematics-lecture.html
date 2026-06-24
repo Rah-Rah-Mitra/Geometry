@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-06-inverse-kinematics">
+<meta name="chapter_title" content="Inverse Kinematics">
+<meta name="notebook_path" content="Modern-Robotics/part-02-manipulator-kinematics/chapter-06-inverse-kinematics/06-inverse-kinematics.ipynb">
+<meta name="source_span" content="printed pages 219-244; PDF pages 237-262.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Inverse Kinematics</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-06-inverse-kinematics","chapter_title":"Inverse Kinematics","notebook_path":"Modern-Robotics/part-02-manipulator-kinematics/chapter-06-inverse-kinematics/06-inverse-kinematics.ipynb","source_span":"printed pages 219-244; PDF pages 237-262.","source_pdf":"Modern-Robotics/Mordern Robotics.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Inverse Kinematics","notes":"Across printed pages 219 to 244 the chapter inverts the forward map: given a desired end-effector pose, recover joint values that achieve it. We frame the whole topic as root finding on a geometric residual, motivating both closed-form geometric solutions and iterative numerical schemes built from the Jacobian."},
+{"slide":2,"label":"The Inverse Problem","notes":"Forward kinematics sends joint vectors to a pose; inversion seeks a preimage of a target. Because the map is nonlinear and periodic, a reachable target may admit several joint solutions, none, or one hard to approach. The practical question is local: which tangent direction in joint space reduces the current pose error."},
+{"slide":3,"label":"Analytic IK: Planar 2R Arm","notes":"For special geometries we solve in closed form. A planar two-link arm reaches a point by the law of cosines, which fixes the elbow angle up to sign. The wrapped first angle then aligns the shoulder. This gives an exact algebraic recipe rather than an iterative search over configurations."},
+{"slide":4,"label":"Elbow-Up and Elbow-Down","notes":"The cosine law leaves the elbow sign free, so one reachable target yields two postures: elbow-up and elbow-down. They share an endpoint yet occupy different regions of configuration space. This branch multiplicity is generic; analytic solvers enumerate branches while numerical solvers land on whichever basin the initial guess selects."},
+{"slide":5,"label":"Newton-Raphson on Pose Error","notes":"When no closed form exists we linearize. Reading the configuration error as a body twist from the matrix logarithm of T inverse times the target, Newton-Raphson repeatedly corrects the joint vector using the body Jacobian. Each step trusts the first-order model of the forward map near the current configuration."},
+{"slide":6,"label":"The Body Twist Error","notes":"The residual must match the Jacobian convention. We express the error as a body twist whose matrix log captures both rotation and translation discrepancy between current and target frames in a single six-vector. Mixing body, space, and coordinate errors can look plausible while pushing the iteration in the wrong direction."},
+{"slide":7,"label":"The Iteration Step","notes":"The core update multiplies the Jacobian pseudoinverse by the body twist and adds it to the joints. When the Jacobian is square and full rank this is the exact Newton step; otherwise the pseudoinverse selects the least-norm joint update. Convergence is quadratic near a solution but only inside a basin around the guess."},
+{"slide":8,"label":"The Pseudoinverse","notes":"The Moore-Penrose pseudoinverse handles non-square and rank-deficient Jacobians. For redundant arms it returns the minimum-norm joint velocity achieving the task twist; for overdetermined tasks it returns the least-squares fit. It is the workhorse that turns a singular or rectangular linear system into a well-defined joint correction."},
+{"slide":9,"label":"Damping Near Singularity","notes":"Near a singularity the Jacobian loses rank and the raw pseudoinverse demands enormous joint motion for tiny task corrections. Damped least squares adds a regularizer, trading exact local correction for bounded, robust steps. The notebook sweep confirms stronger damping shrinks the peak update while usually costing extra iterations to reach tolerance."},
+{"slide":10,"label":"Redundancy and Null Space","notes":"A redundant arm has more joints than task dimensions, so its Jacobian has a nontrivial null space. Adding any null-space velocity changes posture without altering first-order end-effector motion. This freedom lets secondary objectives, like avoiding joint limits or obstacles, ride along with the primary task through the projector I minus J-dagger J."},
+{"slide":11,"label":"Convergence Basins","notes":"Inverse kinematics is local and branch dependent. The notebook drives three seeds toward one target: a straight-arm singular seed plus elbow-up and elbow-down guesses. All reach the target to tolerance, yet the two elbow branches end far apart in joint space, confirming that small task residual does not identify a unique configuration."},
+{"slide":12,"label":"Recap and Pitfalls","notes":"We recap: analytic IK enumerates branches for special geometries; Newton-Raphson with the body Jacobian inverts general poses; the pseudoinverse and damping handle redundancy and singularity; null-space motion resolves extra freedom. Pitfalls include wrong-branch convergence, large motion near singularities, and residual conventions that quietly mismatch the Jacobian."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Inverse Kinematics">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h1>Inverse Kinematics</h1>
+<p class="lead">Solving for joint values that achieve a desired end-effector pose</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The goal</h3><p>Find joints $\theta$ with $T(\theta)=T_{sd}$, the target pose.</p></div>
+<div class="panel teal"><h3>Two roads</h3><p>Closed-form geometry for special arms; numerical iteration in general.</p></div>
+<div class="panel amber"><h3>The catch</h3><p>The forward map is nonlinear, periodic, and often many-to-one.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Joint space maps to task space, inverse map sought"><rect x="0" y="0" width="360" height="220" fill="#eff6ff"/><circle cx="80" cy="110" r="55" fill="#dbeafe" stroke="#2563EB" stroke-width="2"/><circle cx="280" cy="110" r="55" fill="#ccfbf1" stroke="#0F766E" stroke-width="2"/><text x="80" y="50" font-size="15" fill="#2563EB" text-anchor="middle">joint space</text><text x="280" y="50" font-size="15" fill="#0F766E" text-anchor="middle">task space</text><circle cx="65" cy="120" r="4" fill="#2563EB"/><circle cx="95" cy="95" r="4" fill="#2563EB"/><circle cx="280" cy="110" r="4" fill="#0F766E"/><line x1="65" y1="120" x2="276" y2="110" stroke="#2563EB" stroke-width="2" marker-end="url(#a6f)"/><line x1="95" y1="95" x2="276" y2="108" stroke="#2563EB" stroke-width="2" marker-end="url(#a6f)"/><line x1="284" y1="110" x2="120" y2="110" stroke="#B45309" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#a6a)"/><text x="180" y="165" font-size="14" fill="#B45309" text-anchor="middle">inverse: many preimages</text><defs><marker id="a6f" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563EB"/></marker><marker id="a6a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#B45309"/></marker></defs></svg><figcaption class="small">Forward kinematics is one map; inversion seeks its preimage.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Inverse Kinematics</span></div>
+<aside class="speaker-notes">Across printed pages 219 to 244 the chapter inverts the forward map: given a desired end-effector pose, recover joint values that achieve it. We frame the whole topic as root finding on a geometric residual, motivating both closed-form geometric solutions and iterative numerical schemes built from the Jacobian.</aside>
+</section>
+
+<section class="slide alt" data-label="The Inverse Problem">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>The Inverse Problem</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Root finding</h3><p>Solve $T(\theta)=T_{sd}$ by driving the pose residual to zero.</p></div>
+<div class="panel violet"><h3>Three outcomes</h3><p>A target may have several solutions, none, or one hard to reach.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Forward map</div><p class="formula">$x = f(\theta), \qquad \text{seek } \theta = f^{-1}(x_d)$</p></div>
+<div class="panel teal"><h3>Local view</h3><p>Given the error we see now, which joint direction shrinks it next?</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>The Inverse Problem</span></div>
+<aside class="speaker-notes">Forward kinematics sends joint vectors to a pose; inversion seeks a preimage of a target. Because the map is nonlinear and periodic, a reachable target may admit several joint solutions, none, or one hard to approach. The practical question is local: which tangent direction in joint space reduces the current pose error.</aside>
+</section>
+
+<section class="slide" data-label="Analytic IK: Planar 2R Arm">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>Analytic IK: Planar 2R Arm</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Law of cosines</h3><p>The target distance fixes the elbow angle up to a sign.</p></div>
+<div class="panel teal"><h3>Closed form</h3><p>An exact algebraic recipe, not an iterative search.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Elbow angle</div><p class="formula">$\cos\theta_2 = \dfrac{x^2+y^2-L_1^2-L_2^2}{2L_1L_2}$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Shoulder angle</div><p class="formula">$\theta_1 = \operatorname{atan2}(y,x) - \operatorname{atan2}(L_2 s_2,\, L_1+L_2 c_2)$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Analytic IK: Planar 2R Arm</span></div>
+<aside class="speaker-notes">For special geometries we solve in closed form. A planar two-link arm reaches a point by the law of cosines, which fixes the elbow angle up to sign. The wrapped first angle then aligns the shoulder. This gives an exact algebraic recipe rather than an iterative search over configurations.</aside>
+</section>
+
+<section class="slide alt" data-label="Elbow-Up and Elbow-Down">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>Elbow-Up and Elbow-Down</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Two postures</h3><p>The free sign of $\theta_2$ gives two arms to one target.</p></div>
+<div class="panel violet"><h3>Same endpoint</h3><p>Different regions of configuration space, identical reach.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Planar two-link arm with elbow-up and elbow-down solutions to one target"><rect x="0" y="0" width="360" height="240" fill="#fffbeb"/><line x1="20" y1="200" x2="340" y2="200" stroke="#CBD5E1" stroke-width="1.5"/><circle cx="60" cy="200" r="6" fill="#111827"/><text x="60" y="222" font-size="13" fill="#475569" text-anchor="middle">base</text><circle cx="290" cy="120" r="7" fill="#B45309"/><text x="300" y="116" font-size="13" fill="#B45309">target</text><line x1="60" y1="200" x2="150" y2="70" stroke="#2563EB" stroke-width="4"/><line x1="150" y1="70" x2="290" y2="120" stroke="#2563EB" stroke-width="4"/><circle cx="150" cy="70" r="6" fill="#2563EB"/><text x="150" y="58" font-size="13" fill="#2563EB" text-anchor="middle">elbow-up</text><line x1="60" y1="200" x2="200" y2="185" stroke="#0F766E" stroke-width="4"/><line x1="200" y1="185" x2="290" y2="120" stroke="#0F766E" stroke-width="4"/><circle cx="200" cy="185" r="6" fill="#0F766E"/><text x="210" y="205" font-size="13" fill="#0F766E">elbow-down</text></svg><figcaption class="small">One reachable target, two valid joint branches.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Elbow-Up and Elbow-Down</span></div>
+<aside class="speaker-notes">The cosine law leaves the elbow sign free, so one reachable target yields two postures: elbow-up and elbow-down. They share an endpoint yet occupy different regions of configuration space. This branch multiplicity is generic; analytic solvers enumerate branches while numerical solvers land on whichever basin the initial guess selects.</aside>
+</section>
+
+<section class="slide" data-label="Newton-Raphson on Pose Error">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>Newton-Raphson on Pose Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Linearize</h3><p>Approximate the forward map at the current $\theta$ by its Jacobian.</p></div>
+<div class="panel teal"><h3>Iterate</h3><p>Correct, recompute, repeat until the residual is below tolerance.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Newton step</div><p class="formula">$\theta \leftarrow \theta + J_b^{\dagger}(\theta)\, \mathcal{V}_b$</p></div>
+<div class="panel amber"><h3>Convergence</h3><p>Quadratic near a root, but only inside a basin of the guess.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Newton-Raphson on Pose Error</span></div>
+<aside class="speaker-notes">When no closed form exists we linearize. Reading the configuration error as a body twist from the matrix logarithm of T inverse times the target, Newton-Raphson repeatedly corrects the joint vector using the body Jacobian. Each step trusts the first-order model of the forward map near the current configuration.</aside>
+</section>
+
+<section class="slide alt" data-label="The Body Twist Error">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>The Body Twist Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Matrix log</h3><p>The error frame becomes a single six-vector twist.</p></div>
+<div class="panel violet"><h3>Match conventions</h3><p>The residual must agree with the Jacobian it feeds.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Configuration error</div><p class="formula">$[\mathcal{V}_b] = \log\!\big(T^{-1}(\theta)\, T_{sd}\big)$</p></div>
+<div class="panel teal"><h3>Reads</h3><p>Rotation and translation discrepancy captured together.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>The Body Twist Error</span></div>
+<aside class="speaker-notes">The residual must match the Jacobian convention. We express the error as a body twist whose matrix log captures both rotation and translation discrepancy between current and target frames in a single six-vector. Mixing body, space, and coordinate errors can look plausible while pushing the iteration in the wrong direction.</aside>
+</section>
+
+<section class="slide" data-label="The Iteration Step">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>The Iteration Step</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Exact vs least-norm</h3><p>Square full-rank $J$ gives the true Newton step.</p></div>
+<div class="panel teal"><h3>Otherwise</h3><p>The pseudoinverse selects the least-norm joint update.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Newton-Raphson iterates converging from an initial guess toward the target pose"><rect x="0" y="0" width="360" height="220" fill="#eff6ff"/><circle cx="300" cy="60" r="8" fill="#B45309"/><text x="300" y="44" font-size="13" fill="#B45309" text-anchor="middle">target</text><circle cx="40" cy="190" r="6" fill="#6D28D9"/><text x="40" y="210" font-size="13" fill="#6D28D9" text-anchor="middle">guess</text><polyline points="40,190 140,150 215,105 268,76 292,64" fill="none" stroke="#2563EB" stroke-width="3" marker-end="url(#a6t)"/><circle cx="140" cy="150" r="4" fill="#2563EB"/><circle cx="215" cy="105" r="4" fill="#2563EB"/><circle cx="268" cy="76" r="4" fill="#2563EB"/><text x="120" y="140" font-size="12" fill="#0F766E">step 1</text><text x="225" y="100" font-size="12" fill="#0F766E">step 2</text><defs><marker id="a6t" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563EB"/></marker></defs></svg><figcaption class="small">Each step shrinks the residual toward the target pose.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>The Iteration Step</span></div>
+<aside class="speaker-notes">The core update multiplies the Jacobian pseudoinverse by the body twist and adds it to the joints. When the Jacobian is square and full rank this is the exact Newton step; otherwise the pseudoinverse selects the least-norm joint update. Convergence is quadratic near a solution but only inside a basin around the guess.</aside>
+</section>
+
+<section class="slide alt" data-label="The Pseudoinverse">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>The Pseudoinverse</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Redundant arm</h3><p>Returns the minimum-norm joint velocity for the task twist.</p></div>
+<div class="panel amber"><h3>Overdetermined</h3><p>Returns the least-squares fit when no exact solution exists.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Moore-Penrose</div><p class="formula">$J^{\dagger} = J^{\mathsf{T}}\big(J J^{\mathsf{T}}\big)^{-1}$</p></div>
+<div class="panel teal"><h3>Workhorse</h3><p>Turns rectangular or rank-poor systems into a defined update.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>The Pseudoinverse</span></div>
+<aside class="speaker-notes">The Moore-Penrose pseudoinverse handles non-square and rank-deficient Jacobians. For redundant arms it returns the minimum-norm joint velocity achieving the task twist; for overdetermined tasks it returns the least-squares fit. It is the workhorse that turns a singular or rectangular linear system into a well-defined joint correction.</aside>
+</section>
+
+<section class="slide" data-label="Damping Near Singularity">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>Damping Near Singularity</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The blow-up</h3><p>Lost rank means huge joint motion for tiny task corrections.</p></div>
+<div class="panel teal"><h3>Trade-off</h3><p>Stronger damping shrinks peak steps but adds iterations.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Damped least squares</div><p class="formula">$\Delta\theta = J^{\mathsf{T}}\big(J J^{\mathsf{T}} + \lambda^2 I\big)^{-1} \mathcal{V}_b$</p></div>
+<div class="panel blue"><h3>Notebook sweep</h3><p>The damped peak update stays below the undamped one.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Damping Near Singularity</span></div>
+<aside class="speaker-notes">Near a singularity the Jacobian loses rank and the raw pseudoinverse demands enormous joint motion for tiny task corrections. Damped least squares adds a regularizer, trading exact local correction for bounded, robust steps. The notebook sweep confirms stronger damping shrinks the peak update while usually costing extra iterations to reach tolerance.</aside>
+</section>
+
+<section class="slide alt" data-label="Redundancy and Null Space">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>Redundancy and Null Space</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Extra freedom</h3><p>More joints than task dimensions leaves a null space.</p></div>
+<div class="panel violet"><h3>Secondary goals</h3><p>Avoid joint limits or obstacles without disturbing the task.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Null-space motion</div><p class="formula">$\dot\theta = J^{\dagger}\mathcal{V}_b + \big(I - J^{\dagger}J\big)\, z$</p></div>
+<div class="panel teal"><h3>Projector</h3><p>$I - J^{\dagger}J$ moves posture, not the end-effector.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Redundancy and Null Space</span></div>
+<aside class="speaker-notes">A redundant arm has more joints than task dimensions, so its Jacobian has a nontrivial null space. Adding any null-space velocity changes posture without altering first-order end-effector motion. This freedom lets secondary objectives, like avoiding joint limits or obstacles, ride along with the primary task through the projector I minus J-dagger J.</aside>
+</section>
+
+<section class="slide" data-label="Convergence Basins">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>Convergence Basins</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Three seeds</h3><p>Singular straight arm, elbow-up, and elbow-down guesses.</p></div>
+<div class="panel amber"><h3>Branch dependent</h3><p>Same target, but final joint vectors land far apart.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Notebook result</div><p class="formula">$\|\theta_{up} - \theta_{down}\| > 1, \quad \text{residual} < 10^{-3}$</p></div>
+<div class="panel teal"><h3>Lesson</h3><p>Small task residual does not pin down one configuration.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Convergence Basins</span></div>
+<aside class="speaker-notes">Inverse kinematics is local and branch dependent. The notebook drives three seeds toward one target: a straight-arm singular seed plus elbow-up and elbow-down guesses. All reach the target to tolerance, yet the two elbow branches end far apart in joint space, confirming that small task residual does not identify a unique configuration.</aside>
+</section>
+
+<section class="slide alt" data-label="Recap and Pitfalls">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 6</span></div>
+<h2>Recap and Pitfalls</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>What we built</h3><ul><li>Analytic IK enumerates branches for special arms.</li><li>Newton-Raphson with $J_b$ inverts general poses.</li><li>Pseudoinverse and damping tame redundancy and singularity.</li></ul></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Pitfalls to watch</h3><ul><li>A local method can converge to the wrong branch.</li><li>Small task error can demand large joint motion.</li><li>Residual conventions must match the Jacobian.</li></ul></div>
+<div class="panel teal"><h3>Habit</h3><p>Report numerical margins, not just a final joint vector.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 219-244</span><span>Recap and Pitfalls</span></div>
+<aside class="speaker-notes">We recap: analytic IK enumerates branches for special geometries; Newton-Raphson with the body Jacobian inverts general poses; the pseudoinverse and damping handle redundancy and singularity; null-space motion resolves extra freedom. Pitfalls include wrong-branch convergence, large motion near singularities, and residual conventions that quietly mismatch the Jacobian.</aside>
+</section>
+</deck-stage>
+</body>
+</html>
