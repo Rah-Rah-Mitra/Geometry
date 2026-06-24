@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-04-forward-kinematics">
+<meta name="chapter_title" content="Forward Kinematics">
+<meta name="notebook_path" content="Modern-Robotics/part-02-manipulator-kinematics/chapter-04-forward-kinematics/04-forward-kinematics.ipynb">
+<meta name="source_span" content="printed pages 137-170; PDF pages 155-188.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Forward Kinematics</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-04-forward-kinematics","chapter_title":"Forward Kinematics","notebook_path":"Modern-Robotics/part-02-manipulator-kinematics/chapter-04-forward-kinematics/04-forward-kinematics.ipynb","source_span":"printed pages 137-170; PDF pages 155-188.","source_pdf":"Modern-Robotics/Mordern Robotics.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Forward Kinematics","notes":"Forward kinematics turns a column of joint values into one rigid-body transform of the end-effector. We frame the chapter question, name the home pose as anchor, and preview the two product-of-exponentials forms that will compose individual screw motions into a single member of SE(3)."},
+{"slide":2,"label":"The Forward Kinematics Map","notes":"We define the map from joint coordinates to the end-effector frame as an element of the special Euclidean group. Each joint contributes a constrained one-parameter motion, and forward kinematics asks how those motions stack to produce the observable pose of the gripper frame."},
+{"slide":3,"label":"Screw Axes and Twists","notes":"A screw axis packages an angular and a linear part into a unit twist, and its matrix bracket lives in the Lie algebra se(3). Revolute joints rotate about a line; prismatic joints translate along a direction. Exponentiating the scaled twist yields the joint's rigid displacement."},
+{"slide":4,"label":"The Matrix Exponential","notes":"The matrix exponential sends a twist times its joint value to a homogeneous transform. For a revolute axis the rotation block uses Rodrigues' formula and the translation block captures the off-axis sweep. This single map converts every joint's instantaneous screw into a finite motion."},
+{"slide":5,"label":"Home Configuration M","notes":"The home configuration M records the end-effector frame relative to the fixed frame when all joint values are zero. Every product of exponentials is anchored to M; choosing it carefully removes bookkeeping and makes the screw axes easy to read straight off the mechanism drawing."},
+{"slide":6,"label":"Space-Frame PoE","notes":"The space-frame product of exponentials multiplies exponentials of the fixed-frame screw axes on the left of the home pose, in order from the first joint outward. Each axis is expressed once in the base frame, so the formula needs only those constant space screws and M."},
+{"slide":7,"label":"Body-Frame PoE","notes":"The body-frame formula places the home pose first and multiplies exponentials of end-effector-frame screw axes on its right. It is equivalent to the space form but composes in the opposite order, which is convenient when the axes are most naturally described in the moving gripper frame."},
+{"slide":8,"label":"Planar 3R Worked Example","notes":"For a planar three-revolute arm every screw axis points out of the plane and the home pose places the tip at the summed link lengths. We assemble the three exponentials and read off the closed-form tip position, matching the notebook's numerical endpoint check."},
+{"slide":9,"label":"Spatial Arm: UR5 and PUMA","notes":"A six-joint spatial arm such as the UR5 or PUMA uses six space screw axes plus a home pose. We tabulate each axis from the geometry, then form the six-factor product. The same data later drives the Jacobian, so consistent screw bookkeeping pays off twice."},
+{"slide":10,"label":"Comparison with Denavit-Hartenberg","notes":"Denavit-Hartenberg parametrizes each link with four numbers tied to per-link frames, while product of exponentials needs only screw axes and one home pose. PoE avoids fragile intermediate-frame assignment and represents revolute and prismatic joints uniformly, at the cost of carrying full screw vectors."},
+{"slide":11,"label":"Order, Pitfalls, and the URDF","notes":"Joint order matters: swapping two factors changes the pose because SE(3) is non-commutative. A link-frame drawing is not a substitute for screw-axis data, and a robot description such as a URDF is reliable only when its geometry and axes genuinely agree."},
+{"slide":12,"label":"Recap and Forward Look","notes":"We recap the forward kinematics map, the two equivalent product-of-exponentials forms, the role of the home pose, and the contrast with Denavit-Hartenberg. The same screw axes that compose into the pose reappear as the columns of the Jacobian in the next chapter."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Forward Kinematics">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h1>Forward Kinematics</h1>
+<p class="lead">From a list of joint motions to one end-effector transform</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The map</h3><p>Joint values $\theta$ produce a pose $T(\theta)\in SE(3)$.</p></div>
+<div class="panel teal"><h3>The tool</h3><p>Product of exponentials of screw axes, anchored at home pose $M$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="Open-chain arm in its home configuration with three labelled joint screw axes">
+<rect x="0" y="0" width="380" height="220" fill="#eff6ff"/>
+<rect x="30" y="150" width="60" height="30" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+<line x1="90" y1="165" x2="180" y2="120" stroke="#1d4ed8" stroke-width="5"/>
+<line x1="180" y1="120" x2="270" y2="120" stroke="#0f766e" stroke-width="5"/>
+<line x1="270" y1="120" x2="330" y2="80" stroke="#6d28d9" stroke-width="5"/>
+<circle cx="90" cy="165" r="7" fill="#fff" stroke="#1d4ed8" stroke-width="3"/>
+<circle cx="180" cy="120" r="7" fill="#fff" stroke="#0f766e" stroke-width="3"/>
+<circle cx="270" cy="120" r="7" fill="#fff" stroke="#6d28d9" stroke-width="3"/>
+<rect x="322" y="68" width="22" height="22" fill="none" stroke="#b45309" stroke-width="3"/>
+<text x="80" y="200" font-size="14" fill="#1d4ed8">S₁</text>
+<text x="170" y="108" font-size="14" fill="#0f766e">S₂</text>
+<text x="262" y="108" font-size="14" fill="#6d28d9">S₃</text>
+<text x="320" y="60" font-size="14" fill="#b45309">M</text>
+</svg><figcaption class="small">Open chain at home: screw axes $S_1,S_2,S_3$ and gripper frame $M$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Forward Kinematics</span></div>
+<aside class="speaker-notes">Forward kinematics turns a column of joint values into one rigid-body transform of the end-effector. We frame the chapter question, name the home pose as anchor, and preview the two product-of-exponentials forms that will compose individual screw motions into a single member of SE(3) over pages 137 to 170.</aside>
+</section>
+
+<section class="slide alt" data-label="The Forward Kinematics Map">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>The Forward Kinematics Map</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Inputs</h3><p>An open chain of $n$ joints with values $\theta=(\theta_1,\dots,\theta_n)$.</p></div>
+<div class="panel teal"><h3>Output</h3><p>One rigid configuration of the end-effector frame in the fixed frame.</p></div>
+<div class="panel amber"><h3>Why it matters</h3><p>Every plan, simulation, and controller starts from this map.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Configuration map</div><p class="formula">$$T:\ \mathbb{R}^n \to SE(3),\quad \theta \mapsto T(\theta)$$</p></div>
+<div class="panel violet"><h3>Group structure</h3><p>$T(\theta)=\begin{bmatrix}R & p\\ 0 & 1\end{bmatrix}$, with $R\in SO(3)$, $p\in\mathbb{R}^3$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>The Forward Kinematics Map</span></div>
+<aside class="speaker-notes">We define the map from joint coordinates to the end-effector frame as an element of the special Euclidean group. Each joint contributes a constrained one-parameter motion, and forward kinematics asks how those individual motions stack to produce the observable pose of the gripper frame in the fixed base frame.</aside>
+</section>
+
+<section class="slide" data-label="Screw Axes and Twists">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Screw Axes and Twists</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Twist</h3><p>A screw axis pairs angular $\omega$ with linear $v$: $\mathcal{S}=(\omega,v)$.</p></div>
+<div class="panel teal"><h3>Revolute</h3><p>Rotation about a line: $\|\omega\|=1$, $v=-\omega\times q$.</p></div>
+<div class="panel violet"><h3>Prismatic</h3><p>Translation along a direction: $\omega=0$, $\|v\|=1$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Bracket in se(3)</div><p class="formula">$$[\mathcal{S}]=\begin{bmatrix}[\omega] & v\\ 0 & 0\end{bmatrix}\in se(3)$$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 170" width="100%" role="img" aria-label="A screw axis as a directed line with rotation about it and translation along it">
+<rect x="0" y="0" width="360" height="170" fill="#f0fdfa"/>
+<line x1="40" y1="140" x2="320" y2="40" stroke="#0f766e" stroke-width="3"/>
+<path d="M150 95 a26 14 -20 1 1 22 -10" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+<polygon points="172,85 166,76 178,80" fill="#1d4ed8"/>
+<line x1="250" y1="78" x2="290" y2="64" stroke="#b45309" stroke-width="3"/>
+<polygon points="290,64 280,60 282,72" fill="#b45309"/>
+<text x="300" y="36" font-size="14" fill="#0f766e">axis ω</text>
+<text x="120" y="120" font-size="14" fill="#1d4ed8">rotate</text>
+<text x="252" y="56" font-size="14" fill="#b45309">slide v</text>
+</svg><figcaption class="small">A screw: simultaneous rotation about, and translation along, one line.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Screw Axes and Twists</span></div>
+<aside class="speaker-notes">A screw axis packages an angular and a linear part into a unit twist, and its matrix bracket lives in the Lie algebra se(3). Revolute joints rotate about a line; prismatic joints translate along a direction. Exponentiating the scaled twist then yields the joint's finite rigid displacement.</aside>
+</section>
+
+<section class="slide alt" data-label="The Matrix Exponential">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>The Matrix Exponential</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>One joint, one motion</h3><p>Scaling a twist by $\theta$ and exponentiating gives a transform.</p></div>
+<div class="panel amber"><h3>Rotation block</h3><p>Rodrigues' formula builds $R(\theta)$ from $[\omega]$.</p></div>
+<div class="panel teal"><h3>Translation block</h3><p>The off-axis sweep gives $p(\theta)$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Exponential of a twist</div><p class="formula">$$e^{[\mathcal{S}]\theta}=\begin{bmatrix}e^{[\omega]\theta} & * \\ 0 & 1\end{bmatrix}\in SE(3)$$</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Rodrigues (rotation)</div><p class="formula">$$e^{[\omega]\theta}=I+\sin\theta\,[\omega]+(1-\cos\theta)[\omega]^2$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>The Matrix Exponential</span></div>
+<aside class="speaker-notes">The matrix exponential sends a twist times its joint value to a homogeneous transform. For a revolute axis the rotation block uses Rodrigues' formula and the translation block captures the off-axis sweep. This single map converts every joint's instantaneous screw into a finite, composable rigid motion.</aside>
+</section>
+
+<section class="slide" data-label="Home Configuration M">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Home Configuration $M$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Definition</h3><p>$M=T(0)$: the end-effector frame when all joint values are zero.</p></div>
+<div class="panel blue"><h3>Anchor</h3><p>Every product of exponentials is built around $M$.</p></div>
+<div class="panel violet"><h3>Read off the drawing</h3><p>Choose $M$ so screw axes are easy to extract.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 210" width="100%" role="img" aria-label="Arm at the zero configuration with base frame and end-effector home frame M">
+<rect x="0" y="0" width="380" height="210" fill="#f0fdfa"/>
+<line x1="40" y1="170" x2="120" y2="170" stroke="#475569" stroke-width="3"/>
+<line x1="40" y1="170" x2="40" y2="100" stroke="#475569" stroke-width="3"/>
+<text x="46" y="96" font-size="14" fill="#475569">{s}</text>
+<rect x="32" y="172" width="50" height="22" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+<line x1="120" y1="172" x2="300" y2="172" stroke="#1d4ed8" stroke-width="5"/>
+<circle cx="120" cy="172" r="6" fill="#fff" stroke="#1d4ed8" stroke-width="3"/>
+<line x1="300" y1="172" x2="350" y2="172" stroke="#b45309" stroke-width="3"/>
+<line x1="300" y1="172" x2="300" y2="122" stroke="#b45309" stroke-width="3"/>
+<rect x="294" y="166" width="12" height="12" fill="none" stroke="#b45309" stroke-width="2"/>
+<text x="306" y="118" font-size="14" fill="#b45309">M = T(0)</text>
+</svg><figcaption class="small">At $\theta=0$ the gripper frame sits at $M$ relative to base frame $\{s\}$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Home Configuration M</span></div>
+<aside class="speaker-notes">The home configuration M records the end-effector frame relative to the fixed frame when all joint values are zero. Every product of exponentials is anchored to M; choosing it carefully removes bookkeeping and makes the screw axes easy to read straight off the mechanism drawing rather than computing them.</aside>
+</section>
+
+<section class="slide alt" data-label="Space-Frame PoE">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Space-Frame Product of Exponentials</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Fixed-frame screws</h3><p>Each $\mathcal{S}_i$ is the joint axis expressed in the base frame.</p></div>
+<div class="panel teal"><h3>Order</h3><p>Multiply from the first joint outward, on the left of $M$.</p></div>
+<div class="panel amber"><h3>Constant data</h3><p>Only the space screws and $M$ are needed.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Space form</div><p class="formula">$$T(\theta)=e^{[\mathcal{S}_1]\theta_1}e^{[\mathcal{S}_2]\theta_2}\cdots e^{[\mathcal{S}_n]\theta_n}\,M$$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 150" width="100%" role="img" aria-label="Product of exponentials building the end-effector frame factor by factor">
+<rect x="0" y="0" width="360" height="150" fill="#eff6ff"/>
+<rect x="20" y="60" width="60" height="40" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+<rect x="100" y="60" width="60" height="40" fill="none" stroke="#0f766e" stroke-width="3"/>
+<rect x="180" y="60" width="60" height="40" fill="none" stroke="#6d28d9" stroke-width="3"/>
+<rect x="260" y="60" width="60" height="40" fill="#fffbeb" stroke="#b45309" stroke-width="3"/>
+<text x="30" y="85" font-size="13" fill="#1d4ed8">e^[S₁]θ₁</text>
+<text x="110" y="85" font-size="13" fill="#0f766e">e^[S₂]θ₂</text>
+<text x="190" y="85" font-size="13" fill="#6d28d9">e^[S₃]θ₃</text>
+<text x="282" y="85" font-size="16" fill="#b45309">M</text>
+<line x1="80" y1="80" x2="100" y2="80" stroke="#475569" stroke-width="2"/>
+<line x1="160" y1="80" x2="180" y2="80" stroke="#475569" stroke-width="2"/>
+<line x1="240" y1="80" x2="260" y2="80" stroke="#475569" stroke-width="2"/>
+</svg><figcaption class="small">Left-multiply base-frame factors onto the home pose $M$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Space-Frame PoE</span></div>
+<aside class="speaker-notes">The space-frame product of exponentials multiplies exponentials of the fixed-frame screw axes on the left of the home pose, ordered from the first joint outward. Each axis is expressed once in the base frame, so the formula needs only those constant space screws and the home configuration M.</aside>
+</section>
+
+<section class="slide" data-label="Body-Frame PoE">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Body-Frame Product of Exponentials</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Body screws</h3><p>Each $\mathcal{B}_i$ is the joint axis in the end-effector frame.</p></div>
+<div class="panel blue"><h3>Order</h3><p>$M$ comes first; multiply factors on its right.</p></div>
+<div class="panel violet"><h3>Equivalence</h3><p>$\mathcal{B}_i=[\mathrm{Ad}_{M^{-1}}]\mathcal{S}_i$; same pose, opposite order.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Body form</div><p class="formula">$$T(\theta)=M\,e^{[\mathcal{B}_1]\theta_1}e^{[\mathcal{B}_2]\theta_2}\cdots e^{[\mathcal{B}_n]\theta_n}$$</p></div>
+<div class="panel amber"><h3>When to prefer it</h3><p>Convenient when axes are naturally described in the moving gripper frame.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Body-Frame PoE</span></div>
+<aside class="speaker-notes">The body-frame formula places the home pose first and multiplies exponentials of end-effector-frame screw axes on its right. It is equivalent to the space form but composes in the opposite order, which is convenient when the joint axes are most naturally described in the moving gripper frame.</aside>
+</section>
+
+<section class="slide alt" data-label="Planar 3R Worked Example">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Worked Example: Planar 3R Arm</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Setup</h3><p>Three revolute joints, axes out of plane: $\omega_i=\hat z$.</p></div>
+<div class="panel teal"><h3>Home pose</h3><p>$M$ places the tip at $x=L_1+L_2+L_3$ along the base axis.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Closed-form tip</div><p class="formula">$$x=\textstyle\sum_k L_k\cos\!\big(\textstyle\sum_{i\le k}\theta_i\big)$$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="Planar three-link arm with three out-of-plane revolute axes and traced tip">
+<rect x="0" y="0" width="380" height="220" fill="#eff6ff"/>
+<line x1="40" y1="180" x2="140" y2="120" stroke="#1d4ed8" stroke-width="5"/>
+<line x1="140" y1="120" x2="240" y2="140" stroke="#0f766e" stroke-width="5"/>
+<line x1="240" y1="140" x2="310" y2="90" stroke="#6d28d9" stroke-width="5"/>
+<circle cx="40" cy="180" r="7" fill="#fff" stroke="#1d4ed8" stroke-width="3"/>
+<circle cx="140" cy="120" r="7" fill="#fff" stroke="#0f766e" stroke-width="3"/>
+<circle cx="240" cy="140" r="7" fill="#fff" stroke="#6d28d9" stroke-width="3"/>
+<circle cx="310" cy="90" r="6" fill="#b45309"/>
+<text x="22" y="200" font-size="14" fill="#1d4ed8">θ₁</text>
+<text x="128" y="108" font-size="14" fill="#0f766e">θ₂</text>
+<text x="228" y="166" font-size="14" fill="#6d28d9">θ₃</text>
+<text x="300" y="78" font-size="14" fill="#b45309">tip</text>
+</svg><figcaption class="small">Three exponentials compose to the gripper tip (matches notebook endpoint).</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Planar 3R Worked Example</span></div>
+<aside class="speaker-notes">For a planar three-revolute arm every screw axis points out of the plane and the home pose places the tip at the summed link lengths. We assemble the three exponentials and read off the closed-form tip position, matching the notebook's numerical endpoint check for lengths one, three-quarters, and forty-five hundredths.</aside>
+</section>
+
+<section class="slide" data-label="Spatial Arm: UR5 and PUMA">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Spatial Arm: UR5 / PUMA</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Six axes</h3><p>Tabulate six space screws $\mathcal{S}_1,\dots,\mathcal{S}_6$ from the geometry.</p></div>
+<div class="panel teal"><h3>Home pose</h3><p>One $M$ for the gripper frame at $\theta=0$.</p></div>
+<div class="panel violet"><h3>Reuse</h3><p>The same screws become Jacobian columns next chapter.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Six-factor product</div><p class="formula">$$T(\theta)=\Big(\textstyle\prod_{i=1}^{6} e^{[\mathcal{S}_i]\theta_i}\Big)\,M$$</p></div>
+<div class="panel amber"><h3>Bookkeeping</h3><p>Consistent screw definitions make the spatial case no harder than planar.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Spatial Arm: UR5 and PUMA</span></div>
+<aside class="speaker-notes">A six-joint spatial arm such as the UR5 or PUMA uses six space screw axes plus a home pose. We tabulate each axis from the geometry, then form the six-factor product. The same data later drives the Jacobian, so consistent screw bookkeeping pays off twice across the kinematics chapters.</aside>
+</section>
+
+<section class="slide alt" data-label="Comparison with Denavit-Hartenberg">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>PoE vs. Denavit-Hartenberg</h2>
+<div class="content">
+<div class="stack">
+<div class="panel violet"><h3>Denavit-Hartenberg</h3><p>Four parameters per link, tied to per-link intermediate frames.</p></div>
+<div class="panel amber"><h3>Cost</h3><p>Fragile frame assignment; different rules for prismatic joints.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Product of exponentials</h3><p>Screw axes plus one home pose $M$; no intermediate frames.</p></div>
+<div class="panel teal"><h3>Benefit</h3><p>Uniform for revolute and prismatic; carries full screw vectors.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Comparison with Denavit-Hartenberg</span></div>
+<aside class="speaker-notes">Denavit-Hartenberg parametrizes each link with four numbers tied to per-link frames, while product of exponentials needs only screw axes and one home pose. PoE avoids fragile intermediate-frame assignment and represents revolute and prismatic joints uniformly, at the cost of carrying full six-vector screws for each joint.</aside>
+</section>
+
+<section class="slide" data-label="Order, Pitfalls, and the URDF">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Order, Pitfalls, and the URDF</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Order matters</h3><p>Swapping factors changes the pose: $SE(3)$ is non-commutative.</p></div>
+<div class="panel blue"><h3>Drawing is not data</h3><p>A link-frame sketch cannot replace numeric screw-axis values.</p></div>
+<div class="panel teal"><h3>URDF</h3><p>A robot description is reliable only when geometry and axes agree.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Non-commutativity</div><p class="formula">$$e^{[\mathcal{S}_1]\theta_1}e^{[\mathcal{S}_2]\theta_2}\ \neq\ e^{[\mathcal{S}_2]\theta_2}e^{[\mathcal{S}_1]\theta_1}$$</p></div>
+<div class="panel violet"><h3>Habit</h3><p>Name the representation and its invariant at the same time.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Order, Pitfalls, and the URDF</span></div>
+<aside class="speaker-notes">Joint order matters: swapping two factors changes the pose because SE(3) is non-commutative. A link-frame drawing is not a substitute for screw-axis data, and a robot description such as a URDF is reliable only when its declared geometry and joint axes genuinely agree with each other.</aside>
+</section>
+
+<section class="slide alt" data-label="Recap and Forward Look">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 4</span></div>
+<h2>Recap and Forward Look</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>What we built</h3><ul><li>The map $T(\theta)\in SE(3)$.</li><li>Space and body PoE forms.</li><li>The home pose $M$ as anchor.</li></ul></div>
+<div class="panel violet"><h3>Contrast</h3><p>PoE versus Denavit-Hartenberg: fewer frames, full screws.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Two equivalent forms</div><p class="formula">$$\prod_i e^{[\mathcal{S}_i]\theta_i}\,M \;=\; M\prod_i e^{[\mathcal{B}_i]\theta_i}$$</p></div>
+<div class="panel teal"><h3>Next</h3><p>The same screw axes become the columns of the Jacobian.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 137-170 / PDF pp. 155-188</span><span>Recap and Forward Look</span></div>
+<aside class="speaker-notes">We recap the forward kinematics map, the two equivalent product-of-exponentials forms, the role of the home pose, and the contrast with Denavit-Hartenberg. The same screw axes that compose into the pose reappear as the columns of the Jacobian in the next chapter on velocities and statics.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
