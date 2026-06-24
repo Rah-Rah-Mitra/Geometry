@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-12-grasping-and-manipulation">
+<meta name="chapter_title" content="Grasping and Manipulation">
+<meta name="notebook_path" content="Modern-Robotics/part-04-control-contact-and-mobile-robots/chapter-12-grasping-and-manipulation/12-grasping-and-manipulation.ipynb">
+<meta name="source_span" content="printed pages 461-512; PDF pages 479-530.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Grasping and Manipulation</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-12-grasping-and-manipulation","chapter_title":"Grasping and Manipulation","notebook_path":"Modern-Robotics/part-04-control-contact-and-mobile-robots/chapter-12-grasping-and-manipulation/12-grasping-and-manipulation.ipynb","source_span":"printed pages 461-512; PDF pages 479-530.","source_pdf":"Modern-Robotics/Mordern Robotics.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Grasping and Manipulation","notes":"This chapter studies what a contact can prevent, permit, or command when a robot touches an object. Across printed pages 461 to 512 we treat each contact as a geometric constraint on motion and a generator of admissible force, then ask when contacts together immobilize a grasped part."},
+{"slide":2,"label":"The Chapter Question","notes":"The unifying thread is to separate what a contact says about motion from what it says about force. Rolling, sliding, and breaking are motion modes; friction cones and wrench cones are force objects. Closure asks whether contacts span every motion or every wrench the world might demand."},
+{"slide":3,"label":"Contact Kinematics","notes":"A nonadhesive point contact forbids interpenetration along the normal but may open if bodies separate. The first-order condition signs the normal component of relative velocity, classifying each contact instant as rolling, sliding, or breaking. These local rules decide which relative twists between hand and object are admissible."},
+{"slide":4,"label":"Roll-Slide-Break Conditions","notes":"Let the contact normal point into the object. The signed normal speed of approach determines the mode: zero with matched tangents means rolling, zero with relative tangential motion means sliding, and positive separation means the contact breaks. Penetration, a negative value, is physically forbidden by the unilateral constraint."},
+{"slide":5,"label":"The Coulomb Friction Cone","notes":"Coulomb friction bounds the tangential force by the coefficient times the normal force, so admissible contact forces fill a cone about the normal. The half-angle is the friction angle, arctangent of the coefficient. Any force inside the cone sticks; a force on the boundary is on the verge of sliding."},
+{"slide":6,"label":"Linearized Friction Cone","notes":"The curved friction cone is awkward for linear algebra, so we replace it with a polyhedral inner approximation: a finite fan of edge rays whose positive span lies inside the true cone. More rays approximate the cone better. This turns force-closure questions into linear feasibility and linear programs."},
+{"slide":7,"label":"Contact Wrench Cone","notes":"Each admissible contact force at a point produces a wrench on the object, a moment paired with a force. Mapping every ray of the friction cone through this point gives the contact wrench cone, the set of wrenches that one contact can transmit. The grasp combines these cones additively."},
+{"slide":8,"label":"The Grasp Map","notes":"The grasp map collects each contact's wrench generators as columns acting on contact force coordinates. In the plane a force at a point contributes a moment equal to the cross product plus the two force components. The image of this map is exactly the set of wrenches the grasp can apply to the object."},
+{"slide":9,"label":"Form Closure","notes":"Form closure immobilizes an object with frictionless contacts alone: contact normals must positively span the wrench space so no infinitesimal twist escapes. In the plane first-order form closure needs at least four contacts, in space at least seven. Geometry alone, not friction, blocks every motion here."},
+{"slide":10,"label":"Force Closure","notes":"Force closure allows friction, so the contact wrench cones, not just normals, must positively span every wrench direction. With friction far fewer contacts suffice: two soft-finger or three point contacts can secure a planar object. Force closure means the grasp can resist any external disturbance wrench."},
+{"slide":11,"label":"A Grasp That Fails","notes":"Three contacts pushing symmetrically through a disk's center balance forces but generate no torque about the center, so the grasp map has rank two, not three. The picture looks secure while the algebra exposes a missing wrench direction. Offsetting a contact or adding friction tangents restores torque authority."},
+{"slide":12,"label":"Manipulation Modes","notes":"Beyond static holding, contacts let a robot push, pivot, and topple parts using controlled sliding and tipping about an edge. The same friction-cone and wrench reasoning predicts whether a pushed object rotates which way or whether it tips. Closure is the secure limit; manipulation deliberately uses the unsecure modes."},
+{"slide":13,"label":"Recap and Synthesis","notes":"Contacts are dual objects: constraints on motion and generators of force. Friction cones make unilateral contact geometric, wrench cones lift that to the object, and closure is a positive-spanning test in wrench space. Read the contact picture and the grasp-map rank together, never as separate facts."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Grasping and Manipulation">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h1>Grasping and Manipulation</h1>
+<p class="lead">The mechanics of contact: motion it constrains, force it transmits</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Contact as constraint</h3><p>A touch limits relative motion along the normal.</p></div>
+<div class="panel teal"><h3>Contact as generator</h3><p>A touch can push only into the friction cone.</p></div>
+<div class="panel amber"><h3>Closure</h3><p>When do contacts immobilize the object entirely?</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A square object held by three fingers from outside"><rect x="0" y="0" width="360" height="230" fill="#f0fdfa"/><rect x="130" y="80" width="100" height="70" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><circle cx="130" cy="115" r="9" fill="#0f766e"/><circle cx="230" cy="100" r="9" fill="#0f766e"/><circle cx="180" cy="150" r="9" fill="#0f766e"/><line x1="130" y1="115" x2="155" y2="115" stroke="#b45309" stroke-width="3" marker-end="url(#a1)"/><line x1="230" y1="100" x2="205" y2="103" stroke="#b45309" stroke-width="3" marker-end="url(#a1)"/><line x1="180" y1="150" x2="180" y2="128" stroke="#b45309" stroke-width="3" marker-end="url(#a1)"/><defs><marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker></defs><text x="240" y="180" font-size="16" fill="#475569" font-style="italic">object</text></svg><figcaption class="small">Three contacts, each transmitting an inward force, hold a planar part.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Grasping and Manipulation</span></div>
+<aside class="speaker-notes">This chapter studies what a contact can prevent, permit, or command when a robot touches an object. Across printed pages 461 to 512 we treat each contact as a geometric constraint on motion and a generator of admissible force, then ask when contacts together immobilize a grasped part securely.</aside>
+</section>
+
+<section class="slide alt" data-label="The Chapter Question">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>The Chapter Question</h2>
+<p class="lead">What can contacts prevent, permit, or command?</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Motion side</h3><p>Each contact admits only certain relative twists: roll, slide, or break.</p></div>
+<div class="panel violet"><h3>Force side</h3><p>Each contact transmits only wrenches inside its friction-bounded cone.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Two dual views</div><p class="formula">$\text{twist } \mathcal{V} \;\;\perp\;\; \text{wrench } \mathcal{F}$</p></div>
+<div class="panel teal"><h3>Closure</h3><p>A positive-spanning question: do contacts cover every motion or every wrench?</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>The Chapter Question</span></div>
+<aside class="speaker-notes">The unifying thread is to separate what a contact says about motion from what it says about force. Rolling, sliding, and breaking are motion modes; friction cones and wrench cones are force objects. Closure asks whether contacts together span every motion or every wrench the world might demand of the grasp.</aside>
+</section>
+
+<section class="slide" data-label="Contact Kinematics">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Contact Kinematics</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Unilateral normal</h3><p>The contact resists penetration but cannot pull: a push-only constraint.</p></div>
+<div class="panel amber"><h3>Three modes</h3><p>Rolling, sliding, and breaking partition the local contact behavior.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Compatibility</div><p class="formula">$\hat n^{\mathsf T}\!\left(v_{\text{obj}} - v_{\text{hand}}\right) \ge 0$</p></div>
+<div class="panel teal"><h3>Reading</h3><p>Equality keeps contact; strict inequality opens it; negative is forbidden.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Contact Kinematics</span></div>
+<aside class="speaker-notes">A nonadhesive point contact forbids interpenetration along the normal but may open if bodies separate. The first-order condition signs the normal component of relative velocity, classifying each contact instant as rolling, sliding, or breaking. These local rules decide which relative twists between hand and object are kinematically admissible at that instant.</aside>
+</section>
+
+<section class="slide alt" data-label="Roll-Slide-Break Conditions">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Roll, Slide, Break: First-Order Conditions</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Object surface with normal and tangent, showing three relative velocity cases"><rect x="0" y="0" width="360" height="230" fill="#fffbeb"/><path d="M20,160 Q180,120 340,160" fill="none" stroke="#475569" stroke-width="3"/><circle cx="180" cy="133" r="7" fill="#111827"/><line x1="180" y1="133" x2="180" y2="60" stroke="#2563eb" stroke-width="3" marker-end="url(#a2)"/><text x="186" y="72" font-size="15" fill="#2563eb">n̂</text><line x1="180" y1="133" x2="280" y2="122" stroke="#0f766e" stroke-width="2" stroke-dasharray="6 5"/><text x="262" y="115" font-size="15" fill="#0f766e">t̂</text><line x1="180" y1="133" x2="240" y2="126" stroke="#6d28d9" stroke-width="3" marker-end="url(#a3)"/><text x="210" y="150" font-size="14" fill="#6d28d9">slide</text><line x1="180" y1="133" x2="180" y2="95" stroke="#b45309" stroke-width="3" marker-end="url(#a4)"/><text x="120" y="90" font-size="14" fill="#b45309">break</text><defs><marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker><marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6d28d9"/></marker><marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker></defs></svg><figcaption class="small">Normal n̂, tangent t̂, and the relative-velocity cases at a point contact.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Mode by normal speed</div><p class="formula">$\dot d = \hat n^{\mathsf T}\Delta v$</p></div>
+<ul>
+<li><b>Rolling:</b> $\dot d = 0$, matched tangents.</li>
+<li><b>Sliding:</b> $\dot d = 0$, tangential slip.</li>
+<li><b>Breaking:</b> $\dot d > 0$ (separation).</li>
+<li><b>Penetration:</b> $\dot d < 0$ forbidden.</li>
+</ul>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Roll, Slide, Break</span></div>
+<aside class="speaker-notes">Let the contact normal point into the object. The signed normal speed of approach determines the mode: zero with matched tangents means rolling, zero with relative tangential motion means sliding, and positive separation means the contact breaks. Penetration, a negative value, is physically forbidden by the unilateral nonpenetration constraint at the point.</aside>
+</section>
+
+<section class="slide" data-label="The Coulomb Friction Cone">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>The Coulomb Friction Cone</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A friction cone of admissible contact forces about the surface normal"><rect x="0" y="0" width="360" height="230" fill="#eff6ff"/><line x1="40" y1="190" x2="320" y2="190" stroke="#475569" stroke-width="3"/><polygon points="180,190 110,40 250,40" fill="#fde68a" fill-opacity="0.5" stroke="#b45309" stroke-width="2"/><line x1="180" y1="190" x2="180" y2="40" stroke="#2563eb" stroke-width="3" stroke-dasharray="6 5"/><text x="186" y="55" font-size="16" fill="#2563eb">n̂</text><line x1="180" y1="190" x2="150" y2="80" stroke="#0f766e" stroke-width="3" marker-end="url(#a5)"/><text x="120" y="118" font-size="15" fill="#0f766e">f</text><path d="M180,120 A70,70 0 0,1 162,98" fill="none" stroke="#b45309" stroke-width="2"/><text x="150" y="135" font-size="15" fill="#b45309">α</text><defs><marker id="a5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0f766e"/></marker></defs><text x="250" y="210" font-size="15" fill="#475569" font-style="italic">surface</text></svg><figcaption class="small">Admissible forces lie within the friction angle α of the normal.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Coulomb law</div><p class="formula">$\lVert f_t\rVert \le \mu\, f_n, \qquad \alpha = \tan^{-1}\mu$</p></div>
+<div class="panel teal"><h3>Inside vs boundary</h3><p>Interior forces stick; boundary forces are at the verge of slipping.</p></div>
+<div class="panel blue"><h3>Geometry</h3><p>Friction turns a unilateral inequality into an admissible cone.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>The Coulomb Friction Cone</span></div>
+<aside class="speaker-notes">Coulomb friction bounds the tangential force by the coefficient times the normal force, so admissible contact forces fill a cone about the surface normal. The half-angle is the friction angle, the arctangent of the coefficient. Any force inside the cone sticks; a force on the boundary is on the verge of sliding.</aside>
+</section>
+
+<section class="slide alt" data-label="Linearized Friction Cone">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Linearizing the Friction Cone</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Why linearize</h3><p>A polyhedral cone makes closure a linear feasibility problem.</p></div>
+<div class="panel amber"><h3>Inner approximation</h3><p>Edge rays are chosen so their positive span lies inside the true cone.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Polyhedral cone</div><p class="formula">$f = \sum_{k} \lambda_k\, e_k,\qquad \lambda_k \ge 0$</p></div>
+<div class="panel teal"><h3>Refinement</h3><p>More edge rays approximate the curved cone more tightly.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Linearized Friction Cone</span></div>
+<aside class="speaker-notes">The curved friction cone is awkward for linear algebra, so we replace it with a polyhedral inner approximation: a finite fan of edge rays whose nonnegative span lies inside the true cone. More rays approximate the cone better. This conversion turns force-closure questions into linear feasibility checks and small linear programs.</aside>
+</section>
+
+<section class="slide" data-label="Contact Wrench Cone">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>From Forces to Wrenches</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Force becomes wrench</h3><p>A force at a point produces a moment plus that force on the object.</p></div>
+<div class="panel violet"><h3>Wrench cone</h3><p>Mapping every friction-cone ray gives the wrenches one contact can transmit.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Planar contact wrench</div><p class="formula">$\mathcal F = \begin{bmatrix}\tau_z\\ f_x\\ f_y\end{bmatrix},\quad \tau_z = p_x f_y - p_y f_x$</p></div>
+<div class="panel teal"><h3>Combining</h3><p>The grasp's reachable wrenches are the sum of the contact cones.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Contact Wrench Cone</span></div>
+<aside class="speaker-notes">Each admissible contact force at a point produces a wrench on the object, a moment paired with a force. Mapping every ray of the friction cone through this point gives the contact wrench cone, the set of wrenches one contact can transmit. The grasp combines these cones additively in wrench space across all contacts.</aside>
+</section>
+
+<section class="slide alt" data-label="The Grasp Map">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>The Grasp Map and Wrench Space</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Grasp map</div><p class="formula">$\mathcal F_{\text{obj}} = G\, f_c, \qquad G = [\,\mathcal F_1\ \cdots\ \mathcal F_m\,]$</p></div>
+<div class="panel amber"><h3>Rank alarm</h3><p>If columns miss a direction, no actuation can directly resist it.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Contact wrench rays positively spanning the plane around the origin"><rect x="0" y="0" width="360" height="230" fill="#f0fdfa"/><circle cx="180" cy="115" r="4" fill="#111827"/><line x1="180" y1="115" x2="180" y2="35" stroke="#2563eb" stroke-width="3" marker-end="url(#a6)"/><line x1="180" y1="115" x2="270" y2="160" stroke="#2563eb" stroke-width="3" marker-end="url(#a6)"/><line x1="180" y1="115" x2="95" y2="170" stroke="#2563eb" stroke-width="3" marker-end="url(#a6)"/><line x1="180" y1="115" x2="290" y2="80" stroke="#0f766e" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a7)"/><text x="295" y="78" font-size="14" fill="#0f766e">F<tspan dy="4" font-size="10">ext</tspan></text><circle cx="180" cy="115" r="70" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb" stroke-width="1" stroke-dasharray="3 4"/><defs><marker id="a6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker><marker id="a7" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0f766e"/></marker></defs><text x="40" y="220" font-size="14" fill="#475569" font-style="italic">wrench space</text></svg><figcaption class="small">Positive combinations of wrench rays must surround the origin to resist any disturbance.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>The Grasp Map</span></div>
+<aside class="speaker-notes">The grasp map collects each contact's wrench generators as columns acting on contact-force coordinates. In the plane a force at a point contributes a moment equal to the cross product plus the two force components. The image of this map is exactly the set of wrenches the grasp can apply to the object.</aside>
+</section>
+
+<section class="slide" data-label="Form Closure">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Form Closure</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Frictionless immobilization</h3><p>Contact normals alone block every infinitesimal object motion.</p></div>
+<div class="panel teal"><h3>Spanning test</h3><p>Normals must positively span the whole wrench space.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Positive span</div><p class="formula">$\Big\{\textstyle\sum_i k_i\, \mathcal F_i : k_i \ge 0\Big\} = \mathbb{R}^n$</p></div>
+<div class="panel amber"><h3>Contact count</h3><p>First-order form closure: $\ge 4$ contacts in the plane, $\ge 7$ in space.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Form Closure</span></div>
+<aside class="speaker-notes">Form closure immobilizes an object with frictionless contacts alone: the contact normals must positively span the wrench space so that no infinitesimal twist escapes. In the plane first-order form closure needs at least four contacts, in space at least seven. Geometry alone, not friction, blocks every motion here.</aside>
+</section>
+
+<section class="slide alt" data-label="Force Closure">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Force Closure</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Friction allowed</h3><p>Now the wrench cones, not just normals, do the spanning.</p></div>
+<div class="panel violet"><h3>Fewer contacts</h3><p>Friction lets two or three contacts secure a planar object.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Cone span condition</div><p class="formula">$\operatorname{cone}\{\mathcal F_k\} = \mathbb{R}^n \;\;\Rightarrow\;\; \text{force closure}$</p></div>
+<div class="panel teal"><h3>Meaning</h3><p>The grasp can resist any small external disturbance wrench.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Force Closure</span></div>
+<aside class="speaker-notes">Force closure allows friction, so the contact wrench cones, not just the normals, must positively span every wrench direction. With friction far fewer contacts suffice: two soft-finger or three point contacts can secure a planar object. Force closure means the grasp can resist any external disturbance wrench applied to the part.</aside>
+</section>
+
+<section class="slide" data-label="A Grasp That Fails">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Worked Example: A Rank-Deficient Grasp</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Disk with three radial contact forces all through the center"><rect x="0" y="0" width="360" height="230" fill="#fffbeb"/><circle cx="180" cy="115" r="70" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><circle cx="180" cy="115" r="3" fill="#111827"/><line x1="180" y1="45" x2="180" y2="100" stroke="#b45309" stroke-width="3" marker-end="url(#a8)"/><line x1="241" y1="150" x2="193" y2="123" stroke="#b45309" stroke-width="3" marker-end="url(#a8)"/><line x1="119" y1="150" x2="167" y2="123" stroke="#b45309" stroke-width="3" marker-end="url(#a8)"/><defs><marker id="a8" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker></defs><text x="118" y="40" font-size="15" fill="#475569" font-style="italic">all lines pass through center</text></svg><figcaption class="small">Symmetric radial forces balance translation but command no torque.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Missing torque</div><p class="formula">$p_i \parallel f_i \;\Rightarrow\; \tau_z^{(i)} = 0 \;\Rightarrow\; \operatorname{rank} G = 2$</p></div>
+<div class="panel teal"><h3>Lesson</h3><p>The picture looks secure; the rank exposes a missing wrench direction.</p></div>
+<div class="panel violet"><h3>Fix</h3><p>Offset a contact or add friction tangents to restore torque authority.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>A Grasp That Fails</span></div>
+<aside class="speaker-notes">Three contacts pushing symmetrically through a disk's center balance forces but generate no torque about the center, so the grasp map has rank two, not three. The picture looks secure while the algebra exposes a missing wrench direction. Offsetting a contact or adding friction tangents restores the torque authority.</aside>
+</section>
+
+<section class="slide alt" data-label="Manipulation Modes">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Manipulation: Pushing and Pivoting</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Pushing</h3><p>Controlled sliding moves a part; friction predicts which way it rotates.</p></div>
+<div class="panel amber"><h3>Pivoting</h3><p>Tipping about an edge uses gravity and a single contact edge.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Same toolkit</div><p class="formula">$\text{friction cone} + \text{wrench cone} \Rightarrow \text{motion prediction}$</p></div>
+<div class="panel teal"><h3>Closure vs motion</h3><p>Closure is the secure limit; manipulation exploits the unsecure modes.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Manipulation Modes</span></div>
+<aside class="speaker-notes">Beyond static holding, contacts let a robot push, pivot, and topple parts using controlled sliding and tipping about an edge. The same friction-cone and wrench reasoning predicts whether a pushed object rotates which way or whether it tips. Closure is the secure limit; manipulation deliberately uses the unsecure contact modes to advantage.</aside>
+</section>
+
+<section class="slide" data-label="Recap and Synthesis">
+<div class="topline"><span class="eyebrow">Modern Robotics &middot; Lynch &amp; Park</span><span>Chapter 12</span></div>
+<h2>Recap and Synthesis</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Contacts are dual</h3><p>Constraints on motion and generators of force at once.</p></div>
+<div class="panel teal"><h3>Cones lift to wrenches</h3><p>Friction cones map to per-contact wrench cones on the object.</p></div>
+<div class="panel violet"><h3>Closure is spanning</h3><p>Form and force closure are positive-spanning tests in wrench space.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">One habit</div><p class="formula">$\text{picture of contacts} \;\;\&\;\; \operatorname{rank} G$</p></div>
+<div class="panel amber"><h3>Takeaway</h3><p>Read the contact geometry and the grasp-map rank together, never apart.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 461-512</span><span>Recap and Synthesis</span></div>
+<aside class="speaker-notes">Contacts are dual objects: constraints on motion and generators of force. Friction cones make unilateral contact geometric, wrench cones lift that to the object, and closure becomes a positive-spanning test in wrench space. Read the contact picture and the grasp-map rank together, never as two separate facts about the grasp.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

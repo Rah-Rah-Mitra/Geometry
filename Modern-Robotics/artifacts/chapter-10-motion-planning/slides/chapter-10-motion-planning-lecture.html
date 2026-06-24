@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-10-motion-planning">
+<meta name="chapter_title" content="Motion Planning">
+<meta name="notebook_path" content="Modern-Robotics/part-03-dynamics-trajectories-and-planning/chapter-10-motion-planning/10-motion-planning.ipynb">
+<meta name="source_span" content="printed pages 353-402; PDF pages 371-420.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Motion Planning</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-10-motion-planning","chapter_title":"Motion Planning","notebook_path":"Modern-Robotics/part-03-dynamics-trajectories-and-planning/chapter-10-motion-planning/10-motion-planning.ipynb","source_span":"printed pages 353-402; PDF pages 371-420.","source_pdf":"Modern-Robotics/Mordern Robotics.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Motion Planning","notes":"This chapter, printed pages 353 to 402, reframes robot motion as a search for a point through configuration space rather than a body through workspace. We preview the planning question, the free-versus-forbidden split, and the family of complete, grid, sampling, and optimization methods that answer it."},
+{"slide":2,"label":"The Path-Planning Problem","notes":"We state the problem precisely: given a start configuration, a goal, and a collision model, return a continuous path lying entirely in free space, or report failure. Every later method is just a different policy for searching this same object, so naming it early keeps the chapter organized."},
+{"slide":3,"label":"Configuration-Space Obstacles","notes":"A collision checker maps each candidate configuration to a yes or no verdict, splitting C-space into free and obstacle regions. The key lesson is that a simple workspace obstacle can carve a twisted, high-dimensional forbidden region, which is exactly why planning is hard and why we plan with points."},
+{"slide":4,"label":"Planning a Collision-Free Path","notes":"Here the abstraction pays off: a robot body weaving past a table becomes a single point tracing a curve around a C-obstacle blob. We trace start to goal through the free region and stress that membership in free space, not visual neatness, is the invariant every planner must preserve."},
+{"slide":5,"label":"Three Families of Planners","notes":"We organize methods into complete, grid, and sampling families, each trading guarantees against cost. Complete planners promise an answer but scale poorly; grids are resolution complete; sampling planners are probabilistically complete. Knowing which guarantee a method offers tells you when a failure is the method's fault or the resolution's fault."},
+{"slide":6,"label":"Graph Search: A* and Dijkstra","notes":"Once a roadmap or grid exists, planning becomes shortest-path search. Dijkstra expands by accumulated cost; A* adds an admissible heuristic that never overestimates remaining distance, so it stays optimal while exploring fewer nodes. The admissibility condition is the load-bearing assumption behind that optimality claim."},
+{"slide":7,"label":"Grid-Based Search and Wavefront","notes":"A grid planner discretizes C-space, marks blocked cells, and runs a wavefront flood from the goal so every free cell stores its distance-to-goal. Following decreasing values yields a path. It is resolution complete: a corridor narrower than the grid spacing can vanish between samples, so the planner may confidently solve the wrong problem."},
+{"slide":8,"label":"Probabilistic Roadmaps (PRM)","notes":"PRM samples free configurations, connects nearby ones with a local planner into a reusable roadmap, then answers many queries by graph search. It excels in high dimensions where grids are hopeless, but narrow passages stay hard because random samples rarely land in tightly constrained regions of free space."},
+{"slide":9,"label":"Rapidly-Exploring Random Trees","notes":"RRT grows a single tree rooted at the start. Each step samples a target, finds the nearest tree node, and extends a short step toward it, biasing growth into unexplored regions. It is single-query and probabilistically complete; RRT* rewires neighbors so the path cost converges toward optimal as samples increase."},
+{"slide":10,"label":"Virtual Potential Fields","notes":"Potential fields treat the goal as an attractive well and obstacles as repulsive hills; the robot descends the combined gradient. The motion looks smooth and reactive, but superimposed fields can create spurious local minima that trap the robot short of the goal, which is the method's defining failure mode."},
+{"slide":11,"label":"Nonlinear Optimization Planning","notes":"Optimization planning casts the path as decision variables and minimizes a cost subject to collision and dynamic constraints. It can fold smoothness, clearance, and actuator limits into one objective, but the program is nonconvex, so solvers need good initial guesses and may settle into local optima rather than the global best path."},
+{"slide":12,"label":"Smoothing and Takeaways","notes":"Smoothing comes after feasibility: it shortens or regularizes a jagged feasible path while re-checking clearance and dynamic limits, since the protected invariant is free-space membership, not visual smoothness. The chapter's thesis is that planning equals geometry plus a search policy, and resolution and sampling choices are part of the model."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Motion Planning">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h1>Motion Planning</h1>
+<p class="lead">Finding a collision-free path for a point in configuration space</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The question</h3><p>How does a robot find a feasible path through a high-dimensional space full of obstacles?</p></div>
+<div class="panel teal"><h3>The move</h3><p>Plan a point through C-space, not a body through the workspace.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="A free configuration space with two obstacle blobs and a path from start to goal"><rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/><rect x="10" y="10" width="340" height="200" fill="none" stroke="#cbd5e1" stroke-width="2"/><path d="M110 60 q40 -20 80 5 q30 25 -5 55 q-45 25 -75 -5 q-25 -35 0 -55 z" fill="#fde68a" stroke="#b45309" stroke-width="2"/><path d="M230 130 q35 -10 45 25 q5 35 -35 35 q-40 0 -35 -40 q5 -20 25 -20 z" fill="#fde68a" stroke="#b45309" stroke-width="2"/><circle cx="40" cy="40" r="6" fill="#0f766e"/><text x="50" y="38" font-size="14" fill="#0f766e">start</text><circle cx="320" cy="190" r="6" fill="#2563eb"/><text x="270" y="205" font-size="14" fill="#2563eb">goal</text><path d="M40 40 C120 30 90 110 160 120 C210 128 200 175 320 190" fill="none" stroke="#1d4ed8" stroke-width="3" stroke-dasharray="2 0"/></svg><figcaption class="small">A point routed through free space around two C-obstacles.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Motion Planning</span></div>
+<aside class="speaker-notes">This chapter, printed pages 353 to 402, reframes robot motion as a search for a point through configuration space rather than a body through workspace. We preview the planning question, the free-versus-forbidden split, and the family of complete, grid, sampling, and optimization methods that answer it.</aside>
+</section>
+
+<section class="slide alt" data-label="The Path-Planning Problem">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>The Path-Planning Problem</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Given</h3><p>A start $q_{\text{start}}$, a goal $q_{\text{goal}}$, and a collision model on configuration space.</p></div>
+<div class="panel violet"><h3>Return</h3><p>A continuous path in free space, or a report that none exists.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Feasible path</div><p class="formula">$\tau:[0,1]\to\mathcal{C}_{\text{free}},\;\; \tau(0)=q_{\text{start}},\;\tau(1)=q_{\text{goal}}$</p></div>
+<div class="panel teal"><h3>One object, many policies</h3><p>Every planner below searches this same set differently.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>The Path-Planning Problem</span></div>
+<aside class="speaker-notes">We state the problem precisely: given a start configuration, a goal, and a collision model, return a continuous path lying entirely in free space, or report failure. Every later method is just a different policy for searching this same object, so naming it early keeps the chapter organized.</aside>
+</section>
+
+<section class="slide" data-label="Configuration-Space Obstacles">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Configuration-Space Obstacles</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Collision split</h3><p>A checker labels every configuration free or forbidden.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Free space</div><p class="formula">$\mathcal{C}_{\text{free}} = \mathcal{C}\setminus\mathcal{C}_{\text{obs}}$</p></div>
+<div class="panel blue"><h3>Warning</h3><p>A simple workspace obstacle can twist into a complicated C-obstacle.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A workspace obstacle mapped to a curved obstacle in configuration space"><rect x="0" y="0" width="170" height="230" fill="#fff"/><rect x="5" y="15" width="160" height="200" fill="none" stroke="#cbd5e1" stroke-width="2"/><text x="40" y="12" font-size="13" fill="#64748b">workspace</text><rect x="70" y="80" width="40" height="60" fill="#fca5a5" stroke="#b45309" stroke-width="2"/><line x1="25" y1="190" x2="60" y2="120" stroke="#0f766e" stroke-width="3"/><line x1="60" y1="120" x2="95" y2="70" stroke="#0f766e" stroke-width="3"/><text x="190" y="12" font-size="13" fill="#64748b">C-space</text><rect x="190" y="15" width="160" height="200" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/><path d="M230 40 q60 30 30 90 q-25 50 60 70" fill="none" stroke="#b45309" stroke-width="14" stroke-linecap="round" opacity="0.5"/><text x="250" y="200" font-size="13" fill="#b45309">C_obs</text></svg><figcaption class="small">The red box becomes a curved forbidden band in C-space.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Configuration-Space Obstacles</span></div>
+<aside class="speaker-notes">A collision checker maps each candidate configuration to a yes or no verdict, splitting C-space into free and obstacle regions. The key lesson is that a simple workspace obstacle can carve a twisted, high-dimensional forbidden region, which is exactly why planning is hard and why we plan with points.</aside>
+</section>
+
+<section class="slide alt" data-label="Planning a Collision-Free Path">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Planning a Collision-Free Path</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="A point tracing a curve from start to goal between configuration-space obstacles"><rect x="0" y="0" width="380" height="240" fill="#fff"/><rect x="8" y="8" width="364" height="224" fill="none" stroke="#cbd5e1" stroke-width="2"/><circle cx="150" cy="90" r="42" fill="#fde68a" stroke="#b45309" stroke-width="2"/><circle cx="260" cy="170" r="38" fill="#fde68a" stroke="#b45309" stroke-width="2"/><circle cx="30" cy="210" r="7" fill="#0f766e"/><text x="40" y="214" font-size="14" fill="#0f766e">q_start</text><circle cx="350" cy="30" r="7" fill="#2563eb"/><text x="290" y="28" font-size="14" fill="#2563eb">q_goal</text><path d="M30 210 C70 150 120 160 130 140 C145 110 210 130 230 110 C260 80 300 70 350 30" fill="none" stroke="#1d4ed8" stroke-width="3"/></svg><figcaption class="small">A single point threads the free region between two C-obstacles.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>The invariant</h3><p>Stay inside $\mathcal{C}_{\text{free}}$ at every instant along the path.</p></div>
+<div class="panel violet"><h3>Not the goal</h3><p>Visual neatness is irrelevant; free-space membership is what must hold.</p></div>
+<div class="panel blue"><h3>Reuse</h3><p>Different machines now share one search vocabulary.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Planning a Collision-Free Path</span></div>
+<aside class="speaker-notes">Here the abstraction pays off: a robot body weaving past a table becomes a single point tracing a curve around a C-obstacle blob. We trace start to goal through the free region and stress that membership in free space, not visual neatness, is the invariant every planner must preserve.</aside>
+</section>
+
+<section class="slide" data-label="Three Families of Planners">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Three Families of Planners</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Complete</h3><p>Always find a path if one exists, or prove none does, but scale badly with dimension.</p></div>
+<div class="panel teal"><h3>Grid / resolution</h3><p>Discretize and search; resolution complete at the chosen spacing.</p></div>
+<div class="panel violet"><h3>Sampling</h3><p>Random samples; probabilistically complete as samples grow.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Probabilistic completeness</div><p class="formula">$\Pr[\text{found by }n\text{ samples}]\to 1\;\text{ as } n\to\infty$</p></div>
+<div class="panel amber"><h3>Trade-off</h3><p>Each family swaps a guarantee for tractable cost. Know which guarantee you hold.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Three Families of Planners</span></div>
+<aside class="speaker-notes">We organize methods into complete, grid, and sampling families, each trading guarantees against cost. Complete planners promise an answer but scale poorly; grids are resolution complete; sampling planners are probabilistically complete. Knowing which guarantee a method offers tells you when a failure is the method's fault or the resolution's fault.</aside>
+</section>
+
+<section class="slide alt" data-label="Graph Search: A* and Dijkstra">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Graph Search: A* and Dijkstra</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Dijkstra</h3><p>Expand nodes by least accumulated cost $g(n)$ from the start.</p></div>
+<div class="panel teal"><h3>A*</h3><p>Order by $f(n)=g(n)+h(n)$ with an admissible heuristic.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Admissibility</div><p class="formula">$h(n)\le h^{\ast}(n)\;\Rightarrow\;A^{\ast}\text{ is optimal}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="A roadmap graph with weighted edges and a highlighted shortest path"><rect x="0" y="0" width="360" height="220" fill="#fff"/><line x1="40" y1="180" x2="120" y2="120" stroke="#cbd5e1" stroke-width="2"/><line x1="40" y1="180" x2="110" y2="60" stroke="#cbd5e1" stroke-width="2"/><line x1="120" y1="120" x2="220" y2="150" stroke="#cbd5e1" stroke-width="2"/><line x1="110" y1="60" x2="220" y2="150" stroke="#cbd5e1" stroke-width="2"/><line x1="110" y1="60" x2="240" y2="50" stroke="#cbd5e1" stroke-width="2"/><line x1="220" y1="150" x2="320" y2="90" stroke="#cbd5e1" stroke-width="2"/><line x1="240" y1="50" x2="320" y2="90" stroke="#cbd5e1" stroke-width="2"/><path d="M40 180 L110 60 L240 50 L320 90" fill="none" stroke="#1d4ed8" stroke-width="4"/><circle cx="40" cy="180" r="9" fill="#0f766e"/><text x="14" y="200" font-size="13" fill="#0f766e">start</text><circle cx="120" cy="120" r="7" fill="#94a3b8"/><circle cx="110" cy="60" r="7" fill="#1d4ed8"/><circle cx="220" cy="150" r="7" fill="#94a3b8"/><circle cx="240" cy="50" r="7" fill="#1d4ed8"/><circle cx="320" cy="90" r="9" fill="#2563eb"/><text x="320" y="80" font-size="13" fill="#2563eb">goal</text></svg><figcaption class="small">Blue: the optimal path A* finds while expanding fewer nodes.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Graph Search: A* and Dijkstra</span></div>
+<aside class="speaker-notes">Once a roadmap or grid exists, planning becomes shortest-path search. Dijkstra expands by accumulated cost; A* adds an admissible heuristic that never overestimates remaining distance, so it stays optimal while exploring fewer nodes. The admissibility condition is the load-bearing assumption behind that optimality claim.</aside>
+</section>
+
+<section class="slide" data-label="Grid-Based Search and Wavefront">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Grid-Based Search and Wavefront</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Wavefront</h3><p>Flood distance-to-goal outward from the goal cell across free cells.</p></div>
+<div class="panel blue"><h3>Descend</h3><p>From the start, step to any neighbor with a smaller value.</p></div>
+<div class="panel amber"><h3>Resolution complete</h3><p>A corridor thinner than the spacing can vanish between samples.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A grid with blocked cells and a path of adjacent free cells from start to goal"><rect x="0" y="0" width="360" height="230" fill="#fff"/><g stroke="#e2e8f0" stroke-width="1">
+<rect x="20" y="20" width="40" height="40" fill="#fff"/><rect x="60" y="20" width="40" height="40" fill="#fff"/><rect x="100" y="20" width="40" height="40" fill="#111827"/><rect x="140" y="20" width="40" height="40" fill="#111827"/><rect x="180" y="20" width="40" height="40" fill="#fff"/><rect x="220" y="20" width="40" height="40" fill="#fff"/><rect x="260" y="20" width="40" height="40" fill="#fff"/>
+<rect x="20" y="60" width="40" height="40" fill="#fff"/><rect x="60" y="60" width="40" height="40" fill="#111827"/><rect x="100" y="60" width="40" height="40" fill="#fff"/><rect x="140" y="60" width="40" height="40" fill="#fff"/><rect x="180" y="60" width="40" height="40" fill="#111827"/><rect x="220" y="60" width="40" height="40" fill="#fff"/><rect x="260" y="60" width="40" height="40" fill="#fff"/>
+<rect x="20" y="100" width="40" height="40" fill="#fff"/><rect x="60" y="100" width="40" height="40" fill="#fff"/><rect x="100" y="100" width="40" height="40" fill="#fff"/><rect x="140" y="100" width="40" height="40" fill="#111827"/><rect x="180" y="100" width="40" height="40" fill="#fff"/><rect x="220" y="100" width="40" height="40" fill="#fff"/><rect x="260" y="100" width="40" height="40" fill="#fff"/>
+<rect x="20" y="140" width="40" height="40" fill="#111827"/><rect x="60" y="140" width="40" height="40" fill="#fff"/><rect x="100" y="140" width="40" height="40" fill="#fff"/><rect x="140" y="140" width="40" height="40" fill="#fff"/><rect x="180" y="140" width="40" height="40" fill="#111827"/><rect x="220" y="140" width="40" height="40" fill="#fff"/><rect x="260" y="140" width="40" height="40" fill="#fff"/>
+</g>
+<path d="M40 160 L80 120 L120 120 L160 120 L160 80 L200 40 L240 80 L280 80" fill="none" stroke="#1d4ed8" stroke-width="4"/>
+<circle cx="40" cy="160" r="6" fill="#0f766e"/><circle cx="280" cy="80" r="6" fill="#2563eb"/>
+<text x="20" y="215" font-size="13" fill="#64748b">black = C_obs cells, blue = path of free cells</text></svg></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Grid-Based Search and Wavefront</span></div>
+<aside class="speaker-notes">A grid planner discretizes C-space, marks blocked cells, and runs a wavefront flood from the goal so every free cell stores its distance-to-goal. Following decreasing values yields a path. It is resolution complete: a corridor narrower than the grid spacing can vanish between samples, so the planner may confidently solve the wrong problem.</aside>
+</section>
+
+<section class="slide alt" data-label="Probabilistic Roadmaps (PRM)">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Probabilistic Roadmaps (PRM)</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Sample</h3><p>Draw random free configurations as roadmap nodes.</p></div>
+<div class="panel teal"><h3>Connect</h3><p>Link nearby nodes with a local planner into a reusable graph.</p></div>
+<div class="panel amber"><h3>Narrow passages</h3><p>Random samples rarely land in tightly constrained regions.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A probabilistic roadmap of sampled nodes connected by edges around an obstacle"><rect x="0" y="0" width="360" height="230" fill="#fff"/><rect x="8" y="8" width="344" height="214" fill="none" stroke="#cbd5e1" stroke-width="2"/><rect x="150" y="80" width="70" height="70" fill="#fde68a" stroke="#b45309" stroke-width="2"/>
+<g stroke="#94a3b8" stroke-width="1.5">
+<line x1="40" y1="40" x2="100" y2="70"/><line x1="100" y1="70" x2="120" y2="160"/><line x1="120" y1="160" x2="200" y2="180"/><line x1="200" y1="180" x2="300" y2="150"/><line x1="100" y1="70" x2="250" y2="40"/><line x1="250" y1="40" x2="300" y2="150"/><line x1="40" y1="40" x2="120" y2="160"/></g>
+<path d="M40 40 L100 70 L250 40 L300 150" fill="none" stroke="#1d4ed8" stroke-width="3.5"/>
+<g fill="#0f766e"><circle cx="40" cy="40" r="6"/><circle cx="100" cy="70" r="5"/><circle cx="120" cy="160" r="5"/><circle cx="200" cy="180" r="5"/><circle cx="250" cy="40" r="5"/><circle cx="300" cy="150" r="6"/></g>
+<text x="20" y="215" font-size="13" fill="#64748b">reusable roadmap; blue = a query's path</text></svg></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Probabilistic Roadmaps (PRM)</span></div>
+<aside class="speaker-notes">PRM samples free configurations, connects nearby ones with a local planner into a reusable roadmap, then answers many queries by graph search. It excels in high dimensions where grids are hopeless, but narrow passages stay hard because random samples rarely land in tightly constrained regions of free space.</aside>
+</section>
+
+<section class="slide" data-label="Rapidly-Exploring Random Trees">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Rapidly-Exploring Random Trees</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="An RRT growing a branching tree of samples from start toward a goal around an obstacle"><rect x="0" y="0" width="380" height="240" fill="#fff"/><rect x="8" y="8" width="364" height="224" fill="none" stroke="#cbd5e1" stroke-width="2"/><rect x="160" y="60" width="60" height="110" fill="#fde68a" stroke="#b45309" stroke-width="2"/>
+<g stroke="#0f766e" stroke-width="2" fill="none">
+<path d="M40 200 L70 170"/><path d="M70 170 L90 130"/><path d="M70 170 L110 190"/><path d="M90 130 L80 90"/><path d="M90 130 L130 110"/><path d="M80 90 L110 50"/><path d="M110 50 L160 40"/><path d="M160 40 L230 50"/><path d="M230 50 L270 90"/><path d="M270 90 L300 140"/><path d="M110 190 L150 210"/><path d="M130 110 L150 150"/></g>
+<g fill="#0f766e"><circle cx="70" cy="170" r="3"/><circle cx="90" cy="130" r="3"/><circle cx="110" cy="190" r="3"/><circle cx="80" cy="90" r="3"/><circle cx="130" cy="110" r="3"/><circle cx="110" cy="50" r="3"/><circle cx="160" cy="40" r="3"/><circle cx="230" cy="50" r="3"/><circle cx="270" cy="90" r="3"/><circle cx="150" cy="210" r="3"/><circle cx="150" cy="150" r="3"/></g>
+<circle cx="40" cy="200" r="7" fill="#1d4ed8"/><text x="20" y="222" font-size="13" fill="#1d4ed8">start (root)</text>
+<circle cx="300" cy="140" r="7" fill="#2563eb"/><text x="270" y="160" font-size="13" fill="#2563eb">goal</text></svg><figcaption class="small">The tree grows incrementally toward unexplored free space.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Extend step</h3><p>Sample, find the nearest node, step a short distance toward it.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Growth rule</div><p class="formula">$q_{\text{new}} = q_{\text{near}} + \epsilon\,\dfrac{q_{\text{rand}}-q_{\text{near}}}{\lVert q_{\text{rand}}-q_{\text{near}}\rVert}$</p></div>
+<div class="panel violet"><h3>RRT*</h3><p>Rewire neighbors so cost converges toward optimal.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Rapidly-Exploring Random Trees</span></div>
+<aside class="speaker-notes">RRT grows a single tree rooted at the start. Each step samples a target, finds the nearest tree node, and extends a short step toward it, biasing growth into unexplored regions. It is single-query and probabilistically complete; RRT* rewires neighbors so the path cost converges toward optimal as samples increase.</aside>
+</section>
+
+<section class="slide alt" data-label="Virtual Potential Fields">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Virtual Potential Fields</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Attraction</h3><p>The goal is a low-energy well pulling the robot in.</p></div>
+<div class="panel amber"><h3>Repulsion</h3><p>Obstacles are high-energy hills pushing the robot away.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Combined field</div><p class="formula">$U(q)=U_{\text{att}}(q)+U_{\text{rep}}(q),\quad \dot q=-\nabla U(q)$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="A potential landscape cross-section with a goal well and a spurious local minimum trap"><rect x="0" y="0" width="360" height="220" fill="#fff"/><line x1="20" y1="190" x2="340" y2="190" stroke="#cbd5e1" stroke-width="2"/><path d="M20 60 C70 70 90 150 130 150 C150 150 160 110 185 110 C210 110 215 175 300 178 C320 179 330 120 340 70" fill="none" stroke="#6d28d9" stroke-width="3"/><circle cx="300" cy="178" r="6" fill="#0f766e"/><text x="270" y="200" font-size="13" fill="#0f766e">goal well</text><circle cx="130" cy="150" r="6" fill="#b45309"/><text x="80" y="140" font-size="13" fill="#b45309">local minimum</text><path d="M40 70 L120 145" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="4 3"/><polygon points="120,145 113,138 122,135" fill="#1d4ed8"/></svg><figcaption class="small">Gradient descent can stall in a spurious local minimum.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Virtual Potential Fields</span></div>
+<aside class="speaker-notes">Potential fields treat the goal as an attractive well and obstacles as repulsive hills; the robot descends the combined gradient. The motion looks smooth and reactive, but superimposed fields can create spurious local minima that trap the robot short of the goal, which is the method's defining failure mode.</aside>
+</section>
+
+<section class="slide" data-label="Nonlinear Optimization Planning">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Nonlinear Optimization Planning</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Path as variables</h3><p>Optimize the configurations along the path directly.</p></div>
+<div class="panel teal"><h3>One objective</h3><p>Fold clearance, smoothness, and actuator limits into the cost and constraints.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Trajectory program</div><p class="formula">$\min_{q(\cdot)}\;J[q]\quad\text{s.t.}\;\; q(t)\in\mathcal{C}_{\text{free}},\;\; g(q,\dot q,\ddot q)\le 0$</p></div>
+<div class="panel amber"><h3>Caveat</h3><p>Nonconvex: solvers need a good initial guess and may find only a local optimum.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Nonlinear Optimization Planning</span></div>
+<aside class="speaker-notes">Optimization planning casts the path as decision variables and minimizes a cost subject to collision and dynamic constraints. It can fold smoothness, clearance, and actuator limits into one objective, but the program is nonconvex, so solvers need good initial guesses and may settle into local optima rather than the global best path.</aside>
+</section>
+
+<section class="slide alt" data-label="Smoothing and Takeaways">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 10</span></div>
+<h2>Smoothing and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel violet"><h3>Smoothing</h3><p>Shorten and regularize a feasible path, re-checking clearance after every shortcut.</p></div>
+<div class="panel amber"><h3>Protected invariant</h3><p>Free-space membership, not visual smoothness.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Takeaway 1</h3><p>Planning is geometry plus a search policy.</p></div>
+<div class="panel teal"><h3>Takeaway 2</h3><p>Resolution and sampling choices are part of the model.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 353-402</span><span>Smoothing and Takeaways</span></div>
+<aside class="speaker-notes">Smoothing comes after feasibility: it shortens or regularizes a jagged feasible path while re-checking clearance and dynamic limits, since the protected invariant is free-space membership, not visual smoothness. The chapter's thesis is that planning equals geometry plus a search policy, and resolution and sampling choices are part of the model.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="appendix-a-summary-of-useful-formulas">
+<meta name="chapter_title" content="Summary of Useful Formulas">
+<meta name="notebook_path" content="Modern-Robotics/part-05-reference-appendices/appendix-a-summary-of-useful-formulas/appendix-a-summary-of-useful-formulas.ipynb">
+<meta name="source_span" content="printed pages 565-574; PDF pages 583-592.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Summary of Useful Formulas</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"appendix-a-summary-of-useful-formulas","chapter_title":"Summary of Useful Formulas","notebook_path":"Modern-Robotics/part-05-reference-appendices/appendix-a-summary-of-useful-formulas/appendix-a-summary-of-useful-formulas.ipynb","source_span":"printed pages 565-574; PDF pages 583-592.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"A Formula Atlas for Robotics","notes":"Appendix A is best read as a map of reusable computational contracts, not a list to memorize. We walk the chain from rotations to rigid motions to forward kinematics to Jacobians to dynamics. Each formula pairs a representation with an invariant, and naming both together is the central habit this lecture trains."},
+{"slide":2,"label":"The SO(3)-to-Dynamics Map","notes":"This one-page map is the skeleton of the appendix. SO(3) supplies rotations, SE(3) lifts them to rigid motions, the product of exponentials assembles forward kinematics, the Jacobian differentiates it, and dynamics adds inertia. Every later slide expands one node, so keep returning to this picture to see how the groups connect."},
+{"slide":3,"label":"Rotations: SO(3) and the Skew Map","notes":"Rotation matrices form the group SO(3): orthonormal columns with determinant one. Angular velocity enters through the skew-symmetric bracket that turns a three-vector into a matrix. This hat map is the gateway to the exponential, so checking that a matrix truly lies in SO(3) is the first diagnostic of the appendix."},
+{"slide":4,"label":"Exponential Coordinates and Rodrigues","notes":"Rotating by angle theta about a unit axis is the matrix exponential of the skew axis, expanded in closed form by Rodrigues. The matrix logarithm inverts it to recover axis and angle, but near a rotation of pi the log sits at a branch boundary. Watching that failure mode protects the round-trip residual the notebook tests."},
+{"slide":5,"label":"Rigid Motions: SE(3) and Twists","notes":"Homogeneous transforms in SE(3) bundle a rotation and a translation into one frame. Their tangent objects are twists, stacking an angular velocity with a linear velocity, written as a four-by-four matrix through the same hat construction. The twist is the velocity of a moving frame, and which frame owns it determines every later computation."},
+{"slide":6,"label":"The Screw Axis and exp on se(3)","notes":"A twist is a scaled screw axis: rotation about a line combined with translation along it. Exponentiating the screw matrix produces the rigid transform, and the matrix logarithm of SE(3) recovers the screw coordinates. This unifies pure rotation and pure translation as limiting cases of one helical motion the diagram makes visible."},
+{"slide":7,"label":"The Adjoint Map: Changing Frames","notes":"A twist expressed in one frame becomes another column vector in a second frame. The adjoint of a transform performs that change of coordinates, built from the rotation and the skew of the translation. Most frame bugs in robotics are a missing or inverted adjoint, so naming which adjoint moved a twist is essential debugging discipline."},
+{"slide":8,"label":"Forward Kinematics by Product of Exponentials","notes":"The product of exponentials writes the end-effector pose as a chain of screw exponentials applied to a home configuration. The space form lists screw axes in the fixed frame; the body form lists them in the end-effector frame. Both describe the same arm, and choosing one fixes the frame of every Jacobian column downstream."},
+{"slide":9,"label":"The Space and Body Jacobians","notes":"The Jacobian assembles the end-effector twist from joint rates, with one screw column per joint. The space Jacobian lives in the fixed frame and the body Jacobian in the end-effector frame, related by an adjoint. Rank loss in this matrix is exactly a singularity, where the arm loses an instantaneous direction of motion."},
+{"slide":10,"label":"Wrenches and the Kineto-Statics Duality","notes":"A wrench stacks a moment and a force, dual to a twist because their product is power. Setting the end-effector twist to zero, joint torques balance an applied wrench through the transpose of the Jacobian. This kineto-statics relation lets the same Jacobian govern both motion and force, and the notebook checks power is preserved across frames."},
+{"slide":11,"label":"Manipulator Dynamics","notes":"The equations of motion split joint torque into an inertial term, a velocity-dependent Coriolis and centripetal term, and gravity. The mass matrix is symmetric positive definite, guaranteeing positive kinetic energy, and spatial inertia carries this structure on each link. Perturbing one configuration and watching the smallest eigenvalue stay positive is the appendix's closing sanity check."},
+{"slide":12,"label":"The Appendix as a Checklist","notes":"Read together, these formulas form a debugging checklist: state the domain, name the frame, compute an invariant, then perturb one value and confirm the expected quantity changes. SO(3) determinants, log branch boundaries, adjoint placement, Jacobian rank, and mass-matrix eigenvalues are the witnesses that catch implementation mistakes early."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="A Formula Atlas for Robotics">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h1>Summary of Useful Formulas</h1>
+<p class="lead">A formula atlas: each identity is a contract between a representation and an invariant</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Reusable contracts</h3><p>Not a list to memorize. Every formula names a domain, a frame, and a failure mode.</p></div>
+<div class="panel teal"><h3>One chain</h3><p>$SO(3) \to SE(3) \to$ PoE $\to$ Jacobian $\to$ dynamics.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Five linked nodes forming the rotation to dynamics chain"><rect x="0" y="0" width="360" height="200" fill="#eff6ff"/><circle cx="55" cy="55" r="26" fill="#fff" stroke="#2563eb" stroke-width="2"/><circle cx="180" cy="55" r="26" fill="#fff" stroke="#2563eb" stroke-width="2"/><circle cx="305" cy="55" r="26" fill="#fff" stroke="#0f766e" stroke-width="2"/><circle cx="120" cy="150" r="26" fill="#fff" stroke="#6d28d9" stroke-width="2"/><circle cx="245" cy="150" r="26" fill="#fff" stroke="#b45309" stroke-width="2"/><line x1="81" y1="55" x2="154" y2="55" stroke="#64748b" stroke-width="2"/><line x1="206" y1="55" x2="279" y2="55" stroke="#64748b" stroke-width="2"/><line x1="293" y1="78" x2="258" y2="126" stroke="#64748b" stroke-width="2"/><line x1="222" y1="150" x2="146" y2="150" stroke="#64748b" stroke-width="2"/><text x="55" y="60" font-size="13" fill="#2563eb" text-anchor="middle">SO(3)</text><text x="180" y="60" font-size="13" fill="#2563eb" text-anchor="middle">SE(3)</text><text x="305" y="60" font-size="13" fill="#0f766e" text-anchor="middle">PoE</text><text x="245" y="155" font-size="11" fill="#b45309" text-anchor="middle">Jacob.</text><text x="120" y="155" font-size="11" fill="#6d28d9" text-anchor="middle">dynam.</text></svg><figcaption class="small">The chapter as a single linked map of formula groups.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>A Formula Atlas for Robotics</span></div>
+<aside class="speaker-notes">Appendix A is best read as a map of reusable computational contracts, not a list to memorize. We walk the chain from rotations to rigid motions to forward kinematics to Jacobians to dynamics. Each formula pairs a representation with an invariant, and naming both together is the central habit this lecture trains.</aside>
+</section>
+
+<section class="slide alt" data-label="The SO(3)-to-Dynamics Map">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>The $SO(3)\to$ Dynamics Map</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Horizontal pipeline of five formula groups with feed arrows"><rect x="0" y="0" width="380" height="230" fill="#f8fafc"/><rect x="14" y="40" width="92" height="50" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><rect x="14" y="140" width="92" height="50" rx="6" fill="#f0fdfa" stroke="#0f766e" stroke-width="2"/><rect x="144" y="90" width="92" height="50" rx="6" fill="#f5f3ff" stroke="#6d28d9" stroke-width="2"/><rect x="274" y="40" width="92" height="50" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><rect x="274" y="140" width="92" height="50" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="60" y="70" font-size="13" fill="#2563eb" text-anchor="middle">Rotations</text><text x="60" y="170" font-size="13" fill="#0f766e" text-anchor="middle">Rigid SE(3)</text><text x="190" y="120" font-size="13" fill="#6d28d9" text-anchor="middle">PoE / FK</text><text x="320" y="70" font-size="13" fill="#b45309" text-anchor="middle">Jacobian</text><text x="320" y="170" font-size="13" fill="#2563eb" text-anchor="middle">Dynamics</text><line x1="106" y1="65" x2="144" y2="105" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/><line x1="106" y1="165" x2="144" y2="125" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/><line x1="236" y1="105" x2="274" y2="70" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/><line x1="320" y1="90" x2="320" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#ah)"/><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs></svg><figcaption class="small">Rotations and rigid motions feed kinematics; the Jacobian feeds dynamics.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Read it once</h3><p>Each downstream group reuses the maps above it. A frame chosen early propagates everywhere.</p></div>
+<div class="panel teal"><h3>Why it matters</h3><p>Most errors are not arithmetic; they are a representation mismatched to its geometry.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>The SO(3)-to-Dynamics Map</span></div>
+<aside class="speaker-notes">This one-page map is the skeleton of the appendix. SO(3) supplies rotations, SE(3) lifts them to rigid motions, the product of exponentials assembles forward kinematics, the Jacobian differentiates it, and dynamics adds inertia. Every later slide expands one node, so keep returning to this picture to see how the groups connect.</aside>
+</section>
+
+<section class="slide" data-label="Rotations: SO(3) and the Skew Map">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>Rotations: $SO(3)$ and the Skew Map</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">The group</div><p class="formula">$SO(3)=\{R\in\mathbb{R}^{3\times3}: R^{\top}R=I,\ \det R=1\}$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Hat / skew map</div><p class="formula">$[\omega]=\begin{bmatrix}0&-\omega_3&\omega_2\\\omega_3&0&-\omega_1\\-\omega_2&\omega_1&0\end{bmatrix}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 320 200" width="100%" role="img" aria-label="Coordinate axes with an angular velocity vector and rotation arc"><rect x="0" y="0" width="320" height="200" fill="#fff"/><line x1="60" y1="160" x2="240" y2="160" stroke="#cbd5e1" stroke-width="2"/><line x1="60" y1="160" x2="60" y2="30" stroke="#cbd5e1" stroke-width="2"/><line x1="60" y1="160" x2="150" y2="120" stroke="#cbd5e1" stroke-width="2"/><line x1="60" y1="160" x2="160" y2="60" stroke="#2563eb" stroke-width="3"/><polygon points="160,60 150,68 168,72" fill="#2563eb"/><path d="M120,140 A55,55 0 0 1 175,118" fill="none" stroke="#b45309" stroke-width="3"/><polygon points="175,118 168,110 165,124" fill="#b45309"/><text x="150" y="50" font-size="14" fill="#2563eb">&#969;</text><text x="190" y="120" font-size="13" fill="#b45309">&#952;</text></svg><figcaption class="small">Angular velocity vector and the right-hand rotation it generates.</figcaption></figure>
+<div class="panel amber"><h3>First diagnostic</h3><p>Check $\det R = 1$ and orthonormal columns before trusting any rotation.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>Rotations: SO(3) and the Skew Map</span></div>
+<aside class="speaker-notes">Rotation matrices form the group SO(3): orthonormal columns with determinant one. Angular velocity enters through the skew-symmetric bracket that turns a three-vector into a matrix. This hat map is the gateway to the exponential, so checking that a matrix truly lies in SO(3) is the first diagnostic of the appendix.</aside>
+</section>
+
+<section class="slide alt" data-label="Exponential Coordinates and Rodrigues">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>Exponential Coordinates and Rodrigues</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Rodrigues formula</div><p class="formula">$R=e^{[\hat\omega]\theta}=I+\sin\theta\,[\hat\omega]+(1-\cos\theta)[\hat\omega]^2$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Matrix log</div><p class="formula">$[\hat\omega]\theta=\log R,\qquad \theta=\cos^{-1}\!\tfrac{\operatorname{tr}R-1}{2}$</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Axis-angle</h3><p>A unit axis $\hat\omega$ and angle $\theta$ are the exponential coordinates of $R$.</p></div>
+<div class="panel amber"><h3>Failure mode</h3><p>Near $\theta=\pi$ the log sits on a branch boundary; the axis is ambiguous.</p></div>
+<div class="panel teal"><h3>Check</h3><p>The notebook tracks the $\log(\exp(\cdot))$ round-trip residual.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>Exponential Coordinates and Rodrigues</span></div>
+<aside class="speaker-notes">Rotating by angle theta about a unit axis is the matrix exponential of the skew axis, expanded in closed form by Rodrigues. The matrix logarithm inverts it to recover axis and angle, but near a rotation of pi the log sits at a branch boundary. Watching that failure mode protects the round-trip residual the notebook tests.</aside>
+</section>
+
+<section class="slide" data-label="Rigid Motions: SE(3) and Twists">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>Rigid Motions: $SE(3)$ and Twists</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Homogeneous transform</div><p class="formula">$T=\begin{bmatrix}R&p\\0&1\end{bmatrix}\in SE(3)$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Twist (velocity of a frame)</div><p class="formula">$\mathcal{V}=\begin{bmatrix}\omega\\v\end{bmatrix},\quad [\mathcal{V}]=\begin{bmatrix}[\omega]&v\\0&0\end{bmatrix}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 320 200" width="100%" role="img" aria-label="A fixed frame and a moving body frame connected by a translation vector"><rect x="0" y="0" width="320" height="200" fill="#fff"/><line x1="40" y1="160" x2="120" y2="160" stroke="#2563eb" stroke-width="3"/><line x1="40" y1="160" x2="40" y2="80" stroke="#2563eb" stroke-width="3"/><text x="30" y="75" font-size="13" fill="#2563eb">{s}</text><line x1="210" y1="90" x2="285" y2="105" stroke="#0f766e" stroke-width="3"/><line x1="210" y1="90" x2="195" y2="20" stroke="#0f766e" stroke-width="3"/><text x="220" y="40" font-size="13" fill="#0f766e">{b}</text><line x1="40" y1="160" x2="210" y2="90" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4"/><polygon points="210,90 199,90 205,100" fill="#b45309"/><text x="120" y="115" font-size="13" fill="#b45309">p</text></svg><figcaption class="small">Transform $T$ carries fixed frame {s} to moving body frame {b}.</figcaption></figure>
+<div class="panel violet"><h3>Whose velocity?</h3><p>A twist is the velocity of a moving frame; its frame must be named.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>Rigid Motions: SE(3) and Twists</span></div>
+<aside class="speaker-notes">Homogeneous transforms in SE(3) bundle a rotation and a translation into one frame. Their tangent objects are twists, stacking an angular velocity with a linear velocity, written as a four-by-four matrix through the same hat construction. The twist is the velocity of a moving frame, and which frame owns it determines every later computation.</aside>
+</section>
+
+<section class="slide alt" data-label="The Screw Axis and exp on se(3)">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>The Screw Axis and $\exp$ on $se(3)$</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 320 210" width="100%" role="img" aria-label="A helical screw motion about an axis line with rotation and translation"><rect x="0" y="0" width="320" height="210" fill="#f8fafc"/><line x1="60" y1="190" x2="250" y2="30" stroke="#2563eb" stroke-width="3"/><text x="252" y="28" font-size="13" fill="#2563eb">S</text><path d="M90,170 C140,150 120,120 150,120 C180,120 160,90 200,75" fill="none" stroke="#6d28d9" stroke-width="3"/><polygon points="200,75 190,78 197,86" fill="#6d28d9"/><path d="M105,150 A18,9 0 1 1 105,151" fill="none" stroke="#b45309" stroke-width="2"/><text x="120" y="135" font-size="12" fill="#b45309">rotate</text><text x="205" y="70" font-size="12" fill="#6d28d9">+ slide</text></svg><figcaption class="small">A twist is a scaled screw: rotation about a line plus translation along it.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Exponential on $SE(3)$</div><p class="formula">$T=e^{[\mathcal{S}]\theta},\qquad \mathcal{S}=\begin{bmatrix}\omega\\v\end{bmatrix}$ a screw axis</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Matrix log</div><p class="formula">$[\mathcal{S}]\theta=\log T \;\Rightarrow\; (\hat{\mathcal{S}},\theta)$</p></div>
+<div class="panel teal"><h3>Unifies</h3><p>Pure rotation and pure translation are limiting cases of one helical motion.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>The Screw Axis and exp on se(3)</span></div>
+<aside class="speaker-notes">A twist is a scaled screw axis: rotation about a line combined with translation along it. Exponentiating the screw matrix produces the rigid transform, and the matrix logarithm of SE(3) recovers the screw coordinates. This unifies pure rotation and pure translation as limiting cases of one helical motion the diagram makes visible.</aside>
+</section>
+
+<section class="slide" data-label="The Adjoint Map: Changing Frames">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>The Adjoint Map: Changing Frames</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Adjoint of a transform</div><p class="formula">$[\mathrm{Ad}_T]=\begin{bmatrix}R&0\\ [p]R&R\end{bmatrix}\in\mathbb{R}^{6\times6}$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Change a twist's frame</div><p class="formula">$\mathcal{V}_a=[\mathrm{Ad}_{T_{ab}}]\,\mathcal{V}_b$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 320 190" width="100%" role="img" aria-label="A twist in frame b mapped by the adjoint into frame a"><rect x="0" y="0" width="320" height="190" fill="#fff"/><rect x="20" y="60" width="90" height="60" rx="6" fill="#f0fdfa" stroke="#0f766e" stroke-width="2"/><text x="65" y="95" font-size="14" fill="#0f766e" text-anchor="middle">V in {b}</text><rect x="210" y="60" width="90" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="255" y="95" font-size="14" fill="#2563eb" text-anchor="middle">V in {a}</text><line x1="110" y1="90" x2="210" y2="90" stroke="#6d28d9" stroke-width="3" marker-end="url(#ah2)"/><text x="160" y="78" font-size="13" fill="#6d28d9" text-anchor="middle">Ad_T</text><defs><marker id="ah2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#6d28d9"/></marker></defs></svg><figcaption class="small">Same physical motion, re-expressed in a new frame.</figcaption></figure>
+<div class="panel amber"><h3>Common bug</h3><p>A missing or inverted adjoint. Name which $\mathrm{Ad}$ moved the twist.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>The Adjoint Map: Changing Frames</span></div>
+<aside class="speaker-notes">A twist expressed in one frame becomes another column vector in a second frame. The adjoint of a transform performs that change of coordinates, built from the rotation and the skew of the translation. Most frame bugs in robotics are a missing or inverted adjoint, so naming which adjoint moved a twist is essential debugging discipline.</aside>
+</section>
+
+<section class="slide alt" data-label="Forward Kinematics by Product of Exponentials">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>Forward Kinematics: Product of Exponentials</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Space form</div><p class="formula">$T=e^{[\mathcal{S}_1]\theta_1}\cdots e^{[\mathcal{S}_n]\theta_n}\,M$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Body form</div><p class="formula">$T=M\,e^{[\mathcal{B}_1]\theta_1}\cdots e^{[\mathcal{B}_n]\theta_n}$</p></div>
+<div class="panel violet"><h3>Same arm</h3><p>$M$ is the home pose; $\mathcal{S}_i$ are fixed-frame screws, $\mathcal{B}_i$ body-frame.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 320 200" width="100%" role="img" aria-label="A planar serial arm with three links and joint screws"><rect x="0" y="0" width="320" height="200" fill="#fff"/><line x1="40" y1="170" x2="120" y2="120" stroke="#2563eb" stroke-width="5"/><line x1="120" y1="120" x2="210" y2="135" stroke="#2563eb" stroke-width="5"/><line x1="210" y1="135" x2="270" y2="80" stroke="#2563eb" stroke-width="5"/><circle cx="40" cy="170" r="7" fill="#b45309"/><circle cx="120" cy="120" r="7" fill="#b45309"/><circle cx="210" cy="135" r="7" fill="#b45309"/><circle cx="270" cy="80" r="9" fill="#0f766e"/><text x="22" y="190" font-size="12" fill="#b45309">S_1</text><text x="118" y="108" font-size="12" fill="#b45309">S_2</text><text x="210" y="160" font-size="12" fill="#b45309">S_3</text><text x="278" y="72" font-size="12" fill="#0f766e">end</text></svg><figcaption class="small">One screw exponential per joint, chained onto the home pose.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>Forward Kinematics by Product of Exponentials</span></div>
+<aside class="speaker-notes">The product of exponentials writes the end-effector pose as a chain of screw exponentials applied to a home configuration. The space form lists screw axes in the fixed frame; the body form lists them in the end-effector frame. Both describe the same arm, and choosing one fixes the frame of every Jacobian column downstream.</aside>
+</section>
+
+<section class="slide" data-label="The Space and Body Jacobians">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>The Space and Body Jacobians</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">End-effector twist</div><p class="formula">$\mathcal{V}=J(\theta)\,\dot\theta,\qquad J=[\,J_1\ \cdots\ J_n\,]$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Space and body forms</div><p class="formula">$J_b(\theta)=[\mathrm{Ad}_{T_{bs}}]\,J_s(\theta)$</p></div>
+<div class="panel amber"><h3>Singularity</h3><p>Rank loss in $J$ is a lost instantaneous direction of motion.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 320 200" width="100%" role="img" aria-label="A manipulability ellipse shrinking to a line at a singularity"><rect x="0" y="0" width="320" height="200" fill="#fff"/><ellipse cx="100" cy="100" rx="60" ry="34" fill="#eff6ff" stroke="#2563eb" stroke-width="3"/><text x="100" y="160" font-size="13" fill="#2563eb" text-anchor="middle">full rank</text><line x1="200" y1="100" x2="300" y2="100" stroke="#b45309" stroke-width="4"/><ellipse cx="250" cy="100" rx="50" ry="4" fill="#fffbeb" stroke="#b45309" stroke-width="2"/><text x="250" y="160" font-size="13" fill="#b45309" text-anchor="middle">singular</text></svg><figcaption class="small">Manipulability ellipse collapses to a line as rank drops.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>The Space and Body Jacobians</span></div>
+<aside class="speaker-notes">The Jacobian assembles the end-effector twist from joint rates, with one screw column per joint. The space Jacobian lives in the fixed frame and the body Jacobian in the end-effector frame, related by an adjoint. Rank loss in this matrix is exactly a singularity, where the arm loses an instantaneous direction of motion.</aside>
+</section>
+
+<section class="slide alt" data-label="Wrenches and the Kineto-Statics Duality">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>Wrenches and the Kineto-Statics Duality</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Wrench (moment, force)</div><p class="formula">$\mathcal{F}=\begin{bmatrix}m\\f\end{bmatrix},\qquad \text{power}=\mathcal{F}^{\top}\mathcal{V}$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Kineto-statics</div><p class="formula">$\tau=J^{\top}(\theta)\,\mathcal{F}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 320 190" width="100%" role="img" aria-label="A twist and a wrench paired through power equals their inner product"><rect x="0" y="0" width="320" height="190" fill="#fff"/><line x1="60" y1="95" x2="150" y2="50" stroke="#2563eb" stroke-width="4" marker-end="url(#ah3)"/><text x="95" y="48" font-size="13" fill="#2563eb">V (twist)</text><line x1="60" y1="95" x2="150" y2="140" stroke="#b45309" stroke-width="4" marker-end="url(#ah3)"/><text x="95" y="160" font-size="13" fill="#b45309">F (wrench)</text><circle cx="60" cy="95" r="6" fill="#6d28d9"/><text x="180" y="100" font-size="14" fill="#6d28d9">F&#183;V = power</text><defs><marker id="ah3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker></defs></svg><figcaption class="small">Twist and wrench are dual; their pairing is power, invariant across frames.</figcaption></figure>
+<div class="panel teal"><h3>Same matrix</h3><p>$J$ governs both motion and force; the notebook checks power is preserved.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>Wrenches and the Kineto-Statics Duality</span></div>
+<aside class="speaker-notes">A wrench stacks a moment and a force, dual to a twist because their product is power. Setting the end-effector twist to zero, joint torques balance an applied wrench through the transpose of the Jacobian. This kineto-statics relation lets the same Jacobian govern both motion and force, and the notebook checks power is preserved across frames.</aside>
+</section>
+
+<section class="slide" data-label="Manipulator Dynamics">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>Manipulator Dynamics</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Equations of motion</div><p class="formula">$\tau=M(\theta)\ddot\theta+c(\theta,\dot\theta)+g(\theta)$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Spatial inertia</div><p class="formula">$\mathcal{G}=\begin{bmatrix}\mathcal{I}&0\\0&m\,I\end{bmatrix},\quad M(\theta)=M^{\top}\succ0$</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Three terms</h3><p>Inertial $M\ddot\theta$, velocity-dependent Coriolis/centripetal $c$, and gravity $g$.</p></div>
+<figure class="diagram"><svg viewBox="0 0 320 170" width="100%" role="img" aria-label="A bar chart of three positive mass-matrix eigenvalues"><rect x="0" y="0" width="320" height="170" fill="#fff"/><line x1="40" y1="140" x2="300" y2="140" stroke="#cbd5e1" stroke-width="2"/><rect x="70" y="60" width="46" height="80" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><rect x="140" y="40" width="46" height="100" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><rect x="210" y="85" width="46" height="55" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><text x="93" y="158" font-size="12" fill="#0f766e">&#955;_1</text><text x="163" y="158" font-size="12" fill="#0f766e">&#955;_2</text><text x="233" y="158" font-size="12" fill="#0f766e">&#955;_3</text><text x="150" y="28" font-size="12" fill="#0f766e">all &#955; &gt; 0</text></svg><figcaption class="small">Sanity check: $M(\theta)$ eigenvalues stay positive, so kinetic energy is positive.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>Manipulator Dynamics</span></div>
+<aside class="speaker-notes">The equations of motion split joint torque into an inertial term, a velocity-dependent Coriolis and centripetal term, and gravity. The mass matrix is symmetric positive definite, guaranteeing positive kinetic energy, and spatial inertia carries this structure on each link. Perturbing one configuration and watching the smallest eigenvalue stay positive is the appendix's closing sanity check.</aside>
+</section>
+
+<section class="slide alt" data-label="The Appendix as a Checklist">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Appendix A</span></div>
+<h2>The Appendix as a Checklist</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Four steps</h3><p>State the domain, name the frame, compute an invariant, then perturb one value.</p></div>
+<div class="panel teal"><h3>Witnesses</h3><p>$\det R$, log branch, $\mathrm{Ad}$ placement, $\operatorname{rank}J$, $\lambda_{\min}(M)$.</p></div>
+<div class="panel amber"><h3>Pitfall</h3><p>A summary page is dangerous if it omits domains and conventions.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Takeaway</div><p class="formula">Every reusable formula is paired with an invariant.</p></div>
+<figure class="diagram"><svg viewBox="0 0 320 190" width="100%" role="img" aria-label="A vertical checklist of five formula groups with check marks"><rect x="0" y="0" width="320" height="190" fill="#fff"/><g stroke="#0f766e" stroke-width="3" fill="none"><path d="M30,28 l8,8 l14,-16"/><path d="M30,62 l8,8 l14,-16"/><path d="M30,96 l8,8 l14,-16"/><path d="M30,130 l8,8 l14,-16"/><path d="M30,164 l8,8 l14,-16"/></g><text x="70" y="32" font-size="14" fill="#111827">SO(3): det = 1</text><text x="70" y="66" font-size="14" fill="#111827">SE(3): which frame?</text><text x="70" y="100" font-size="14" fill="#111827">Adjoint applied once</text><text x="70" y="134" font-size="14" fill="#111827">Jacobian rank</text><text x="70" y="168" font-size="14" fill="#111827">M positive definite</text></svg><figcaption class="small">The appendix becomes a debugging checklist for the whole course.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-574</span><span>The Appendix as a Checklist</span></div>
+<aside class="speaker-notes">Read together, these formulas form a debugging checklist: state the domain, name the frame, compute an invariant, then perturb one value and confirm the expected quantity changes. SO(3) determinants, log branch boundaries, adjoint placement, Jacobian rank, and mass-matrix eigenvalues are the witnesses that catch implementation mistakes early.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
