@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Nonparametric Inference on Manifolds with Applications to Shape Spaces">
+<meta name="chapter_id" content="chapter-05">
+<meta name="chapter_title" content="05. Intrinsic analysis on manifolds">
+<meta name="notebook_path" content="Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces/part-01-foundations-and-examples/chapter-05-intrinsic-analysis/05-intrinsic-analysis.ipynb">
+<meta name="source_span" content="printed pages 57-76; PDF pages 72-91.">
+<meta name="source_pdf" content="Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces/Nonparametric Inference on Manifolds with Applications to Shape Spaces.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>05. Intrinsic analysis on manifolds</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Nonparametric Inference on Manifolds with Applications to Shape Spaces","chapter_id":"chapter-05","chapter_title":"05. Intrinsic analysis on manifolds","notebook_path":"Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces/part-01-foundations-and-examples/chapter-05-intrinsic-analysis/05-intrinsic-analysis.ipynb","source_span":"printed pages 57-76; PDF pages 72-91.","source_pdf":"Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces/Nonparametric Inference on Manifolds with Applications to Shape Spaces.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Intrinsic Analysis on Manifolds","notes":"This chapter, printed pages 57 to 76, builds statistics that live inside the manifold itself. Instead of embedding the data in Euclidean space, we measure with the Riemannian geodesic distance and define a mean by minimizing squared geodesic spread, the central object for everything that follows."},
+{"slide":2,"label":"Geodesic Distance","notes":"The geodesic distance is the length of the shortest curve joining two points on the manifold. It respects the curved geometry, unlike the ambient chord. Every intrinsic estimator in this chapter is built from this distance, so understanding its locality and cut-locus behaviour is essential before defining means."},
+{"slide":3,"label":"The Intrinsic Frechet Mean","notes":"The intrinsic Frechet or Karcher mean minimizes the expected squared geodesic distance to a random point. It generalizes the Euclidean average, where squared distance gives the ordinary mean. On a curved space the minimizer need not be unique, so existence and uniqueness require careful hypotheses."},
+{"slide":4,"label":"Exponential and Logarithm Maps","notes":"The exponential map shoots a geodesic from a base point along a tangent vector for unit time, while the logarithm map inverts it, recording the initial velocity that reaches a target. Together they pass data between the flat tangent space and the curved manifold, the engine of every intrinsic computation."},
+{"slide":5,"label":"Tangent-Space Linearization","notes":"At the mean, the logarithm map sends each sample to a tangent vector whose length equals its geodesic distance. Because tangent vectors add like ordinary vectors, statistics that are hard on the manifold become linear algebra in normal coordinates centered at the Karcher mean."},
+{"slide":6,"label":"Existence and Uniqueness","notes":"Karcher, Kendall, Le, and Afsari give sufficient conditions: if the support lies in a regular geodesic ball whose radius is bounded by the injectivity radius and the inverse square root of the curvature, the squared distance is convex and the intrinsic mean exists and is unique within that ball."},
+{"slide":7,"label":"When Uniqueness Fails","notes":"Spread out the data and uniqueness breaks. The uniform distribution on a sphere has every point as a Frechet minimizer, and an antipodal pair has a whole equatorial circle of means. The cut locus and positive curvature are what destroy the convexity that small balls enjoy."},
+{"slide":8,"label":"The Karcher Mean Iteration","notes":"We compute the mean by a tangent-space fixed point. Lift every sample through the logarithm at the current estimate, average those tangent vectors, then push the average back with the exponential map. Repeating drives the tangent average to zero, the first-order optimality condition for the Karcher mean."},
+{"slide":9,"label":"Gradient and Newton Steps","notes":"The averaged log vectors are exactly the negative gradient of the Frechet functional, so the iteration is Riemannian gradient descent. Replacing the step with the Hessian of the squared distance, which carries curvature corrections, yields a Newton method that converges quadratically near the mean."},
+{"slide":10,"label":"Central Limit Theorem","notes":"In normal coordinates at the population mean, the sample Karcher mean is asymptotically normal. Root-n times its coordinate vector converges to a Gaussian whose covariance involves the Hessian of the Frechet functional, enabling confidence regions and bootstrap two-sample tests directly in the tangent chart."},
+{"slide":11,"label":"Intrinsic versus Extrinsic","notes":"Extrinsic analysis embeds the manifold and projects the ambient mean back, which is fast and always unique. Intrinsic analysis uses the true geodesic metric and is coordinate free but costs iteration and needs concentration. The two often agree for tight data and diverge as spread grows."},
+{"slide":12,"label":"Recap and Lab","notes":"We defined the geodesic distance, the Karcher mean, the exponential and logarithm maps, the regular-ball conditions, the tangent-space iteration, and the central limit theorem. The lab asks what breaks if geodesic distance is replaced by Euclidean distance, exposing why intrinsic geometry is not decorative."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Intrinsic Analysis on Manifolds">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h1>Intrinsic Analysis on Manifolds</h1>
+<p class="lead">Statistics done with the manifold's own Riemannian geometry</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Intrinsic metric</h3><p>Measure with the geodesic distance $d_g$, not the ambient chord.</p></div>
+<div class="panel teal"><h3>Intrinsic mean</h3><p>Minimize the expected squared geodesic spread $E\,d_g(p,X)^2$.</p></div>
+<div class="panel amber"><h3>Tangent linearization</h3><p>Map data to a flat tangent chart with $\mathrm{Log}$, work, return with $\mathrm{Exp}$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Curved manifold with a geodesic arc between two points and the ambient chord"><rect x="0" y="0" width="360" height="230" fill="#f0fdfa"/><path d="M20 170 Q120 70 200 110 T340 70" fill="none" stroke="#0F766E" stroke-width="3"/><circle cx="70" cy="123" r="5" fill="#1E3A8A"/><circle cx="300" cy="83" r="5" fill="#1E3A8A"/><path d="M70 123 Q170 70 300 83" fill="none" stroke="#2563EB" stroke-width="3"/><line x1="70" y1="123" x2="300" y2="83" stroke="#B45309" stroke-width="2" stroke-dasharray="6 5"/><text x="150" y="78" font-size="15" fill="#2563EB">geodesic</text><text x="150" y="120" font-size="14" fill="#B45309">chord</text><text x="44" y="118" font-size="14" fill="#1E3A8A">p</text><text x="306" y="80" font-size="14" fill="#1E3A8A">q</text></svg><figcaption class="small">Geodesic distance follows the surface; the chord cuts through ambient space.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Intrinsic Analysis on Manifolds</span></div>
+<aside class="speaker-notes">This chapter, printed pages 57 to 76, builds statistics that live inside the manifold itself. Instead of embedding the data in Euclidean space, we measure with the Riemannian geodesic distance and define a mean by minimizing squared geodesic spread, the central object for everything that follows on these curved sample spaces.</aside>
+</section>
+
+<section class="slide alt" data-label="Geodesic Distance">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Geodesic Distance</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Shortest path</h3><p>$d_g(p,q)$ is the length of the minimizing geodesic on $(M,g)$.</p></div>
+<div class="panel teal"><h3>True metric</h3><p>It is intrinsic: it depends only on $g$, not on any embedding.</p></div>
+<div class="panel amber"><h3>Cut locus</h3><p>Beyond the cut locus, minimizers stop being unique.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Definition</div><p class="formula">$d_g(p,q) = \inf_{\gamma}\int_0^1 \sqrt{g_{\gamma}(\dot\gamma,\dot\gamma)}\,dt$</p></div>
+<div class="panel violet"><h3>On the sphere</h3><p>Great-circle arc length; antipodes sit at distance $\pi$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Geodesic Distance</span></div>
+<aside class="speaker-notes">The geodesic distance is the length of the shortest curve joining two points on the manifold, obtained by integrating the Riemannian speed along candidate paths. It respects the curved geometry, unlike the ambient chord. Every intrinsic estimator here is built from this distance, so its locality and cut-locus behaviour matter.</aside>
+</section>
+
+<section class="slide" data-label="The Intrinsic Frechet Mean">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>The Intrinsic Frechet (Karcher) Mean</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Variance functional</h3><p>The Frechet function $F(p)=E\,d_g(p,X)^2$ measures squared spread about $p$.</p></div>
+<div class="panel teal"><h3>The mean set</h3><p>Minimizers of $F$ form the intrinsic mean set; a single point is a Karcher mean.</p></div>
+<div class="panel amber"><h3>Euclidean limit</h3><p>When $d_g$ is Euclidean, the minimizer is the ordinary average $E[X]$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Definition</div><p class="formula">$\mu = \arg\min_{p\in M}\; E\big[d_g(p,X)^2\big]$</p></div>
+<div class="panel violet"><h3>Sample version</h3><p>$\widehat\mu_n=\arg\min_p \tfrac1n\sum_i d_g(p,X_i)^2$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>The Intrinsic Frechet Mean</span></div>
+<aside class="speaker-notes">The intrinsic Frechet or Karcher mean minimizes the expected squared geodesic distance to a random point. It generalizes the Euclidean average, where squared distance recovers the ordinary mean. On a curved space the minimizer need not be unique, so existence and uniqueness require the careful hypotheses we develop in the slides that follow.</aside>
+</section>
+
+<section class="slide alt" data-label="Exponential and Logarithm Maps">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Exponential and Logarithm Maps</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Exp map</h3><p>$\mathrm{Exp}_p(v)$ travels the geodesic from $p$ with velocity $v$ for unit time.</p></div>
+<div class="panel teal"><h3>Log map</h3><p>$\mathrm{Log}_p(q)$ returns the initial velocity reaching $q$; it inverts $\mathrm{Exp}_p$.</p></div>
+<div class="panel amber"><h3>Isometry of length</h3><p>$\lVert\mathrm{Log}_p(q)\rVert_g = d_g(p,q)$ inside the injectivity radius.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Tangent plane touching a curved manifold with Exp and Log arrows"><rect x="0" y="0" width="360" height="240" fill="#fffbeb"/><path d="M30 180 Q180 90 330 180" fill="none" stroke="#0F766E" stroke-width="3"/><line x1="40" y1="95" x2="320" y2="95" stroke="#CBD5E1" stroke-width="2"/><line x1="40" y1="115" x2="320" y2="75" stroke="#CBD5E1" stroke-width="1"/><circle cx="180" cy="135" r="6" fill="#1E3A8A"/><text x="188" y="132" font-size="14" fill="#1E3A8A">p</text><circle cx="180" cy="95" r="4" fill="#6D28D9"/><text x="186" y="92" font-size="13" fill="#6D28D9">T_pM</text><line x1="180" y1="135" x2="250" y2="95" stroke="#2563EB" stroke-width="2.5" marker-end="url(#ah)"/><text x="220" y="120" font-size="13" fill="#2563EB">v</text><path d="M180 135 Q230 120 270 165" fill="none" stroke="#B45309" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah2)"/><circle cx="270" cy="165" r="5" fill="#1E3A8A"/><text x="276" y="162" font-size="13" fill="#1E3A8A">q</text><text x="120" y="88" font-size="13" fill="#0F766E">Exp / Log</text><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#2563EB"/></marker><marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#B45309"/></marker></defs></svg><figcaption class="small">$\mathrm{Exp}_p$ pushes a tangent vector onto the manifold; $\mathrm{Log}_p$ pulls a point back.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Exponential and Logarithm Maps</span></div>
+<aside class="speaker-notes">The exponential map shoots a geodesic from a base point along a tangent vector for unit time, while the logarithm map inverts it, recording the initial velocity that reaches a target. Together they pass data between the flat tangent space and the curved manifold, the engine of every intrinsic computation in this chapter.</aside>
+</section>
+
+<section class="slide" data-label="Tangent-Space Linearization">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Tangent-Space Linearization at the Mean</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Normal coordinates</h3><p>At $\mu$, $\mathrm{Log}_\mu$ gives a chart where geodesics through $\mu$ are straight.</p></div>
+<div class="panel teal"><h3>Lengths preserved</h3><p>$\lVert\mathrm{Log}_\mu(X_i)\rVert = d_g(\mu,X_i)$, so spread is read off directly.</p></div>
+<div class="panel amber"><h3>Linear algebra</h3><p>Averaging, covariance, and tests become flat vector operations.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Sample points on a manifold mapped to vectors in the tangent plane at the mean"><rect x="0" y="0" width="360" height="240" fill="#eff6ff"/><circle cx="180" cy="120" r="78" fill="none" stroke="#0F766E" stroke-width="3"/><circle cx="180" cy="120" r="5" fill="#1E3A8A"/><text x="186" y="116" font-size="13" fill="#1E3A8A">&#956;</text><circle cx="120" cy="80" r="4" fill="#6D28D9"/><circle cx="245" cy="95" r="4" fill="#6D28D9"/><circle cx="230" cy="170" r="4" fill="#6D28D9"/><circle cx="115" cy="160" r="4" fill="#6D28D9"/><line x1="180" y1="120" x2="120" y2="80" stroke="#2563EB" stroke-width="2"/><line x1="180" y1="120" x2="245" y2="95" stroke="#2563EB" stroke-width="2"/><line x1="180" y1="120" x2="230" y2="170" stroke="#2563EB" stroke-width="2"/><line x1="180" y1="120" x2="115" y2="160" stroke="#2563EB" stroke-width="2"/><text x="60" y="30" font-size="14" fill="#0F766E">Log to tangent space</text></svg><figcaption class="small">Each sample becomes a tangent vector at $\mu$; statistics happen on these vectors.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Tangent-Space Linearization</span></div>
+<aside class="speaker-notes">At the mean, the logarithm map sends each sample to a tangent vector whose length equals its geodesic distance. Because tangent vectors add like ordinary vectors, statistics that are hard on the manifold become linear algebra in normal coordinates centered at the Karcher mean, which is exactly what makes intrinsic inference tractable.</aside>
+</section>
+
+<section class="slide alt" data-label="Existence and Uniqueness">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Existence and Uniqueness</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Regular ball</h3><p>Support inside a geodesic ball $B(p,r)$ on which $d_g^2$ stays geodesically convex.</p></div>
+<div class="panel teal"><h3>Radius bound</h3><p>Karcher / Kendall / Le / Afsari: $r$ below the injectivity radius and $\tfrac{\pi}{2\sqrt{\kappa}}$.</p></div>
+<div class="panel amber"><h3>Consequence</h3><p>$F$ is strictly convex there, so $\mu$ exists and is unique in the ball.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Afsari condition (curvature $\le \kappa$)</div><p class="formula">$r < r^* = \tfrac12\min\!\Big\{\mathrm{inj}(M),\; \tfrac{\pi}{\sqrt{\kappa}}\Big\}$</p></div>
+<div class="panel violet"><h3>Reading it</h3><p>Positive curvature and a far cut locus are exactly what these bounds tame.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Existence and Uniqueness</span></div>
+<aside class="speaker-notes">Karcher, Kendall, Le, and Afsari give sufficient conditions: if the support lies in a regular geodesic ball whose radius is bounded by the injectivity radius and the inverse square root of the curvature, the squared distance stays convex and the intrinsic mean exists and is unique within that ball.</aside>
+</section>
+
+<section class="slide" data-label="When Uniqueness Fails">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>When Uniqueness Fails</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Spread-out data</h3><p>Leave the regular ball and convexity is lost; minimizers multiply.</p></div>
+<div class="panel blue"><h3>Antipodal pair</h3><p>Two opposite poles on $S^2$ have an entire equator of Frechet means.</p></div>
+<div class="panel teal"><h3>Uniform on $S^2$</h3><p>Every point minimizes $F$ equally; the mean set is the whole sphere.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Sphere with two antipodal points and an equatorial circle of equally good means"><rect x="0" y="0" width="360" height="240" fill="#fffbeb"/><circle cx="180" cy="120" r="82" fill="none" stroke="#CBD5E1" stroke-width="2"/><ellipse cx="180" cy="120" rx="82" ry="26" fill="none" stroke="#B45309" stroke-width="3" stroke-dasharray="7 5"/><circle cx="180" cy="38" r="6" fill="#1E3A8A"/><circle cx="180" cy="202" r="6" fill="#1E3A8A"/><text x="190" y="36" font-size="13" fill="#1E3A8A">X&#8321;</text><text x="190" y="214" font-size="13" fill="#1E3A8A">X&#8322;</text><circle cx="98" cy="120" r="4" fill="#B45309"/><circle cx="262" cy="120" r="4" fill="#B45309"/><circle cx="150" cy="135" r="4" fill="#B45309"/><text x="120" y="175" font-size="13" fill="#B45309">all equators tie</text></svg><figcaption class="small">Antipodes: every equatorial point is an equally valid intrinsic mean.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>When Uniqueness Fails</span></div>
+<aside class="speaker-notes">Spread out the data and uniqueness breaks. The uniform distribution on a sphere has every point as a Frechet minimizer, and an antipodal pair has a whole equatorial circle of means. The cut locus and positive curvature are what destroy the convexity that small regular balls otherwise enjoy.</aside>
+</section>
+
+<section class="slide alt" data-label="The Karcher Mean Iteration">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Computing the Karcher Mean</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>1. Lift</h3><p>At current $\mu_k$, compute $v_i=\mathrm{Log}_{\mu_k}(X_i)$ for every sample.</p></div>
+<div class="panel teal"><h3>2. Average</h3><p>Form the tangent mean $\bar v=\tfrac1n\sum_i v_i$ in the flat chart.</p></div>
+<div class="panel amber"><h3>3. Retract</h3><p>Update $\mu_{k+1}=\mathrm{Exp}_{\mu_k}(\bar v)$ and repeat until $\bar v\to 0$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Fixed-point condition</div><p class="formula">$\sum_i \mathrm{Log}_{\mu}(X_i) = 0$</p></div>
+<div class="panel violet"><h3>Why it works</h3><p>The tangent average is the first-order optimality residual of $F$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>The Karcher Mean Iteration</span></div>
+<aside class="speaker-notes">We compute the mean by a tangent-space fixed point. Lift every sample through the logarithm at the current estimate, average those tangent vectors, then push the average back with the exponential map. Repeating drives the tangent average to zero, which is the first-order optimality condition for the Karcher mean.</aside>
+</section>
+
+<section class="slide" data-label="Gradient and Newton Steps">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Gradient and Newton Updates</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Riemannian gradient</h3><p>$\mathrm{grad}\,F(p)=-2\,E\,\mathrm{Log}_p(X)$; the tangent average is gradient descent.</p></div>
+<div class="panel teal"><h3>Hessian step</h3><p>Newton uses the Hessian of $d_g^2$, which carries curvature corrections.</p></div>
+<div class="panel amber"><h3>Convergence</h3><p>Linear for the simple iteration, quadratic for Newton near $\mu$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Gradient iteration</div><p class="formula">$\mu_{k+1}=\mathrm{Exp}_{\mu_k}\!\Big(\tfrac1n\sum_i \mathrm{Log}_{\mu_k}(X_i)\Big)$</p></div>
+<div class="panel violet"><h3>Curvature note</h3><p>The Hessian shrinks in positive curvature, stretches in negative.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Gradient and Newton Steps</span></div>
+<aside class="speaker-notes">The averaged log vectors are exactly the negative gradient of the Frechet functional, so the iteration is Riemannian gradient descent. Replacing the step with the Hessian of the squared distance, which carries curvature corrections, yields a Newton method that converges quadratically near the mean rather than merely linearly.</aside>
+</section>
+
+<section class="slide alt" data-label="Central Limit Theorem">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Central Limit Theorem for $\widehat\mu_n$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Normal coordinates</h3><p>Express $\widehat\mu_n$ in the chart $\mathrm{Log}_\mu$ centered at the true mean.</p></div>
+<div class="panel teal"><h3>Asymptotic normality</h3><p>$\sqrt{n}\,\mathrm{Log}_\mu(\widehat\mu_n)\Rightarrow N(0,\Sigma)$.</p></div>
+<div class="panel amber"><h3>Inference</h3><p>Confidence regions and bootstrap two-sample tests live in the tangent chart.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Sandwich covariance</div><p class="formula">$\Sigma = H^{-1}\,\mathrm{Cov}\!\big(\mathrm{Log}_\mu X\big)\,H^{-1}$</p></div>
+<div class="panel violet"><h3>$H$</h3><p>$H$ is the Hessian of $F$ at $\mu$, encoding curvature through the data.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Central Limit Theorem</span></div>
+<aside class="speaker-notes">In normal coordinates at the population mean, the sample Karcher mean is asymptotically normal. Root-n times its coordinate vector converges to a Gaussian whose covariance is a sandwich involving the Hessian of the Frechet functional, enabling confidence regions and bootstrap two-sample tests directly in the tangent chart.</aside>
+</section>
+
+<section class="slide" data-label="Intrinsic versus Extrinsic">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Intrinsic versus Extrinsic Analysis</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Extrinsic</h3><p>Embed $M$, average in ambient space, project the mean back onto $M$.</p></div>
+<div class="panel blue"><h3>Intrinsic</h3><p>Use the true geodesic metric; coordinate free but needs iteration.</p></div>
+<div class="panel amber"><h3>Trade-off</h3><p>Extrinsic is fast and unique; intrinsic is faithful but needs concentration.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Manifold with an intrinsic geodesic mean and an extrinsic projected mean side by side"><rect x="0" y="0" width="360" height="240" fill="#f0fdfa"/><path d="M30 170 Q180 60 330 170" fill="none" stroke="#0F766E" stroke-width="3"/><circle cx="120" cy="118" r="4" fill="#6D28D9"/><circle cx="180" cy="92" r="4" fill="#6D28D9"/><circle cx="240" cy="118" r="4" fill="#6D28D9"/><circle cx="180" cy="120" r="6" fill="#B45309"/><text x="186" y="140" font-size="13" fill="#B45309">ambient mean</text><line x1="180" y1="120" x2="180" y2="98" stroke="#B45309" stroke-width="2" stroke-dasharray="4 3"/><circle cx="180" cy="92" r="6" fill="#2563EB"/><text x="40" y="60" font-size="13" fill="#1E3A8A">extrinsic = project back</text><circle cx="180" cy="93" r="9" fill="none" stroke="#0F766E" stroke-width="2"/><text x="200" y="80" font-size="12" fill="#0F766E">intrinsic nearby</text></svg><figcaption class="small">For tight data the two means agree; they separate as spread grows.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Intrinsic versus Extrinsic</span></div>
+<aside class="speaker-notes">Extrinsic analysis embeds the manifold and projects the ambient mean back, which is fast and always unique. Intrinsic analysis uses the true geodesic metric and is coordinate free but costs iteration and needs concentration. The two often agree closely for tight data and diverge as the spread of the sample grows.</aside>
+</section>
+
+<section class="slide alt" data-label="Recap and Lab">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds with Applications to Shape Spaces</span><span>Chapter 05</span></div>
+<h2>Recap and Applied Lab</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Concept route</h3><p>$d_g \to$ Frechet mean $\to \mathrm{Exp}/\mathrm{Log} \to$ regular ball $\to$ iteration $\to$ CLT.</p></div>
+<div class="panel teal"><h3>Key invariant</h3><p>$\sum_i\mathrm{Log}_\mu(X_i)=0$ certifies a stationary intrinsic mean.</p></div>
+<div class="panel amber"><h3>Lab prompt</h3><p>Replace $d_g$ with Euclidean distance: which check fails, and why?</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">One-line takeaway</div><p class="formula">$\widehat\mu_n = \arg\min_p \tfrac1n\sum_i d_g(p,X_i)^2$</p></div>
+<div class="panel violet"><h3>Next chapter</h3><p>Carry this to extrinsic shape spaces and two-sample bootstrap tests.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 57-76</span><span>Recap and Lab</span></div>
+<aside class="speaker-notes">We defined the geodesic distance, the Karcher mean, the exponential and logarithm maps, the regular-ball conditions, the tangent-space iteration, and the central limit theorem. The lab asks what breaks if geodesic distance is replaced by Euclidean distance, exposing why intrinsic geometry is structural and not decorative.</aside>
+</section>
+</deck-stage>
+</body>
+</html>
