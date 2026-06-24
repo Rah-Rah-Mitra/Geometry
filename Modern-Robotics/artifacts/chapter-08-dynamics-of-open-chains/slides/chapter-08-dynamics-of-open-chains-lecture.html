@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-08-dynamics-of-open-chains">
+<meta name="chapter_title" content="Dynamics of Open Chains">
+<meta name="notebook_path" content="Modern-Robotics/part-03-dynamics-trajectories-and-planning/chapter-08-dynamics-of-open-chains/08-dynamics-of-open-chains.ipynb">
+<meta name="source_span" content="printed pages 271-324; PDF pages 289-342.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Dynamics of Open Chains</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-08-dynamics-of-open-chains","chapter_title":"Dynamics of Open Chains","notebook_path":"Modern-Robotics/part-03-dynamics-trajectories-and-planning/chapter-08-dynamics-of-open-chains/08-dynamics-of-open-chains.ipynb","source_span":"printed pages 271-324; PDF pages 289-342.","source_pdf":"Modern-Robotics/Mordern Robotics.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Dynamics of Open Chains","notes":"This chapter spans printed pages 271 through 324 and asks how forces, torques, velocities, and accelerations interact through a manipulator's configuration. We add a configuration-dependent metric to kinematics, then build two efficient recursive passes along the chain that turn that geometry into computable torques and accelerations."},
+{"slide":2,"label":"Inverse vs Forward Dynamics","notes":"Open-chain dynamics answers two complementary queries built from the same ingredients. Inverse dynamics is given the motion and returns the torques that produce it, while forward dynamics is given the torques and predicts acceleration. Inverse drives control and trajectory tracking; forward drives simulation, and each reuses the same mass, velocity, and gravity terms."},
+{"slide":3,"label":"The Manipulator Equation","notes":"The manipulator equation collects every effect into three labelled terms. The mass matrix multiplies acceleration, the velocity-product vector gathers Coriolis and centripetal coupling, and the gravity vector loads the joints at rest. Reading torque as the sum of these parts makes the structure of robot dynamics inspectable rather than a wall of symbols."},
+{"slide":4,"label":"Mass Matrix as a Metric","notes":"Kinetic energy is a quadratic form in joint velocity, and the symmetric positive-definite mass matrix is its metric. Its smallest eigenvalue measuring how cheaply the lightest motion direction accelerates must stay positive, confirming energy never collapses along any joint-velocity direction. The matrix changes as links fold because masses move nearer or farther from joints."},
+{"slide":5,"label":"Christoffel Symbols and Coriolis","notes":"The velocity-product term is not arbitrary; its coefficients are the Christoffel symbols of the mass matrix, built from partial derivatives of its entries. This ties Coriolis and centripetal forces directly to how inertia varies with configuration. When the mass matrix is constant the symbols vanish and these velocity-coupling forces disappear entirely from the equation."},
+{"slide":6,"label":"Spatial Inertia and Twists","notes":"The recursive formulation lives in SE(3) using twists and wrenches. Each link carries a six-by-six spatial inertia matrix combining rotational inertia and mass. A twist packages angular and linear velocity into one screw, and the spatial momentum is the spatial inertia applied to that twist, giving a single covariant momentum object per link."},
+{"slide":7,"label":"Newton-Euler: Forward Pass","notes":"The forward pass propagates motion outward from the base to the tip. Starting from the fixed base twist and acceleration, each joint adds its own contribution, and the adjoint map transports the parent twist into the child frame. By the end every link knows its twist and acceleration, ready for the force computation that follows."},
+{"slide":8,"label":"Newton-Euler: Backward Pass","notes":"The backward pass propagates wrenches inward from the tip to the base. At each link Newton-Euler equates the net wrench to spatial inertia times acceleration plus a velocity-product term, and adds the wrench transmitted from the child. Projecting each joint wrench onto its screw axis yields exactly the joint torque sought."},
+{"slide":9,"label":"Power Pairing Invariant","notes":"Torques do work through joint rates and spatial wrenches do work through twists, and a correct frame transform must preserve that scalar power. The adjoint maps the twist while its inverse transpose maps the wrench, so their pairing is unchanged. Checking this invariant catches inverse-dynamics code that assigns torque to the wrong frame."},
+{"slide":10,"label":"Forward Dynamics by Inversion","notes":"Forward dynamics inverts the manipulator equation. Run inverse dynamics with zero acceleration to obtain the bias forces, subtract them from applied torque, then solve the mass-matrix linear system for acceleration. The composite rigid-body and articulated-body algorithms compute the mass matrix and its inverse action efficiently using the same recursive chain structure."},
+{"slide":11,"label":"Task-Space Inertia","notes":"Mapping dynamics through the Jacobian gives the operational-space formulation, where the task-space inertia is the Jacobian-inverse-transpose times mass times Jacobian-inverse. Near singularities the Jacobian loses directions and this inertia becomes ill-conditioned, so manipulability warns when the apparent endpoint mass blows up along lost directions of motion."},
+{"slide":12,"label":"Actuators and Gearing","notes":"Real joints carry motor inertia and gearing that reshape apparent dynamics. A gear ratio scales reflected rotor inertia by its square, so high ratios make the actuator dominate the link inertia. Ignoring this term makes aggressive motions look unrealistically cheap, hiding the true torque and energy cost of fast acceleration."},
+{"slide":13,"label":"Recap and Takeaways","notes":"Two ideas carry the chapter. Dynamics adds a configuration-dependent metric, the mass matrix, on top of kinematics, and the efficient algorithms are simply structured passes through the chain. Inverse and forward dynamics share ingredients, Newton-Euler recursion computes them in linear time, and coordinate choice changes appearance but never the underlying physics."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Dynamics of Open Chains">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h1>Dynamics of Open Chains</h1>
+<p class="lead">How forces, torques, velocities, and accelerations interact through configuration</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The manipulator equation</h3><p>Torque is mass times acceleration, plus velocity coupling, plus gravity.</p></div>
+<div class="panel teal"><h3>Recursive Newton-Euler</h3><p>One pass outward for motion, one pass inward for force.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Three-link planar arm anchored at a base">
+<rect x="0" y="0" width="360" height="200" fill="#f0fdfa"/>
+<rect x="40" y="150" width="40" height="20" fill="#94a3b8"/>
+<line x1="60" y1="150" x2="150" y2="90" stroke="#2563eb" stroke-width="6"/>
+<line x1="150" y1="90" x2="250" y2="110" stroke="#0f766e" stroke-width="6"/>
+<line x1="250" y1="110" x2="320" y2="60" stroke="#6d28d9" stroke-width="6"/>
+<circle cx="60" cy="150" r="7" fill="#111827"/><circle cx="150" cy="90" r="7" fill="#111827"/><circle cx="250" cy="110" r="7" fill="#111827"/>
+<circle cx="320" cy="60" r="6" fill="#b45309"/>
+<text x="100" y="118" font-size="13" fill="#2563eb">link 1</text><text x="195" y="92" font-size="13" fill="#0f766e">link 2</text><text x="278" y="82" font-size="13" fill="#6d28d9">link 3</text>
+<text x="300" y="50" font-size="13" fill="#b45309">tip</text>
+</svg><figcaption class="small">A serial open chain: rigid links joined at revolute joints.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Dynamics of Open Chains</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 271 through 324 and asks how forces, torques, velocities, and accelerations interact through a manipulator's configuration. We add a configuration-dependent metric to kinematics, then build two efficient recursive passes along the chain that turn that geometry into computable torques and accelerations.</aside>
+</section>
+
+<section class="slide alt" data-label="Inverse vs Forward Dynamics">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Inverse vs Forward Dynamics</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Inverse dynamics</h3><p>Given motion $\theta,\dot\theta,\ddot\theta$, find the torques $\tau$. Drives control and tracking.</p></div>
+<div class="panel teal"><h3>Forward dynamics</h3><p>Given torques $\tau$, predict the acceleration $\ddot\theta$. Drives simulation.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Two queries, same ingredients</div><p class="formula">$\tau = \mathrm{ID}(\theta,\dot\theta,\ddot\theta)$</p><p class="formula">$\ddot\theta = \mathrm{FD}(\theta,\dot\theta,\tau)$</p></div>
+<div class="panel amber"><h3>Shared parts</h3><p>Mass matrix, velocity-product term, and gravity loading appear in both.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Inverse vs Forward Dynamics</span></div>
+<aside class="speaker-notes">Open-chain dynamics answers two complementary queries built from the same ingredients. Inverse dynamics is given the motion and returns the torques that produce it, while forward dynamics is given the torques and predicts acceleration. Inverse drives control and trajectory tracking; forward drives simulation, and each reuses the same mass, velocity, and gravity terms.</aside>
+</section>
+
+<section class="slide" data-label="The Manipulator Equation">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>The Manipulator Equation</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Equations of motion</div><p class="formula">$\tau = M(\theta)\,\ddot\theta + c(\theta,\dot\theta) + g(\theta)$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 150" width="100%" role="img" aria-label="The three labelled terms of the manipulator equation">
+<rect x="0" y="0" width="360" height="150" fill="#ffffff"/>
+<rect x="20" y="50" width="90" height="50" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+<rect x="135" y="50" width="90" height="50" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="2"/>
+<rect x="250" y="50" width="90" height="50" rx="6" fill="#f0fdfa" stroke="#0f766e" stroke-width="2"/>
+<text x="40" y="80" font-size="15" fill="#2563eb">M&#952;&#776;</text>
+<text x="150" y="80" font-size="15" fill="#b45309">c(&#952;,&#952;&#775;)</text>
+<text x="275" y="80" font-size="15" fill="#0f766e">g(&#952;)</text>
+<text x="120" y="80" font-size="18" fill="#111827">+</text><text x="235" y="80" font-size="18" fill="#111827">+</text>
+<text x="40" y="120" font-size="11" fill="#475569">inertia</text><text x="148" y="120" font-size="11" fill="#475569">velocity coupling</text><text x="270" y="120" font-size="11" fill="#475569">gravity</text>
+</svg><figcaption class="small">Three labelled terms: inertial, velocity-product, gravity.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Inertial term</h3><p>$M(\theta)\ddot\theta$ resists angular acceleration.</p></div>
+<div class="panel amber"><h3>Velocity-product</h3><p>$c(\theta,\dot\theta)$ collects Coriolis and centripetal forces, quadratic in $\dot\theta$.</p></div>
+<div class="panel teal"><h3>Gravity</h3><p>$g(\theta)$ is the static torque needed to hold the pose.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>The Manipulator Equation</span></div>
+<aside class="speaker-notes">The manipulator equation collects every effect into three labelled terms. The mass matrix multiplies acceleration, the velocity-product vector gathers Coriolis and centripetal coupling, and the gravity vector loads the joints at rest. Reading torque as the sum of these parts makes the structure of robot dynamics inspectable rather than a wall of symbols.</aside>
+</section>
+
+<section class="slide alt" data-label="Mass Matrix as a Metric">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>The Mass Matrix is a Metric</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Kinetic energy</div><p class="formula">$\mathcal{K} = \tfrac12\,\dot\theta^\top M(\theta)\,\dot\theta > 0$</p></div>
+<div class="panel teal"><h3>Positive definite</h3><p>$M(\theta)=M(\theta)^\top \succ 0$: energy never collapses along a velocity direction.</p></div>
+<div class="panel amber"><h3>Configuration dependence</h3><p>Folding links moves masses toward or away from joints, changing $M$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Kinetic energy ellipse with two eigen-axes">
+<rect x="0" y="0" width="360" height="220" fill="#eff6ff"/>
+<line x1="180" y1="20" x2="180" y2="200" stroke="#cbd5e1" stroke-width="1"/><line x1="40" y1="110" x2="320" y2="110" stroke="#cbd5e1" stroke-width="1"/>
+<ellipse cx="180" cy="110" rx="120" ry="55" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="2" transform="rotate(-22 180 110)"/>
+<line x1="180" y1="110" x2="288" y2="66" stroke="#0f766e" stroke-width="3"/>
+<line x1="180" y1="110" x2="200" y2="160" stroke="#b45309" stroke-width="3"/>
+<text x="290" y="62" font-size="13" fill="#0f766e">large eigenvalue</text>
+<text x="205" y="178" font-size="13" fill="#b45309">small eigenvalue</text>
+<text x="150" y="40" font-size="13" fill="#475569">&#952;&#775;-space</text>
+</svg><figcaption class="small">Eigen-axes of $M$ are heavy and light directions of joint motion.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Mass Matrix as a Metric</span></div>
+<aside class="speaker-notes">Kinetic energy is a quadratic form in joint velocity, and the symmetric positive-definite mass matrix is its metric. Its smallest eigenvalue measuring how cheaply the lightest motion direction accelerates must stay positive, confirming energy never collapses along any joint-velocity direction. The matrix changes as links fold because masses move nearer or farther from joints.</aside>
+</section>
+
+<section class="slide" data-label="Christoffel Symbols and Coriolis">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Christoffel Symbols and the Coriolis Term</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Velocity-product coefficients</div><p class="formula">$c_i = \sum_{j,k}\Gamma_{ijk}(\theta)\,\dot\theta_j\,\dot\theta_k$</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Christoffel symbol of $M$</div><p class="formula">$\Gamma_{ijk}=\tfrac12\!\left(\tfrac{\partial M_{ij}}{\partial\theta_k}+\tfrac{\partial M_{ik}}{\partial\theta_j}-\tfrac{\partial M_{jk}}{\partial\theta_i}\right)$</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Geometric origin</h3><p>Coriolis and centripetal forces come directly from how inertia varies with $\theta$.</p></div>
+<div class="panel teal"><h3>Constant inertia</h3><p>If $M$ is constant, all $\Gamma_{ijk}=0$ and the velocity term vanishes.</p></div>
+<div class="panel violet"><h3>Quadratic in rate</h3><p>Centripetal $\propto\dot\theta_j^2$; Coriolis $\propto\dot\theta_j\dot\theta_k$ for $j\neq k$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Christoffel Symbols and Coriolis</span></div>
+<aside class="speaker-notes">The velocity-product term is not arbitrary; its coefficients are the Christoffel symbols of the mass matrix, built from partial derivatives of its entries. This ties Coriolis and centripetal forces directly to how inertia varies with configuration. When the mass matrix is constant the symbols vanish and these velocity-coupling forces disappear entirely from the equation.</aside>
+</section>
+
+<section class="slide alt" data-label="Spatial Inertia and Twists">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Spatial Inertia, Twists, and Momentum</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Spatial inertia (6x6)</div><p class="formula">$\mathcal{G}_b=\begin{bmatrix}\mathcal{I}_b & 0\\ 0 & m\,I\end{bmatrix}$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Spatial momentum</div><p class="formula">$\mathcal{P}_b=\mathcal{G}_b\,\mathcal{V}_b$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="A body frame with a twist screw axis">
+<rect x="0" y="0" width="360" height="200" fill="#f0fdfa"/>
+<rect x="120" y="80" width="120" height="50" rx="8" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="2"/>
+<line x1="180" y1="105" x2="180" y2="30" stroke="#6d28d9" stroke-width="3"/>
+<path d="M170 45 a14 14 0 1 1 20 0" fill="none" stroke="#6d28d9" stroke-width="2"/>
+<polygon points="190,45 196,40 190,34" fill="#6d28d9"/>
+<line x1="240" y1="105" x2="320" y2="105" stroke="#0f766e" stroke-width="3"/><polygon points="320,105 312,101 312,109" fill="#0f766e"/>
+<text x="186" y="28" font-size="13" fill="#6d28d9">&#969; (angular)</text>
+<text x="270" y="98" font-size="13" fill="#0f766e">v (linear)</text>
+<text x="150" y="112" font-size="13" fill="#2563eb">body {b}</text>
+</svg><figcaption class="small">Twist $\mathcal{V}=(\omega,v)$ is a screw; $\mathcal{G}$ maps it to momentum.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Spatial Inertia and Twists</span></div>
+<aside class="speaker-notes">The recursive formulation lives in SE(3) using twists and wrenches. Each link carries a six-by-six spatial inertia matrix combining rotational inertia and mass. A twist packages angular and linear velocity into one screw, and the spatial momentum is the spatial inertia applied to that twist, giving a single covariant momentum object per link.</aside>
+</section>
+
+<section class="slide" data-label="Newton-Euler: Forward Pass">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Recursive Newton-Euler: Forward Pass</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Propagate motion outward</h3><p>From the fixed base to the tip, compute each link's twist and acceleration.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Twist recursion</div><p class="formula">$\mathcal{V}_i=\mathrm{Ad}_{T_{i,i-1}}\mathcal{V}_{i-1}+\mathcal{A}_i\,\dot\theta_i$</p></div>
+<div class="panel amber"><h3>Acceleration</h3><p>Differentiate, including the velocity-product bracket $[\mathcal{V}_i,\mathcal{A}_i\dot\theta_i]$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Forward pass arrows moving outward along an arm">
+<rect x="0" y="0" width="360" height="200" fill="#ffffff"/>
+<rect x="20" y="120" width="30" height="18" fill="#94a3b8"/>
+<line x1="35" y1="120" x2="120" y2="90" stroke="#2563eb" stroke-width="6"/><line x1="120" y1="90" x2="220" y2="110" stroke="#2563eb" stroke-width="6"/><line x1="220" y1="110" x2="320" y2="80" stroke="#2563eb" stroke-width="6"/>
+<circle cx="35" cy="120" r="6" fill="#111827"/><circle cx="120" cy="90" r="6" fill="#111827"/><circle cx="220" cy="110" r="6" fill="#111827"/>
+<path d="M50 55 H300" stroke="#0f766e" stroke-width="3" marker-end="none"/>
+<polygon points="312,55 300,49 300,61" fill="#0f766e"/>
+<text x="120" y="45" font-size="14" fill="#0f766e">twists, accelerations &#8594; outward</text>
+<text x="20" y="160" font-size="13" fill="#475569">base (fixed)</text><text x="290" y="160" font-size="13" fill="#b45309">tip</text>
+</svg><figcaption class="small">Base-to-tip: each joint adds its own twist via the adjoint.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Newton-Euler Forward Pass</span></div>
+<aside class="speaker-notes">The forward pass propagates motion outward from the base to the tip. Starting from the fixed base twist and acceleration, each joint adds its own contribution, and the adjoint map transports the parent twist into the child frame. By the end every link knows its twist and acceleration, ready for the force computation that follows.</aside>
+</section>
+
+<section class="slide alt" data-label="Newton-Euler: Backward Pass">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Recursive Newton-Euler: Backward Pass</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Wrench balance at link i</div><p class="formula">$\mathcal{F}_i=\mathrm{Ad}^\top_{T_{i+1,i}}\mathcal{F}_{i+1}+\mathcal{G}_i\dot{\mathcal{V}}_i-[\mathrm{ad}_{\mathcal{V}_i}]^\top\mathcal{G}_i\mathcal{V}_i$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Project onto the screw axis</div><p class="formula">$\tau_i=\mathcal{F}_i^\top\,\mathcal{A}_i$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Backward pass arrows moving inward along an arm">
+<rect x="0" y="0" width="360" height="200" fill="#f5f3ff"/>
+<rect x="20" y="120" width="30" height="18" fill="#94a3b8"/>
+<line x1="35" y1="120" x2="120" y2="90" stroke="#6d28d9" stroke-width="6"/><line x1="120" y1="90" x2="220" y2="110" stroke="#6d28d9" stroke-width="6"/><line x1="220" y1="110" x2="320" y2="80" stroke="#6d28d9" stroke-width="6"/>
+<circle cx="120" cy="90" r="6" fill="#111827"/><circle cx="220" cy="110" r="6" fill="#111827"/><circle cx="320" cy="80" r="6" fill="#b45309"/>
+<path d="M300 55 H60" stroke="#b45309" stroke-width="3"/>
+<polygon points="48,55 60,49 60,61" fill="#b45309"/>
+<text x="95" y="45" font-size="14" fill="#b45309">wrenches &#8594; inward</text>
+<text x="290" y="160" font-size="13" fill="#475569">tip force/torque</text><text x="20" y="160" font-size="13" fill="#475569">base</text>
+</svg><figcaption class="small">Tip-to-base: project each joint wrench onto its axis for $\tau$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Newton-Euler Backward Pass</span></div>
+<aside class="speaker-notes">The backward pass propagates wrenches inward from the tip to the base. At each link Newton-Euler equates the net wrench to spatial inertia times acceleration plus a velocity-product term, and adds the wrench transmitted from the child. Projecting each joint wrench onto its screw axis yields exactly the joint torque sought.</aside>
+</section>
+
+<section class="slide" data-label="Power Pairing Invariant">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>The Power-Pairing Invariant</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Power is frame-invariant</div><p class="formula">$\mathcal{F}^\top\mathcal{V}=\big(\mathrm{Ad}_T^{-\top}\mathcal{F}\big)^\top\big(\mathrm{Ad}_T\,\mathcal{V}\big)$</p></div>
+<div class="panel teal"><h3>Why it matters</h3><p>Joint torques do work through rates; wrenches do work through twists. Transforms must preserve $\mathcal{F}\!\cdot\!\mathcal{V}$.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Twist transforms by $\mathrm{Ad}_T$</h3><p>Velocity is pushed forward by the adjoint.</p></div>
+<div class="panel amber"><h3>Wrench transforms by $\mathrm{Ad}_T^{-\top}$</h3><p>Force is dual, so it uses the inverse transpose.</p></div>
+<div class="panel violet"><h3>Diagnostic</h3><p>A nonzero pairing error flags torque assigned to the wrong frame.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Power Pairing Invariant</span></div>
+<aside class="speaker-notes">Torques do work through joint rates and spatial wrenches do work through twists, and a correct frame transform must preserve that scalar power. The adjoint maps the twist while its inverse transpose maps the wrench, so their pairing is unchanged. Checking this invariant catches inverse-dynamics code that assigns torque to the wrong frame.</aside>
+</section>
+
+<section class="slide alt" data-label="Forward Dynamics by Inversion">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Forward Dynamics by Inverting the Equation</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Solve for acceleration</div><p class="formula">$\ddot\theta=M(\theta)^{-1}\big(\tau-c(\theta,\dot\theta)-g(\theta)\big)$</p></div>
+<div class="panel teal"><h3>Bias forces for free</h3><p>Run inverse dynamics with $\ddot\theta=0$ to get $c+g$ in one pass.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Composite rigid-body</h3><p>Builds $M(\theta)$ column by column from the recursion.</p></div>
+<div class="panel amber"><h3>Articulated-body</h3><p>Computes $\ddot\theta$ directly in linear time without forming $M^{-1}$.</p></div>
+<div class="panel violet"><h3>Then integrate</h3><p>Step $\ddot\theta\to\dot\theta\to\theta$ to simulate the robot forward.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Forward Dynamics by Inversion</span></div>
+<aside class="speaker-notes">Forward dynamics inverts the manipulator equation. Run inverse dynamics with zero acceleration to obtain the bias forces, subtract them from applied torque, then solve the mass-matrix linear system for acceleration. The composite rigid-body and articulated-body algorithms compute the mass matrix and its inverse action efficiently using the same recursive chain structure.</aside>
+</section>
+
+<section class="slide" data-label="Task-Space Inertia">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Task-Space (Operational-Space) Inertia</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Map dynamics through the Jacobian</div><p class="formula">$\Lambda(\theta)=J^{-\top}M(\theta)\,J^{-1}$</p></div>
+<div class="panel amber"><h3>Near singularities</h3><p>$J$ loses rank, $\Lambda$ becomes ill-conditioned, and apparent endpoint mass blows up.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Manipulability ellipse collapsing toward a singular direction">
+<rect x="0" y="0" width="360" height="200" fill="#eff6ff"/>
+<ellipse cx="120" cy="100" rx="70" ry="48" fill="#0f766e" fill-opacity="0.12" stroke="#0f766e" stroke-width="2"/>
+<text x="90" y="160" font-size="13" fill="#0f766e">well-conditioned</text>
+<ellipse cx="280" cy="100" rx="70" ry="10" fill="#b45309" fill-opacity="0.14" stroke="#b45309" stroke-width="2"/>
+<text x="245" y="160" font-size="13" fill="#b45309">near singular</text>
+<line x1="280" y1="100" x2="350" y2="100" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="300" y="92" font-size="11" fill="#475569">lost direction</text>
+</svg><figcaption class="small">Manipulability warns when $\Lambda$ degenerates.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Task-Space Inertia</span></div>
+<aside class="speaker-notes">Mapping dynamics through the Jacobian gives the operational-space formulation, where the task-space inertia is the Jacobian-inverse-transpose times mass times Jacobian-inverse. Near singularities the Jacobian loses directions and this inertia becomes ill-conditioned, so manipulability warns when the apparent endpoint mass blows up along lost directions of motion.</aside>
+</section>
+
+<section class="slide alt" data-label="Actuators and Gearing">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Actuators, Motor Inertia, and Gearing</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Reflected rotor inertia</div><p class="formula">$M_{\text{eff}} = M(\theta) + G^2 I_{\text{rotor}}$</p></div>
+<div class="panel amber"><h3>Squared scaling</h3><p>A gear ratio $G$ scales reflected inertia by $G^2$; high ratios let the motor dominate.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Apparent inertia reshaped</h3><p>Gearing makes the link feel heavier or lighter at the actuator.</p></div>
+<div class="panel violet"><h3>Pitfall</h3><p>Ignoring rotor inertia makes fast motions look unrealistically cheap.</p></div>
+<div class="panel teal"><h3>Friction too</h3><p>Joint friction and damping add further torque the controller must supply.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Actuators and Gearing</span></div>
+<aside class="speaker-notes">Real joints carry motor inertia and gearing that reshape apparent dynamics. A gear ratio scales reflected rotor inertia by its square, so high ratios make the actuator dominate the link inertia. Ignoring this term makes aggressive motions look unrealistically cheap, hiding the true torque and energy cost of fast acceleration.</aside>
+</section>
+
+<section class="slide" data-label="Recap and Takeaways">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 8</span></div>
+<h2>Recap and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Dynamics adds a metric</h3><p>Kinematics says where; the mass matrix $M(\theta)$ adds how much effort each motion costs.</p></div>
+<div class="panel teal"><h3>Algorithms are structured passes</h3><p>Newton-Euler: outward for motion, inward for force, linear in the number of joints.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">One equation to remember</div><p class="formula">$\tau = M(\theta)\ddot\theta + c(\theta,\dot\theta) + g(\theta)$</p></div>
+<div class="panel amber"><h3>Coordinates vs physics</h3><p>The same energy looks different in different coordinates; the invariant power is what is real.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 271-324</span><span>Recap and Takeaways</span></div>
+<aside class="speaker-notes">Two ideas carry the chapter. Dynamics adds a configuration-dependent metric, the mass matrix, on top of kinematics, and the efficient algorithms are simply structured passes through the chain. Inverse and forward dynamics share ingredients, Newton-Euler recursion computes them in linear time, and coordinate choice changes appearance but never the underlying physics.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
