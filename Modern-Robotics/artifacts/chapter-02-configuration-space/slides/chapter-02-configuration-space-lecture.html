@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-02-configuration-space">
+<meta name="chapter_title" content="Configuration Space">
+<meta name="notebook_path" content="Modern-Robotics/part-01-geometric-foundations/chapter-02-configuration-space/02-configuration-space.ipynb">
+<meta name="source_span" content="printed pages 11-58; PDF pages 29-76.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Configuration Space</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-02-configuration-space","chapter_title":"Configuration Space","notebook_path":"Modern-Robotics/part-01-geometric-foundations/chapter-02-configuration-space/02-configuration-space.ipynb","source_span":"printed pages 11-58; PDF pages 29-76.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Configuration Space","notes":"This chapter spans printed pages eleven through fifty-eight and asks one question: how do joints, loops, and constraints turn a physical mechanism into a geometric space. We treat configuration as a point on a curved manifold, and degrees of freedom as the dimension of that manifold rather than a list of angles."},
+{"slide":2,"label":"Configuration and Degrees of Freedom","notes":"A configuration is the complete specification of every point of the robot, captured as a single point of the configuration space. The number of degrees of freedom equals the dimension of that space: the smallest count of real parameters needed to pin the mechanism down completely and unambiguously."},
+{"slide":3,"label":"Counting by Subtraction","notes":"The summation principle counts freedoms by starting from all rigid bodies moving independently, then subtracting the constraints imposed by every joint. Each joint of a given type removes a fixed number of relative freedoms, so degrees of freedom equal total body freedoms minus total joint constraints across the mechanism."},
+{"slide":4,"label":"Joint Types and Their Freedoms","notes":"Joints differ by how many relative freedoms they permit. A revolute or prismatic joint grants one, a cylindrical two, a spherical three. In the plane each joint type allows fewer freedoms than in space, so the same hardware constrains differently depending on whether motion is planar or spatial."},
+{"slide":5,"label":"Grubler's Formula","notes":"Grubler's formula packages the summation principle for mechanisms with one ground link. Degrees of freedom equal m times links-minus-joints-minus-one plus the sum of joint freedoms, where m is six for spatial and three for planar mechanisms. Ground and the loop closures are handled automatically by the count."},
+{"slide":6,"label":"Worked Count: Four-Bar Linkage","notes":"The planar four-bar linkage has four links including ground and four revolute joints. With m equal to three, Grubler gives three times four minus four minus one, plus four, which equals one. A single freedom drives the whole closed loop, matching the crank we turn by hand."},
+{"slide":7,"label":"Topology of the C-Space","notes":"Configuration spaces have an intrinsic shape independent of coordinates. A single revolute joint traces a circle, a spherical wrist sweeps a two-sphere, and two stacked revolute joints fill a torus. This topology is fixed by the mechanism; no choice of numbers can change a circle into a flat line."},
+{"slide":8,"label":"The 2R Arm Torus","notes":"A two revolute arm has two angles, each living on its own circle, so its configuration space is the product of two circles, the torus. The flat angle square is only a chart: its left and right edges are the same points, and its top and bottom edges glue together as well."},
+{"slide":9,"label":"Explicit versus Implicit","notes":"A space can be described two ways. An explicit parametrization names a few coordinates and maps them onto the space, like joint angles for an arm. An implicit description writes constraint equations whose solution set is the space, like the unit-norm equation that carves a sphere out of three-dimensional coordinates."},
+{"slide":10,"label":"Rigid-Body Configuration: SE(3)","notes":"The configuration of a free rigid body in space needs three numbers for position and three for orientation, giving six degrees of freedom. These configurations form the special Euclidean group, a six dimensional manifold. In the plane the analog is three dimensional, with two translations and one rotation angle."},
+{"slide":11,"label":"Holonomic versus Nonholonomic","notes":"Holonomic constraints are equations on configuration alone; they cut the dimension of the space and can be integrated. Nonholonomic constraints restrict velocities through Pfaffian forms that cannot be integrated into configuration equations. Rolling without slipping is the classic case: it limits motion directions yet still reaches every configuration."},
+{"slide":12,"label":"Task Space and Workspace","notes":"Task space is the space in which the robot's task is naturally expressed, often end-effector poses. The workspace is the set of configurations the end-effector can actually reach. Both are projections of the configuration space, useful pictures that must not be mistaken for the full C-space."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Configuration Space">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h1>Configuration Space</h1>
+<p class="lead">How joints, loops, and constraints turn a mechanism into a geometric space</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Configuration</h3><p>A single point that fixes every part of the robot.</p></div>
+<div class="panel teal"><h3>Degrees of freedom</h3><p>The dimension of the space of configurations.</p></div>
+<div class="panel violet"><h3>Constraints</h3><p>Joints and contacts carve the space into shape.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A robot mechanism mapped to a point on a curved configuration space"><rect x="0" y="0" width="360" height="230" fill="#eff6ff"/><line x1="40" y1="170" x2="100" y2="120" stroke="#1e3a8a" stroke-width="4"/><line x1="100" y1="120" x2="150" y2="150" stroke="#1e3a8a" stroke-width="4"/><circle cx="40" cy="170" r="6" fill="#0f766e"/><circle cx="100" cy="120" r="6" fill="#0f766e"/><circle cx="150" cy="150" r="6" fill="#b45309"/><path d="M170 110 q20 -25 45 0" stroke="#475569" stroke-width="2" fill="none" marker-end="url(#ar1)"/><ellipse cx="285" cy="120" rx="55" ry="70" fill="#f0fdfa" stroke="#0f766e" stroke-width="2"/><path d="M240 90 q45 30 90 0" stroke="#cbd5e1" stroke-width="1.5" fill="none"/><circle cx="290" cy="105" r="5" fill="#6d28d9"/><text x="55" y="200" font-size="13" fill="#1e3a8a">mechanism</text><text x="250" y="205" font-size="13" fill="#0f766e">C-space</text><text x="298" y="100" font-size="12" fill="#6d28d9">q</text><defs><marker id="ar1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#475569"/></marker></defs></svg><figcaption class="small">A whole posture collapses to one point of a curved space.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Configuration Space</span></div>
+<aside class="speaker-notes">This chapter spans printed pages eleven through fifty-eight and asks one question: how do joints, loops, and constraints turn a physical mechanism into a geometric space. We treat configuration as a point on a curved manifold, and degrees of freedom as the dimension of that manifold rather than a list of angles.</aside>
+</section>
+
+<section class="slide alt" data-label="Configuration and Degrees of Freedom">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Configuration and Degrees of Freedom</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Configuration</h3><p>The minimal data that locates every point of the robot.</p></div>
+<div class="panel amber"><h3>DOF</h3><p>The smallest number of real parameters that does it.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Dimension count</div><p class="formula">$\mathrm{dof} = \dim \mathcal{C}$</p></div>
+<div class="panel teal"><h3>Point on a coin</h3><p>A coin lying on a table: position plus heading gives three.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Configuration and Degrees of Freedom</span></div>
+<aside class="speaker-notes">A configuration is the complete specification of every point of the robot, captured as a single point of the configuration space. The number of degrees of freedom equals the dimension of that space: the smallest count of real parameters needed to pin the mechanism down completely and unambiguously.</aside>
+</section>
+
+<section class="slide" data-label="Counting by Subtraction">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Counting by Subtraction</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Start free</h3><p>Sum the freedoms of every body moving on its own.</p></div>
+<div class="panel violet"><h3>Subtract joints</h3><p>Each joint removes a fixed number of relative freedoms.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Summation principle</div><p class="formula">$\mathrm{dof} = \!\!\sum_{\text{bodies}}\!\! f_b \;-\; \!\!\sum_{\text{joints}}\!\! c_j$</p></div>
+<div class="panel teal"><h3>Bookkeeping</h3><p>Freedoms granted minus freedoms removed.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Counting by Subtraction</span></div>
+<aside class="speaker-notes">The summation principle counts freedoms by starting from all rigid bodies moving independently, then subtracting the constraints imposed by every joint. Each joint of a given type removes a fixed number of relative freedoms, so degrees of freedom equal total body freedoms minus total joint constraints across the mechanism.</aside>
+</section>
+
+<section class="slide alt" data-label="Joint Types and Their Freedoms">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Joint Types and Their Freedoms</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Lower pairs</h3><p>Revolute and prismatic give one freedom each.</p></div>
+<div class="panel teal"><h3>Multi-freedom</h3><p>Cylindrical gives two, spherical gives three.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Icons for revolute, prismatic, and spherical joints with freedom counts"><rect x="0" y="0" width="360" height="210" fill="#f0fdfa"/><circle cx="65" cy="70" r="26" fill="#fff" stroke="#2563eb" stroke-width="3"/><path d="M65 70 m0 -26 a26 26 0 0 1 22 13" stroke="#b45309" stroke-width="4" fill="none"/><text x="48" y="125" font-size="14" fill="#2563eb">R: 1</text><rect x="150" y="50" width="60" height="26" rx="4" fill="#fff" stroke="#2563eb" stroke-width="3"/><line x1="150" y1="90" x2="240" y2="90" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 4"/><line x1="210" y1="63" x2="245" y2="63" stroke="#b45309" stroke-width="4" marker-end="url(#ar2)"/><text x="160" y="125" font-size="14" fill="#2563eb">P: 1</text><circle cx="305" cy="70" r="28" fill="#fff" stroke="#2563eb" stroke-width="3"/><ellipse cx="305" cy="70" rx="28" ry="11" fill="none" stroke="#6d28d9" stroke-width="2"/><ellipse cx="305" cy="70" rx="11" ry="28" fill="none" stroke="#6d28d9" stroke-width="2"/><text x="288" y="125" font-size="14" fill="#2563eb">S: 3</text><text x="40" y="180" font-size="13" fill="#475569">freedoms per joint type</text><defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker></defs></svg><figcaption class="small">Joint freedoms drive the constraint count.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Joint Types and Their Freedoms</span></div>
+<aside class="speaker-notes">Joints differ by how many relative freedoms they permit. A revolute or prismatic joint grants one, a cylindrical two, a spherical three. In the plane each joint type allows fewer freedoms than in space, so the same hardware constrains differently depending on whether motion is planar or spatial.</aside>
+</section>
+
+<section class="slide" data-label="Grubler's Formula">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Grubler's Formula</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>One ground link</h3><p>$N$ links, $J$ joints, joint $i$ has $f_i$ freedoms.</p></div>
+<div class="panel amber"><h3>Rigid-body unit</h3><p>$m=6$ in space, $m=3$ in the plane.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Mobility</div><p class="formula">$\mathrm{dof} = m(N-1-J) + \sum_{i=1}^{J} f_i$</p></div>
+<div class="panel teal"><h3>Reading it</h3><p>Loop closures are absorbed by the link/joint count.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Grubler's Formula</span></div>
+<aside class="speaker-notes">Grubler's formula packages the summation principle for mechanisms with one ground link. Degrees of freedom equal m times links-minus-joints-minus-one plus the sum of joint freedoms, where m is six for spatial and three for planar mechanisms. Ground and the loop closures are handled automatically by the count.</aside>
+</section>
+
+<section class="slide alt" data-label="Worked Count: Four-Bar Linkage">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Worked Count: Four-Bar Linkage</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A planar four-bar linkage with four links and four revolute joints labelled"><rect x="0" y="0" width="360" height="230" fill="#fffbeb"/><line x1="70" y1="180" x2="290" y2="180" stroke="#94a3b8" stroke-width="6"/><line x1="70" y1="180" x2="110" y2="80" stroke="#1e3a8a" stroke-width="5"/><line x1="110" y1="80" x2="240" y2="70" stroke="#1e3a8a" stroke-width="5"/><line x1="240" y1="70" x2="290" y2="180" stroke="#1e3a8a" stroke-width="5"/><circle cx="70" cy="180" r="8" fill="#b45309"/><circle cx="290" cy="180" r="8" fill="#b45309"/><circle cx="110" cy="80" r="8" fill="#2563eb"/><circle cx="240" cy="70" r="8" fill="#2563eb"/><text x="150" y="210" font-size="14" fill="#94a3b8">ground (link 1)</text><text x="55" y="200" font-size="12" fill="#b45309">J1</text><text x="295" y="200" font-size="12" fill="#b45309">J2</text><text x="92" y="72" font-size="12" fill="#2563eb">J3</text><text x="246" y="62" font-size="12" fill="#2563eb">J4</text></svg><figcaption class="small">Four links, four revolute joints, one loop.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Plug in</div><p class="formula">$\mathrm{dof} = 3(4-1-4) + 4(1) = 1$</p></div>
+<div class="panel teal"><h3>Interpretation</h3><p>One actuator drives the entire closed chain.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Worked Count: Four-Bar Linkage</span></div>
+<aside class="speaker-notes">The planar four-bar linkage has four links including ground and four revolute joints. With m equal to three, Grubler gives three times four minus four minus one, plus four, which equals one. A single freedom drives the whole closed loop, matching the crank we turn by hand.</aside>
+</section>
+
+<section class="slide" data-label="Topology of the C-Space">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Topology of the C-Space</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Shape is intrinsic</h3><p>The space has a fixed topology, set by the mechanism.</p></div>
+<div class="panel violet"><h3>Examples</h3><p>One revolute joint: a circle $S^1$. A wrist: a sphere $S^2$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Products of pieces</div><p class="formula">$S^1\times S^1 = T^2,\qquad S^1\times \mathbb{R} = \text{cylinder}$</p></div>
+<div class="panel teal"><h3>Coordinates differ</h3><p>No relabeling turns a circle into a line segment.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Topology of the C-Space</span></div>
+<aside class="speaker-notes">Configuration spaces have an intrinsic shape independent of coordinates. A single revolute joint traces a circle, a spherical wrist sweeps a two-sphere, and two stacked revolute joints fill a torus. This topology is fixed by the mechanism; no choice of numbers can change a circle into a flat line.</aside>
+</section>
+
+<section class="slide alt" data-label="The 2R Arm Torus">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>The 2R Arm Torus</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="The angle square with glued edges forming a torus, the C-space of a 2R arm"><rect x="0" y="0" width="360" height="230" fill="#f0fdfa"/><rect x="40" y="40" width="150" height="150" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/><line x1="40" y1="40" x2="190" y2="40" stroke="#b45309" stroke-width="4" marker-end="url(#ar3)"/><line x1="40" y1="190" x2="190" y2="190" stroke="#b45309" stroke-width="4" marker-end="url(#ar3)"/><line x1="40" y1="40" x2="40" y2="190" stroke="#6d28d9" stroke-width="4" marker-end="url(#ar4)"/><line x1="190" y1="40" x2="190" y2="190" stroke="#6d28d9" stroke-width="4" marker-end="url(#ar4)"/><text x="95" y="210" font-size="13" fill="#b45309">θ₁ glued</text><text x="6" y="120" font-size="13" fill="#6d28d9">θ₂</text><ellipse cx="285" cy="115" rx="60" ry="42" fill="none" stroke="#0f766e" stroke-width="3"/><ellipse cx="285" cy="115" rx="26" ry="14" fill="none" stroke="#0f766e" stroke-width="2"/><path d="M259 113 q26 18 52 0" stroke="#cbd5e1" stroke-width="2" fill="none"/><text x="258" y="178" font-size="13" fill="#0f766e">T² torus</text><defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker><marker id="ar4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#6d28d9"/></marker></defs></svg><figcaption class="small">Opposite edges identify; the square becomes a torus.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">C-space of 2R arm</div><p class="formula">$\mathcal{C} = S^1 \times S^1 = T^2$</p></div>
+<div class="panel amber"><h3>Chart warning</h3><p>The flat angle square tears the real torus at its seams.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>The 2R Arm Torus</span></div>
+<aside class="speaker-notes">A two revolute arm has two angles, each living on its own circle, so its configuration space is the product of two circles, the torus. The flat angle square is only a chart: its left and right edges are the same points, and its top and bottom edges glue together as well.</aside>
+</section>
+
+<section class="slide" data-label="Explicit versus Implicit">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Explicit versus Implicit</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Explicit</h3><p>Pick coordinates and map them onto the space.</p></div>
+<div class="panel violet"><h3>Implicit</h3><p>Write constraints; the solution set is the space.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Two views of $S^2$</div><p class="formula">$(\phi,\psi)\mapsto \text{point} \quad\text{vs.}\quad x^2+y^2+z^2=1$</p></div>
+<div class="panel amber"><h3>Trade-off</h3><p>Fewer coordinates can introduce chart singularities.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Explicit versus Implicit</span></div>
+<aside class="speaker-notes">A space can be described two ways. An explicit parametrization names a few coordinates and maps them onto the space, like joint angles for an arm. An implicit description writes constraint equations whose solution set is the space, like the unit-norm equation that carves a sphere out of three-dimensional coordinates.</aside>
+</section>
+
+<section class="slide alt" data-label="Rigid-Body Configuration: SE(3)">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Rigid-Body Configuration: SE(3)</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Position</h3><p>Three numbers locate the body frame origin.</p></div>
+<div class="panel teal"><h3>Orientation</h3><p>Three more numbers fix the frame's rotation.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Free body in space</div><p class="formula">$\mathcal{C} = SE(3),\qquad \dim = 6$</p></div>
+<div class="panel amber"><h3>Planar case</h3><p>$SE(2)$ has dimension three: $(x,y,\theta)$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Rigid-Body Configuration: SE(3)</span></div>
+<aside class="speaker-notes">The configuration of a free rigid body in space needs three numbers for position and three for orientation, giving six degrees of freedom. These configurations form the special Euclidean group, a six dimensional manifold. In the plane the analog is three dimensional, with two translations and one rotation angle.</aside>
+</section>
+
+<section class="slide" data-label="Holonomic versus Nonholonomic">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Holonomic versus Nonholonomic</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A rolling wheel showing the no-slip velocity constraint relating heading and motion"><rect x="0" y="0" width="360" height="230" fill="#fffbeb"/><line x1="30" y1="180" x2="330" y2="180" stroke="#94a3b8" stroke-width="3"/><circle cx="150" cy="140" r="40" fill="#fff" stroke="#1e3a8a" stroke-width="4"/><line x1="150" y1="140" x2="150" y2="100" stroke="#6d28d9" stroke-width="2"/><line x1="150" y1="140" x2="235" y2="140" stroke="#b45309" stroke-width="4" marker-end="url(#ar5)"/><text x="200" y="132" font-size="13" fill="#b45309">v</text><path d="M150 90 q30 0 42 28" stroke="#0f766e" stroke-width="2" fill="none" marker-end="url(#ar6)"/><text x="196" y="100" font-size="12" fill="#0f766e">φ heading</text><text x="40" y="210" font-size="13" fill="#475569">no sideways slip allowed</text><defs><marker id="ar5" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker><marker id="ar6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#0f766e"/></marker></defs></svg><figcaption class="small">Rolling: a velocity constraint that does not cut dimension.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Pfaffian constraint</div><p class="formula">$A(q)\,\dot q = 0,\quad \dot x\sin\phi - \dot y\cos\phi = 0$</p></div>
+<div class="panel violet"><h3>Key difference</h3><p>Holonomic: integrable, cuts dimension. Nonholonomic: not.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Holonomic versus Nonholonomic</span></div>
+<aside class="speaker-notes">Holonomic constraints are equations on configuration alone; they cut the dimension of the space and can be integrated. Nonholonomic constraints restrict velocities through Pfaffian forms that cannot be integrated into configuration equations. Rolling without slipping is the classic case: it limits motion directions yet still reaches every configuration.</aside>
+</section>
+
+<section class="slide alt" data-label="Task Space and Workspace">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 2</span></div>
+<h2>Task Space and Workspace</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Task space</h3><p>Where the task lives, often end-effector poses.</p></div>
+<div class="panel teal"><h3>Workspace</h3><p>The set of poses the end-effector can reach.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Projection, not C-space</div><p class="formula">$\text{workspace} = \{\,x(q) : q \in \mathcal{C}\,\}$</p></div>
+<div class="panel amber"><h3>Caution</h3><p>Workspace pictures hide the torus they came from.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 11-58 &middot; PDF pp. 29-76</span><span>Task Space and Workspace</span></div>
+<aside class="speaker-notes">Task space is the space in which the robot's task is naturally expressed, often end-effector poses. The workspace is the set of configurations the end-effector can actually reach. Both are projections of the configuration space, useful pictures that must not be mistaken for the full C-space.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
