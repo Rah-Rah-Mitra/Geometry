@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Nonparametric Inference on Manifolds with Applications to Shape Spaces">
+<meta name="chapter_id" content="chapter-13">
+<meta name="chapter_title" content="13. Nonparametric Bayes inference on manifolds">
+<meta name="notebook_path" content="Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces/part-03-bayes-on-manifolds/chapter-13-bayes-inference/13-bayes-inference.ipynb">
+<meta name="source_span" content="printed pages 156-181; PDF pages 171-196.">
+<meta name="source_pdf" content="Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces/Nonparametric Inference on Manifolds with Applications to Shape Spaces.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>13. Nonparametric Bayes inference on manifolds</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Nonparametric Inference on Manifolds with Applications to Shape Spaces","chapter_id":"chapter-13","chapter_title":"13. Nonparametric Bayes inference on manifolds","notebook_path":"Nonparametric-Inference-on-Manifolds-with-Applications-to-Shape-Spaces/part-03-bayes-on-manifolds/chapter-13-bayes-inference/13-bayes-inference.ipynb","source_span":"printed pages 156-181; PDF pages 171-196.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Nonparametric Bayes on Manifolds","notes":"This long chapter spans printed pages 156 to 181 and builds a Bayesian density estimator for data living on a curved manifold. We replace a single parametric model with a flexible mixture of kernels and place a Dirichlet process prior over the mixing distribution, then certify that the posterior concentrates at the true density."},
+{"slide":2,"label":"Why Density Estimation on a Manifold","notes":"Shape coordinates and directional data live on spheres or quotient manifolds, not Euclidean space, so ordinary kernel density estimation distorts distances and mass. We want a fully Bayesian density that respects the metric, supports multiple modes, and quantifies uncertainty about the whole density, not just a single Frechet mean."},
+{"slide":3,"label":"Location-Concentration Kernels","notes":"The building block is a parametric kernel indexed by a location on the manifold and a concentration controlling spread. On the sphere the complex Watson and Bingham kernels play this role, peaking at their location parameter and tightening as concentration grows, giving a smooth probability bump anchored to a manifold point."},
+{"slide":4,"label":"The Mixture Density","notes":"A flexible density is an integral of the kernel against a mixing measure over location and concentration. With a discrete mixing measure this becomes a weighted sum of kernels, so countably many bumps at different manifold locations build an arbitrarily rich multimodal density that still integrates to one against the manifold volume measure."},
+{"slide":5,"label":"Dirichlet Process Prior","notes":"We place a Dirichlet process prior on the mixing distribution, parameterized by a precision and a base measure on the parameter space. The Dirichlet process is the canonical nonparametric prior over distributions: it is conjugate under sampling, almost surely discrete, and gives full support over candidate mixing measures."},
+{"slide":6,"label":"Stick-Breaking Weights","notes":"Sethuraman's stick-breaking construction makes the prior explicit. We break a unit stick by independent Beta fractions, producing a decreasing sequence of weights that sum to one, each attached to an atom drawn from the base measure. This shows concretely why Dirichlet process draws are discrete with countably many atoms."},
+{"slide":7,"label":"Polya Urn and Clustering","notes":"Marginalizing the mixing measure yields the Polya urn, or Chinese restaurant, prediction rule. A new observation joins an existing cluster with probability proportional to its current size or starts a fresh cluster with probability proportional to the precision, inducing an automatic, data-driven number of mixture components."},
+{"slide":8,"label":"Posterior Computation","notes":"Posterior sampling uses Gibbs and blocked samplers. The Polya urn gives a collapsed Gibbs scheme that cycles cluster labels, while truncated stick-breaking enables blocked samplers updating weights and atoms jointly. Each sweep yields one posterior draw of the density, and averaging draws estimates the predictive density on the manifold."},
+{"slide":9,"label":"Kullback-Leibler Support","notes":"Consistency rests on a support condition: the true density must lie in the Kullback-Leibler support of the prior, meaning the prior places positive mass on every neighborhood where the average log-ratio to the truth is small. Continuous, fully supported densities are reached by mixtures, so this condition holds broadly."},
+{"slide":10,"label":"Weak Posterior Consistency","notes":"Schwartz's theorem delivers weak consistency: if the truth is in the prior's Kullback-Leibler support, the posterior mass of every weak neighborhood of the true density tends to one almost surely as the sample size grows. The kernel mixture prior on the manifold satisfies the hypotheses, so weak consistency holds."},
+{"slide":11,"label":"Strong Posterior Consistency","notes":"Strengthening to the total variation, or strong, topology needs entropy control. Combining the Kullback-Leibler support condition with sieves of bounded metric entropy and exponentially small prior tails, the posterior concentrates in strong neighborhoods of the true density, so the estimated density converges in total variation distance."},
+{"slide":12,"label":"Estimating Means and Modes","notes":"Consistency of the density transfers to functionals. The Frechet mean and the modes computed from the estimated density converge to those of the truth, and antimodes separate clusters. This certifies that Bayesian density estimation also yields consistent location summaries and a principled clustering of the manifold data."},
+{"slide":13,"label":"Recap and Workflow","notes":"The workflow is one arc: pick manifold kernels, place a Dirichlet process prior on the mixing measure, sample the posterior by Gibbs or blocked methods, and read off a consistent density, Frechet mean, modes, and clusters. The support and entropy conditions are what guarantee the posterior finds the truth."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Nonparametric Bayes on Manifolds">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h1>Nonparametric Bayes Inference on Manifolds</h1>
+<p class="lead">Flexible mixture densities with Dirichlet process priors, and their posterior consistency</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Model</h3><p>Mixture of manifold kernels indexed by location and concentration.</p></div>
+<div class="panel teal"><h3>Prior</h3><p>Dirichlet process over the mixing distribution.</p></div>
+<div class="panel violet"><h3>Theory</h3><p>Weak and strong posterior consistency at the truth.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Smooth multimodal density curve over a circular manifold built from three kernel bumps"><rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/><circle cx="180" cy="120" r="70" fill="none" stroke="#cbd5e1" stroke-width="2"/><path d="M30 170 Q70 90 110 150 Q150 60 210 120 Q260 50 330 140" fill="none" stroke="#2563eb" stroke-width="3"/><circle cx="110" cy="150" r="4" fill="#0f766e"/><circle cx="210" cy="120" r="4" fill="#0f766e"/><circle cx="290" cy="95" r="4" fill="#0f766e"/><text x="40" y="200" font-size="15" fill="#475569">density on manifold</text></svg><figcaption class="small">Kernels assemble a smooth multimodal density on the manifold.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Nonparametric Bayes on Manifolds</span></div>
+<aside class="speaker-notes">This long chapter spans printed pages 156 to 181 and builds a Bayesian density estimator for data living on a curved manifold. We replace a single parametric model with a flexible mixture of kernels and place a Dirichlet process prior over the mixing distribution, then certify that the posterior concentrates at the true density.</aside>
+</section>
+
+<section class="slide alt" data-label="Why Density Estimation on a Manifold">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Why Density Estimation on a Manifold</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The problem</h3><p>Shape and directional data live on $S^d$ or quotient manifolds, not on $\mathbb{R}^d$.</p></div>
+<div class="panel blue"><h3>Goal</h3><p>A density respecting the metric, allowing many modes, with full uncertainty.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Target</div><p class="formula">$f : M \to [0,\infty), \quad \int_M f\, d\mu = 1$</p></div>
+<div class="panel teal"><h3>Beyond a mean</h3><p>Estimate the whole density, then read off Frechet mean and modes.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Why Density Estimation on a Manifold</span></div>
+<aside class="speaker-notes">Shape coordinates and directional data live on spheres or quotient manifolds, not Euclidean space, so ordinary kernel density estimation distorts distances and mass. We want a fully Bayesian density that respects the metric, supports multiple modes, and quantifies uncertainty about the whole density, not just a single Frechet mean.</aside>
+</section>
+
+<section class="slide" data-label="Location-Concentration Kernels">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Location-Concentration Kernels</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Two parameters</h3><p>Location $\mu \in M$ and concentration $\kappa &gt; 0$.</p></div>
+<div class="panel teal"><h3>On the sphere</h3><p>Complex Watson and Bingham kernels peak at $\mu$, tighten as $\kappa$ grows.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Watson kernel</div><p class="formula">$K(x;\mu,\kappa) = c(\kappa)\, e^{\kappa\, |x^{*}\mu|^{2}}$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 170" width="100%" role="img" aria-label="Three bell-shaped kernel curves of increasing concentration peaking at one location"><rect x="0" y="0" width="360" height="170" fill="#fff"/><line x1="30" y1="140" x2="330" y2="140" stroke="#cbd5e1" stroke-width="2"/><line x1="180" y1="20" x2="180" y2="145" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/><path d="M40 138 Q180 90 320 138" fill="none" stroke="#0f766e" stroke-width="2.5"/><path d="M70 138 Q180 55 290 138" fill="none" stroke="#2563eb" stroke-width="2.5"/><path d="M120 138 Q180 28 240 138" fill="none" stroke="#6d28d9" stroke-width="2.5"/><text x="186" y="35" font-size="14" fill="#475569">μ</text><text x="250" y="60" font-size="13" fill="#6d28d9">κ↑</text></svg><figcaption class="small">Larger concentration $\kappa$ sharpens the kernel around $\mu$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Location-Concentration Kernels</span></div>
+<aside class="speaker-notes">The building block is a parametric kernel indexed by a location on the manifold and a concentration controlling spread. On the sphere the complex Watson and Bingham kernels play this role, peaking at their location parameter and tightening as concentration grows, giving a smooth probability bump anchored to a manifold point.</aside>
+</section>
+
+<section class="slide alt" data-label="The Mixture Density">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>The Mixture Density</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Mixing measure</h3><p>Integrate the kernel against a measure $P$ on $(\mu,\kappa)$.</p></div>
+<div class="panel amber"><h3>Discrete case</h3><p>A discrete $P$ gives a weighted sum of kernels.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Mixture form</div><p class="formula">$f_P(x) = \int_M K(x;\mu,\kappa)\, dP(\mu,\kappa)$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Discrete mixture</div><p class="formula">$f(x) = \sum_{j\ge 1} w_j\, K(x;\mu_j,\kappa_j)$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>The Mixture Density</span></div>
+<aside class="speaker-notes">A flexible density is an integral of the kernel against a mixing measure over location and concentration. With a discrete mixing measure this becomes a weighted sum of kernels, so countably many bumps at different manifold locations build an arbitrarily rich multimodal density that still integrates to one against the manifold volume measure.</aside>
+</section>
+
+<section class="slide" data-label="Dirichlet Process Prior">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Dirichlet Process Prior</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Prior over $P$</h3><p>$P \sim \mathrm{DP}(\alpha, P_0)$ with precision $\alpha$ and base $P_0$.</p></div>
+<div class="panel teal"><h3>Properties</h3><p>Conjugate, almost surely discrete, full weak support.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Finite-dimensional law</div><p class="formula">$\big(P(A_1),\dots,P(A_k)\big) \sim \mathrm{Dir}\big(\alpha P_0(A_1),\dots\big)$</p></div>
+<div class="panel violet"><h3>Role</h3><p>The canonical nonparametric prior over the mixing distribution.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Dirichlet Process Prior</span></div>
+<aside class="speaker-notes">We place a Dirichlet process prior on the mixing distribution, parameterized by a precision and a base measure on the parameter space. The Dirichlet process is the canonical nonparametric prior over distributions: it is conjugate under sampling, almost surely discrete, and gives full support over candidate mixing measures.</aside>
+</section>
+
+<section class="slide alt" data-label="Stick-Breaking Weights">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Stick-Breaking Weights</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Sethuraman construction</div><p class="formula">$w_j = v_j\!\!\prod_{l&lt;j}(1-v_l), \quad v_l \sim \mathrm{Beta}(1,\alpha)$</p></div>
+<div class="panel teal"><h3>Atoms</h3><p>Each weight $w_j$ attaches to $(\mu_j,\kappa_j)\sim P_0$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="A unit stick broken into decreasing segments that sum to one, feeding kernel weights"><rect x="0" y="0" width="360" height="200" fill="#fff"/><rect x="30" y="40" width="150" height="26" fill="#2563eb"/><rect x="180" y="40" width="90" height="26" fill="#0f766e"/><rect x="270" y="40" width="50" height="26" fill="#b45309"/><rect x="320" y="40" width="20" height="26" fill="#6d28d9"/><text x="95" y="58" font-size="14" fill="#fff" text-anchor="middle">w₁</text><text x="220" y="58" font-size="14" fill="#fff" text-anchor="middle">w₂</text><text x="292" y="58" font-size="13" fill="#fff" text-anchor="middle">w₃</text><line x1="30" y1="80" x2="105" y2="130" stroke="#cbd5e1" stroke-width="1.5"/><line x1="225" y1="80" x2="225" y2="130" stroke="#cbd5e1" stroke-width="1.5"/><path d="M60 175 Q105 135 150 175" fill="none" stroke="#2563eb" stroke-width="2.5"/><path d="M195 175 Q225 145 255 175" fill="none" stroke="#0f766e" stroke-width="2.5"/><text x="35" y="100" font-size="13" fill="#475569">stick = 1</text></svg><figcaption class="small">Decreasing stick lengths sum to one and weight the kernels.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Stick-Breaking Weights</span></div>
+<aside class="speaker-notes">Sethuraman's stick-breaking construction makes the prior explicit. We break a unit stick by independent Beta fractions, producing a decreasing sequence of weights that sum to one, each attached to an atom drawn from the base measure. This shows concretely why Dirichlet process draws are discrete with countably many atoms.</aside>
+</section>
+
+<section class="slide" data-label="Polya Urn and Clustering">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Polya Urn and Clustering</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Marginalize $P$</h3><p>Integrating out the mixing measure gives a prediction rule.</p></div>
+<div class="panel amber"><h3>Random clusters</h3><p>A data-driven number of components emerges.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Chinese restaurant rule</div><p class="formula">$\theta_{n+1} \mid \theta_{1:n} \sim \frac{1}{\alpha+n}\Big(\alpha P_0 + \sum_{j} n_j\,\delta_{\theta_j^{*}}\Big)$</p></div>
+<div class="panel teal"><h3>Reading</h3><p>Join cluster $j$ with weight $n_j$, or open a new one with weight $\alpha$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Polya Urn and Clustering</span></div>
+<aside class="speaker-notes">Marginalizing the mixing measure yields the Polya urn, or Chinese restaurant, prediction rule. A new observation joins an existing cluster with probability proportional to its current size or starts a fresh cluster with probability proportional to the precision, inducing an automatic, data-driven number of mixture components.</aside>
+</section>
+
+<section class="slide alt" data-label="Posterior Computation">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Posterior Computation</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Collapsed Gibbs</h3><p>Cycle cluster labels using the Polya urn weights.</p></div>
+<div class="panel violet"><h3>Blocked sampler</h3><p>Truncate stick-breaking, update weights and atoms jointly.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Predictive density</div><p class="formula">$\hat f(x) = \frac{1}{T}\sum_{t=1}^{T} f_{P^{(t)}}(x)$</p></div>
+<div class="panel teal"><h3>Output</h3><p>Each sweep is one posterior density draw; averaging estimates $f$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Posterior Computation</span></div>
+<aside class="speaker-notes">Posterior sampling uses Gibbs and blocked samplers. The Polya urn gives a collapsed Gibbs scheme that cycles cluster labels, while truncated stick-breaking enables blocked samplers updating weights and atoms jointly. Each sweep yields one posterior draw of the density, and averaging draws estimates the predictive density on the manifold.</aside>
+</section>
+
+<section class="slide" data-label="Kullback-Leibler Support">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>The Kullback-Leibler Support Condition</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Key hypothesis</h3><p>The truth $f_0$ must lie in the KL support of the prior $\Pi$.</p></div>
+<div class="panel teal"><h3>Reach</h3><p>Continuous, fully supported densities are approximable by mixtures.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">KL support</div><p class="formula">$\Pi\big\{\, f : \textstyle\int f_0 \log\frac{f_0}{f}\, d\mu &lt; \varepsilon \,\big\} &gt; 0$</p></div>
+<div class="panel blue"><h3>Why it matters</h3><p>Without prior mass near $f_0$, the posterior cannot find it.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Kullback-Leibler Support</span></div>
+<aside class="speaker-notes">Consistency rests on a support condition: the true density must lie in the Kullback-Leibler support of the prior, meaning the prior places positive mass on every neighborhood where the average log-ratio to the truth is small. Continuous, fully supported densities are reached by mixtures, so this condition holds broadly.</aside>
+</section>
+
+<section class="slide alt" data-label="Weak Posterior Consistency">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Weak Posterior Consistency</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Schwartz's theorem</h3><p>KL support plus a test gives weak consistency.</p></div>
+<div class="panel teal"><h3>Conclusion</h3><p>Posterior mass of every weak neighborhood of $f_0$ tends to one.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Weak consistency</div><p class="formula">$\Pi\big(\, U_{\text{weak}}(f_0) \mid X_{1:n} \,\big) \to 1 \quad \text{a.s.}$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 170" width="100%" role="img" aria-label="Posterior mass concentrating onto the true density as a tightening peak"><rect x="0" y="0" width="360" height="170" fill="#fff"/><line x1="30" y1="140" x2="330" y2="140" stroke="#cbd5e1" stroke-width="2"/><line x1="200" y1="20" x2="200" y2="145" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 4"/><path d="M40 138 Q200 100 320 138" fill="none" stroke="#cbd5e1" stroke-width="2"/><path d="M90 138 Q200 70 310 138" fill="none" stroke="#2563eb" stroke-width="2.5"/><path d="M150 138 Q200 35 250 138" fill="none" stroke="#0f766e" stroke-width="2.5"/><text x="205" y="34" font-size="13" fill="#b45309">f₀</text><text x="40" y="30" font-size="13" fill="#475569">n↑</text></svg><figcaption class="small">Posterior concentrates onto $f_0$ as $n$ grows.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Weak Posterior Consistency</span></div>
+<aside class="speaker-notes">Schwartz's theorem delivers weak consistency: if the truth is in the prior's Kullback-Leibler support, the posterior mass of every weak neighborhood of the true density tends to one almost surely as the sample size grows. The kernel mixture prior on the manifold satisfies the hypotheses, so weak consistency holds.</aside>
+</section>
+
+<section class="slide" data-label="Strong Posterior Consistency">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Strong Posterior Consistency</h2>
+<div class="content">
+<div class="stack">
+<div class="panel violet"><h3>Stronger topology</h3><p>Upgrade to total variation neighborhoods.</p></div>
+<div class="panel amber"><h3>Tool</h3><p>Sieves with bounded metric entropy and small prior tails.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Strong consistency</div><p class="formula">$\Pi\big(\, \|f - f_0\|_{1} &gt; \epsilon \mid X_{1:n} \,\big) \to 0 \quad \text{a.s.}$</p></div>
+<div class="panel teal"><h3>Payoff</h3><p>The estimated density converges in total variation distance.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Strong Posterior Consistency</span></div>
+<aside class="speaker-notes">Strengthening to the total variation, or strong, topology needs entropy control. Combining the Kullback-Leibler support condition with sieves of bounded metric entropy and exponentially small prior tails, the posterior concentrates in strong neighborhoods of the true density, so the estimated density converges in total variation distance.</aside>
+</section>
+
+<section class="slide alt" data-label="Estimating Means and Modes">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Frechet Means, Modes, and Clusters</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Functionals follow</h3><p>Density consistency transfers to the Frechet mean and the modes.</p></div>
+<div class="panel teal"><h3>Antimodes</h3><p>Valleys of $\hat f$ separate clusters on the manifold.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Frechet mean</div><p class="formula">$\hat\mu = \arg\min_{p\in M}\int_M d(p,x)^2\, \hat f(x)\, d\mu(x)$</p></div>
+<div class="panel violet"><h3>Classification</h3><p>Modes label groups; antimodes are the cluster boundaries.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Estimating Means and Modes</span></div>
+<aside class="speaker-notes">Consistency of the density transfers to functionals. The Frechet mean and the modes computed from the estimated density converge to those of the truth, and antimodes separate clusters. This certifies that Bayesian density estimation also yields consistent location summaries and a principled clustering of the manifold data.</aside>
+</section>
+
+<section class="slide" data-label="Recap and Workflow">
+<div class="topline"><span class="eyebrow">Nonparametric Inference on Manifolds</span><span>Chapter 13</span></div>
+<h2>Recap: One Coherent Workflow</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Model</h3><p>Manifold kernels with location and concentration.</p></div>
+<div class="panel teal"><h3>Prior</h3><p>Dirichlet process via stick-breaking or Polya urn.</p></div>
+<div class="panel violet"><h3>Compute</h3><p>Gibbs and blocked samplers for the posterior density.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Guarantee</h3><p>KL support and entropy give weak then strong consistency.</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Deliverables</div><p class="formula">$\hat f,\ \hat\mu,\ \text{modes},\ \text{clusters}$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 156-181</span><span>Recap and Workflow</span></div>
+<aside class="speaker-notes">The workflow is one arc: pick manifold kernels, place a Dirichlet process prior on the mixing measure, sample the posterior by Gibbs or blocked methods, and read off a consistent density, Frechet mean, modes, and clusters. The support and entropy conditions are what guarantee the posterior finds the truth.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
