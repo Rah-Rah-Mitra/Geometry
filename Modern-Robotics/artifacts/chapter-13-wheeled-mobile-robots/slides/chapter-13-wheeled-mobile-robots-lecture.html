@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-13-wheeled-mobile-robots">
+<meta name="chapter_title" content="Wheeled Mobile Robots">
+<meta name="notebook_path" content="Modern-Robotics/part-04-control-contact-and-mobile-robots/chapter-13-wheeled-mobile-robots/13-wheeled-mobile-robots.ipynb">
+<meta name="source_span" content="printed pages 513-564; PDF pages 531-582.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Wheeled Mobile Robots</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-13-wheeled-mobile-robots","chapter_title":"Wheeled Mobile Robots","notebook_path":"Modern-Robotics/part-04-control-contact-and-mobile-robots/chapter-13-wheeled-mobile-robots/13-wheeled-mobile-robots.ipynb","source_span":"printed pages 513-564; PDF pages 531-582.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Wheeled Mobile Robots","notes":"This chapter studies how wheel design decides which chassis velocities a planar robot can command. We separate omnidirectional bases, which span every planar twist directly, from nonholonomic bases, whose rolling constraints forbid instantaneous sideways motion yet still reach any pose by maneuvering."},
+{"slide":2,"label":"The Chassis Lives in SE(2)","notes":"A wheeled robot is read as a planar rigid body whose pose sits in SE(2). The body-frame chassis twist carries yaw rate, forward velocity, and lateral velocity. Naming this twist first lets every wheel model appear as a linear constraint acting on the same three numbers."},
+{"slide":3,"label":"Wheels as Velocity Constraints","notes":"A wheel is not just an actuator; it declares which contact component rolls, which must not slip, and which becomes wheel angular speed. Changing only the wheel modules turns one rectangular chassis into several different robots, so we always read wheels as constraints on the chassis twist."},
+{"slide":4,"label":"The Unicycle Model","notes":"The unicycle is the canonical nonholonomic base. It commands forward speed and turning rate, while its body-sideways velocity is pinned to zero at every instant. Integrating these controls rotates forward motion through the heading, so curved paths still accumulate world-frame lateral displacement."},
+{"slide":5,"label":"Differential Drive and the Car","notes":"Differential drive sets forward speed and yaw rate from two wheel speeds, recovering the unicycle twist. The car-like robot adds a steering angle and a wheelbase, so curvature is bounded. Both share the no-side-slip rolling constraint that defines nonholonomic motion."},
+{"slide":6,"label":"The Rolling Constraint Is Pfaffian","notes":"The no-side-slip condition is a Pfaffian constraint: linear in the velocities but not integrable to a position constraint. That non-integrability is exactly why the configuration space stays three dimensional while only two velocity directions are available at any instant."},
+{"slide":7,"label":"Omnidirectional Bases","notes":"Mecanum and omni wheels add passive rollers that let four wheel speeds span all three planar twist components. The wheel map then has rank three, so a least-squares inverse recovers a commanded chassis twist. No planar direction is missing in the ideal instantaneous kinematic model."},
+{"slide":8,"label":"The Mecanum Wheel Map","notes":"The mecanum matrix H sends the body twist to four wheel rates and depends on length, width, and wheel radius. With rank three the four wheels overconstrain rather than underconstrain motion, and the pseudo-inverse reconstructs compatible twists to floating-point accuracy, which the notebook verifies numerically."},
+{"slide":9,"label":"Odometry and Dead Reckoning","notes":"Odometry integrates the running account of small twist decisions. Each step rotates body-frame motion into the world frame and accumulates heading. Wrong wheel radii, roller angles, or encoder signs quietly amplify into pose drift, so dead reckoning must be checked against both algebra and motion."},
+{"slide":10,"label":"Controllability and Planning","notes":"Even with no sideways velocity, a nonholonomic robot is controllable: Lie brackets of forward and turning motions generate the missing direction. That is why parallel parking needs a maneuver of short alternating moves rather than a single straight slide into the gap."},
+{"slide":11,"label":"Feedback Control to a Pose","notes":"Feedback control steers a nonholonomic base toward a target pose or trajectory using errors in position and heading. Because instantaneous sideways motion is impossible, the controller commands forward speed and yaw rate, letting curvature and heading change resolve the lateral error over time."},
+{"slide":12,"label":"Mobile Manipulation","notes":"Mounting an arm on a mobile base combines base mobility with arm reach through one stacked Jacobian. Redundant degrees of freedom let the end effector follow a task while the base repositions, and nonholonomic base constraints carry directly into the combined velocity map."},
+{"slide":13,"label":"Recap and Invariants","notes":"Mobile robot kinematics is constraint geometry on SE(2). Instantaneous mobility and global reachability are different questions: omnidirectional bases span planar velocity now, nonholonomic bases reach poses by paths. The numerical checks confirm rank three, accurate reconstruction, and a nonzero unicycle path length."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Wheeled Mobile Robots">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h1>Wheeled Mobile Robots</h1>
+<p class="lead">How wheel design decides which chassis velocities are available</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Omnidirectional</h3><p>Wheels span every planar twist directly.</p></div>
+<div class="panel teal"><h3>Nonholonomic</h3><p>Rolling constraints forbid instant side-slip.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Omnidirectional free motion versus constrained forward and turning motion"><rect x="0" y="0" width="360" height="200" fill="#f0fdfa"/><circle cx="95" cy="100" r="34" fill="none" stroke="#0f766e" stroke-width="3"/><line x1="95" y1="100" x2="95" y2="50" stroke="#0f766e" stroke-width="2.5" marker-end="url(#a1)"/><line x1="95" y1="100" x2="145" y2="100" stroke="#0f766e" stroke-width="2.5" marker-end="url(#a1)"/><line x1="95" y1="100" x2="60" y2="135" stroke="#0f766e" stroke-width="2.5" marker-end="url(#a1)"/><line x1="95" y1="100" x2="130" y2="135" stroke="#0f766e" stroke-width="2.5" marker-end="url(#a1)"/><rect x="245" y="75" width="70" height="50" rx="6" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="280" y1="100" x2="280" y2="45" stroke="#2563eb" stroke-width="3" marker-end="url(#a2)"/><path d="M280 100 q40 0 40 -40" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="5 4"/><text x="60" y="30" font-size="14" fill="#0f766e">omni</text><text x="250" y="30" font-size="14" fill="#2563eb">car</text><defs><marker id="a1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#0f766e"/></marker><marker id="a2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#2563eb"/></marker></defs></svg><figcaption class="small">Free planar motion versus forward-plus-turn motion.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Wheeled Mobile Robots</span></div>
+<aside class="speaker-notes">This chapter studies how wheel design decides which chassis velocities a planar robot can command. We separate omnidirectional bases, which span every planar twist directly, from nonholonomic bases, whose rolling constraints forbid instantaneous sideways motion yet still reach any pose by maneuvering.</aside>
+</section>
+
+<section class="slide alt" data-label="The Chassis Lives in SE(2)">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>The Chassis Lives in SE(2)</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Pose</h3><p>Planar position and heading in $SE(2)$.</p></div>
+<div class="panel teal"><h3>Body twist</h3><p>Yaw rate, forward, and lateral velocity.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Chassis twist</div><p class="formula">$\mathcal{V}_b = (\omega,\, v_x,\, v_y)$</p></div>
+<div class="panel amber"><h3>Why first</h3><p>Every wheel model constrains these three numbers.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>The Chassis Lives in SE(2)</span></div>
+<aside class="speaker-notes">A wheeled robot is read as a planar rigid body whose pose sits in SE(2). The body-frame chassis twist carries yaw rate, forward velocity, and lateral velocity. Naming this twist first lets every wheel model appear as a linear constraint acting on the same three numbers.</aside>
+</section>
+
+<section class="slide" data-label="Wheels as Velocity Constraints">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Wheels as Velocity Constraints</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Roll</h3><p>One contact direction is free to roll.</p></div>
+<div class="panel amber"><h3>No slip</h3><p>Another direction must not slide.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Wheel contact point with rolling and no-slip directions"><rect x="0" y="0" width="360" height="200" fill="#fffbeb"/><line x1="40" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="2"/><rect x="150" y="70" width="22" height="70" rx="4" fill="none" stroke="#111827" stroke-width="3"/><circle cx="161" cy="150" r="4" fill="#111827"/><line x1="161" y1="150" x2="255" y2="150" stroke="#2563eb" stroke-width="3" marker-end="url(#b1)"/><line x1="161" y1="150" x2="161" y2="95" stroke="#b45309" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#b2)"/><text x="200" y="142" font-size="14" fill="#2563eb">roll</text><text x="168" y="100" font-size="14" fill="#b45309">no slip</text><defs><marker id="b1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#2563eb"/></marker><marker id="b2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker></defs></svg><figcaption class="small">A wheel partitions ground contact into roll and no-slip.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Wheels as Velocity Constraints</span></div>
+<aside class="speaker-notes">A wheel is not just an actuator; it declares which contact component rolls, which must not slip, and which becomes wheel angular speed. Changing only the wheel modules turns one rectangular chassis into several different robots, so we always read wheels as constraints on the chassis twist.</aside>
+</section>
+
+<section class="slide alt" data-label="The Unicycle Model">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>The Unicycle Model</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Two controls</h3><p>Forward speed $v$ and turning rate $\omega$.</p></div>
+<div class="panel teal"><h3>No side-slip</h3><p>Body lateral velocity is pinned to zero.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Kinematics</div><p class="formula">$\dot q = (v\cos\phi,\; v\sin\phi,\; \omega)$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 150" width="100%" role="img" aria-label="Unicycle body frame with heading and forbidden lateral direction"><rect x="0" y="0" width="360" height="150" fill="#eff6ff"/><circle cx="120" cy="80" r="30" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="120" y1="80" x2="200" y2="50" stroke="#0f766e" stroke-width="3" marker-end="url(#c1)"/><line x1="120" y1="80" x2="150" y2="135" stroke="#b45309" stroke-width="2.5" stroke-dasharray="5 4"/><line x1="150" y1="135" x2="90" y2="135" stroke="#b45309" stroke-width="2.5" stroke-dasharray="5 4"/><text x="190" y="40" font-size="14" fill="#0f766e">v, φ</text><text x="155" y="135" font-size="13" fill="#b45309">no v_y</text><defs><marker id="c1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#0f766e"/></marker></defs></svg><figcaption class="small">Forward along heading; lateral motion is forbidden.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>The Unicycle Model</span></div>
+<aside class="speaker-notes">The unicycle is the canonical nonholonomic base. It commands forward speed and turning rate, while its body-sideways velocity is pinned to zero at every instant. Integrating these controls rotates forward motion through the heading, so curved paths still accumulate world-frame lateral displacement.</aside>
+</section>
+
+<section class="slide" data-label="Differential Drive and the Car">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Differential Drive and the Car</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Diff drive</h3><p>Two wheel speeds give $v$ and $\omega$.</p></div>
+<div class="panel violet"><h3>Car-like</h3><p>Steering angle and wheelbase bound curvature.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Differential drive</div><p class="formula">$v=\tfrac{r}{2}(\dot\theta_R+\dot\theta_L),\;\; \omega=\tfrac{r}{d}(\dot\theta_R-\dot\theta_L)$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Car curvature</div><p class="formula">$\kappa = \dfrac{\tan\psi}{L}$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Differential Drive and the Car</span></div>
+<aside class="speaker-notes">Differential drive sets forward speed and yaw rate from two wheel speeds, recovering the unicycle twist. The car-like robot adds a steering angle and a wheelbase, so curvature is bounded. Both share the no-side-slip rolling constraint that defines nonholonomic motion.</aside>
+</section>
+
+<section class="slide alt" data-label="The Rolling Constraint Is Pfaffian">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>The Rolling Constraint Is Pfaffian</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Linear in velocity</h3><p>A one-form annihilates side-slip.</p></div>
+<div class="panel amber"><h3>Not integrable</h3><p>It does not reduce configuration freedom.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Pfaffian constraint</div><p class="formula">$-\dot x\,\sin\phi + \dot y\,\cos\phi = 0$</p></div>
+<div class="panel teal"><h3>Consequence</h3><p>Config space stays 3D; only 2 velocity directions are free.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>The Rolling Constraint Is Pfaffian</span></div>
+<aside class="speaker-notes">The no-side-slip condition is a Pfaffian constraint: linear in the velocities but not integrable to a position constraint. That non-integrability is exactly why the configuration space stays three dimensional while only two velocity directions are available at any instant.</aside>
+</section>
+
+<section class="slide" data-label="Omnidirectional Bases">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Omnidirectional Bases</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Passive rollers</h3><p>Mecanum and omni wheels add free side rolling.</p></div>
+<div class="panel blue"><h3>Full span</h3><p>Four wheel speeds reach all three twists.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Mecanum chassis with four angled rollers spanning all directions"><rect x="0" y="0" width="360" height="200" fill="#f0fdfa"/><rect x="120" y="55" width="120" height="90" rx="8" fill="none" stroke="#0f766e" stroke-width="3"/><g stroke="#2563eb" stroke-width="3"><line x1="108" y1="60" x2="132" y2="78"/><line x1="252" y1="60" x2="228" y2="78"/><line x1="108" y1="140" x2="132" y2="122"/><line x1="252" y1="140" x2="228" y2="122"/></g><line x1="180" y1="100" x2="180" y2="40" stroke="#b45309" stroke-width="2.5" marker-end="url(#d1)"/><line x1="180" y1="100" x2="245" y2="100" stroke="#b45309" stroke-width="2.5" marker-end="url(#d1)"/><line x1="180" y1="100" x2="135" y2="145" stroke="#b45309" stroke-width="2.5" marker-end="url(#d1)"/><text x="120" y="180" font-size="14" fill="#0f766e">mecanum base</text><defs><marker id="d1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker></defs></svg><figcaption class="small">Angled rollers give motion in any planar direction.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Omnidirectional Bases</span></div>
+<aside class="speaker-notes">Mecanum and omni wheels add passive rollers that let four wheel speeds span all three planar twist components. The wheel map then has rank three, so a least-squares inverse recovers a commanded chassis twist. No planar direction is missing in the ideal instantaneous kinematic model.</aside>
+</section>
+
+<section class="slide alt" data-label="The Mecanum Wheel Map">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>The Mecanum Wheel Map</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Wheel map</h3><p>$H$ sends body twist to four wheel rates.</p></div>
+<div class="panel teal"><h3>Rank three</h3><p>Wheels overconstrain planar motion.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Forward / inverse</div><p class="formula">$u = H\,\mathcal{V}_b, \qquad \mathcal{V}_b = H^{+}u$</p></div>
+<div class="panel amber"><h3>Check</h3><p>$\mathrm{rank}\,H = 3$; pseudo-inverse rebuilds compatible twists.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>The Mecanum Wheel Map</span></div>
+<aside class="speaker-notes">The mecanum matrix H sends the body twist to four wheel rates and depends on length, width, and wheel radius. With rank three the four wheels overconstrain rather than underconstrain motion, and the pseudo-inverse reconstructs compatible twists to floating-point accuracy, which the notebook verifies numerically.</aside>
+</section>
+
+<section class="slide" data-label="Odometry and Dead Reckoning">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Odometry and Dead Reckoning</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Integrate twists</h3><p>Rotate body motion into the world frame.</p></div>
+<div class="panel amber"><h3>Drift</h3><p>Bad radii or signs amplify into pose error.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Update</div><p class="formula">$q_{k+1} = q_k + \Delta t\, R(\phi_k)\,\mathcal{V}_b$</p></div>
+<div class="panel teal"><h3>Sanity</h3><p>Unicycle rollout yields a nonzero path and matched heading.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Odometry and Dead Reckoning</span></div>
+<aside class="speaker-notes">Odometry integrates the running account of small twist decisions. Each step rotates body-frame motion into the world frame and accumulates heading. Wrong wheel radii, roller angles, or encoder signs quietly amplify into pose drift, so dead reckoning must be checked against both algebra and motion.</aside>
+</section>
+
+<section class="slide alt" data-label="Controllability and Planning">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Controllability and Planning</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Lie brackets</h3><p>Combining moves generates the missing direction.</p></div>
+<div class="panel violet"><h3>Parallel parking</h3><p>Sideways poses need a maneuver.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 180" width="100%" role="img" aria-label="Parallel parking maneuver of alternating forward and reverse arcs"><rect x="0" y="0" width="360" height="180" fill="#f5f3ff"/><line x1="20" y1="60" x2="340" y2="60" stroke="#cbd5e1" stroke-width="2"/><line x1="20" y1="120" x2="340" y2="120" stroke="#cbd5e1" stroke-width="2"/><rect x="40" y="68" width="60" height="34" rx="5" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2"/><rect x="250" y="68" width="60" height="34" rx="5" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2"/><path d="M120 50 C160 50 175 80 185 95" fill="none" stroke="#2563eb" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#e1)"/><path d="M185 95 C200 110 210 95 230 92" fill="none" stroke="#b45309" stroke-width="3" stroke-dasharray="6 4" marker-end="url(#e2)"/><rect x="175" y="80" width="56" height="30" rx="5" fill="none" stroke="#0f766e" stroke-width="2.5"/><text x="30" y="160" font-size="14" fill="#6d28d9">alternating arcs reach the slot</text><defs><marker id="e1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#2563eb"/></marker><marker id="e2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#b45309"/></marker></defs></svg><figcaption class="small">Short alternating moves yield net sideways displacement.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Controllability and Planning</span></div>
+<aside class="speaker-notes">Even with no sideways velocity, a nonholonomic robot is controllable: Lie brackets of forward and turning motions generate the missing direction. That is why parallel parking needs a maneuver of short alternating moves rather than a single straight slide into the gap.</aside>
+</section>
+
+<section class="slide" data-label="Feedback Control to a Pose">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Feedback Control to a Pose</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Error</h3><p>Range, bearing, and heading to the target.</p></div>
+<div class="panel teal"><h3>Command</h3><p>Choose $v$ and $\omega$, not lateral velocity.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Polar control law</div><p class="formula">$v=k_\rho\,\rho, \qquad \omega=k_\alpha\,\alpha + k_\beta\,\beta$</p></div>
+<div class="panel amber"><h3>Resolve laterally</h3><p>Curvature and heading erase side error over time.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Feedback Control to a Pose</span></div>
+<aside class="speaker-notes">Feedback control steers a nonholonomic base toward a target pose or trajectory using errors in position and heading. Because instantaneous sideways motion is impossible, the controller commands forward speed and yaw rate, letting curvature and heading change resolve the lateral error over time.</aside>
+</section>
+
+<section class="slide alt" data-label="Mobile Manipulation">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Mobile Manipulation</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Base plus arm</h3><p>Mobility and reach combine into one system.</p></div>
+<div class="panel violet"><h3>Redundancy</h3><p>Extra freedom lets the base reposition freely.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Combined Jacobian</div><p class="formula">$\mathcal{V}_e = \begin{bmatrix} J_{base} & J_{arm}\end{bmatrix}\begin{bmatrix}\dot q_b\\ \dot\theta\end{bmatrix}$</p></div>
+<div class="panel teal"><h3>Constraints carry</h3><p>Nonholonomic base limits enter the velocity map.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Mobile Manipulation</span></div>
+<aside class="speaker-notes">Mounting an arm on a mobile base combines base mobility with arm reach through one stacked Jacobian. Redundant degrees of freedom let the end effector follow a task while the base repositions, and nonholonomic base constraints carry directly into the combined velocity map.</aside>
+</section>
+
+<section class="slide" data-label="Recap and Invariants">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 13</span></div>
+<h2>Recap and Invariants</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Constraint geometry</h3><p>Mobile kinematics lives on $SE(2)$.</p></div>
+<div class="panel teal"><h3>Two questions</h3><p>Instantaneous mobility versus global reachability.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Numerical checks</h3><ul><li>$\mathrm{rank}\,H = 3$ for the mecanum map</li><li>Pseudo-inverse rebuilds twists to machine accuracy</li><li>Unicycle path length stays positive</li></ul></div>
+<div class="panel violet"><h3>Takeaway</h3><p>Wheels turn one chassis into many robots.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 513-564</span><span>Recap and Invariants</span></div>
+<aside class="speaker-notes">Mobile robot kinematics is constraint geometry on SE(2). Instantaneous mobility and global reachability are different questions: omnidirectional bases span planar velocity now, nonholonomic bases reach poses by paths. The numerical checks confirm rank three, accurate reconstruction, and a nonzero unicycle path length.</aside>
+</section>
+</deck-stage>
+</body>
+</html>

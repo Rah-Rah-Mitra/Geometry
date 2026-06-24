@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Modern Robotics">
+<meta name="chapter_id" content="chapter-11-robot-control">
+<meta name="chapter_title" content="Robot Control">
+<meta name="notebook_path" content="Modern-Robotics/part-04-control-contact-and-mobile-robots/chapter-11-robot-control/11-robot-control.ipynb">
+<meta name="source_span" content="printed pages 403-460; PDF pages 421-478.">
+<meta name="source_pdf" content="Modern-Robotics/Mordern Robotics.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Robot Control</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Modern Robotics","chapter_id":"chapter-11-robot-control","chapter_title":"Robot Control","notebook_path":"Modern-Robotics/part-04-control-contact-and-mobile-robots/chapter-11-robot-control/11-robot-control.ipynb","source_span":"printed pages 403-460; PDF pages 421-478.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Robot Control","notes":"This chapter asks how feedback laws turn desired motion or desired contact into stable robot action. Across printed pages 403 to 460 we move from joint-space error dynamics through computed torque to force and impedance control, treating every controller as a deliberately chosen error equation rather than a torque recipe."},
+{"slide":2,"label":"The Control Objective","notes":"Motion control demands that the configuration track a reference trajectory, expressed either in joint coordinates or in task space through the Jacobian. We define the error as desired minus actual, and the entire chapter studies how to shape the differential equation that this error obeys."},
+{"slide":3,"label":"Error Dynamics and Stability","notes":"A controller is judged by the differential equation it imposes on the tracking error. If that equation is linear and its characteristic roots sit in the open left half plane, the error decays to zero. Stability is therefore a statement about eigenvalues, not about any single torque value."},
+{"slide":4,"label":"PID Joint Control","notes":"Proportional, integral, and derivative terms act on the joint error directly. The proportional gain pulls toward the target, derivative damps oscillation, and integral erases steady offsets from gravity or friction. Without integral action a constant disturbance leaves a permanent steady-state error."},
+{"slide":5,"label":"Second-Order Error and Damping","notes":"With proportional and derivative feedback the error obeys a mass-spring-damper equation. The damping ratio decides the transient: under-damped responses overshoot and ring, over-damped responses crawl, and critical damping gives the fastest settling without overshoot. Gains are chosen to place that ratio at one."},
+{"slide":6,"label":"Choosing Gains for Critical Damping","notes":"Specifying a natural frequency and a unit damping ratio fixes both gains: the proportional gain equals the natural frequency squared and the derivative gain equals twice the natural frequency. Larger natural frequency means faster response but demands more torque and amplifies any unmodeled dynamics."},
+{"slide":7,"label":"Feedforward Control","notes":"Feedforward injects the torque predicted by the model along the planned trajectory, so feedback only has to correct the residual. When the model is accurate the feedback effort shrinks toward zero, but every modeling error reappears as a tracking error that feedback alone must absorb."},
+{"slide":8,"label":"Computed-Torque Control","notes":"Computed torque uses the mass matrix, Coriolis vector, and gravity to cancel the nonlinear dynamics exactly, leaving a clean linear error equation in every joint. This feedback linearization decouples the joints so that a single pair of gains delivers identical second-order behavior throughout the workspace."},
+{"slide":9,"label":"Linearized Error Dynamics","notes":"After cancellation the commanded acceleration equals the desired acceleration plus a proportional and derivative correction on the error. The closed-loop error then satisfies a decoupled linear system whose decay rate we set directly, which is exactly the second-order shaping seen earlier, now valid globally."},
+{"slide":10,"label":"Force Control","notes":"When the end-effector presses on a stiff environment, position commands become meaningless and we regulate the contact wrench instead. A force controller compares measured to desired wrench and adjusts torque through the Jacobian transpose, often adding damping so the loop stays stable against the environment stiffness."},
+{"slide":11,"label":"Hybrid Motion-Force Control","notes":"A contact task splits Cartesian directions into a motion subspace and an orthogonal force subspace. Selection or projection matrices route position feedback into free directions and force feedback into constrained ones, so the robot slides along a surface while pressing into it with a commanded normal force."},
+{"slide":12,"label":"Impedance and Admittance Control","notes":"Impedance control renders a chosen mass-spring-damper between displacement and contact force, letting the end-effector feel compliant rather than rigid. Admittance is the dual: measured force drives a reference motion. Tuning the virtual stiffness and damping trades tracking accuracy against gentle, stable interaction."},
+{"slide":13,"label":"Synthesis and Pitfalls","notes":"Every controller here is a chosen error dynamics layered on the robot's geometry and dynamics. High gains can mask model error until contact or saturation exposes it, and force control without a contact model is ill posed. Hybrid and impedance laws are projections of task intent onto motion and force."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Robot Control">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h1>Robot Control</h1>
+<p class="lead">How feedback laws turn desired motion and contact into stable action</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Motion control</h3><p>Track a reference in joint or task space.</p></div>
+<div class="panel teal"><h3>Force control</h3><p>Regulate the wrench during contact.</p></div>
+<div class="panel violet"><h3>Impedance</h3><p>Render a chosen mechanical element.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="Feedback loop from reference through controller and robot back through a sensor">
+<rect x="0" y="0" width="380" height="220" fill="#eff6ff"/>
+<rect x="40" y="40" width="90" height="50" rx="6" fill="#fff" stroke="#2563EB" stroke-width="2"/><text x="85" y="70" font-size="14" fill="#1E3A8A" text-anchor="middle">controller</text>
+<rect x="200" y="40" width="90" height="50" rx="6" fill="#fff" stroke="#0F766E" stroke-width="2"/><text x="245" y="70" font-size="14" fill="#0F766E" text-anchor="middle">robot</text>
+<rect x="150" y="150" width="90" height="40" rx="6" fill="#fff" stroke="#B45309" stroke-width="2"/><text x="195" y="175" font-size="13" fill="#B45309" text-anchor="middle">sensor</text>
+<line x1="10" y1="65" x2="40" y2="65" stroke="#475569" stroke-width="2"/><text x="22" y="56" font-size="12" fill="#475569" text-anchor="middle">ref</text>
+<line x1="130" y1="65" x2="200" y2="65" stroke="#475569" stroke-width="2"/><text x="165" y="56" font-size="12" fill="#475569" text-anchor="middle">&#964;</text>
+<line x1="290" y1="65" x2="350" y2="65" stroke="#475569" stroke-width="2"/><text x="320" y="56" font-size="12" fill="#475569" text-anchor="middle">&#952;</text>
+<line x1="320" y1="65" x2="320" y2="170" stroke="#475569" stroke-width="2"/><line x1="320" y1="170" x2="240" y2="170" stroke="#475569" stroke-width="2"/>
+<line x1="150" y1="170" x2="85" y2="170" stroke="#475569" stroke-width="2"/><line x1="85" y1="170" x2="85" y2="90" stroke="#475569" stroke-width="2"/>
+</svg><figcaption class="small">The closed loop: reference, controller, robot, sensor feedback.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Robot Control</span></div>
+<aside class="speaker-notes">This chapter asks how feedback laws turn desired motion or desired contact into stable robot action. Across printed pages 403 to 460 we move from joint-space error dynamics through computed torque to force and impedance control, treating every controller as a deliberately chosen error equation rather than a torque recipe.</aside>
+</section>
+
+<section class="slide alt" data-label="The Control Objective">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>The Control Objective</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Joint space</h3><p>Track a reference $\theta_d(t)$ in configuration coordinates.</p></div>
+<div class="panel teal"><h3>Task space</h3><p>Track an end-effector path filtered through the Jacobian $J(\theta)$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Tracking error</div><p class="formula">$\theta_e(t) = \theta_d(t) - \theta(t)$</p></div>
+<div class="panel amber"><h3>Goal</h3><p>Drive $\theta_e \to 0$ as $t \to \infty$, with good transients.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>The Control Objective</span></div>
+<aside class="speaker-notes">Motion control demands that the configuration track a reference trajectory, expressed either in joint coordinates or in task space through the Jacobian. We define the error as desired minus actual, and the entire chapter studies how to shape the differential equation that this error obeys.</aside>
+</section>
+
+<section class="slide" data-label="Error Dynamics and Stability">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Error Dynamics and Stability</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Chosen equation</h3><p>A controller imposes a differential equation on $\theta_e$.</p></div>
+<div class="panel violet"><h3>Eigenvalues</h3><p>Roots in the open left half plane give decay.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Linear error dynamics</div><p class="formula">$\ddot{\theta}_e + K_d\,\dot{\theta}_e + K_p\,\theta_e = 0$</p></div>
+<div class="panel teal"><h3>Stability</h3><p>$K_p, K_d \succ 0$ makes the origin asymptotically stable.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Error Dynamics and Stability</span></div>
+<aside class="speaker-notes">A controller is judged by the differential equation it imposes on the tracking error. If that equation is linear and its characteristic roots sit in the open left half plane, the error decays to zero. Stability is therefore a statement about eigenvalues, not about any single torque value.</aside>
+</section>
+
+<section class="slide alt" data-label="PID Joint Control">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>PID Joint Control</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Proportional</h3><p>Restoring torque proportional to error.</p></div>
+<div class="panel teal"><h3>Derivative</h3><p>Damps oscillation, opposes error rate.</p></div>
+<div class="panel amber"><h3>Integral</h3><p>Erases steady offset from gravity, friction.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">PID law</div><p class="formula">$\tau = K_p\,\theta_e + K_i\!\!\int\!\theta_e\,dt + K_d\,\dot{\theta}_e$</p></div>
+<div class="panel violet"><h3>Steady state</h3><p>Without $K_i$, a constant load leaves residual error.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>PID Joint Control</span></div>
+<aside class="speaker-notes">Proportional, integral, and derivative terms act on the joint error directly. The proportional gain pulls toward the target, derivative damps oscillation, and integral erases steady offsets from gravity or friction. Without integral action a constant disturbance leaves a permanent steady-state error.</aside>
+</section>
+
+<section class="slide" data-label="Second-Order Error and Damping">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Second-Order Error and Damping</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Standard form</div><p class="formula">$\ddot{\theta}_e + 2\zeta\omega_n\,\dot{\theta}_e + \omega_n^2\,\theta_e = 0$</p></div>
+<div class="panel blue"><h3>Damping ratio $\zeta$</h3><p>Sets overshoot, ringing, and settling time.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Error responses for under-, critically-, and over-damped gains">
+<rect x="0" y="0" width="380" height="230" fill="#fff" stroke="#CBD5E1" stroke-width="1"/>
+<line x1="40" y1="200" x2="360" y2="200" stroke="#CBD5E1" stroke-width="2"/><line x1="40" y1="20" x2="40" y2="200" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="120" x2="360" y2="120" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="20" y="50" font-size="12" fill="#475569">e</text><text x="350" y="218" font-size="12" fill="#475569">t</text>
+<path d="M40 40 C 90 200, 130 60, 170 150 S 250 110, 360 120" fill="none" stroke="#B45309" stroke-width="2.5"/>
+<path d="M40 40 C 120 120, 200 120, 360 120" fill="none" stroke="#0F766E" stroke-width="2.5"/>
+<path d="M40 40 C 160 90, 260 116, 360 120" fill="none" stroke="#2563EB" stroke-width="2.5"/>
+<text x="150" y="36" font-size="12" fill="#B45309">under-damped</text>
+<text x="250" y="100" font-size="12" fill="#0F766E">critical</text>
+<text x="250" y="140" font-size="12" fill="#2563EB">over-damped</text>
+</svg><figcaption class="small">Error $e(t)$ for $\zeta<1$, $\zeta=1$, $\zeta>1$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Second-Order Error and Damping</span></div>
+<aside class="speaker-notes">With proportional and derivative feedback the error obeys a mass-spring-damper equation. The damping ratio decides the transient: under-damped responses overshoot and ring, over-damped responses crawl, and critical damping gives the fastest settling without overshoot. Gains are chosen to place that ratio at one.</aside>
+</section>
+
+<section class="slide alt" data-label="Choosing Gains for Critical Damping">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Choosing Gains for Critical Damping</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Critical damping</div><p class="formula">$\zeta = 1: \quad K_p = \omega_n^2, \quad K_d = 2\omega_n$</p></div>
+<div class="panel blue"><h3>Pick $\omega_n$</h3><p>Natural frequency sets response speed.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Trade-off</h3><p>Larger $\omega_n$ is faster but needs more torque.</p></div>
+<div class="panel violet"><h3>Caution</h3><p>High gains amplify unmodeled dynamics and noise.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Choosing Gains for Critical Damping</span></div>
+<aside class="speaker-notes">Specifying a natural frequency and a unit damping ratio fixes both gains: the proportional gain equals the natural frequency squared and the derivative gain equals twice the natural frequency. Larger natural frequency means faster response but demands more torque and amplifies any unmodeled dynamics.</aside>
+</section>
+
+<section class="slide" data-label="Feedforward Control">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Feedforward Control</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Model-predicted torque</h3><p>Inject the dynamics expected along the plan.</p></div>
+<div class="panel teal"><h3>Residual only</h3><p>Feedback corrects what the model misses.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Feedforward + PD</div><p class="formula">$\tau = M(\theta_d)\ddot{\theta}_d + h(\theta_d,\dot{\theta}_d) + K_p\theta_e + K_d\dot{\theta}_e$</p></div>
+<div class="panel amber"><h3>Limit</h3><p>Model error reappears as tracking error.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Feedforward Control</span></div>
+<aside class="speaker-notes">Feedforward injects the torque predicted by the model along the planned trajectory, so feedback only has to correct the residual. When the model is accurate the feedback effort shrinks toward zero, but every modeling error reappears as a tracking error that feedback alone must absorb.</aside>
+</section>
+
+<section class="slide alt" data-label="Computed-Torque Control">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Computed-Torque Control</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="Inverse-dynamics block cancelling robot dynamics to leave a linear loop">
+<rect x="0" y="0" width="380" height="220" fill="#f0fdfa"/>
+<rect x="30" y="40" width="110" height="55" rx="6" fill="#fff" stroke="#2563EB" stroke-width="2"/><text x="85" y="62" font-size="13" fill="#1E3A8A" text-anchor="middle">PD on error</text><text x="85" y="80" font-size="12" fill="#475569" text-anchor="middle">a = ..+Kp e+Kd e&#775;</text>
+<rect x="190" y="40" width="120" height="55" rx="6" fill="#fff" stroke="#0F766E" stroke-width="2"/><text x="250" y="62" font-size="12" fill="#0F766E" text-anchor="middle">M(&#952;)a + c + g</text><text x="250" y="80" font-size="11" fill="#475569" text-anchor="middle">inverse dynamics</text>
+<rect x="190" y="140" width="120" height="50" rx="6" fill="#fff" stroke="#B45309" stroke-width="2"/><text x="250" y="170" font-size="12" fill="#B45309" text-anchor="middle">robot dynamics</text>
+<line x1="140" y1="67" x2="190" y2="67" stroke="#475569" stroke-width="2"/>
+<line x1="250" y1="95" x2="250" y2="140" stroke="#475569" stroke-width="2"/><text x="262" y="120" font-size="12" fill="#475569">&#964;</text>
+<line x1="190" y1="165" x2="40" y2="165" stroke="#475569" stroke-width="2"/><line x1="40" y1="165" x2="40" y2="95" stroke="#475569" stroke-width="2"/><line x1="40" y1="95" x2="30" y2="80" stroke="#475569" stroke-width="2"/>
+<text x="110" y="158" font-size="11" fill="#475569">&#952;, &#952;&#775;</text>
+</svg><figcaption class="small">Inverse dynamics cancels the plant; PD shapes the residual.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Control law</div><p class="formula">$\tau = M(\theta)\big(\ddot{\theta}_d + K_p\theta_e + K_d\dot{\theta}_e\big) + c(\theta,\dot{\theta}) + g(\theta)$</p></div>
+<div class="panel violet"><h3>Feedback linearization</h3><p>Cancels $M$, $c$, $g$ to decouple the joints.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Computed-Torque Control</span></div>
+<aside class="speaker-notes">Computed torque uses the mass matrix, Coriolis vector, and gravity to cancel the nonlinear dynamics exactly, leaving a clean linear error equation in every joint. This feedback linearization decouples the joints so that a single pair of gains delivers identical second-order behavior throughout the workspace.</aside>
+</section>
+
+<section class="slide" data-label="Linearized Error Dynamics">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Linearized Error Dynamics</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>After cancellation</h3><p>Commanded acceleration sets the loop.</p></div>
+<div class="panel teal"><h3>Decoupled joints</h3><p>One gain pair governs every joint identically.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Closed loop</div><p class="formula">$\ddot{\theta}_e + K_d\,\dot{\theta}_e + K_p\,\theta_e = 0$</p></div>
+<div class="panel amber"><h3>Global validity</h3><p>Second-order shaping holds across the workspace.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Linearized Error Dynamics</span></div>
+<aside class="speaker-notes">After cancellation the commanded acceleration equals the desired acceleration plus a proportional and derivative correction on the error. The closed-loop error then satisfies a decoupled linear system whose decay rate we set directly, which is exactly the second-order shaping seen earlier, now valid globally.</aside>
+</section>
+
+<section class="slide alt" data-label="Force Control">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Force Control</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Stiff contact</h3><p>Position commands become ill defined.</p></div>
+<div class="panel teal"><h3>Regulate wrench</h3><p>Track desired end-effector force/torque.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Force law</div><p class="formula">$\tau = J^{\!\top}(\theta)\big(F_d + K_{fp}(F_d - F)\big) + \tilde g(\theta)$</p></div>
+<div class="panel amber"><h3>Stability</h3><p>Add damping against environment stiffness.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Force Control</span></div>
+<aside class="speaker-notes">When the end-effector presses on a stiff environment, position commands become meaningless and we regulate the contact wrench instead. A force controller compares measured to desired wrench and adjusts torque through the Jacobian transpose, often adding damping so the loop stays stable against the environment stiffness.</aside>
+</section>
+
+<section class="slide" data-label="Hybrid Motion-Force Control">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Hybrid Motion-Force Control</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Surface splitting Cartesian space into tangent motion and normal force directions">
+<rect x="0" y="0" width="380" height="230" fill="#fff" stroke="#CBD5E1" stroke-width="1"/>
+<path d="M30 170 L350 130" stroke="#0F766E" stroke-width="3"/><text x="60" y="195" font-size="13" fill="#0F766E">contact surface</text>
+<line x1="190" y1="151" x2="300" y2="138" stroke="#2563EB" stroke-width="3" marker-end="url(#ah)"/><text x="250" y="130" font-size="13" fill="#2563EB">motion (tangent)</text>
+<line x1="190" y1="151" x2="160" y2="70" stroke="#B45309" stroke-width="3" marker-end="url(#ah)"/><text x="120" y="60" font-size="13" fill="#B45309">force (normal)</text>
+<circle cx="190" cy="151" r="5" fill="#1E3A8A"/>
+<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#475569"/></marker></defs>
+</svg><figcaption class="small">Motion in tangent directions, force in the orthogonal normal.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Selection split</div><p class="formula">$\tau = P\,\tau_{\text{motion}} + (I - P)\,\tau_{\text{force}}$</p></div>
+<div class="panel violet"><h3>Projection $P$</h3><p>Routes feedback into free vs. constrained directions.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Hybrid Motion-Force Control</span></div>
+<aside class="speaker-notes">A contact task splits Cartesian directions into a motion subspace and an orthogonal force subspace. Selection or projection matrices route position feedback into free directions and force feedback into constrained ones, so the robot slides along a surface while pressing into it with a commanded normal force.</aside>
+</section>
+
+<section class="slide alt" data-label="Impedance and Admittance Control">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Impedance and Admittance Control</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Impedance</h3><p>Render a mass-spring-damper at the tip.</p></div>
+<div class="panel teal"><h3>Admittance</h3><p>Measured force drives a reference motion.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Rendered dynamics</div><p class="formula">$M_d\,\ddot{x}_e + B_d\,\dot{x}_e + K_d\,x_e = F_{\text{ext}}$</p></div>
+<div class="panel amber"><h3>Tuning</h3><p>Virtual stiffness trades accuracy for gentle contact.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Impedance and Admittance Control</span></div>
+<aside class="speaker-notes">Impedance control renders a chosen mass-spring-damper between displacement and contact force, letting the end-effector feel compliant rather than rigid. Admittance is the dual: measured force drives a reference motion. Tuning the virtual stiffness and damping trades tracking accuracy against gentle, stable interaction.</aside>
+</section>
+
+<section class="slide" data-label="Synthesis and Pitfalls">
+<div class="topline"><span class="eyebrow">Modern Robotics</span><span>Chapter 11</span></div>
+<h2>Synthesis and Pitfalls</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Unifying idea</h3><p>Every controller is a chosen error dynamics.</p></div>
+<div class="panel teal"><h3>Projections</h3><p>Hybrid and impedance are task intent projected.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Pitfall</h3><p>High gains hide model error until contact or saturation.</p></div>
+<div class="panel violet"><h3>Pitfall</h3><p>Force control without a contact model is ill posed.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 403-460</span><span>Synthesis and Pitfalls</span></div>
+<aside class="speaker-notes">Every controller here is a chosen error dynamics layered on the robot's geometry and dynamics. High gains can mask model error until contact or saturation exposes it, and force control without a contact model is ill posed. Hybrid and impedance laws are projections of task intent onto motion and force.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
