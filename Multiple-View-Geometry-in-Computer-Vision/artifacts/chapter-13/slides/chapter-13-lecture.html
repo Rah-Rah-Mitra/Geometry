@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-13">
+<meta name="chapter_title" content="Chapter 13: Scene Planes and Homographies">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-13-scene-planes-and-homographies/13-scene-planes-and-homographies.ipynb">
+<meta name="source_span" content="printed pages 325-343; PDF pages 343-361.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 13: Scene Planes and Homographies</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-13","chapter_title":"Chapter 13: Scene Planes and Homographies","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-13-scene-planes-and-homographies/13-scene-planes-and-homographies.ipynb","source_span":"printed pages 325-343; PDF pages 343-361.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Scene Planes and Homographies","notes":"This chapter spans printed pages 325 through 343 and turns a scene plane into a direct image-to-image transfer rule. A world plane seen by two cameras induces a single projective homography between the two images, replacing point-by-point triangulation with one transfer matrix that we will dissect, test, and connect to the fundamental matrix."},
+{"slide":2,"label":"A Plane Induces a Homography","notes":"Trace a ray through an image point until it meets the chosen plane, project that intersection into the second view, and the composition is a projective map. Because the plane is fixed, the same two-by-two-by-three matrix sends every planar point from one image to the other, giving the plane-induced homography H."},
+{"slide":3,"label":"The Calibrated Formula","notes":"For calibrated cameras with second camera rotation R and translation t, a plane with unit normal n at depth d induces H equal to K-prime times R minus t n transpose over d, all times K inverse. The rank-one term encodes translation scaled by inverse depth; rotation supplies the rest of the warp."},
+{"slide":4,"label":"Homography From a Plane, Plane From H","notes":"The map runs both directions. Given the plane and motion we read off H by the formula; given H and the camera pair we factor it back into a rotation part and a rank-one translation part, recovering the plane normal and depth up to the usual ambiguities. Decomposition generically yields two physically plausible solutions."},
+{"slide":5,"label":"Compatibility With F","notes":"A plane homography and the fundamental matrix are not independent. Any valid plane homography satisfies F equal to the skew of the second epipole times H, and equivalently H transpose F plus F transpose H equals zero. This is the algebraic statement that the transferred point Hx lies on the epipolar line of x."},
+{"slide":6,"label":"Plane Plus Parallax","notes":"Apply H to an off-plane point and you predict the image of where its ray pierces the plane, not the true correspondence. The residual from Hx to the real x-prime is parallax: it points along the epipolar line toward the epipole, and its length grows with the point's relative depth off the plane."},
+{"slide":7,"label":"Parallax Scales With Relative Depth","notes":"The parallax magnitude is governed by the ratio of the point's distance off the plane to its depth, multiplied by the camera baseline. Points on the plane have zero parallax; the further a point sits from the plane, the longer its displacement from Hx along the epipolar line toward the epipole."},
+{"slide":8,"label":"Recovering F From a Plane Homography","notes":"Plane plus parallax inverts into an estimation recipe. With a plane homography and the parallax of a few off-plane points, the epipole sits at the common intersection of the parallax join lines, and F equals the skew of that epipole times H. Two off-plane points generically pin the epipole down."},
+{"slide":9,"label":"The Infinite Homography","notes":"Let the plane recede to infinity, or equivalently drop the translation term, and H reduces to K-prime R K inverse, the infinite homography. It transfers vanishing points and directions between the views, isolates the rotation-only part of the motion, and is the backbone of camera calibration and rotation estimation."},
+{"slide":10,"label":"Homologies and Plane Transfer","notes":"When a plane homography fixes a point and a line of points, it is a planar homology, the structure behind symmetry and shadow relations between two coplanar configurations in one image. The infinite homography composes successive transfers, letting a known plane relay correspondences across a whole image sequence."},
+{"slide":11,"label":"Applications","notes":"Two staples follow directly. Image mosaicing stitches pure-rotation or planar-scene frames by chaining homographies into one panorama. Metric rectification removes projective and affine distortion from an imaged plane using the imaged circular points, recovering true angles and length ratios on facades, floors, and calibration targets."},
+{"slide":12,"label":"Takeaways","notes":"A nondegenerate world plane induces a full-rank image homography H equal to K-prime times R minus t n transpose over d times K inverse. It is compatible with F, off-plane points reveal themselves through epipolar parallax, and the infinite homography isolates rotation. Together these power transfer, rectification, and mosaicing."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Scene Planes and Homographies">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h1>Scene Planes and Homographies</h1>
+<p class="lead">A world plane turns two-view transfer into one matrix</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Plane-induced map</h3><p>One world plane sends its image in view 1 to its image in view 2 by a single homography $H$.</p></div>
+<div class="panel teal"><h3>What we build</h3><p>The calibrated formula, compatibility with $F$, plane-plus-parallax, and the infinite homography.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 460 280" width="100%" role="img" aria-label="Two cameras viewing a scene plane that induces a homography H between their images">
+<rect x="0" y="0" width="460" height="280" fill="#f0fdfa"/>
+<polygon points="150,60 360,40 400,170 190,200" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="300" y="120" font-size="16" fill="#2563EB" font-style="italic">scene plane &#960;</text>
+<circle cx="60" cy="230" r="6" fill="#0F766E"/><text x="30" y="255" font-size="15" fill="#0F766E">camera 1</text>
+<circle cx="420" cy="250" r="6" fill="#B45309"/><text x="392" y="275" font-size="15" fill="#B45309">camera 2</text>
+<line x1="60" y1="230" x2="270" y2="120" stroke="#0F766E" stroke-width="1.5"/>
+<line x1="420" y1="250" x2="270" y2="120" stroke="#B45309" stroke-width="1.5"/>
+<circle cx="270" cy="120" r="5" fill="#6D28D9"/><text x="232" y="110" font-size="14" fill="#6D28D9">X on &#960;</text>
+<path d="M120 215 Q240 180 360 235" stroke="#6D28D9" stroke-width="2" fill="none" stroke-dasharray="6 5"/>
+<text x="215" y="230" font-size="16" fill="#6D28D9">x &#8594; Hx</text>
+</svg><figcaption class="small">A point on the plane maps from one image to the other by $x \mapsto Hx$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Scene Planes and Homographies</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 325 through 343 and turns a scene plane into a direct image-to-image transfer rule. A world plane seen by two cameras induces a single projective homography between the two images, replacing point-by-point triangulation with one transfer matrix that we will dissect, test, and connect to the fundamental matrix.</aside>
+</section>
+
+<section class="slide alt" data-label="A Plane Induces a Homography">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>A Plane Induces a Homography</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Construction</h3><p>Back-project $x$ to the ray, intersect the chosen plane, then project that point into the second view.</p></div>
+<div class="panel violet"><h3>Why it is projective</h3><p>Each step is a projective map of the plane, so the composition is one fixed homography $H$.</p></div>
+<div class="panel teal"><h3>Single matrix</h3><p>The same $H$ transfers every point of that plane between the images.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Plane transfer</div><p class="formula">$$x' = H\,x \quad\text{for all } x \text{ imaging the plane } \pi$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Plane model (camera 1)</div><p class="formula">$$n^{\top} X + d = 0$$</p></div>
+<p class="small">$H$ is $3\times 3$, nonsingular for a generic plane and view pair.</p>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>A Plane Induces a Homography</span></div>
+<aside class="speaker-notes">Trace a ray through an image point until it meets the chosen plane, project that intersection into the second view, and the composition is a projective map. Because the plane is fixed, the same two-by-two-by-three matrix sends every planar point from one image to the other, giving the plane-induced homography H.</aside>
+</section>
+
+<section class="slide" data-label="The Calibrated Formula">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>The Calibrated Formula</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Plane-induced homography</div><p class="formula">$$H = K'\Big(R - \tfrac{t\,n^{\top}}{d}\Big)K^{-1}$$</p></div>
+<div class="panel teal"><h3>Read the terms</h3><p>$R$ rotates the ray; $-t\,n^{\top}/d$ is a rank-one translation term scaled by inverse depth.</p></div>
+<div class="panel amber"><h3>Sign convention</h3><p>With $n^{\top}X+d=0$ and $P'=K'[R\,|\,t]$, flipping either convention flips the rank-one term.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="Decomposition of the plane homography into a rotation block and a rank one translation block">
+<rect x="0" y="0" width="440" height="280" fill="#fffbeb"/>
+<rect x="40" y="60" width="150" height="150" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="115" y="145" font-size="34" fill="#2563EB" text-anchor="middle" font-style="italic">R</text>
+<text x="115" y="235" font-size="15" fill="#2563EB" text-anchor="middle">rotation block</text>
+<text x="210" y="145" font-size="34" fill="#111827" text-anchor="middle">&#8722;</text>
+<rect x="250" y="60" width="150" height="150" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/>
+<text x="325" y="135" font-size="26" fill="#6D28D9" text-anchor="middle" font-style="italic">t n&#7488;/d</text>
+<text x="325" y="170" font-size="15" fill="#6D28D9" text-anchor="middle">rank-one</text>
+<text x="325" y="235" font-size="15" fill="#6D28D9" text-anchor="middle">translation block</text>
+<line x1="40" y1="40" x2="400" y2="40" stroke="#CBD5E1" stroke-width="1.5"/>
+<text x="220" y="30" font-size="15" fill="#475569" text-anchor="middle">conjugated by K' ( &#183; ) K&#8315;&#185;</text>
+</svg><figcaption class="small">Rotation plus a depth-scaled rank-one translation, wrapped by the calibrations.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>The Calibrated Formula</span></div>
+<aside class="speaker-notes">For calibrated cameras with second camera rotation R and translation t, a plane with unit normal n at depth d induces H equal to K-prime times R minus t n transpose over d, all times K inverse. The rank-one term encodes translation scaled by inverse depth; rotation supplies the rest of the warp.</aside>
+</section>
+
+<section class="slide alt" data-label="Homography From a Plane, Plane From H">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Homography From a Plane, Plane From $H$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Plane &#8594; H</h3><p>Substitute $n,d,R,t$ into the formula and read off the transfer matrix directly.</p></div>
+<div class="panel teal"><h3>H &#8594; plane</h3><p>Factor $K'^{-1}HK$ into a rotation plus a rank-one part to recover $n$ and $d$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Decomposition</div><p class="formula">$$K'^{-1}H K = R - \tfrac{t}{d}\,n^{\top}$$</p></div>
+<div class="panel amber"><h3>Ambiguity</h3><p>The factorization generically yields two physically plausible $(R,t,n,d)$ solutions; extra points disambiguate.</p></div>
+<div class="panel violet"><h3>Check</h3><p>A DLT homography from planar matches must match the closed-form $H$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Homography From a Plane, Plane From H</span></div>
+<aside class="speaker-notes">The map runs both directions. Given the plane and motion we read off H by the formula; given H and the camera pair we factor it back into a rotation part and a rank-one translation part, recovering the plane normal and depth up to the usual ambiguities. Decomposition generically yields two physically plausible solutions.</aside>
+</section>
+
+<section class="slide" data-label="Compatibility With F">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Compatibility With $F$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Factorization of F</div><p class="formula">$$F = [e']_{\times}\,H$$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Symmetry constraint</div><p class="formula">$$H^{\top}F + F^{\top}H = 0$$</p></div>
+<div class="panel teal"><h3>Meaning</h3><p>$Hx$ always lands on the epipolar line $Fx$ of $x$ in the second view.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="The transferred point Hx lies on the epipolar line of x in the second image">
+<rect x="0" y="0" width="440" height="280" fill="#eff6ff"/>
+<rect x="40" y="40" width="360" height="200" fill="#ffffff" stroke="#CBD5E1" stroke-width="2"/>
+<text x="60" y="70" font-size="15" fill="#475569">second image</text>
+<circle cx="90" cy="170" r="7" fill="#B45309"/><text x="60" y="200" font-size="15" fill="#B45309">epipole e'</text>
+<line x1="90" y1="170" x2="380" y2="95" stroke="#2563EB" stroke-width="2"/>
+<text x="300" y="100" font-size="15" fill="#2563EB">epipolar line Fx</text>
+<circle cx="250" cy="132" r="6" fill="#6D28D9"/><text x="230" y="160" font-size="14" fill="#6D28D9">Hx</text>
+<circle cx="320" cy="113" r="6" fill="#0F766E"/><text x="305" y="142" font-size="14" fill="#0F766E">x'</text>
+</svg><figcaption class="small">Both the true match $x'$ and the transfer $Hx$ lie on line $Fx$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Compatibility With F</span></div>
+<aside class="speaker-notes">A plane homography and the fundamental matrix are not independent. Any valid plane homography satisfies F equal to the skew of the second epipole times H, and equivalently H transpose F plus F transpose H equals zero. This is the algebraic statement that the transferred point Hx lies on the epipolar line of x.</aside>
+</section>
+
+<section class="slide alt" data-label="Plane Plus Parallax">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Plane Plus Parallax</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Off-plane points</h3><p>$Hx$ predicts where the ray hits the plane, not the true 3D point's image.</p></div>
+<div class="panel amber"><h3>Parallax</h3><p>The gap $x' - Hx$ is the plane-induced parallax, a usable signal, not an error.</p></div>
+<div class="panel teal"><h3>Direction</h3><p>Each parallax vector points along the epipolar line toward the epipole $e'$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="Off-plane point displaced from Hx along the epipolar line toward the epipole">
+<rect x="0" y="0" width="440" height="280" fill="#f0fdfa"/>
+<rect x="30" y="30" width="380" height="220" fill="#ffffff" stroke="#CBD5E1" stroke-width="2"/>
+<circle cx="70" cy="210" r="7" fill="#B45309"/><text x="45" y="235" font-size="15" fill="#B45309">e'</text>
+<line x1="70" y1="210" x2="400" y2="80" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="5 4"/>
+<circle cx="200" cy="158" r="6" fill="#6D28D9"/><text x="170" y="150" font-size="14" fill="#6D28D9">Hx</text>
+<circle cx="300" cy="118" r="6" fill="#0F766E"/><text x="312" y="115" font-size="14" fill="#0F766E">x'</text>
+<line x1="206" y1="155" x2="294" y2="121" stroke="#111827" stroke-width="3" marker-end="url(#arr)"/>
+<text x="225" y="105" font-size="15" fill="#111827">parallax</text>
+<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#111827"/></marker></defs>
+</svg><figcaption class="small">$Hx$, the true $x'$, and the epipole $e'$ are collinear on the epipolar line.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Plane Plus Parallax</span></div>
+<aside class="speaker-notes">Apply H to an off-plane point and you predict the image of where its ray pierces the plane, not the true correspondence. The residual from Hx to the real x-prime is parallax: it points along the epipolar line toward the epipole, and its length grows with the point's relative depth off the plane.</aside>
+</section>
+
+<section class="slide" data-label="Parallax Scales With Relative Depth">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Parallax Scales With Relative Depth</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Parallax relation</div><p class="formula">$$x' = Hx + \rho\, e', \qquad \rho \propto \frac{\text{distance off plane}}{\text{depth}}$$</p></div>
+<div class="panel teal"><h3>On the plane</h3><p>Distance off the plane is zero, so $\rho = 0$ and $x' = Hx$ exactly.</p></div>
+<div class="panel amber"><h3>Off the plane</h3><p>The further from the plane, the longer the displacement from $Hx$ toward $e'$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="Parallax vectors growing in length as points sit further off the plane all aiming at the epipole">
+<rect x="0" y="0" width="440" height="280" fill="#fffbeb"/>
+<circle cx="60" cy="230" r="7" fill="#B45309"/><text x="35" y="255" font-size="15" fill="#B45309">e'</text>
+<circle cx="180" cy="160" r="5" fill="#6D28D9"/><line x1="184" y1="158" x2="210" y2="143" stroke="#0F766E" stroke-width="3" marker-end="url(#a2)"/><text x="215" y="140" font-size="13" fill="#0F766E">&#961; small</text>
+<circle cx="220" cy="120" r="5" fill="#6D28D9"/><line x1="224" y1="118" x2="280" y2="86" stroke="#0F766E" stroke-width="3" marker-end="url(#a2)"/><text x="285" y="84" font-size="13" fill="#0F766E">&#961; large</text>
+<line x1="60" y1="230" x2="320" y2="80" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="4 4"/>
+<text x="240" y="200" font-size="14" fill="#475569">longer off-plane &#8594; longer parallax</text>
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0F766E"/></marker></defs>
+</svg><figcaption class="small">All parallax vectors aim at $e'$; length tracks relative depth.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Parallax Scales With Relative Depth</span></div>
+<aside class="speaker-notes">The parallax magnitude is governed by the ratio of the point's distance off the plane to its depth, multiplied by the camera baseline. Points on the plane have zero parallax; the further a point sits from the plane, the longer its displacement from Hx along the epipolar line toward the epipole.</aside>
+</section>
+
+<section class="slide alt" data-label="Recovering F From a Plane Homography">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Recovering $F$ From a Plane Homography</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Setup</h3><p>Know a plane homography $H$ plus the parallax of a few off-plane points.</p></div>
+<div class="panel teal"><h3>Find the epipole</h3><p>Parallax join lines $Hx \times x'$ all pass through $e'$; intersect two of them.</p></div>
+<div class="panel violet"><h3>Assemble F</h3><p>With $e'$ in hand, set $F = [e']_{\times}H$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="Two parallax join lines intersecting at the epipole to recover the fundamental matrix">
+<rect x="0" y="0" width="440" height="280" fill="#f5f3ff"/>
+<circle cx="90" cy="200" r="8" fill="#B45309"/><text x="60" y="228" font-size="15" fill="#B45309">e'</text>
+<line x1="90" y1="200" x2="400" y2="70" stroke="#2563EB" stroke-width="2"/>
+<line x1="90" y1="200" x2="380" y2="150" stroke="#0F766E" stroke-width="2"/>
+<circle cx="240" cy="145" r="5" fill="#6D28D9"/><circle cx="300" cy="121" r="5" fill="#111827"/>
+<circle cx="250" cy="175" r="5" fill="#6D28D9"/><circle cx="320" cy="162" r="5" fill="#111827"/>
+<text x="305" y="65" font-size="14" fill="#2563EB">join 1</text>
+<text x="320" y="180" font-size="14" fill="#0F766E">join 2</text>
+<text x="120" y="180" font-size="14" fill="#6D28D9">Hx</text>
+</svg><figcaption class="small">Two parallax joins meet at $e'$; then $F=[e']_\times H$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Recovering F From a Plane Homography</span></div>
+<aside class="speaker-notes">Plane plus parallax inverts into an estimation recipe. With a plane homography and the parallax of a few off-plane points, the epipole sits at the common intersection of the parallax join lines, and F equals the skew of that epipole times H. Two off-plane points generically pin the epipole down.</aside>
+</section>
+
+<section class="slide" data-label="The Infinite Homography">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>The Infinite Homography $H_\infty$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Plane at infinity</div><p class="formula">$$H_\infty = K'RK^{-1} = \lim_{d\to\infty} H$$</p></div>
+<div class="panel teal"><h3>Transfers directions</h3><p>It maps vanishing points and directions between the two views.</p></div>
+<div class="panel amber"><h3>Rotation only</h3><p>The translation term vanishes, isolating the camera rotation $R$.</p></div>
+<div class="panel violet"><h3>Pure rotation</h3><p>If $t=0$, $H_\infty$ transfers all depths, parallax-free.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="As plane depth grows to infinity the homography loses its translation term and becomes rotation only">
+<rect x="0" y="0" width="440" height="280" fill="#f0fdfa"/>
+<text x="220" y="40" font-size="16" fill="#475569" text-anchor="middle">depth d &#8594; &#8734;</text>
+<rect x="40" y="70" width="160" height="120" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="120" y="120" font-size="18" fill="#2563EB" text-anchor="middle">R &#8722; tn&#7488;/d</text>
+<text x="120" y="150" font-size="13" fill="#475569" text-anchor="middle">finite plane</text>
+<text x="225" y="135" font-size="28" fill="#111827" text-anchor="middle">&#8594;</text>
+<rect x="250" y="70" width="150" height="120" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="325" y="125" font-size="22" fill="#B45309" text-anchor="middle">R</text>
+<text x="325" y="155" font-size="13" fill="#475569" text-anchor="middle">rotation only</text>
+<text x="220" y="225" font-size="14" fill="#475569" text-anchor="middle">translation term dies as d grows</text>
+</svg><figcaption class="small">Large depth kills $-t n^{\top}/d$, leaving $H_\infty = K'RK^{-1}$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>The Infinite Homography</span></div>
+<aside class="speaker-notes">Let the plane recede to infinity, or equivalently drop the translation term, and H reduces to K-prime R K inverse, the infinite homography. It transfers vanishing points and directions between the views, isolates the rotation-only part of the motion, and is the backbone of camera calibration and rotation estimation.</aside>
+</section>
+
+<section class="slide alt" data-label="Homologies and Plane Transfer">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Homologies and Plane Transfer</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Planar homology</h3><p>A homography with a fixed point (vertex) and a fixed line (axis) of fixed points.</p></div>
+<div class="panel teal"><h3>Where it appears</h3><p>Symmetry and shadow relations between two coplanar figures in one image.</p></div>
+<div class="panel violet"><h3>Chaining transfer</h3><p>$H_\infty$ composes successive transfers to relay matches across a sequence.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="A planar homology with a vertex and an axis line of fixed points">
+<rect x="0" y="0" width="440" height="280" fill="#f5f3ff"/>
+<line x1="40" y1="230" x2="400" y2="230" stroke="#0F766E" stroke-width="3"/>
+<text x="320" y="255" font-size="15" fill="#0F766E">axis (fixed line)</text>
+<circle cx="220" cy="50" r="8" fill="#B45309"/><text x="235" y="48" font-size="15" fill="#B45309">vertex</text>
+<circle cx="150" cy="150" r="6" fill="#2563EB"/><circle cx="120" cy="195" r="6" fill="#6D28D9"/>
+<line x1="220" y1="50" x2="100" y2="225" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="5 4"/>
+<circle cx="300" cy="140" r="6" fill="#2563EB"/><circle cx="335" cy="190" r="6" fill="#6D28D9"/>
+<line x1="220" y1="50" x2="350" y2="225" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="120" y="140" font-size="13" fill="#2563EB">point</text><text x="305" y="130" font-size="13" fill="#2563EB">image</text>
+</svg><figcaption class="small">Corresponding points lie on lines through the vertex; the axis is fixed.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Homologies and Plane Transfer</span></div>
+<aside class="speaker-notes">When a plane homography fixes a point and a line of points, it is a planar homology, the structure behind symmetry and shadow relations between two coplanar configurations in one image. The infinite homography composes successive transfers, letting a known plane relay correspondences across a whole image sequence.</aside>
+</section>
+
+<section class="slide" data-label="Applications">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Applications</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Image mosaicing</h3><p>Chain homographies from pure-rotation or planar-scene frames into a single panorama.</p></div>
+<div class="panel teal"><h3>Metric rectification</h3><p>Recover true angles and length ratios on an imaged plane via the imaged circular points.</p></div>
+<div class="panel amber"><h3>Depth cues</h3><p>Parallax off a known plane classifies relative depth and helps recover $F$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 440 280" width="100%" role="img" aria-label="A skewed imaged plane rectified to a fronto parallel grid with correct angles">
+<rect x="0" y="0" width="440" height="280" fill="#fffbeb"/>
+<polygon points="40,90 180,60 200,200 60,210" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<line x1="86" y1="79" x2="103" y2="197" stroke="#2563EB" stroke-width="1"/>
+<line x1="133" y1="69" x2="150" y2="201" stroke="#2563EB" stroke-width="1"/>
+<text x="95" y="245" font-size="14" fill="#2563EB" text-anchor="middle">imaged plane</text>
+<text x="225" y="135" font-size="26" fill="#111827" text-anchor="middle">&#8594;</text>
+<rect x="270" y="70" width="130" height="130" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<line x1="313" y1="70" x2="313" y2="200" stroke="#0F766E" stroke-width="1"/>
+<line x1="356" y1="70" x2="356" y2="200" stroke="#0F766E" stroke-width="1"/>
+<line x1="270" y1="113" x2="400" y2="113" stroke="#0F766E" stroke-width="1"/>
+<line x1="270" y1="156" x2="400" y2="156" stroke="#0F766E" stroke-width="1"/>
+<text x="335" y="245" font-size="14" fill="#0F766E" text-anchor="middle">rectified (true angles)</text>
+</svg><figcaption class="small">A rectifying homography restores right angles and equal spacing.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Applications</span></div>
+<aside class="speaker-notes">Two staples follow directly. Image mosaicing stitches pure-rotation or planar-scene frames by chaining homographies into one panorama. Metric rectification removes projective and affine distortion from an imaged plane using the imaged circular points, recovering true angles and length ratios on facades, floors, and calibration targets.</aside>
+</section>
+
+<section class="slide alt" data-label="Takeaways">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 13</span></div>
+<h2>Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Plane &#8594; H</h3><p>A nondegenerate world plane induces a full-rank image homography $H$.</p></div>
+<div class="panel teal"><h3>Formula</h3><p>$H = K'(R - t n^{\top}/d)K^{-1}$ exposes rotation, translation, normal, and depth.</p></div>
+<div class="panel violet"><h3>Compatible with F</h3><p>$F=[e']_\times H$ and $H^{\top}F+F^{\top}H=0$; $Hx$ lies on $Fx$.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Parallax is signal</h3><p>Off-plane points displace from $Hx$ along the epipolar line toward $e'$, scaled by relative depth.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Rotation component</div><p class="formula">$$H_\infty = K'RK^{-1}$$</p></div>
+<p class="small">Transfer, rectification, and mosaicing all rest on these relations.</p>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 325-343</span><span>Takeaways</span></div>
+<aside class="speaker-notes">A nondegenerate world plane induces a full-rank image homography H equal to K-prime times R minus t n transpose over d times K inverse. It is compatible with F, off-plane points reveal themselves through epipolar parallax, and the infinite homography isolates rotation. Together these power transfer, rectification, and mosaicing.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

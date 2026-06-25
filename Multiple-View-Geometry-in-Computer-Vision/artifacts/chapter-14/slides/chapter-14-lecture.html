@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-14">
+<meta name="chapter_title" content="Chapter 14: Affine Epipolar Geometry">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-14-affine-epipolar-geometry/14-affine-epipolar-geometry.ipynb">
+<meta name="source_span" content="printed pages 344-362; PDF pages 362-380.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 14: Affine Epipolar Geometry</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-14","chapter_title":"Chapter 14: Affine Epipolar Geometry","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-14-affine-epipolar-geometry/14-affine-epipolar-geometry.ipynb","source_span":"printed pages 344-362; PDF pages 362-380.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Affine Epipolar Geometry","notes":"This chapter covers the affine two-view case across printed pages 344 to 362. When the camera centre recedes to infinity, projection becomes parallel, the epipoles move to infinity, and the dense projective machinery simplifies to linear algebra in four measured image coordinates. Set up the contrast with the projective pencil from the start."},
+{"slide":2,"label":"The Affine Camera","notes":"Emphasise that the affine camera is defined by replacing the bottom row of the projection matrix with zero, zero, zero, one. This kills the perspective division, so image coordinates become linear in world coordinates. Stress that it is an excellent model for distant, shallow scenes viewed through long lenses where depth variation is small."},
+{"slide":3,"label":"Parallel Projection Limit","notes":"Walk through the diagram showing how converging perspective rays straighten into a parallel bundle as the centre retreats. This is the geometric heart of the chapter: parallel rays are what send the epipole to infinity. Anchor the intuition that affine geometry is the limit of perspective for a far, flat object."},
+{"slide":4,"label":"Parallel Epipolar Lines","notes":"Contrast the two pencils directly using the side-by-side figure. In the projective case lines converge to a finite epipole; in the affine case the epipole is at infinity so every epipolar line in an image is parallel, sharing one normal direction. This is the single most recognisable signature of an affine pair."},
+{"slide":5,"label":"The Affine Fundamental Matrix","notes":"Present the sparse form of F_A with only four structural nonzero entries plus the scalar e. Explain that the upper two by two block is zero, which forces the epipoles to infinity. The correspondence constraint reduces to one linear equation in x prime, y prime, x, y, the fact that drives every later algorithm."},
+{"slide":6,"label":"Degrees of Freedom and Epipoles","notes":"Count the parameters: five entries up to scale gives four degrees of freedom, against seven for the general fundamental matrix. Show that the right and left epipoles are ideal points read directly off the entries, and that F_A is automatically rank two. Tie the zero block to the parallel-line property established earlier."},
+{"slide":7,"label":"Estimation as Hyperplane Fitting","notes":"Reframe estimation geometrically: each correspondence is a point in four-dimensional measurement space, and the affine epipolar equation says all of them lie on a hyperplane. Fitting F_A is fitting that hyperplane. The normal vector gives a, b, c, d and the offset gives e. This is the chapter's key algorithmic simplification."},
+{"slide":8,"label":"The Gold Standard Is Closed Form","notes":"Make the punchline explicit: because the affine reprojection error is exactly quadratic, the Gold Standard estimate has no iterative inner loop. Centre the data, take the SVD, and read the smallest singular vector as the hyperplane normal. Total least squares orthogonal regression delivers the maximum likelihood estimate directly."},
+{"slide":9,"label":"Parallax and the Minimal Case","notes":"Use the four-point story to show where the line direction comes from. Three coplanar points fix a plane-induced affine transfer; the fourth point's parallax, its departure from that transfer, sets the epipolar direction. Warn that as relief tends to zero parallax vanishes and the estimate becomes ill-conditioned, a planar degeneracy."},
+{"slide":10,"label":"Exact Affine Triangulation","notes":"Explain that affine Sampson correction is exact, not first order. Since the constraint is a genuine hyperplane, the optimal corrected correspondence is the orthogonal projection of the four measured coordinates onto it. The corrected pair satisfies the epipolar equation exactly and feeds directly into affine triangulation. Contrast this with the projective approximation."},
+{"slide":11,"label":"Affine Reconstruction and Bas-Relief","notes":"Cover the two structural results. Two affine views reconstruct the scene up to a three-dimensional affine transformation once a basis of four non-coplanar points is fixed; ratios along parallel lines survive. But the bas-relief ambiguity means the product of depth and turn is fixed while neither factor is, so depth and rotation magnitude cannot be separated."},
+{"slide":12,"label":"Synthesis","notes":"Close by collecting the through-line. The affine camera linearises projection, the fundamental matrix turns sparse and rank two, estimation becomes closed-form hyperplane fitting, triangulation becomes an exact projection, and reconstruction is affine with a residual bas-relief ambiguity. Send students to the notebook to verify the zero pattern and SVD residuals on synthetic data."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Affine Epipolar Geometry">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h1>Affine Epipolar Geometry</h1>
+<p class="lead">When the camera centre goes to infinity, two-view geometry becomes linear algebra</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Affine camera</h3><p>Bottom row of $P$ is $(0,0,0,1)$: projection is parallel, not perspective.</p></div>
+<div class="panel teal"><h3>Epipoles at infinity</h3><p>Each image carries a parallel family of epipolar lines.</p></div>
+<div class="panel amber"><h3>Sparse $F_A$</h3><p>Four degrees of freedom; estimation reduces to a closed-form fit.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Projective converging pencil versus affine parallel pencil of epipolar lines">
+<rect x="0" y="0" width="380" height="230" fill="#f8fafc"/>
+<rect x="14" y="20" width="160" height="190" fill="#eff6ff" stroke="#CBD5E1"/>
+<rect x="206" y="20" width="160" height="190" fill="#f0fdfa" stroke="#CBD5E1"/>
+<circle cx="160" cy="115" r="4" fill="#2563EB"/>
+<line x1="20" y1="40" x2="160" y2="115" stroke="#2563EB" stroke-width="1.6"/>
+<line x1="20" y1="80" x2="160" y2="115" stroke="#2563EB" stroke-width="1.6"/>
+<line x1="20" y1="150" x2="160" y2="115" stroke="#2563EB" stroke-width="1.6"/>
+<line x1="20" y1="190" x2="160" y2="115" stroke="#2563EB" stroke-width="1.6"/>
+<text x="40" y="34" font-size="13" fill="#1E3A8A">projective: converging</text>
+<line x1="214" y1="55" x2="358" y2="95" stroke="#0F766E" stroke-width="1.6"/>
+<line x1="214" y1="95" x2="358" y2="135" stroke="#0F766E" stroke-width="1.6"/>
+<line x1="214" y1="135" x2="358" y2="175" stroke="#0F766E" stroke-width="1.6"/>
+<text x="232" y="34" font-size="13" fill="#0F766E">affine: parallel</text>
+</svg><figcaption class="small">Two regimes of the epipolar pencil.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Affine Epipolar Geometry</span></div>
+<aside class="speaker-notes">This chapter covers the affine two-view case across printed pages 344 to 362. When the camera centre recedes to infinity, projection becomes parallel, the epipoles move to infinity, and the dense projective machinery simplifies to linear algebra in four measured image coordinates. Set up the contrast with the projective pencil from the start.</aside>
+</section>
+
+<section class="slide alt" data-label="The Affine Camera">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>The Affine Camera</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Definition</h3><p>An affine camera has a final projection row of $(0,0,0,1)$, removing the perspective division.</p></div>
+<div class="panel teal"><h3>Linear in the world</h3><p>Image coordinates become affine functions of world coordinates.</p></div>
+<div class="panel amber"><h3>When it is valid</h3><p>Distant objects and long lenses: scene depth small relative to its distance.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Affine projection matrix</div><p class="formula">$$P_A=\begin{bmatrix}m_{11}&m_{12}&m_{13}&t_1\\m_{21}&m_{22}&m_{23}&t_2\\0&0&0&1\end{bmatrix}$$</p></div>
+<div class="panel violet"><h3>Consequence</h3><p>$\mathbf{x}=M\,\mathbf{X}+\mathbf{t}$: no depth-dependent scaling, so parallel world lines stay parallel.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>The Affine Camera</span></div>
+<aside class="speaker-notes">Emphasise that the affine camera is defined by replacing the bottom row of the projection matrix with zero, zero, zero, one. This kills the perspective division, so image coordinates become linear in world coordinates. Stress that it is an excellent model for distant, shallow scenes viewed through long lenses where depth variation is small.</aside>
+</section>
+
+<section class="slide" data-label="Parallel Projection Limit">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>The Parallel-Projection Limit</h2>
+<p class="lead">The affine camera is the limit of a perspective camera for a distant, shallow scene</p>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Converging perspective rays straightening into a parallel bundle as the centre recedes">
+<rect x="0" y="0" width="380" height="230" fill="#f8fafc"/>
+<line x1="40" y1="20" x2="40" y2="210" stroke="#CBD5E1" stroke-width="2"/>
+<text x="20" y="120" font-size="13" fill="#64748B">scene</text>
+<circle cx="350" cy="115" r="5" fill="#B45309"/>
+<text x="300" y="40" font-size="13" fill="#B45309">finite centre</text>
+<line x1="40" y1="50" x2="350" y2="115" stroke="#B45309" stroke-width="1.4"/>
+<line x1="40" y1="115" x2="350" y2="115" stroke="#B45309" stroke-width="1.4"/>
+<line x1="40" y1="180" x2="350" y2="115" stroke="#B45309" stroke-width="1.4"/>
+<line x1="40" y1="65" x2="350" y2="65" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="5 4"/>
+<line x1="40" y1="115" x2="350" y2="115" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="5 4"/>
+<line x1="40" y1="165" x2="350" y2="165" stroke="#2563EB" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="120" y="210" font-size="13" fill="#2563EB">limit: parallel rays</text>
+</svg><figcaption class="small">Rays straighten as the centre retreats to infinity.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Perspective</h3><p>Rays pass through a finite centre; depth changes scale, and the epipole is a finite point.</p></div>
+<div class="panel blue"><h3>Affine limit</h3><p>Push the centre to infinity: rays become a parallel bundle and the epipole becomes an ideal point.</p></div>
+<div class="panel teal"><h3>Approximation quality</h3><p>The model is accurate when relief is small compared with viewing distance.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Parallel Projection Limit</span></div>
+<aside class="speaker-notes">Walk through the diagram showing how converging perspective rays straighten into a parallel bundle as the centre retreats. This is the geometric heart of the chapter: parallel rays are what send the epipole to infinity. Anchor the intuition that affine geometry is the limit of perspective for a far, flat object.</aside>
+</section>
+
+<section class="slide alt" data-label="Parallel Epipolar Lines">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>Parallel Epipolar Lines</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Projective pencil</h3><p>Epipolar lines converge to a finite epipole $\mathbf{e}$ where the baseline meets the image.</p></div>
+<div class="panel teal"><h3>Affine pencil</h3><p>The epipole is at infinity, so every epipolar line in an image is parallel, sharing one normal.</p></div>
+<div class="panel amber"><h3>Signature</h3><p>Parallel lines are the visible fingerprint of an affine pair.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Side by side comparison of converging and parallel epipolar line families">
+<rect x="0" y="0" width="380" height="230" fill="#ffffff"/>
+<rect x="14" y="22" width="160" height="186" fill="#fffbeb" stroke="#CBD5E1"/>
+<rect x="206" y="22" width="160" height="186" fill="#f0fdfa" stroke="#CBD5E1"/>
+<circle cx="172" cy="115" r="4" fill="#B45309"/>
+<text x="120" y="16" font-size="12" fill="#B45309">epipole e</text>
+<line x1="22" y1="45" x2="172" y2="115" stroke="#B45309" stroke-width="1.5"/>
+<line x1="22" y1="85" x2="172" y2="115" stroke="#B45309" stroke-width="1.5"/>
+<line x1="22" y1="145" x2="172" y2="115" stroke="#B45309" stroke-width="1.5"/>
+<line x1="22" y1="185" x2="172" y2="115" stroke="#B45309" stroke-width="1.5"/>
+<line x1="214" y1="55" x2="358" y2="55" stroke="#0F766E" stroke-width="1.8"/>
+<line x1="214" y1="95" x2="358" y2="95" stroke="#0F766E" stroke-width="1.8"/>
+<line x1="214" y1="135" x2="358" y2="135" stroke="#0F766E" stroke-width="1.8"/>
+<line x1="214" y1="175" x2="358" y2="175" stroke="#0F766E" stroke-width="1.8"/>
+<text x="244" y="16" font-size="12" fill="#0F766E">e at infinity</text>
+</svg><figcaption class="small">Converging vs. parallel epipolar families.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Parallel Epipolar Lines</span></div>
+<aside class="speaker-notes">Contrast the two pencils directly using the side-by-side figure. In the projective case lines converge to a finite epipole; in the affine case the epipole is at infinity so every epipolar line in an image is parallel, sharing one normal direction. This is the single most recognisable signature of an affine pair.</aside>
+</section>
+
+<section class="slide" data-label="The Affine Fundamental Matrix">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>The Affine Fundamental Matrix $F_A$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Sparse form</div><p class="formula">$$F_A=\begin{bmatrix}0&0&a\\0&0&b\\c&d&e\end{bmatrix}$$</p></div>
+<div class="panel violet"><h3>Zero upper block</h3><p>The vanishing $2\times2$ block is exactly what sends both epipoles to infinity.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Correspondence constraint</div><p class="formula">$$a\,x' + b\,y' + c\,x + d\,y + e = 0$$</p></div>
+<div class="panel teal"><h3>One linear equation</h3><p>Each match is linear in the four measured coordinates $(x',y',x,y)$.</p></div>
+<div class="panel amber"><h3>Drives everything</h3><p>This linearity makes estimation and correction pure linear algebra.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>The Affine Fundamental Matrix</span></div>
+<aside class="speaker-notes">Present the sparse form of F_A with only four structural nonzero entries plus the scalar e. Explain that the upper two by two block is zero, which forces the epipoles to infinity. The correspondence constraint reduces to one linear equation in x prime, y prime, x, y, the fact that drives every later algorithm.</aside>
+</section>
+
+<section class="slide alt" data-label="Degrees of Freedom and Epipoles">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>Degrees of Freedom and Epipoles</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Four DoF</h3><p>Five entries up to overall scale leave four degrees of freedom, against seven for general $F$.</p></div>
+<div class="panel teal"><h3>Automatic rank two</h3><p>The structure guarantees $\det F_A=0$ without any extra constraint.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Epipoles are ideal points</div><p class="formula">$$\mathbf{e}'=(-d,\,c,\,0)^{\!T},\qquad \mathbf{e}=(-b,\,a,\,0)^{\!T}$$</p></div>
+<div class="panel amber"><h3>Read off directly</h3><p>The trailing zero marks an ideal point: each epipole lies on the line at infinity.</p></div>
+<div class="panel violet"><h3>Line normals</h3><p>$(a,b)$ orients lines in the second image; $(c,d)$ orients them in the first.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Degrees of Freedom and Epipoles</span></div>
+<aside class="speaker-notes">Count the parameters: five entries up to scale gives four degrees of freedom, against seven for the general fundamental matrix. Show that the right and left epipoles are ideal points read directly off the entries, and that F_A is automatically rank two. Tie the zero block to the parallel-line property established earlier.</aside>
+</section>
+
+<section class="slide" data-label="Estimation as Hyperplane Fitting">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>Estimation Is Hyperplane Fitting</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Lift each match</h3><p>Stack each correspondence as a point $X_i=(x'_i,y'_i,x_i,y_i)$ in a four-dimensional measurement space.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Hyperplane</div><p class="formula">$$(a,b,c,d)\cdot X + e = 0$$</p></div>
+<div class="panel amber"><h3>Normal and offset</h3><p>The normal yields $(a,b,c,d)$; the offset yields $e$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Correspondence points clustered around a fitted hyperplane with a normal vector">
+<rect x="0" y="0" width="380" height="230" fill="#f8fafc"/>
+<line x1="40" y1="180" x2="340" y2="70" stroke="#2563EB" stroke-width="2.4"/>
+<text x="250" y="70" font-size="13" fill="#2563EB">hyperplane</text>
+<line x1="190" y1="125" x2="225" y2="63" stroke="#6D28D9" stroke-width="2"/>
+<polygon points="225,63 218,72 230,73" fill="#6D28D9"/>
+<text x="228" y="58" font-size="12" fill="#6D28D9">normal (a,b,c,d)</text>
+<circle cx="80" cy="162" r="4" fill="#0F766E"/>
+<circle cx="120" cy="150" r="4" fill="#0F766E"/>
+<circle cx="165" cy="133" r="4" fill="#0F766E"/>
+<circle cx="210" cy="118" r="4" fill="#0F766E"/>
+<circle cx="255" cy="104" r="4" fill="#0F766E"/>
+<circle cx="300" cy="88" r="4" fill="#0F766E"/>
+<circle cx="140" cy="158" r="4" fill="#B45309"/>
+<line x1="140" y1="158" x2="146" y2="143" stroke="#B45309" stroke-width="1.4" stroke-dasharray="3 2"/>
+<text x="55" y="206" font-size="12" fill="#64748B">matches in (x',y',x,y) space</text>
+</svg><figcaption class="small">Residuals are point-to-plane distances.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Estimation as Hyperplane Fitting</span></div>
+<aside class="speaker-notes">Reframe estimation geometrically: each correspondence is a point in four-dimensional measurement space, and the affine epipolar equation says all of them lie on a hyperplane. Fitting F_A is fitting that hyperplane. The normal vector gives a, b, c, d and the offset gives e. This is the chapter's key algorithmic simplification.</aside>
+</section>
+
+<section class="slide alt" data-label="The Gold Standard Is Closed Form">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>The Gold Standard Is Closed Form</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Quadratic error</h3><p>The affine reprojection error is exactly quadratic, so no iterative refinement is required.</p></div>
+<div class="panel blue"><h3>Recipe</h3><p>Centre the four-dimensional data, take the SVD, and read the smallest singular vector as the hyperplane normal.</p></div>
+<div class="panel amber"><h3>Orthogonal regression</h3><p>Total least squares delivers the maximum-likelihood $F_A$ directly.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Closed-form estimate</div><p class="formula">$$\min_{\lVert n\rVert=1}\sum_i \big(n^{\!T}(X_i-\bar X)\big)^2$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Solution</div><p class="formula">$$n=\text{smallest singular vector},\quad e=-\,n^{\!T}\bar X$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>The Gold Standard Is Closed Form</span></div>
+<aside class="speaker-notes">Make the punchline explicit: because the affine reprojection error is exactly quadratic, the Gold Standard estimate has no iterative inner loop. Centre the data, take the SVD, and read the smallest singular vector as the hyperplane normal. Total least squares orthogonal regression delivers the maximum likelihood estimate directly.</aside>
+</section>
+
+<section class="slide" data-label="Parallax and the Minimal Case">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>Parallax and the Minimal Case</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Plane transfer</h3><p>Three coplanar points fix a plane-induced affine transfer $H_A$ between the views.</p></div>
+<div class="panel teal"><h3>Fourth point</h3><p>Its parallax, the departure from $H_A$, sets the epipolar-line direction.</p></div>
+<div class="panel amber"><h3>Degeneracy</h3><p>As relief tends to zero, parallax vanishes and the estimate becomes ill-conditioned.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="A fourth point separating from its plane-transfer prediction by a parallax vector">
+<rect x="0" y="0" width="380" height="230" fill="#ffffff"/>
+<polygon points="60,170 200,150 150,60" fill="#eff6ff" stroke="#2563EB" stroke-width="1.5"/>
+<circle cx="60" cy="170" r="4" fill="#2563EB"/>
+<circle cx="200" cy="150" r="4" fill="#2563EB"/>
+<circle cx="150" cy="60" r="4" fill="#2563EB"/>
+<text x="64" y="190" font-size="12" fill="#2563EB">plane points</text>
+<circle cx="270" cy="120" r="4.5" fill="#0F766E"/>
+<text x="278" y="118" font-size="12" fill="#0F766E">actual</text>
+<circle cx="270" cy="160" r="4.5" fill="#B45309"/>
+<text x="278" y="178" font-size="12" fill="#B45309">H_A predicts</text>
+<line x1="270" y1="160" x2="270" y2="120" stroke="#6D28D9" stroke-width="2.2"/>
+<polygon points="270,120 265,130 275,130" fill="#6D28D9"/>
+<text x="200" y="110" font-size="12" fill="#6D28D9">parallax</text>
+</svg><figcaption class="small">Parallax encodes the epipolar direction.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Parallax and the Minimal Case</span></div>
+<aside class="speaker-notes">Use the four-point story to show where the line direction comes from. Three coplanar points fix a plane-induced affine transfer; the fourth point's parallax, its departure from that transfer, sets the epipolar direction. Warn that as relief tends to zero parallax vanishes and the estimate becomes ill-conditioned, a planar degeneracy.</aside>
+</section>
+
+<section class="slide alt" data-label="Exact Affine Triangulation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>Triangulation as Exact Sampson Correction</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Projective case</h3><p>Sampson correction is only a first-order approximation to geometric correction.</p></div>
+<div class="panel teal"><h3>Affine case</h3><p>The constraint is a genuine hyperplane, so the correction is exact, not approximate.</p></div>
+<div class="panel blue"><h3>Then triangulate</h3><p>The corrected pair satisfies the epipolar equation exactly and feeds affine triangulation.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Orthogonal projection onto the hyperplane</div><p class="formula">$$\hat X = X - \frac{n^{\!T}X + e}{\lVert n\rVert^{2}}\,n$$</p></div>
+<div class="panel violet"><h3>Minimal correction</h3><p>$\hat X$ is the closest point to the noisy measurement that exactly satisfies the constraint.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Exact Affine Triangulation</span></div>
+<aside class="speaker-notes">Explain that affine Sampson correction is exact, not first order. Since the constraint is a genuine hyperplane, the optimal corrected correspondence is the orthogonal projection of the four measured coordinates onto it. The corrected pair satisfies the epipolar equation exactly and feeds directly into affine triangulation. Contrast this with the projective approximation.</aside>
+</section>
+
+<section class="slide" data-label="Affine Reconstruction and Bas-Relief">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>Affine Reconstruction and Bas-Relief</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Up to an affine map</h3><p>Two affine views reconstruct the scene up to a $3\mathrm{D}$ affine transformation once a basis is fixed.</p></div>
+<div class="panel teal"><h3>Basis</h3><p>Four non-coplanar points define an affine frame; ratios along parallel lines survive.</p></div>
+<div class="panel violet"><h3>Factorization link</h3><p>Stacking many views yields a measurement matrix of rank at most four, factored by SVD.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Bas-relief ambiguity</div><p class="formula">$$\Delta x = \Delta Z\,\sin\rho = \text{const}$$</p></div>
+<div class="panel amber"><h3>Cannot separate</h3><p>The product of depth and turn is fixed, but neither factor alone is recoverable from two affine views.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Affine Reconstruction and Bas-Relief</span></div>
+<aside class="speaker-notes">Cover the two structural results. Two affine views reconstruct the scene up to a three-dimensional affine transformation once a basis of four non-coplanar points is fixed; ratios along parallel lines survive. But the bas-relief ambiguity means the product of depth and turn is fixed while neither factor is, so depth and rotation magnitude cannot be separated.</aside>
+</section>
+
+<section class="slide alt" data-label="Synthesis">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 14</span></div>
+<h2>Synthesis</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Linearise</h3><p>The affine camera removes perspective division; projection is parallel.</p></div>
+<div class="panel teal"><h3>Sparse $F_A$</h3><p>Four DoF, rank two, epipoles at infinity, parallel epipolar lines.</p></div>
+<div class="panel amber"><h3>Closed form</h3><p>Estimation is SVD hyperplane fitting; correction is exact projection.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>Reconstruct</h3><p>Affine structure up to a $3\mathrm{D}$ affine map, with a residual bas-relief ambiguity.</p></div>
+<figure class="diagram"><svg viewBox="0 0 380 150" width="100%" role="img" aria-label="Pipeline from affine camera to sparse F to closed-form estimate to affine reconstruction">
+<rect x="0" y="0" width="380" height="150" fill="#f8fafc"/>
+<rect x="12" y="55" width="78" height="42" rx="6" fill="#eff6ff" stroke="#2563EB"/>
+<text x="20" y="80" font-size="12" fill="#1E3A8A">affine cam</text>
+<rect x="106" y="55" width="78" height="42" rx="6" fill="#f0fdfa" stroke="#0F766E"/>
+<text x="126" y="80" font-size="12" fill="#0F766E">F_A</text>
+<rect x="200" y="55" width="78" height="42" rx="6" fill="#fffbeb" stroke="#B45309"/>
+<text x="212" y="80" font-size="12" fill="#B45309">SVD fit</text>
+<rect x="294" y="55" width="74" height="42" rx="6" fill="#f5f3ff" stroke="#6D28D9"/>
+<text x="300" y="80" font-size="12" fill="#6D28D9">affine 3D</text>
+<line x1="90" y1="76" x2="106" y2="76" stroke="#64748B" stroke-width="2"/>
+<line x1="184" y1="76" x2="200" y2="76" stroke="#64748B" stroke-width="2"/>
+<line x1="278" y1="76" x2="294" y2="76" stroke="#64748B" stroke-width="2"/>
+</svg><figcaption class="small">The chapter pipeline at a glance.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 344-362</span><span>Synthesis</span></div>
+<aside class="speaker-notes">Close by collecting the through-line. The affine camera linearises projection, the fundamental matrix turns sparse and rank two, estimation becomes closed-form hyperplane fitting, triangulation becomes an exact projection, and reconstruction is affine with a residual bas-relief ambiguity. Send students to the notebook to verify the zero pattern and SVD residuals on synthetic data.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-10">
+<meta name="chapter_title" content="Chapter 10: 3D Reconstruction of Cameras and Structure">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-10-3d-reconstruction-of-cameras-and-structure/10-3d-reconstruction-of-cameras-and-structure.ipynb">
+<meta name="source_span" content="printed pages 262-278; PDF pages 280-296.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 10: 3D Reconstruction of Cameras and Structure</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-10","chapter_title":"Chapter 10: 3D Reconstruction of Cameras and Structure","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-10-3d-reconstruction-of-cameras-and-structure/10-3d-reconstruction-of-cameras-and-structure.ipynb","source_span":"printed pages 262-278; PDF pages 280-296.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Reconstruction from Two Views","notes":"Open by framing the central question of printed pages 262 to 278: given only matching points in two uncalibrated images, which cameras and which scene points can we recover, and which residual ambiguity is unavoidable. Stress that everything in this chapter flows from that single tension between what images measure and what we want."},
+{"slide":2,"label":"The Reconstruction Pipeline","notes":"Walk the class through the four-stage loop the notebook builds: estimate the fundamental matrix from correspondences, retrieve a compatible camera pair, triangulate structure, then study the freedom that remains. Emphasize that no calibration is assumed yet, so the output is a projective reconstruction rather than a Euclidean one."},
+{"slide":3,"label":"Retrieving Cameras from F","notes":"Explain the canonical choice that breaks the gauge freedom: fix the first camera as identity, then read the second directly off the fundamental matrix using the epipole. Point out that this is one particular projective frame among infinitely many, chosen for convenience, not the true rig that produced the photographs."},
+{"slide":4,"label":"Triangulation of a 3D Point","notes":"Describe triangulation as intersecting two back-projected rays that share an epipolar plane. Build the four-row homogeneous system from the two projection equations and solve by its smallest singular vector. Note that away from the baseline the rays meet in exactly one point, giving a rank-three measurement matrix."},
+{"slide":5,"label":"The Baseline Exception","notes":"Highlight the single failure mode of triangulation. A world point lying on the baseline projects to the two epipoles, so both rays collapse onto the baseline itself and lose a rank. Connect this degeneracy to the notebook check where the measurement matrix drops from rank three to rank two."},
+{"slide":6,"label":"The Projective Ambiguity","notes":"State the reconstruction theorem precisely. Replacing every point by H times the point, and every camera by the camera times H inverse, leaves all image measurements untouched. Therefore two views fix the scene only up to a four-by-four projective transformation, and angles or parallelism in the recovered cloud are meaningless."},
+{"slide":7,"label":"Reprojection Invariance","notes":"Use the overlay to make the ambiguity concrete. The canonical reconstruction reprojects onto the measured points with essentially zero residual even though its 3D coordinates are strange. The lesson: image consistency cannot distinguish the true scene from any projective warp of it, which is why extra information is required."},
+{"slide":8,"label":"The Stratified Ladder","notes":"Introduce the three strata as a ladder of increasing structure. Projective knows only incidence, affine adds parallelism, metric adds angles and length ratios. Each rung is unlocked by identifying one geometric object: the plane at infinity for affine, the absolute conic for metric. The Euclidean scene differs only by an overall similarity."},
+{"slide":9,"label":"Affine Upgrade","notes":"Explain that the affine upgrade is exactly the act of locating the plane at infinity in the projective frame. Once that plane is moved back to its canonical position by the block homography, parallel scene directions become parallel again. The SymPy identity confirms the upgrade formula maps the chosen plane to zero zero zero one exactly."},
+{"slide":10,"label":"Metric Upgrade via the IAC","notes":"Describe the metric upgrade through the image of the absolute conic, computed from the calibration K. A Cholesky factor of the rectifying shape matrix supplies the final transform, after which right angles and length ratios are restored. Mention the calibrated route through the essential matrix and the four-fold pose decomposition resolved by cheirality."},
+{"slide":11,"label":"Direct Upgrade from Ground Control","notes":"Contrast the stratified route with the direct one. Five non-coplanar control points with known world coordinates fix the missing four-by-four homography outright, since each correspondence gives three equations. Held-out points then certify the fit. This is the practical shortcut when survey data or a known calibration object is available."},
+{"slide":12,"label":"Synthesis and Outlook","notes":"Close by consolidating the chapter into its core claims and pointing forward. Two views give projective structure for free; affine and metric structure each cost one identified geometric object. Real images add noise, motivating the robust estimation and bundle adjustment of later chapters. Leave students with the ladder image firmly in mind."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Reconstruction from Two Views">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h1>3D Reconstruction of Cameras and Structure</h1>
+<p class="lead">From matching points in two uncalibrated images to cameras, structure, and the ambiguity that remains</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The question</h3><p>Given correspondences $x_i \leftrightarrow x_i'$ alone, which cameras and 3D points can be recovered?</p></div>
+<div class="panel amber"><h3>The catch</h3><p>Without extra knowledge, the scene is fixed only up to a projective map of $\mathbb{P}^3$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Two cameras viewing a shared scene point with epipolar geometry"><rect x="0" y="0" width="360" height="210" fill="#eff6ff"/><polygon points="40,150 70,135 70,165" fill="#2563EB"/><polygon points="320,150 290,135 290,165" fill="#0F766E"/><circle cx="185" cy="55" r="6" fill="#B45309"/><line x1="62" y1="148" x2="185" y2="55" stroke="#2563EB" stroke-width="2"/><line x1="298" y1="148" x2="185" y2="55" stroke="#0F766E" stroke-width="2"/><line x1="70" y1="150" x2="290" y2="150" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="5 4"/><text x="30" y="185" font-size="14" fill="#2563EB">camera P</text><text x="276" y="185" font-size="14" fill="#0F766E">camera P'</text><text x="170" y="42" font-size="14" fill="#B45309">X</text><text x="150" y="170" font-size="13" fill="#64748B">baseline</text></svg><figcaption class="small">Two rays from two centres intersect at a scene point $X$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Reconstruction from Two Views</span></div>
+<aside class="speaker-notes">Open by framing the central question of printed pages 262 to 278: given only matching points in two uncalibrated images, which cameras and which scene points can we recover, and which residual ambiguity is unavoidable. Stress that everything in this chapter flows from that single tension between what images measure and what we want.</aside>
+</section>
+
+<section class="slide alt" data-label="The Reconstruction Pipeline">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>The Two-View Reconstruction Loop</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>1. Estimate $F$</h3><p>Normalized eight-point on correspondences; enforce $\operatorname{rank} F = 2$.</p></div>
+<div class="panel teal"><h3>2. Retrieve cameras</h3><p>Read $P,P'$ directly from $F$ and its epipole.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>3. Triangulate</h3><p>Intersect back-projected rays to recover each $X_i$.</p></div>
+<div class="panel violet"><h3>4. Study the freedom</h3><p>What is fixed, and what stays ambiguous, without calibration.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>The Reconstruction Pipeline</span></div>
+<aside class="speaker-notes">Walk the class through the four-stage loop the notebook builds: estimate the fundamental matrix from correspondences, retrieve a compatible camera pair, triangulate structure, then study the freedom that remains. Emphasize that no calibration is assumed yet, so the output is a projective reconstruction rather than a Euclidean one.</aside>
+</section>
+
+<section class="slide" data-label="Retrieving Cameras from F">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Retrieving a Camera Pair from $F$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Canonical pair</div><p class="formula">$$P = [\,I \mid 0\,]$$</p><p class="formula">$$P' = [\,[e']_\times F \mid e'\,]$$</p></div>
+<div class="panel teal"><h3>The epipole</h3><p>$e'$ is the left null vector of $F$: $\;F^{\!\top} e' = 0$.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>One frame of many</h3><p>This pair is consistent with $F$ but is <em>not</em> the original Euclidean rig; it is a chosen projective coordinate frame.</p></div>
+<div class="panel blue"><h3>Gauge fixed</h3><p>Setting $P=[I\mid 0]$ removes the obvious freedom; what remains is a single $\mathbb{P}^3$ projectivity.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Retrieving Cameras from F</span></div>
+<aside class="speaker-notes">Explain the canonical choice that breaks the gauge freedom: fix the first camera as identity, then read the second directly off the fundamental matrix using the epipole. Point out that this is one particular projective frame among infinitely many, chosen for convenience, not the true rig that produced the photographs.</aside>
+</section>
+
+<section class="slide alt" data-label="Triangulation of a 3D Point">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Triangulation: Intersecting Two Rays</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Two camera centres back-projecting rays that meet at a 3D point in a shared epipolar plane"><polygon points="60,170 200,40 320,150 180,200" fill="#6D28D9" fill-opacity="0.08" stroke="#6D28D9" stroke-width="1"/><circle cx="70" cy="160" r="6" fill="#2563EB"/><circle cx="300" cy="150" r="6" fill="#0F766E"/><circle cx="195" cy="62" r="6" fill="#B45309"/><line x1="70" y1="160" x2="195" y2="62" stroke="#2563EB" stroke-width="2.5"/><line x1="300" y1="150" x2="195" y2="62" stroke="#0F766E" stroke-width="2.5"/><line x1="70" y1="160" x2="300" y2="150" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="5 4"/><text x="40" y="185" font-size="14" fill="#2563EB">C</text><text x="306" y="170" font-size="14" fill="#0F766E">C'</text><text x="205" y="55" font-size="14" fill="#B45309">X</text><text x="150" y="120" font-size="12" fill="#6D28D9">epipolar plane</text></svg><figcaption class="small">Two rays in one epipolar plane meet at the structure point.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Linear system</div><p class="formula">$$A X = 0,\quad A=\begin{bmatrix} u\,p_3^{\!\top}-p_1^{\!\top}\\ v\,p_3^{\!\top}-p_2^{\!\top}\\ u'p_3'^{\!\top}-p_1'^{\!\top}\\ v'p_3'^{\!\top}-p_2'^{\!\top}\end{bmatrix}$$</p></div>
+<div class="panel teal"><h3>Solve</h3><p>Smallest singular vector of $A$; off the baseline $\operatorname{rank} A = 3$, so $X$ is unique.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Triangulation of a 3D Point</span></div>
+<aside class="speaker-notes">Describe triangulation as intersecting two back-projected rays that share an epipolar plane. Build the four-row homogeneous system from the two projection equations and solve by its smallest singular vector. Note that away from the baseline the rays meet in exactly one point, giving a rank-three measurement matrix.</aside>
+</section>
+
+<section class="slide" data-label="The Baseline Exception">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>The Baseline Exception</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The degeneracy</h3><p>A point on the baseline projects to the two epipoles. Both rays lie along the baseline and coincide.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Rank drops</div><p class="formula">$$\operatorname{rank} A : 3 \;\longrightarrow\; 2$$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="A point lying on the baseline so both rays collapse onto the baseline itself"><circle cx="60" cy="120" r="6" fill="#2563EB"/><circle cx="300" cy="120" r="6" fill="#0F766E"/><line x1="60" y1="120" x2="300" y2="120" stroke="#B45309" stroke-width="3"/><circle cx="180" cy="120" r="7" fill="#B45309"/><text x="35" y="145" font-size="14" fill="#2563EB">C</text><text x="306" y="145" font-size="14" fill="#0F766E">C'</text><text x="160" y="105" font-size="14" fill="#B45309">X on baseline</text><text x="120" y="170" font-size="13" fill="#64748B">rays collapse: depth not recoverable</text></svg><figcaption class="small">On the baseline the two rays merge; depth is undetermined.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>The Baseline Exception</span></div>
+<aside class="speaker-notes">Highlight the single failure mode of triangulation. A world point lying on the baseline projects to the two epipoles, so both rays collapse onto the baseline itself and lose a rank. Connect this degeneracy to the notebook check where the measurement matrix drops from rank three to rank two.</aside>
+</section>
+
+<section class="slide alt" data-label="The Projective Ambiguity">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Projective Reconstruction Theorem</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">The invariance</div><p class="formula">$$X \mapsto H X,\qquad P \mapsto P H^{-1}$$</p><p class="formula">$$ (P H^{-1})(H X) = P X $$</p></div>
+<div class="panel violet"><h3>Consequence</h3><p>Any nonsingular $4\times 4$ $H$ leaves every image point unchanged.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>What is fixed</h3><p>Incidence and the images themselves.</p></div>
+<div class="panel amber"><h3>What is lost</h3><p>Angles, parallelism, length ratios in the recovered 3D cloud are meaningless.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>The Projective Ambiguity</span></div>
+<aside class="speaker-notes">State the reconstruction theorem precisely. Replacing every point by H times the point, and every camera by the camera times H inverse, leaves all image measurements untouched. Therefore two views fix the scene only up to a four-by-four projective transformation, and angles or parallelism in the recovered cloud are meaningless.</aside>
+</section>
+
+<section class="slide" data-label="Reprojection Invariance">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Same Images, Different 3D Coordinates</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="A Euclidean cube and a projectively warped cube projecting to identical image points"><rect x="20" y="40" width="70" height="70" fill="none" stroke="#2563EB" stroke-width="2"/><rect x="40" y="20" width="70" height="70" fill="none" stroke="#2563EB" stroke-width="2"/><line x1="20" y1="40" x2="40" y2="20" stroke="#2563EB" stroke-width="2"/><line x1="90" y1="40" x2="110" y2="20" stroke="#2563EB" stroke-width="2"/><line x1="20" y1="110" x2="40" y2="90" stroke="#2563EB" stroke-width="2"/><line x1="90" y1="110" x2="110" y2="90" stroke="#2563EB" stroke-width="2"/><polygon points="210,55 280,35 300,105 235,120" fill="none" stroke="#6D28D9" stroke-width="2"/><polygon points="230,30 300,15 320,80 250,98" fill="none" stroke="#6D28D9" stroke-width="2"/><line x1="210" y1="55" x2="230" y2="30" stroke="#6D28D9" stroke-width="2"/><line x1="280" y1="35" x2="300" y2="15" stroke="#6D28D9" stroke-width="2"/><text x="30" y="135" font-size="13" fill="#2563EB">Euclidean</text><text x="225" y="145" font-size="13" fill="#6D28D9">projective warp</text><line x1="120" y1="180" x2="240" y2="180" stroke="#0F766E" stroke-width="2" stroke-dasharray="4 3"/><text x="100" y="200" font-size="13" fill="#0F766E">identical reprojections</text></svg><figcaption class="small">Both clouds reproject to the same two images.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Numerical check</h3><p>Canonical reconstruction reprojects with residual $< 10^{-9}$ px, yet its coordinates are warped.</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Why extra data is needed</div><p class="formula">$$x_i'^{\!\top} F x_i = 0 \;\Rightarrow\; \text{image-consistent}$$</p><p class="small">Consistency alone cannot pick out the true scene.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Reprojection Invariance</span></div>
+<aside class="speaker-notes">Use the overlay to make the ambiguity concrete. The canonical reconstruction reprojects onto the measured points with essentially zero residual even though its 3D coordinates are strange. The lesson: image consistency cannot distinguish the true scene from any projective warp of it, which is why extra information is required.</aside>
+</section>
+
+<section class="slide alt" data-label="The Stratified Ladder">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>The Stratified Reconstruction Ladder</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A three-rung ladder from projective to affine to metric reconstruction with increasing structure"><line x1="40" y1="210" x2="320" y2="210" stroke="#CBD5E1" stroke-width="2"/><rect x="40" y="170" width="80" height="40" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><rect x="140" y="120" width="80" height="90" fill="#fffbeb" stroke="#B45309" stroke-width="2"/><rect x="240" y="60" width="80" height="150" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/><text x="55" y="195" font-size="13" fill="#2563EB">projective</text><text x="158" y="150" font-size="13" fill="#B45309">affine</text><text x="262" y="100" font-size="13" fill="#0F766E">metric</text><path d="M 130 165 L 145 150" stroke="#6D28D9" stroke-width="2" marker-end="url(#ah)"/><path d="M 230 110 L 245 95" stroke="#6D28D9" stroke-width="2" marker-end="url(#ah)"/><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6D28D9"/></marker></defs><text x="95" y="40" font-size="12" fill="#6D28D9">+ plane at infinity</text><text x="205" y="25" font-size="12" fill="#6D28D9">+ absolute conic</text></svg><figcaption class="small">Each rung adds one geometric object.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Projective</h3><p>Incidence only.</p></div>
+<div class="panel amber"><h3>Affine</h3><p>Add $\pi_\infty$: parallelism returns.</p></div>
+<div class="panel teal"><h3>Metric</h3><p>Add the absolute conic $\Omega_\infty$: angles and ratios return.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>The Stratified Ladder</span></div>
+<aside class="speaker-notes">Introduce the three strata as a ladder of increasing structure. Projective knows only incidence, affine adds parallelism, metric adds angles and length ratios. Each rung is unlocked by identifying one geometric object: the plane at infinity for affine, the absolute conic for metric. The Euclidean scene differs only by an overall similarity.</aside>
+</section>
+
+<section class="slide" data-label="Affine Upgrade">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Affine Upgrade: Locating $\pi_\infty$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Upgrade homography</div><p class="formula">$$H_\pi = \begin{bmatrix} I & 0 \\ \pi^{\!\top} \end{bmatrix},\quad H_\pi^{-\top}\pi_\infty = \begin{pmatrix}0\\0\\0\\1\end{pmatrix}$$</p></div>
+<div class="panel teal"><h3>Exact identity</h3><p>Verified symbolically: the chosen plane maps to the canonical $(0,0,0,1)^{\!\top}$.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>What is restored</h3><p>Parallel scene directions become parallel again; midpoints and ratios along lines are meaningful.</p></div>
+<div class="panel blue"><h3>What is not</h3><p>Right angles need not yet be correct; that waits for the metric rung.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Affine Upgrade</span></div>
+<aside class="speaker-notes">Explain that the affine upgrade is exactly the act of locating the plane at infinity in the projective frame. Once that plane is moved back to its canonical position by the block homography, parallel scene directions become parallel again. The SymPy identity confirms the upgrade formula maps the chosen plane to zero zero zero one exactly.</aside>
+</section>
+
+<section class="slide alt" data-label="Metric Upgrade via the IAC">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Metric Upgrade: the Absolute Conic</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Image of absolute conic</div><p class="formula">$$\omega = (K K^{\!\top})^{-1}$$</p><p class="formula">$$A A^{\!\top} = (M^{\!\top}\!\omega\,M)^{-1}$$</p></div>
+<div class="panel teal"><h3>Rectify</h3><p>Cholesky factor $A$ supplies $H$; right angles and length ratios return.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>Calibrated route</h3><p>With $K$ known, $E = K'^{\!\top} F K$ gives the essential matrix.</p></div>
+<div class="panel amber"><h3>Four-fold $(R,t)$</h3><p>$E$ decomposes into four pose candidates; cheirality (points in front of both cameras) selects the true one.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Metric Upgrade via the IAC</span></div>
+<aside class="speaker-notes">Describe the metric upgrade through the image of the absolute conic, computed from the calibration K. A Cholesky factor of the rectifying shape matrix supplies the final transform, after which right angles and length ratios are restored. Mention the calibrated route through the essential matrix and the four-fold pose decomposition resolved by cheirality.</aside>
+</section>
+
+<section class="slide" data-label="Direct Upgrade from Ground Control">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Direct Upgrade from Ground Control</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The shortcut</h3><p>Known world points fix the missing $4\times 4$ homography directly, bypassing the strata.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Counting equations</div><p class="formula">$$5 \text{ controls} \times 3 = 15 \ge 15$$</p><p class="small">Each non-coplanar correspondence gives three independent equations.</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Estimate $H$</h3><p>Solve $X^{\text{world}}_i = H\, X^{\text{proj}}_i$ from the controls.</p></div>
+<div class="panel amber"><h3>Validate</h3><p>Held-out reconstructed points must align with the Euclidean scene to certify the fit.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Direct Upgrade from Ground Control</span></div>
+<aside class="speaker-notes">Contrast the stratified route with the direct one. Five non-coplanar control points with known world coordinates fix the missing four-by-four homography outright, since each correspondence gives three equations. Held-out points then certify the fit. This is the practical shortcut when survey data or a known calibration object is available.</aside>
+</section>
+
+<section class="slide alt" data-label="Synthesis and Outlook">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 10</span></div>
+<h2>Synthesis and Outlook</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Projective for free</h3><p>Two views recover cameras and structure up to a $\mathbb{P}^3$ projectivity.</p></div>
+<div class="panel amber"><h3>Affine costs one object</h3><p>Identify $\pi_\infty$ to restore parallelism.</p></div>
+<div class="panel teal"><h3>Metric costs one more</h3><p>Identify $\Omega_\infty$, via $K$ and $E$, to restore the similarity class.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>Baseline caveat</h3><p>Triangulation fails only for points on the baseline.</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Forward</div><p>Real images carry noise: motivating robust estimation and bundle adjustment in later chapters.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 262-278</span><span>Synthesis and Outlook</span></div>
+<aside class="speaker-notes">Close by consolidating the chapter into its core claims and pointing forward. Two views give projective structure for free; affine and metric structure each cost one identified geometric object. Real images add noise, motivating the robust estimation and bundle adjustment of later chapters. Leave students with the ladder image firmly in mind.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

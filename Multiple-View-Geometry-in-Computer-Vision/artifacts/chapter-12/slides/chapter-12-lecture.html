@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-12">
+<meta name="chapter_title" content="Chapter 12: Structure Computation">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-12-structure-computation/12-structure-computation.ipynb">
+<meta name="source_span" content="printed pages 310-324; PDF pages 328-342">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 12: Structure Computation</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-12","chapter_title":"Chapter 12: Structure Computation","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-02-two-view-geometry/chapter-12-structure-computation/12-structure-computation.ipynb","source_span":"printed pages 310-324; PDF pages 328-342","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Structure Computation","notes":"Open by stating the two-view structure problem: cameras are known, a noisy match is given, find the 3D point. Stress that because measured rays rarely meet, triangulation is an estimator and our job is to choose the estimator whose objective matches the geometry we actually trust."},
+{"slide":2,"label":"Noisy Rays Are Skew","notes":"Walk through the picture of two back-projected rays. With perfect measurements they intersect at the world point; with pixel noise they pass each other and become skew. The common-perpendicular gap is a useful Euclidean diagnostic but not a projective objective worth minimizing."},
+{"slide":3,"label":"Linear DLT Triangulation","notes":"Derive the four homogeneous equations from x cross PX equals zero. Stack them and take the SVD null vector. Emphasize this is fast and a great initializer, but it minimizes an algebraic residual with no direct geometric meaning, so it is only a starting point."},
+{"slide":4,"label":"Not Projective Invariant","notes":"Explain that a good triangulator should commute with projective change of the world frame. DLT and the midpoint method do not, because their residual norm is not invariant. Image-space correction does commute, because it touches only the measured points before triangulating."},
+{"slide":5,"label":"Geometric Reprojection Error","notes":"Define the geometric cost as the sum of squared distances between measured and reprojected points. This is the maximum likelihood objective under isotropic Gaussian image noise, and it is the quantity the optimal method actually minimizes, unlike the algebraic DLT residual."},
+{"slide":6,"label":"Optimal Triangulation","notes":"State the optimal-triangulation idea: the corrected pair must satisfy the epipolar constraint exactly while staying closest to the measurements. Hartley and Sturm parametrize the epipolar pencil by one scalar and reduce the search to the real roots of a degree-six polynomial."},
+{"slide":7,"label":"The Degree-Six Polynomial","notes":"Show how the cost becomes a one-parameter rational function of the pencil parameter. Setting its derivative to zero clears to a degree-six polynomial; evaluate the cost at each real root and the asymptotic value, then keep the global minimum rather than the first local one."},
+{"slide":8,"label":"Correcting To Epipolar Lines","notes":"Interpret the solution geometrically: the corrected points are the closest points on a matched pair of corresponding epipolar lines. After correction the two rays meet exactly, so any triangulator, even plain DLT, returns the optimal point. Contrast with the cheap first-order Sampson step."},
+{"slide":9,"label":"Covariance Of The Point","notes":"Propagate image covariance through the projection Jacobian: the point covariance is sigma squared times the inverse normal matrix. The largest uncertainty axis stretches along the viewing rays, so a low residual does not guarantee a well-localized reconstruction."},
+{"slide":10,"label":"Small Baseline Degeneracy","notes":"Connect uncertainty to geometry: as the angle between rays shrinks the normal matrix becomes ill-conditioned and depth variance blows up. Teach students to monitor ray angle, not baseline length alone, and to flag distant structure seen under a narrow angle."},
+{"slide":11,"label":"Cheirality And Line Reconstruction","notes":"Add two practical checks. Cheirality requires positive depth in both cameras, ruling out reflected solutions a small residual cannot detect. A 3D line is recovered as the intersection of two back-projected planes, which degenerates when the line lies in an epipolar plane."},
+{"slide":12,"label":"Workflow And Takeaways","notes":"Summarize the recommended pipeline: DLT to initialize, optimal image correction or nonlinear refinement to reach the geometric optimum, then cheirality and ray-angle diagnostics before trusting the point. Recap that the objective, not just the residual, defines a sound triangulation method."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Structure Computation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h1>Structure Computation</h1>
+<p class="lead">Triangulating a 3D point from two known cameras and a noisy match</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The question</h3><p>Cameras $P,P'$ known; given $x \leftrightarrow x'$, where is $X$?</p></div>
+<div class="panel amber"><h3>The catch</h3><p>Measured rays usually miss, so triangulation is an estimator.</p></div>
+<div class="panel teal"><h3>The goal</h3><p>Choose the objective that matches trustworthy geometry.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Two camera centers back-projecting rays to a 3D point">
+<rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/>
+<circle cx="55" cy="170" r="6" fill="#2563EB"/><text x="38" y="195" font-size="15" fill="#2563EB">C</text>
+<circle cx="305" cy="180" r="6" fill="#0F766E"/><text x="300" y="205" font-size="15" fill="#0F766E">C'</text>
+<circle cx="185" cy="45" r="6" fill="#B45309"/><text x="195" y="42" font-size="15" fill="#B45309">X</text>
+<line x1="55" y1="170" x2="185" y2="45" stroke="#2563EB" stroke-width="2.5"/>
+<line x1="305" y1="180" x2="185" y2="45" stroke="#0F766E" stroke-width="2.5"/>
+<line x1="55" y1="170" x2="305" y2="180" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="150" y="205" font-size="14" fill="#6D28D9">baseline</text>
+</svg><figcaption class="small">Two back-projected rays meet at the structure point.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Structure Computation</span></div>
+<aside class="speaker-notes">Open by stating the two-view structure problem: cameras are known, a noisy match is given, find the 3D point. Stress that because measured rays rarely meet, triangulation is an estimator and our job is to choose the estimator whose objective matches the geometry we actually trust.</aside>
+</section>
+
+<section class="slide alt" data-label="Noisy Rays Are Skew">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Image Noise Makes the Rays Skew</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Ideal case</h3><p>Exact $x,x'$ give coplanar rays that intersect at $X$.</p></div>
+<div class="panel amber"><h3>Noisy case</h3><p>Measured rays pass each other: a skew pair, no intersection.</p></div>
+<div class="panel violet"><h3>Midpoint estimate</h3><p>Midpoint of the common perpendicular is Euclidean, not invariant.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Two skew rays with a common perpendicular gap and midpoint">
+<rect x="0" y="0" width="360" height="220" fill="#fffbeb"/>
+<circle cx="45" cy="160" r="5" fill="#2563EB"/><text x="28" y="180" font-size="14" fill="#2563EB">C</text>
+<circle cx="315" cy="175" r="5" fill="#0F766E"/><text x="312" y="195" font-size="14" fill="#0F766E">C'</text>
+<line x1="45" y1="160" x2="225" y2="40" stroke="#2563EB" stroke-width="2.5"/>
+<line x1="315" y1="175" x2="150" y2="55" stroke="#0F766E" stroke-width="2.5"/>
+<line x1="178" y1="78" x2="158" y2="62" stroke="#B45309" stroke-width="2.5"/>
+<circle cx="178" cy="78" r="3.5" fill="#2563EB"/><circle cx="158" cy="62" r="3.5" fill="#0F766E"/>
+<circle cx="168" cy="70" r="4" fill="#6D28D9"/><text x="176" y="66" font-size="13" fill="#6D28D9">mid</text>
+<text x="190" y="100" font-size="13" fill="#B45309">gap</text>
+</svg><figcaption class="small">Common perpendicular: a diagnostic, not a projective objective.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Noisy Rays Are Skew</span></div>
+<aside class="speaker-notes">Walk through the picture of two back-projected rays. With perfect measurements they intersect at the world point; with pixel noise they pass each other and become skew. The common-perpendicular gap is a useful Euclidean diagnostic but not a projective objective worth minimizing.</aside>
+</section>
+
+<section class="slide" data-label="Linear DLT Triangulation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Linear (DLT) Triangulation</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Constraint</div><p class="formula">$x \times PX = 0, \quad x' \times P'X = 0$</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Stacked system</div><p class="formula">$A X = 0,\quad A=\begin{bmatrix} u\,p^{3\top}-p^{1\top}\\ v\,p^{3\top}-p^{2\top}\\ u'p'^{3\top}-p'^{1\top}\\ v'p'^{3\top}-p'^{2\top}\end{bmatrix}$</p></div>
+<div class="panel teal"><h3>Solve</h3><p>$X$ is the unit null vector: smallest singular vector of $A$.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Two rows per view</h3><p>Each image gives two independent linear equations in $X$.</p></div>
+<div class="panel amber"><h3>Fast, but algebraic</h3><p>SVD minimizes $\lVert AX\rVert$, an algebraic residual with no metric meaning.</p></div>
+<div class="panel violet"><h3>Role</h3><p>Excellent initializer for the geometric optimization to follow.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Linear DLT Triangulation</span></div>
+<aside class="speaker-notes">Derive the four homogeneous equations from x cross PX equals zero. Stack them and take the SVD null vector. Emphasize this is fast and a great initializer, but it minimizes an algebraic residual with no direct geometric meaning, so it is only a starting point.</aside>
+</section>
+
+<section class="slide alt" data-label="Not Projective Invariant">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Why Linear Methods Are Not Projective-Invariant</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Invariance test</div><p class="formula">$\widehat{X}(PH^{-1},P'H^{-1}) \stackrel{?}{=} H\,\widehat{X}(P,P')$</p></div>
+<div class="panel amber"><h3>DLT fails</h3><p>The norm $\lVert AX\rVert$ is not preserved by a projective $H$.</p></div>
+<div class="panel violet"><h3>Midpoint fails</h3><p>Euclidean distance has no meaning in a projective frame.</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Image correction passes</h3><p>It alters only measured $x,x'$ before triangulating, so it commutes with $H$.</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 180" width="100%" role="img" aria-label="Commuting diagram for projective invariance of triangulation">
+<rect x="0" y="0" width="360" height="180" fill="#f5f3ff"/>
+<text x="30" y="45" font-size="16" fill="#2563EB">x,x'</text>
+<text x="250" y="45" font-size="16" fill="#0F766E">X</text>
+<text x="250" y="150" font-size="16" fill="#B45309">HX</text>
+<line x1="80" y1="40" x2="240" y2="40" stroke="#2563EB" stroke-width="2.2" marker-end="url(#ar)"/>
+<line x1="270" y1="58" x2="270" y2="135" stroke="#6D28D9" stroke-width="2.2" marker-end="url(#ar)"/>
+<line x1="80" y1="55" x2="240" y2="140" stroke="#0F766E" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#ar)"/>
+<text x="120" y="32" font-size="12" fill="#2563EB">triangulate</text>
+<text x="278" y="105" font-size="12" fill="#6D28D9">H</text>
+<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker></defs>
+</svg><figcaption class="small">An invariant method makes this square commute.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Not Projective Invariant</span></div>
+<aside class="speaker-notes">Explain that a good triangulator should commute with projective change of the world frame. DLT and the midpoint method do not, because their residual norm is not invariant. Image-space correction does commute, because it touches only the measured points before triangulating.</aside>
+</section>
+
+<section class="slide" data-label="Geometric Reprojection Error">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>The Geometric (Reprojection) Error</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Cost function</div><p class="formula">$\mathcal{C}(\widehat{x},\widehat{x}') = d(x,\widehat{x})^2 + d(x',\widehat{x}')^2$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Subject to</div><p class="formula">$\widehat{x}'^{\top} F\, \widehat{x} = 0$</p></div>
+<div class="panel teal"><h3>Meaning</h3><p>Maximum likelihood under isotropic Gaussian image noise.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Measured vs reprojected</h3><p>Distance between the observed point and the projection of $X$.</p></div>
+<div class="panel amber"><h3>Versus algebraic</h3><p>This metric cost replaces the meaningless DLT residual.</p></div>
+<div class="panel violet"><h3>Two unknowns</h3><p>The constraint leaves one free parameter on the epipolar pencil.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Geometric Reprojection Error</span></div>
+<aside class="speaker-notes">Define the geometric cost as the sum of squared distances between measured and reprojected points. This is the maximum likelihood objective under isotropic Gaussian image noise, and it is the quantity the optimal method actually minimizes, unlike the algebraic DLT residual.</aside>
+</section>
+
+<section class="slide alt" data-label="Optimal Triangulation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Optimal Triangulation: The Hartley-Sturm Idea</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Reduce the problem</h3><p>The optimal $\widehat{x}$ lies on an epipolar line $l(t)$ through epipole $e$.</p></div>
+<div class="panel teal"><h3>One parameter</h3><p>Pencil of epipolar lines is parametrized by a single scalar $t$.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Reduced cost</div><p class="formula">$s(t)=\dfrac{t^2}{1+f^2t^2}+\dfrac{(ct+d)^2}{(at+b)^2+f'^2(ct+d)^2}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Pencil of epipolar lines through the epipole used to parametrize the search">
+<rect x="0" y="0" width="360" height="220" fill="#fffbeb"/>
+<circle cx="60" cy="110" r="6" fill="#6D28D9"/><text x="40" y="105" font-size="14" fill="#6D28D9">e</text>
+<line x1="60" y1="110" x2="340" y2="40" stroke="#2563EB" stroke-width="2"/>
+<line x1="60" y1="110" x2="340" y2="80" stroke="#2563EB" stroke-width="2"/>
+<line x1="60" y1="110" x2="340" y2="120" stroke="#0F766E" stroke-width="2.5"/>
+<line x1="60" y1="110" x2="340" y2="160" stroke="#2563EB" stroke-width="2"/>
+<line x1="60" y1="110" x2="340" y2="200" stroke="#2563EB" stroke-width="2"/>
+<circle cx="250" cy="60" r="5" fill="#B45309"/><text x="258" y="56" font-size="13" fill="#B45309">x</text>
+<text x="300" y="135" font-size="13" fill="#0F766E">l(t*)</text>
+</svg><figcaption class="small">Search the pencil $l(t)$ for the line minimizing $s(t)$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Optimal Triangulation</span></div>
+<aside class="speaker-notes">State the optimal-triangulation idea: the corrected pair must satisfy the epipolar constraint exactly while staying closest to the measurements. Hartley and Sturm parametrize the epipolar pencil by one scalar and reduce the search to the real roots of a degree-six polynomial.</aside>
+</section>
+
+<section class="slide" data-label="The Degree-Six Polynomial">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Finding the Minimum: A Degree-6 Polynomial</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Stationarity</div><p class="formula">$s'(t)=0 \;\Longrightarrow\; g(t)=0,\quad \deg g = 6$</p></div>
+<div class="panel amber"><h3>Pick the global root</h3><p>Evaluate $s(t)$ at every real root and at $t=\infty$; keep the smallest.</p></div>
+<div class="panel violet"><h3>Local minima exist</h3><p>Never trust the first descent: the cost can have several wells.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="One-parameter cost curve with stationary roots and the global minimum">
+<rect x="0" y="0" width="360" height="220" fill="#eff6ff"/>
+<line x1="30" y1="190" x2="340" y2="190" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="30" y1="20" x2="30" y2="190" stroke="#CBD5E1" stroke-width="1.5"/>
+<path d="M30,60 C90,40 110,150 160,120 C200,98 220,175 270,150 C300,135 320,90 340,80" fill="none" stroke="#1f2937" stroke-width="2.5"/>
+<circle cx="100" cy="58" r="4" fill="#B45309"/><circle cx="160" cy="120" r="4" fill="#B45309"/><circle cx="225" cy="166" r="5" fill="#0F766E"/><circle cx="305" cy="98" r="4" fill="#B45309"/>
+<circle cx="225" cy="166" r="8" fill="none" stroke="#0F766E" stroke-width="2.5"/>
+<text x="200" y="205" font-size="13" fill="#475569">t = arctan parameter</text>
+<text x="232" y="160" font-size="12" fill="#0F766E">global</text>
+</svg><figcaption class="small">Real roots (amber) checked; global minimum circled (teal).</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>The Degree-Six Polynomial</span></div>
+<aside class="speaker-notes">Show how the cost becomes a one-parameter rational function of the pencil parameter. Setting its derivative to zero clears to a degree-six polynomial; evaluate the cost at each real root and the asymptotic value, then keep the global minimum rather than the first local one.</aside>
+</section>
+
+<section class="slide alt" data-label="Correcting To Epipolar Lines">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Correcting Points to Corresponding Epipolar Lines</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Optimal correction</h3><p>$\widehat{x},\widehat{x}'$ are the closest points on a matched epipolar pair.</p></div>
+<div class="panel teal"><h3>Then triangulate</h3><p>Corrected rays meet exactly, so any method returns the optimum.</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Sampson step</div><p class="formula">$\delta = -\dfrac{x'^{\top}Fx}{\lVert F_{1,2}x\rVert^2+\lVert F^{\top}_{1,2}x'\rVert^2}\,(\cdot)$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Measured point moved onto its epipolar line to nearest consistent point">
+<rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/>
+<line x1="20" y1="70" x2="340" y2="120" stroke="#0F766E" stroke-width="2.5"/>
+<text x="285" y="110" font-size="13" fill="#0F766E">epipolar line</text>
+<circle cx="150" cy="55" r="6" fill="#B45309"/><text x="120" y="48" font-size="13" fill="#B45309">measured x</text>
+<circle cx="167" cy="93" r="6" fill="#2563EB"/><text x="178" y="92" font-size="13" fill="#2563EB">corrected x&#770;</text>
+<line x1="150" y1="55" x2="167" y2="93" stroke="#6D28D9" stroke-width="2.2" stroke-dasharray="5 4"/>
+<text x="100" y="90" font-size="12" fill="#6D28D9">min distance</text>
+<rect x="160" y="82" width="11" height="11" fill="none" stroke="#475569" stroke-width="1.3"/>
+</svg><figcaption class="small">Move each point the least distance onto its line.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Correcting To Epipolar Lines</span></div>
+<aside class="speaker-notes">Interpret the solution geometrically: the corrected points are the closest points on a matched pair of corresponding epipolar lines. After correction the two rays meet exactly, so any triangulator, even plain DLT, returns the optimal point. Contrast with the cheap first-order Sampson step.</aside>
+</section>
+
+<section class="slide" data-label="Covariance Of The Point">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Uncertainty of the Reconstructed Point</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Covariance propagation</div><p class="formula">$\Sigma_X = \sigma^2 \,(J^{\top}J)^{-1},\quad J=\partial(\hat x,\hat x')/\partial X$</p></div>
+<div class="panel teal"><h3>Anisotropy</h3><p>Largest eigenvector of $\Sigma_X$ stretches along the viewing rays.</p></div>
+<div class="panel amber"><h3>Lesson</h3><p>Small residual $\neq$ well-localized point.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Uncertainty ellipse elongated along the viewing rays at the reconstructed point">
+<rect x="0" y="0" width="360" height="220" fill="#fffbeb"/>
+<circle cx="45" cy="180" r="5" fill="#2563EB"/><text x="30" y="200" font-size="13" fill="#2563EB">C</text>
+<circle cx="320" cy="185" r="5" fill="#0F766E"/><text x="316" y="205" font-size="13" fill="#0F766E">C'</text>
+<line x1="45" y1="180" x2="200" y2="80" stroke="#2563EB" stroke-width="2"/>
+<line x1="320" y1="185" x2="200" y2="80" stroke="#0F766E" stroke-width="2"/>
+<ellipse cx="200" cy="80" rx="46" ry="15" fill="#6D28D9" fill-opacity="0.25" stroke="#6D28D9" stroke-width="2" transform="rotate(-26 200 80)"/>
+<circle cx="200" cy="80" r="4" fill="#B45309"/><text x="210" y="70" font-size="13" fill="#B45309">X</text>
+</svg><figcaption class="small">Covariance ellipse elongated along the depth direction.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Covariance Of The Point</span></div>
+<aside class="speaker-notes">Propagate image covariance through the projection Jacobian: the point covariance is sigma squared times the inverse normal matrix. The largest uncertainty axis stretches along the viewing rays, so a low residual does not guarantee a well-localized reconstruction.</aside>
+</section>
+
+<section class="slide alt" data-label="Small Baseline Degeneracy">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Degenerate Configurations: Narrow Ray Angle</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Wide angle</h3><p>Rays cross sharply; depth is well constrained, $J^{\top}J$ well conditioned.</p></div>
+<div class="panel amber"><h3>Narrow angle</h3><p>Rays nearly parallel; $J^{\top}J$ ill-conditioned, depth variance explodes.</p></div>
+<div class="panel violet"><h3>Diagnostic</h3><p>Watch the ray angle, not just baseline length.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Comparison of wide-angle and narrow-angle ray intersections and their uncertainty">
+<rect x="0" y="0" width="360" height="220" fill="#f5f3ff"/>
+<line x1="30" y1="120" x2="150" y2="50" stroke="#2563EB" stroke-width="2"/>
+<line x1="150" y1="120" x2="150" y2="50" stroke="#0F766E" stroke-width="2"/>
+<ellipse cx="150" cy="50" rx="10" ry="9" fill="#0F766E" fill-opacity="0.3" stroke="#0F766E" stroke-width="1.5"/>
+<text x="55" y="145" font-size="13" fill="#0F766E">wide: tight</text>
+<line x1="210" y1="125" x2="320" y2="55" stroke="#2563EB" stroke-width="2"/>
+<line x1="235" y1="125" x2="335" y2="58" stroke="#0F766E" stroke-width="2"/>
+<ellipse cx="328" cy="56" rx="40" ry="9" fill="#B45309" fill-opacity="0.28" stroke="#B45309" stroke-width="1.5" transform="rotate(-30 328 56)"/>
+<text x="225" y="150" font-size="13" fill="#B45309">narrow: long</text>
+</svg><figcaption class="small">Shrinking ray angle stretches the uncertainty along depth.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Small Baseline Degeneracy</span></div>
+<aside class="speaker-notes">Connect uncertainty to geometry: as the angle between rays shrinks the normal matrix becomes ill-conditioned and depth variance blows up. Teach students to monitor ray angle, not baseline length alone, and to flag distant structure seen under a narrow angle.</aside>
+</section>
+
+<section class="slide" data-label="Cheirality And Line Reconstruction">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Cheirality and Reconstructing a 3D Line</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Cheirality</div><p class="formula">$(P_{3}X)>0 \;\wedge\; (P'_{3}X)>0$</p></div>
+<div class="panel teal"><h3>Line as plane meet</h3><p>Image lines $l,l'$ back-project to planes $P^{\top}l$, $P'^{\top}l'$.</p></div>
+<div class="panel amber"><h3>Degeneracy</h3><p>If the line lies in an epipolar plane, the two planes collapse.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Two back-projected planes meeting in a 3D line">
+<rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/>
+<polygon points="40,60 200,30 250,150 90,180" fill="#2563EB" fill-opacity="0.18" stroke="#2563EB" stroke-width="2"/>
+<polygon points="120,40 310,70 270,190 110,160" fill="#0F766E" fill-opacity="0.18" stroke="#0F766E" stroke-width="2"/>
+<line x1="125" y1="55" x2="245" y2="165" stroke="#B45309" stroke-width="3.5"/>
+<text x="250" y="170" font-size="13" fill="#B45309">3D line L</text>
+<text x="50" y="80" font-size="12" fill="#2563EB">plane Pᵀl</text>
+<text x="280" y="95" font-size="12" fill="#0F766E">plane P'ᵀl'</text>
+</svg><figcaption class="small">The line is the intersection of two back-projected planes.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Cheirality And Line Reconstruction</span></div>
+<aside class="speaker-notes">Add two practical checks. Cheirality requires positive depth in both cameras, ruling out reflected solutions a small residual cannot detect. A 3D line is recovered as the intersection of two back-projected planes, which degenerates when the line lies in an epipolar plane.</aside>
+</section>
+
+<section class="slide alt" data-label="Workflow And Takeaways">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 12</span></div>
+<h2>Recommended Workflow and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>1. Initialize</h3><p>Linear DLT gives a finite, robust starting point.</p></div>
+<div class="panel teal"><h3>2. Optimize</h3><p>Optimal image correction or nonlinear reprojection refinement.</p></div>
+<div class="panel violet"><h3>3. Validate</h3><p>Check cheirality and ray angle before trusting the point.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Core message</h3><p>The objective, not just the residual, defines a sound triangulation method.</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 150" width="100%" role="img" aria-label="Pipeline from DLT initialization to optimal refinement to validation">
+<rect x="0" y="0" width="360" height="150" fill="#fffbeb"/>
+<rect x="15" y="55" width="90" height="40" rx="6" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><text x="34" y="80" font-size="14" fill="#2563EB">DLT</text>
+<rect x="135" y="55" width="90" height="40" rx="6" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/><text x="150" y="80" font-size="14" fill="#0F766E">optimal</text>
+<rect x="255" y="55" width="90" height="40" rx="6" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/><text x="268" y="80" font-size="14" fill="#6D28D9">validate</text>
+<line x1="105" y1="75" x2="135" y2="75" stroke="#475569" stroke-width="2" marker-end="url(#a2)"/>
+<line x1="225" y1="75" x2="255" y2="75" stroke="#475569" stroke-width="2" marker-end="url(#a2)"/>
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker></defs>
+</svg><figcaption class="small">Initialize, optimize, then validate the structure.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 310-324</span><span>Workflow And Takeaways</span></div>
+<aside class="speaker-notes">Summarize the recommended pipeline: DLT to initialize, optimal image correction or nonlinear refinement to reach the geometric optimum, then cheirality and ray-angle diagnostics before trusting the point. Recap that the objective, not just the residual, defines a sound triangulation method.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
