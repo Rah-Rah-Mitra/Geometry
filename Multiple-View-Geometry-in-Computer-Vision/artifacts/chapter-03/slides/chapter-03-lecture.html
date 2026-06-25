@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-03">
+<meta name="chapter_title" content="Chapter 03: Projective Geometry and Transformations of 3D">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-00-background-projective-geometry-transformations-and-estimation/chapter-03-projective-geometry-and-transformations-of-3d/03-projective-geometry-and-transformations-of-3d.ipynb">
+<meta name="source_span" content="printed pages 65-86; PDF pages 83-104.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 03: Projective Geometry and Transformations of 3D</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-03","chapter_title":"Chapter 03: Projective Geometry and Transformations of 3D","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-00-background-projective-geometry-transformations-and-estimation/chapter-03-projective-geometry-and-transformations-of-3d/03-projective-geometry-and-transformations-of-3d.ipynb","source_span":"printed pages 65-86; PDF pages 83-104.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Projective 3-Space","notes":"Open by framing the chapter as a representation language: every point, plane, line and quadric becomes a homogeneous array whose invariants survive a change of projective frame. Stress that this chapter generalises plane projective geometry, but lines and quadrics behave very differently in three dimensions."},
+{"slide":2,"label":"Points and Planes in P3","notes":"Define the homogeneous four-vector for a finite point and the ideal point with last coordinate zero. Introduce the plane as a four-vector and the incidence equation pi transpose X equals zero. Demonstrate that points and planes are dual: swap their roles and every statement still holds."},
+{"slide":3,"label":"Projective Transport","notes":"Walk through how a four by four collineation H sends points and why planes must use the inverse transpose. Emphasise that incidence is the invariant scalar: it stays at numerical zero before and after the transformation. The notebook audits this with residuals near machine precision and a nonzero determinant."},
+{"slide":4,"label":"Lines and Plucker Coordinates","notes":"Explain why a single cross product fails in three dimensions. Build the skew four by four Plucker matrix from two points, extract the six coordinates, and state the Klein quadratic constraint. Note the dual matrix built from planes gives the same line, the two representations meeting through duality."},
+{"slide":5,"label":"Intersection and Join","notes":"Show how the Plucker matrix L times a plane returns the meeting point, and its dual times a point returns the joining plane. Introduce the bilinear product whose vanishing detects coplanar, hence intersecting, lines. A nonzero value certifies skew lines, as the notebook bar chart confirms numerically."},
+{"slide":6,"label":"Quadrics in P3","notes":"Present the point quadric as a symmetric four by four matrix with X transpose Q X equal to zero, and the dual quadric as the equation on tangent planes. Stress transformation rules: Q maps by inverse transpose sandwiching, the dual by H sandwiching. Both stay symmetric under any collineation."},
+{"slide":7,"label":"Rank, Signature, Rulings","notes":"Classify quadrics by rank and signature computed from eigenvalues. Rank four splits into sphere-type and ruled hyperboloid types; lower rank yields cones, plane pairs, and double planes. Highlight the two families of generator lines on the ruled hyperboloid, every generator point satisfying the quadric exactly."},
+{"slide":8,"label":"The Twisted Cubic","notes":"Introduce the twisted cubic as the curve t cubed, t squared, t, one. Four samples have rank four, so it is not planar. A general plane cuts it in a cubic polynomial, hence three points over the algebraic closure. It is the canonical non-degenerate space curve of the chapter."},
+{"slide":9,"label":"Plane at Infinity","notes":"Identify pi-infinity as the affine upgrade object. An affine transformation fixes it as a set, while a general projective map moves it. Parallel planes meet in a line lying inside pi-infinity. The notebook verifies fixed and moved residuals to separate affine from projective frames cleanly."},
+{"slide":10,"label":"The Absolute Conic","notes":"Place the absolute conic Omega-infinity on the plane at infinity as the metric upgrade object. It has no real point locus, so teach it through polarity and conjugacy: orthogonal directions are conjugate with respect to it. The absolute dual quadric packages pi-infinity and the conic into one four by four object."},
+{"slide":11,"label":"Transformation Hierarchy","notes":"Lay out the four-level hierarchy: projective, affine, similarity, Euclidean. Each level fixes more structure. Affine fixes the plane at infinity; similarity and Euclidean additionally fix the absolute conic. Use this table as the organising map for the whole multiple-view reconstruction pipeline that follows in later chapters."},
+{"slide":12,"label":"Screw Decomposition","notes":"Decompose a Euclidean motion into a rotation about a screw axis combined with a translation along it. Connect this to the metric-upgrade lab: naive transformed normals give wrong angles, while the upgraded absolute dual quadric restores the original cosine. Close by recapping representation, inspection, then invariant."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+table.hier{width:100%;border-collapse:collapse;font-size:22px}table.hier th,table.hier td{border:1px solid var(--slide-border);padding:9px 11px;text-align:left}table.hier th{background:#eff6ff;color:var(--slide-blue);font-weight:700}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+<section class="slide" data-label="Projective 3-Space">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h1>Projective Geometry and Transformations of 3D</h1>
+<p class="lead">Points, planes, lines, and quadrics in $\mathbb{P}^3$ as invariant homogeneous algebra</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Representation first</h3><p>Each object becomes a homogeneous array; geometry is what survives a change of frame.</p></div>
+<div class="panel teal"><h3>Not just 2D plus one</h3><p>Lines gain Plücker constraints; quadrics become $4\times4$ forms.</p></div>
+<div class="panel amber"><h3>Two upgrade objects</h3><p>$\pi_\infty$ carries affine structure; $\Omega_\infty$ carries metric structure.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 300" width="100%" role="img" aria-label="Configuration of point, plane, line, plane at infinity, and absolute conic in P3"><rect x="0" y="0" width="420" height="300" fill="#f8fafc"/>
+<polygon points="40,250 230,250 320,160 130,160" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="50" y="245" font-size="15" fill="#2563EB">plane $\pi$</text>
+<line x1="90" y1="210" x2="280" y2="185" stroke="#0F766E" stroke-width="3"/>
+<text x="150" y="205" font-size="14" fill="#0F766E">line L</text>
+<circle cx="170" cy="200" r="4" fill="#B45309"/><text x="178" y="198" font-size="14" fill="#B45309">point X</text>
+<line x1="30" y1="70" x2="390" y2="70" stroke="#CBD5E1" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="40" y="60" font-size="15" fill="#64748B">plane at infinity $\pi_\infty$</text>
+<ellipse cx="210" cy="70" rx="120" ry="22" fill="none" stroke="#6D28D9" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="250" y="46" font-size="14" fill="#6D28D9">absolute conic $\Omega_\infty$</text>
+</svg><figcaption class="small">A point, plane, and line in $\mathbb{P}^3$, with $\pi_\infty$ and $\Omega_\infty$ marked above.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Projective 3-Space</span></div>
+<aside class="speaker-notes">Open by framing the chapter as a representation language: every point, plane, line and quadric becomes a homogeneous array whose invariants survive a change of projective frame. Stress that this chapter generalises plane projective geometry, but lines and quadrics behave very differently in three dimensions.</aside>
+</section>
+<section class="slide alt" data-label="Points and Planes in P3">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>Points and Planes: Duality in $\mathbb{P}^3$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Homogeneous point</h3><p>Finite $\mathbf{X}=(x,y,z,1)^\top$; ideal point has last coordinate zero.</p></div>
+<div class="panel teal"><h3>Homogeneous plane</h3><p>$\boldsymbol\pi=(\pi_1,\pi_2,\pi_3,\pi_4)^\top$, equality up to scale.</p></div>
+<div class="panel violet"><h3>Duality</h3><p>Swap the roles of point and plane; every incidence statement still holds.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Incidence</div><p class="formula">$$\boldsymbol\pi^\top \mathbf{X} = 0$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Plane from three points</div><p class="formula">$$\begin{bmatrix}\mathbf{X}_1^\top\\\mathbf{X}_2^\top\\\mathbf{X}_3^\top\end{bmatrix}\boldsymbol\pi = \mathbf{0}$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Points and Planes in P3</span></div>
+<aside class="speaker-notes">Define the homogeneous four-vector for a finite point and the ideal point with last coordinate zero. Introduce the plane as a four-vector and the incidence equation pi transpose X equals zero. Demonstrate that points and planes are dual: swap their roles and every statement still holds.</aside>
+</section>
+<section class="slide" data-label="Projective Transport">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>Projective Transport: How $H$ Acts</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Points</h3><p>A $4\times4$ collineation sends $\mathbf{X}\mapsto H\mathbf{X}$.</p></div>
+<div class="panel amber"><h3>Planes</h3><p>Planes transform by the inverse transpose, preserving incidence.</p></div>
+<div class="panel teal"><h3>The invariant</h3><p>Incidence stays at numerical zero; the notebook audits residuals at machine precision with $\det H \neq 0$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Transport rules</div><p class="formula">$$\mathbf{X}' = H\mathbf{X}, \qquad \boldsymbol\pi' = H^{-\top}\boldsymbol\pi$$</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Incidence preserved</div><p class="formula">$$\boldsymbol\pi'^\top \mathbf{X}' = \boldsymbol\pi^\top H^{-1} H \mathbf{X} = \boldsymbol\pi^\top \mathbf{X}$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Projective Transport</span></div>
+<aside class="speaker-notes">Walk through how a four by four collineation H sends points and why planes must use the inverse transpose. Emphasise that incidence is the invariant scalar: it stays at numerical zero before and after the transformation. The notebook audits this with residuals near machine precision and a nonzero determinant.</aside>
+</section>
+<section class="slide alt" data-label="Lines and Plucker Coordinates">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>Lines: Plücker Coordinates and the Klein Quadric</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>One cross product fails</h3><p>A 3D line needs six numbers, not three.</p></div>
+<div class="panel blue"><h3>Plücker matrix</h3><p>Skew $4\times4$ built from two points $\mathbf{A},\mathbf{B}$.</p></div>
+<div class="panel violet"><h3>Two representations</h3><p>Point-built $L$ and plane-built dual $L^{*}$ describe the same line, linked by duality.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Plücker matrix</div><p class="formula">$$L = \mathbf{A}\mathbf{B}^\top - \mathbf{B}\mathbf{A}^\top$$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Klein constraint</div><p class="formula">$$l_{12}l_{34}+l_{13}l_{42}+l_{14}l_{23}=0$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Lines and Plucker Coordinates</span></div>
+<aside class="speaker-notes">Explain why a single cross product fails in three dimensions. Build the skew four by four Plucker matrix from two points, extract the six coordinates, and state the Klein quadratic constraint. Note the dual matrix built from planes gives the same line, the two representations meeting through duality.</aside>
+</section>
+<section class="slide" data-label="Intersection and Join">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>Intersection, Join, and the Skew Test</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Meet a plane</h3><p>$L\boldsymbol\pi$ is the point where the line pierces $\pi$; zero means the line lies in $\pi$.</p></div>
+<div class="panel teal"><h3>Join a point</h3><p>$L^{*}\mathbf{X}$ is the plane through point and line.</p></div>
+<div class="panel amber"><h3>Coplanar test</h3><p>The bilinear product vanishes exactly when two lines intersect; nonzero certifies skew.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 280" width="100%" role="img" aria-label="One line with an intersecting line and a skew line plus bilinear product bars"><rect x="0" y="0" width="420" height="280" fill="#fff"/>
+<line x1="40" y1="90" x2="250" y2="60" stroke="#2563EB" stroke-width="3"/><text x="255" y="58" font-size="14" fill="#2563EB">$L_1$</text>
+<line x1="120" y1="20" x2="170" y2="150" stroke="#0F766E" stroke-width="3"/><text x="175" y="150" font-size="14" fill="#0F766E">$L_3$ meets</text>
+<circle cx="146" cy="74" r="4" fill="#111827"/>
+<line x1="60" y1="170" x2="270" y2="120" stroke="#B45309" stroke-width="3" stroke-dasharray="6 4"/><text x="275" y="118" font-size="14" fill="#B45309">$L_2$ skew</text>
+<line x1="40" y1="210" x2="40" y2="270" stroke="#CBD5E1" stroke-width="1"/>
+<line x1="40" y1="240" x2="380" y2="240" stroke="#111827" stroke-width="1"/>
+<rect x="120" y="225" width="0.5" height="15" fill="#0F766E"/><text x="60" y="235" font-size="12" fill="#0F766E">$(L_1|L_3)=0$</text>
+<rect x="250" y="220" width="90" height="20" fill="#B45309" opacity="0.7"/><text x="250" y="262" font-size="12" fill="#B45309">$(L_1|L_2)\neq0$</text>
+</svg><figcaption class="small">Bilinear Plücker product separates intersecting from skew lines.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Intersection and Join</span></div>
+<aside class="speaker-notes">Show how the Plucker matrix L times a plane returns the meeting point, and its dual times a point returns the joining plane. Introduce the bilinear product whose vanishing detects coplanar, hence intersecting, lines. A nonzero value certifies skew lines, as the notebook bar chart confirms numerically.</aside>
+</section>
+<section class="slide alt" data-label="Quadrics in P3">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>Quadrics and Dual Quadrics</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Point quadric</h3><p>Symmetric $4\times4$ matrix $Q$; the locus is $\mathbf{X}^\top Q\mathbf{X}=0$.</p></div>
+<div class="panel teal"><h3>Dual quadric</h3><p>Equation on tangent planes via $Q^{*}\sim Q^{-1}$.</p></div>
+<div class="panel amber"><h3>Stays symmetric</h3><p>Any collineation preserves symmetry of $Q$ and $Q^{*}$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Point and dual loci</div><p class="formula">$$\mathbf{X}^\top Q\,\mathbf{X}=0, \qquad \boldsymbol\pi^\top Q^{*}\boldsymbol\pi=0$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Transformation</div><p class="formula">$$Q' = H^{-\top} Q\, H^{-1}, \qquad Q^{*\prime} = H Q^{*} H^\top$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Quadrics in P3</span></div>
+<aside class="speaker-notes">Present the point quadric as a symmetric four by four matrix with X transpose Q X equal to zero, and the dual quadric as the equation on tangent planes. Stress transformation rules: Q maps by inverse transpose sandwiching, the dual by H sandwiching. Both stay symmetric under any collineation.</aside>
+</section>
+<section class="slide" data-label="Rank, Signature, Rulings">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>Rank, Signature, and Ruled Generators</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Classify by eigenvalues</h3><p>Rank and signature are projective labels read from $\text{eig}(Q)$.</p></div>
+<div class="panel teal"><h3>Rank-4 split</h3><p>Sphere-type vs. ruled one-sheet hyperboloid.</p></div>
+<div class="panel amber"><h3>Degenerate cases</h3><p>Cones, plane pairs, double planes at lower rank.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 280" width="100%" role="img" aria-label="One-sheet hyperboloid with two families of straight ruling generators"><rect x="0" y="0" width="420" height="280" fill="#fff"/>
+<ellipse cx="210" cy="40" rx="120" ry="26" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+<ellipse cx="210" cy="240" rx="120" ry="26" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+<path d="M90,40 Q150,140 90,240" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+<path d="M330,40 Q270,140 330,240" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="100" y1="46" x2="300" y2="234" stroke="#B45309" stroke-width="2"/>
+<line x1="180" y1="40" x2="330" y2="200" stroke="#B45309" stroke-width="2"/>
+<line x1="320" y1="46" x2="120" y2="234" stroke="#2563EB" stroke-width="2"/>
+<line x1="240" y1="40" x2="90" y2="200" stroke="#2563EB" stroke-width="2"/>
+<text x="60" y="150" font-size="14" fill="#B45309">family A</text>
+<text x="330" y="150" font-size="14" fill="#2563EB">family B</text>
+</svg><figcaption class="small">Two families of straight generators rule the hyperboloid $x^2+y^2-z^2=1$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Rank, Signature, Rulings</span></div>
+<aside class="speaker-notes">Classify quadrics by rank and signature computed from eigenvalues. Rank four splits into sphere-type and ruled hyperboloid types; lower rank yields cones, plane pairs, and double planes. Highlight the two families of generator lines on the ruled hyperboloid, every generator point satisfying the quadric exactly.</aside>
+</section>
+<section class="slide alt" data-label="The Twisted Cubic">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>The Twisted Cubic</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Parametric curve</h3><p>$\mathbf{X}(t)=(t^3,t^2,t,1)^\top$, the canonical space curve.</p></div>
+<div class="panel teal"><h3>Genuinely 3D</h3><p>Four samples have rank four, so the curve lies in no plane.</p></div>
+<div class="panel violet"><h3>Plane cuts</h3><p>A general plane meets it in three points over the algebraic closure.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Intersection degree</div><p class="formula">$$\boldsymbol\pi^\top\mathbf{X}(t)=0 \;\Rightarrow\; \text{cubic in } t$$</p></div>
+<div class="panel amber"><h3>Why it matters</h3><p>It is the unique non-degenerate twisted cubic through six general points, fixed under projective maps.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>The Twisted Cubic</span></div>
+<aside class="speaker-notes">Introduce the twisted cubic as the curve t cubed, t squared, t, one. Four samples have rank four, so it is not planar. A general plane cuts it in a cubic polynomial, hence three points over the algebraic closure. It is the canonical non-degenerate space curve of the chapter.</aside>
+</section>
+<section class="slide" data-label="Plane at Infinity">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>The Plane at Infinity $\pi_\infty$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Affine upgrade</h3><p>$\pi_\infty=(0,0,0,1)^\top$ in an affine frame.</p></div>
+<div class="panel teal"><h3>Fixed by affinities</h3><p>An affine map fixes $\pi_\infty$ as a set; a general projective map moves it.</p></div>
+<div class="panel amber"><h3>Parallelism</h3><p>Parallel planes meet in a line that lies entirely inside $\pi_\infty$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Affine invariance</div><p class="formula">$$H_A^{-\top}\,\pi_\infty \sim \pi_\infty$$</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Projective frame</div><p class="formula">$$H_P^{-\top}\,\pi_\infty \not\sim \pi_\infty$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Plane at Infinity</span></div>
+<aside class="speaker-notes">Identify pi-infinity as the affine upgrade object. An affine transformation fixes it as a set, while a general projective map moves it. Parallel planes meet in a line lying inside pi-infinity. The notebook verifies fixed and moved residuals to separate affine from projective frames cleanly.</aside>
+</section>
+<section class="slide alt" data-label="The Absolute Conic">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>The Absolute Conic $\Omega_\infty$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Metric upgrade</h3><p>$\Omega_\infty$ lives on $\pi_\infty$ and encodes angles.</p></div>
+<div class="panel amber"><h3>No real points</h3><p>It is a conic of complex directions; teach it through polarity.</p></div>
+<div class="panel teal"><h3>Absolute dual quadric</h3><p>$Q^{*}_\infty$ packs $\pi_\infty$ and $\Omega_\infty$ into one $4\times4$ object.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Angle from $Q^{*}_\infty$</div><p class="formula">$$\cos\theta = \dfrac{\boldsymbol\pi_1^\top Q^{*}_\infty \boldsymbol\pi_2}{\sqrt{(\boldsymbol\pi_1^\top Q^{*}_\infty\boldsymbol\pi_1)(\boldsymbol\pi_2^\top Q^{*}_\infty\boldsymbol\pi_2)}}$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Null direction</div><p class="formula">$$Q^{*}_\infty\,\pi_\infty = \mathbf{0}$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>The Absolute Conic</span></div>
+<aside class="speaker-notes">Place the absolute conic Omega-infinity on the plane at infinity as the metric upgrade object. It has no real point locus, so teach it through polarity and conjugacy: orthogonal directions are conjugate with respect to it. The absolute dual quadric packages pi-infinity and the conic into one four by four object.</aside>
+</section>
+<section class="slide" data-label="Transformation Hierarchy">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>The 3D Transformation Hierarchy</h2>
+<div class="content">
+<div class="stack">
+<table class="hier">
+<tr><th>Level</th><th>DOF</th><th>Fixed entity</th></tr>
+<tr><td>Projective</td><td>15</td><td>incidence only</td></tr>
+<tr><td>Affine</td><td>12</td><td>$\pi_\infty$ (as a set)</td></tr>
+<tr><td>Similarity</td><td>7</td><td>$\pi_\infty$ and $\Omega_\infty$</td></tr>
+<tr><td>Euclidean</td><td>6</td><td>$\Omega_\infty$ + absolute scale</td></tr>
+</table>
+<div class="panel violet"><h3>Reading the ladder</h3><p>Each rung fixes more structure; reconstruction climbs it by identifying $\pi_\infty$, then $\Omega_\infty$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 290" width="100%" role="img" aria-label="Hierarchy ladder showing which entity is preserved at each transformation level"><rect x="0" y="0" width="420" height="290" fill="#fff"/>
+<rect x="30" y="30" width="360" height="50" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><text x="45" y="60" font-size="16" fill="#2563EB">Projective — incidence</text>
+<rect x="30" y="95" width="360" height="50" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/><text x="45" y="125" font-size="16" fill="#0F766E">Affine — fixes $\pi_\infty$</text>
+<rect x="30" y="160" width="360" height="50" fill="#fffbeb" stroke="#B45309" stroke-width="2"/><text x="45" y="190" font-size="16" fill="#B45309">Similarity — fixes $\Omega_\infty$</text>
+<rect x="30" y="225" width="360" height="50" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/><text x="45" y="255" font-size="16" fill="#6D28D9">Euclidean — fixes scale</text>
+<path d="M380,80 L380,95" stroke="#111827" stroke-width="2" marker-end="url(#ar)"/>
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#111827"/></marker></defs>
+</svg><figcaption class="small">Each level preserves the entity below it: $\pi_\infty$ for affine, $\Omega_\infty$ for metric.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Transformation Hierarchy</span></div>
+<aside class="speaker-notes">Lay out the four-level hierarchy: projective, affine, similarity, Euclidean. Each level fixes more structure. Affine fixes the plane at infinity; similarity and Euclidean additionally fix the absolute conic. Use this table as the organising map for the whole multiple-view reconstruction pipeline that follows in later chapters.</aside>
+</section>
+<section class="slide alt" data-label="Screw Decomposition">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 03</span></div>
+<h2>Screw Decomposition and Metric Upgrade</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Screw motion</h3><p>Any Euclidean motion is a rotation about an axis plus a translation along it.</p></div>
+<div class="panel amber"><h3>Lab warning</h3><p>Naive transformed normals give the wrong angle in a projective frame.</p></div>
+<div class="panel teal"><h3>Restore the metric</h3><p>The upgraded $Q^{*}_\infty$ returns the original cosine exactly.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Screw form</div><p class="formula">$$\mathbf{X}' = R\,\mathbf{X} + \mathbf{t}, \quad \mathbf{t} = t_\parallel\hat{\mathbf{a}} + \mathbf{t}_\perp$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Workflow</div><p class="formula">represent $\rightarrow$ inspect $\rightarrow$ check invariant</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 65-86</span><span>Screw Decomposition</span></div>
+<aside class="speaker-notes">Decompose a Euclidean motion into a rotation about a screw axis combined with a translation along it. Connect this to the metric-upgrade lab: naive transformed normals give wrong angles, while the upgraded absolute dual quadric restores the original cosine. Close by recapping representation, inspection, then invariant.</aside>
+</section>
+</deck-stage>
+</body>
+</html>

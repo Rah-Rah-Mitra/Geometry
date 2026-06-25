@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-04">
+<meta name="chapter_title" content="Chapter 04: Estimation: 2D Projective Transformations">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-00-background-projective-geometry-transformations-and-estimation/chapter-04-estimation-2d-projective-transformations/04-estimation-2d-projective-transformations.ipynb">
+<meta name="source_span" content="printed pages 87-131; PDF pages 105-149.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 04: Estimation: 2D Projective Transformations</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-04","chapter_title":"Chapter 04: Estimation: 2D Projective Transformations","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-00-background-projective-geometry-transformations-and-estimation/chapter-04-estimation-2d-projective-transformations/04-estimation-2d-projective-transformations.ipynb","source_span":"printed pages 87-131; PDF pages 105-149.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Estimating a 2D Homography","notes":"This chapter, spanning printed pages 87 through 131, asks one question: given noisy point matches between two images of a plane, recover the homography that relates them. We preview the route from the linear DLT solver, through normalization and geometric cost, to maximum-likelihood refinement and robust RANSAC estimation."},
+{"slide":2,"label":"The Estimation Problem","notes":"A planar projective map is a three by three matrix acting on homogeneous coordinates. It has nine entries but only eight degrees of freedom because overall scale is irrelevant. Four general correspondences fix it exactly; with more, noisy matches, we must minimise some cost and choose which one carefully."},
+{"slide":3,"label":"DLT: Cross-Product Constraint","notes":"Each correspondence forces the image point and the mapped point to be parallel as homogeneous vectors, so their cross product vanishes. Expanding that cross product gives three scalar equations linear in the entries of H, of which only two are independent. This is the algebraic heart of the Direct Linear Transformation."},
+{"slide":4,"label":"Stacking Rows and SVD","notes":"Two independent rows per match stack into a design matrix A, and we seek the vector h with A h equal to zero. With exact data the matrix has rank eight and a one-dimensional nullspace. The singular value decomposition returns that null vector as the right singular vector of smallest singular value."},
+{"slide":5,"label":"Data Normalization","notes":"Raw pixel DLT mixes entries near one with products near a million, wrecking conditioning. Hartley normalization translates each point cloud to its centroid and scales it so the mean distance from the origin equals root two. This similarity changes coordinates, not geometry, yet dramatically improves the numerical nullspace problem."},
+{"slide":6,"label":"Algebraic vs Geometric Error","notes":"DLT minimises the algebraic residual, the norm of A h, whose units are not pixels. The geometric error instead measures reprojection distance in the image plane, where the points actually live. The two disagree, and a small algebraic residual is no guarantee of small pixel error before normalization."},
+{"slide":7,"label":"Reprojection and Sampson Error","notes":"Symmetric transfer error sums squared distances in both images. The reprojection error also estimates corrected points lying exactly on the map. The Sampson error is a first-order approximation of that geometric cost, cheap to compute yet far closer to the true geometric distance than the raw algebraic residual."},
+{"slide":8,"label":"Maximum Likelihood Estimate","notes":"Under independent isotropic Gaussian measurement noise, the negative log likelihood is exactly the sum of squared geometric reprojection errors. So minimising geometric error is the maximum-likelihood estimate. The gold-standard algorithm initialises with normalized DLT, then iteratively refines using Levenberg-Marquardt over the homography and corrected points."},
+{"slide":9,"label":"Robust Estimation: RANSAC","notes":"Real correspondences contain mismatches that no least-squares cost can survive. RANSAC repeatedly draws a minimal sample of four matches, fits a homography, and counts inliers agreeing within a pixel threshold. The model with the largest support wins, and the homography is then refined on its inlier set."},
+{"slide":10,"label":"Choosing the RANSAC Threshold","notes":"The inlier threshold must match the expected localization noise. Set it too small and good matches are rejected; too large and outliers are admitted. The required sample count grows with the outlier fraction, so the probability of drawing one all-inlier minimal set drives the adaptive iteration budget."},
+{"slide":11,"label":"Degenerate Configurations","notes":"Four points define a homography only if no three are collinear; nearly collinear or tightly clustered points give an ill-conditioned design even when algebraically solvable. RANSAC samples can also be degenerate, fitting a spurious map. Detecting and rejecting these configurations protects both the linear solver and the robust estimator."},
+{"slide":12,"label":"The Estimation Workflow","notes":"Putting it together: normalized DLT gives a conditioned linear initialization, RANSAC isolates a coherent inlier set when matches are contaminated, and maximum-likelihood refinement minimises pixel reprojection error from that start. Always compare homographies by their action on points, never by raw matrix entries, since the map is scale-free."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Estimating a 2D Homography">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h1>Estimation: 2D Projective Transformations</h1>
+<p class="lead">Recovering a homography $H$ from noisy point correspondences</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The setup</h3><p>Two images of a plane, linked by $x' = Hx$. We observe matches, not $H$.</p></div>
+<div class="panel teal"><h3>The route</h3><p>DLT &rarr; normalization &rarr; geometric cost &rarr; ML refinement &rarr; RANSAC.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 420 220" width="100%" role="img" aria-label="Two image planes joined by a homography mapping a point to its correspondent">
+<rect x="14" y="34" width="170" height="150" fill="#eff6ff" stroke="#CBD5E1"/>
+<rect x="236" y="34" width="170" height="150" fill="#f0fdfa" stroke="#CBD5E1"/>
+<text x="20" y="28" font-size="15" fill="#2563EB">image 1</text>
+<text x="242" y="28" font-size="15" fill="#0F766E">image 2</text>
+<circle cx="70" cy="100" r="5" fill="#2563EB"/><text x="50" y="95" font-size="14" fill="#2563EB">x</text>
+<circle cx="320" cy="130" r="5" fill="#0F766E"/><text x="328" y="126" font-size="14" fill="#0F766E">x'</text>
+<path d="M76 100 C 160 60, 250 90, 314 128" fill="none" stroke="#6D28D9" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="170" y="70" font-size="16" fill="#6D28D9">H</text>
+</svg><figcaption class="small">A correspondence $x \leftrightarrow x'$ constrains the unknown map $H$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Estimating a 2D Homography</span></div>
+<aside class="speaker-notes">This chapter, spanning printed pages 87 through 131, asks one question: given noisy point matches between two images of a plane, recover the homography that relates them. We preview the route from the linear DLT solver, through normalization and geometric cost, to maximum-likelihood refinement and robust RANSAC estimation.</aside>
+</section>
+
+<section class="slide alt" data-label="The Estimation Problem">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>The Estimation Problem</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Nine entries, eight DoF</h3><p>$H$ is defined only up to scale, so one entry is redundant.</p></div>
+<div class="panel amber"><h3>Minimal data</h3><p>Four general correspondences fix $H$ exactly.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Projective map</div><p class="formula">$$x' = H x, \qquad H \in \mathbb{P}^{8}$$</p></div>
+<div class="panel teal"><h3>Over-determined</h3><p>More matches than needed plus noise &rarr; minimise a cost.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>The Estimation Problem</span></div>
+<aside class="speaker-notes">A planar projective map is a three by three matrix acting on homogeneous coordinates. It has nine entries but only eight degrees of freedom because overall scale is irrelevant. Four general correspondences fix it exactly; with more, noisy matches, we must minimise some cost and choose which one carefully.</aside>
+</section>
+
+<section class="slide" data-label="DLT: Cross-Product Constraint">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>DLT: The Cross-Product Constraint</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Parallel vectors</h3><p>$x'$ and $Hx$ are equal up to scale, hence collinear.</p></div>
+<div class="panel violet"><h3>Two of three</h3><p>The cross product gives three scalar rows; only two are independent.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Linear in $h$</div><p class="formula">$$x' \times H x = 0$$</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Row block</div><p class="formula">$\begin{bmatrix} -x^\top & 0 & u\,x^\top \\ 0 & -x^\top & v\,x^\top \end{bmatrix} h = 0$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>DLT: Cross-Product Constraint</span></div>
+<aside class="speaker-notes">Each correspondence forces the image point and the mapped point to be parallel as homogeneous vectors, so their cross product vanishes. Expanding that cross product gives three scalar equations linear in the entries of H, of which only two are independent. This is the algebraic heart of the Direct Linear Transformation.</aside>
+</section>
+
+<section class="slide alt" data-label="Stacking Rows and SVD">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>Stack the Rows, Solve by SVD</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Design matrix</h3><p>Two rows per match stack into $A$; seek $A h = 0$.</p></div>
+<div class="panel teal"><h3>Null vector</h3><p>Exact data &rarr; rank $8$, a one-dimensional nullspace.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Solution</div><p class="formula">$\hat h = $ last right singular vector of $A$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Singular value spectrum of the DLT matrix showing a sharp drop at index nine">
+<line x1="50" y1="20" x2="50" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="50" y1="190" x2="360" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<text x="14" y="30" font-size="14" fill="#475569">&sigma;</text>
+<text x="320" y="210" font-size="14" fill="#475569">index</text>
+<rect x="62" y="40" width="20" height="150" fill="#2563EB"/>
+<rect x="92" y="55" width="20" height="135" fill="#2563EB"/>
+<rect x="122" y="70" width="20" height="120" fill="#2563EB"/>
+<rect x="152" y="86" width="20" height="104" fill="#2563EB"/>
+<rect x="182" y="100" width="20" height="90" fill="#2563EB"/>
+<rect x="212" y="116" width="20" height="74" fill="#2563EB"/>
+<rect x="242" y="132" width="20" height="58" fill="#2563EB"/>
+<rect x="272" y="150" width="20" height="40" fill="#2563EB"/>
+<rect x="302" y="184" width="20" height="6" fill="#B45309"/>
+<text x="296" y="180" font-size="13" fill="#B45309">&sigma;&#8329;&#8776;0</text>
+<path d="M333 184 L 314 184" fill="none" stroke="#6D28D9" stroke-width="1.6" marker-end="url(#ah)"/>
+<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#6D28D9"/></marker></defs>
+<text x="332" y="150" font-size="13" fill="#6D28D9">null h</text>
+</svg><figcaption class="small">The smallest singular value collapses: its vector is $\hat h$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Stacking Rows and SVD</span></div>
+<aside class="speaker-notes">Two independent rows per match stack into a design matrix A, and we seek the vector h with A h equal to zero. With exact data the matrix has rank eight and a one-dimensional nullspace. The singular value decomposition returns that null vector as the right singular vector of smallest singular value.</aside>
+</section>
+
+<section class="slide" data-label="Data Normalization">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>Data Normalization Is Essential</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The pathology</h3><p>Raw pixels mix entries near $1$ with products near $10^6$.</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Hartley recipe</div><p class="formula">centroid $\to 0$, &nbsp; mean dist $\to \sqrt{2}$</p></div>
+<div class="panel teal"><h3>Coordinates, not geometry</h3><p>Similarity $T$; denormalize with $\tilde H = T'^{-1} H T$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="A spread point cloud recentred and rescaled to a circle of radius root two">
+<line x1="40" y1="120" x2="360" y2="120" stroke="#CBD5E1"/><line x1="120" y1="20" x2="120" y2="220" stroke="#CBD5E1"/>
+<circle cx="60" cy="50" r="4" fill="#94A3B8"/><circle cx="92" cy="40" r="4" fill="#94A3B8"/><circle cx="78" cy="70" r="4" fill="#94A3B8"/><circle cx="105" cy="62" r="4" fill="#94A3B8"/>
+<text x="52" y="30" font-size="13" fill="#94A3B8">raw cloud</text>
+<circle cx="245" cy="120" r="58" fill="none" stroke="#0F766E" stroke-width="2" stroke-dasharray="5 4"/>
+<circle cx="220" cy="100" r="5" fill="#2563EB"/><circle cx="280" cy="118" r="5" fill="#2563EB"/><circle cx="240" cy="160" r="5" fill="#2563EB"/><circle cx="270" cy="92" r="5" fill="#2563EB"/><circle cx="208" cy="142" r="5" fill="#2563EB"/>
+<circle cx="245" cy="120" r="3" fill="#B45309"/>
+<text x="290" y="70" font-size="13" fill="#0F766E">r=&radic;2</text>
+<path d="M150 70 C 185 70, 200 100, 215 110" fill="none" stroke="#6D28D9" stroke-width="2" marker-end="url(#ah2)"/>
+<defs><marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#6D28D9"/></marker></defs>
+<text x="158" y="60" font-size="13" fill="#6D28D9">normalize</text>
+</svg><figcaption class="small">Centre and rescale; condition number drops sharply.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Data Normalization</span></div>
+<aside class="speaker-notes">Raw pixel DLT mixes entries near one with products near a million, wrecking conditioning. Hartley normalization translates each point cloud to its centroid and scales it so the mean distance from the origin equals root two. This similarity changes coordinates, not geometry, yet dramatically improves the numerical nullspace problem.</aside>
+</section>
+
+<section class="slide alt" data-label="Algebraic vs Geometric Error">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>Algebraic vs Geometric Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Algebraic</h3><p>$\|A h\|$ &mdash; what DLT minimises. Units are not pixels.</p></div>
+<div class="panel teal"><h3>Geometric</h3><p>Reprojection distance in the image plane, in pixels.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Caution</div><p class="formula">small $\|Ah\|$ $\;\not\Rightarrow\;$ small pixel error</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="A measured point and its projected point separated by a residual distance">
+<rect x="20" y="24" width="340" height="180" fill="#f8fafc" stroke="#CBD5E1"/>
+<circle cx="150" cy="110" r="6" fill="#0F766E"/><text x="118" y="106" font-size="14" fill="#0F766E">x' (measured)</text>
+<circle cx="240" cy="150" r="6" fill="#2563EB"/><text x="250" y="150" font-size="14" fill="#2563EB">Hx (projected)</text>
+<line x1="156" y1="113" x2="234" y2="147" stroke="#B45309" stroke-width="2.5"/>
+<text x="178" y="118" font-size="14" fill="#B45309">d (geometric)</text>
+</svg><figcaption class="small">Geometric error is the residual $d(x', Hx)$ in image space.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Algebraic vs Geometric Error</span></div>
+<aside class="speaker-notes">DLT minimises the algebraic residual, the norm of A h, whose units are not pixels. The geometric error instead measures reprojection distance in the image plane, where the points actually live. The two disagree, and a small algebraic residual is no guarantee of small pixel error before normalization.</aside>
+</section>
+
+<section class="slide" data-label="Reprojection and Sampson Error">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>Reprojection and Sampson Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Symmetric transfer</h3><p>Sum residuals in both images at once.</p></div>
+<div class="panel teal"><h3>Reprojection</h3><p>Estimate corrected $\hat x, \hat x'$ that lie exactly on $H$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Symmetric cost</div><p class="formula">$$\textstyle\sum_i d(x_i, H^{-1}x_i')^2 + d(x_i', Hx_i)^2$$</p></div>
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Sampson</div><p class="formula">first-order approx of geometric error</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Reprojection and Sampson Error</span></div>
+<aside class="speaker-notes">Symmetric transfer error sums squared distances in both images. The reprojection error also estimates corrected points lying exactly on the map. The Sampson error is a first-order approximation of that geometric cost, cheap to compute yet far closer to the true geometric distance than the raw algebraic residual.</aside>
+</section>
+
+<section class="slide alt" data-label="Maximum Likelihood Estimate">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>The Maximum Likelihood Estimate</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Noise model</h3><p>Independent isotropic Gaussian measurement error.</p></div>
+<div class="panel teal"><h3>Gold standard</h3><p>Normalized DLT init, then Levenberg&ndash;Marquardt refinement.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">ML = geometric error</div><p class="formula">$$\hat H = \arg\min_H \sum_i d(x_i', Hx_i)^2$$</p></div>
+<div class="panel blue"><h3>Why iterate</h3><p>The cost is nonlinear; DLT seeds a good basin.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Maximum Likelihood Estimate</span></div>
+<aside class="speaker-notes">Under independent isotropic Gaussian measurement noise, the negative log likelihood is exactly the sum of squared geometric reprojection errors. So minimising geometric error is the maximum-likelihood estimate. The gold-standard algorithm initialises with normalized DLT, then iteratively refines using Levenberg-Marquardt over the homography and corrected points.</aside>
+</section>
+
+<section class="slide" data-label="Robust Estimation: RANSAC">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>Robust Estimation with RANSAC</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The problem</h3><p>Mismatches break every least-squares cost.</p></div>
+<div class="panel blue"><h3>The idea</h3><p>Sample $4$ matches, fit $H$, count inliers within a band.</p></div>
+<div class="panel teal"><h3>Winner</h3><p>Largest support set; then refine on its inliers.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="A fitted model line with inliers inside a threshold band and outliers outside it">
+<line x1="30" y1="180" x2="350" y2="60" stroke="#2563EB" stroke-width="2.5"/>
+<line x1="30" y1="200" x2="350" y2="80" stroke="#0F766E" stroke-width="1.4" stroke-dasharray="5 4"/>
+<line x1="30" y1="160" x2="350" y2="40" stroke="#0F766E" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="250" y="58" font-size="13" fill="#0F766E">threshold band</text>
+<circle cx="80" cy="158" r="5" fill="#0F766E"/><circle cx="130" cy="138" r="5" fill="#0F766E"/><circle cx="180" cy="118" r="5" fill="#0F766E"/><circle cx="230" cy="100" r="5" fill="#0F766E"/><circle cx="280" cy="82" r="5" fill="#0F766E"/>
+<circle cx="120" cy="56" r="5" fill="#B45309"/><circle cx="210" cy="190" r="5" fill="#B45309"/><circle cx="300" cy="160" r="5" fill="#B45309"/>
+<text x="120" y="48" font-size="12" fill="#B45309">outlier</text>
+<text x="60" y="178" font-size="12" fill="#0F766E">inliers</text>
+</svg><figcaption class="small">Inliers (teal) fall inside the band; outliers (amber) do not.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Robust Estimation: RANSAC</span></div>
+<aside class="speaker-notes">Real correspondences contain mismatches that no least-squares cost can survive. RANSAC repeatedly draws a minimal sample of four matches, fits a homography, and counts inliers agreeing within a pixel threshold. The model with the largest support wins, and the homography is then refined on its inlier set.</aside>
+</section>
+
+<section class="slide alt" data-label="Choosing the RANSAC Threshold">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>Threshold and Iteration Budget</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Threshold</h3><p>Too small rejects good matches; too large admits outliers.</p></div>
+<div class="panel blue"><h3>Match the noise</h3><p>Set the band to expected localization error.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Adaptive trials</div><p class="formula">$$N = \frac{\log(1-p)}{\log\!\big(1-(1-\epsilon)^{4}\big)}$$</p></div>
+<div class="panel teal"><h3>Reading it</h3><p>$\epsilon$ outlier rate, $p$ success target; $N$ grows with $\epsilon$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Choosing the RANSAC Threshold</span></div>
+<aside class="speaker-notes">The inlier threshold must match the expected localization noise. Set it too small and good matches are rejected; too large and outliers are admitted. The required sample count grows with the outlier fraction, so the probability of drawing one all-inlier minimal set drives the adaptive iteration budget.</aside>
+</section>
+
+<section class="slide" data-label="Degenerate Configurations">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>Degenerate Configurations</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Collinearity</h3><p>No three of the four points may lie on a line.</p></div>
+<div class="panel violet"><h3>Clustering</h3><p>Tightly bunched points give an ill-conditioned design.</p></div>
+<div class="panel blue"><h3>Bad samples</h3><p>A degenerate RANSAC draw fits a spurious map.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Four well-spread points versus three nearly collinear points">
+<rect x="20" y="20" width="160" height="190" fill="#f0fdfa" stroke="#CBD5E1"/>
+<text x="40" y="40" font-size="13" fill="#0F766E">well-posed</text>
+<circle cx="55" cy="80" r="5" fill="#0F766E"/><circle cx="150" cy="70" r="5" fill="#0F766E"/><circle cx="60" cy="180" r="5" fill="#0F766E"/><circle cx="150" cy="175" r="5" fill="#0F766E"/>
+<rect x="200" y="20" width="160" height="190" fill="#fffbeb" stroke="#CBD5E1"/>
+<text x="220" y="40" font-size="13" fill="#B45309">degenerate</text>
+<line x1="215" y1="70" x2="345" y2="180" stroke="#B45309" stroke-width="1.4" stroke-dasharray="4 3"/>
+<circle cx="225" cy="78" r="5" fill="#B45309"/><circle cx="280" cy="124" r="5" fill="#B45309"/><circle cx="335" cy="172" r="5" fill="#B45309"/><circle cx="250" cy="60" r="5" fill="#6D28D9"/>
+</svg><figcaption class="small">Three collinear points cannot constrain a homography.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>Degenerate Configurations</span></div>
+<aside class="speaker-notes">Four points define a homography only if no three are collinear; nearly collinear or tightly clustered points give an ill-conditioned design even when algebraically solvable. RANSAC samples can also be degenerate, fitting a spurious map. Detecting and rejecting these configurations protects both the linear solver and the robust estimator.</aside>
+</section>
+
+<section class="slide alt" data-label="The Estimation Workflow">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 04</span></div>
+<h2>The Full Estimation Workflow</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>1. Normalized DLT</h3><p>Conditioned linear initialization.</p></div>
+<div class="panel amber"><h3>2. RANSAC</h3><p>Isolate a coherent inlier set under contamination.</p></div>
+<div class="panel teal"><h3>3. ML refine</h3><p>Minimise pixel reprojection error from that seed.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Golden rule</div><p class="formula">compare $H$ by action on points, not entries</p></div>
+<div class="panel violet"><h3>Scale-free</h3><p>$H$ and $\lambda H$ are the same map; normalize before comparing.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 87-131</span><span>The Estimation Workflow</span></div>
+<aside class="speaker-notes">Putting it together: normalized DLT gives a conditioned linear initialization, RANSAC isolates a coherent inlier set when matches are contaminated, and maximum-likelihood refinement minimises pixel reprojection error from that start. Always compare homographies by their action on points, never by raw matrix entries, since the map is scale-free.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
