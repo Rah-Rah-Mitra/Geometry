@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-06">
+<meta name="chapter_title" content="Chapter 06: Camera Models">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-01-camera-geometry-and-single-view-geometry/chapter-06-camera-models/06-camera-models.ipynb">
+<meta name="source_span" content="printed pages 153-177; PDF pages 171-195.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 06: Camera Models</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-06","chapter_title":"Chapter 06: Camera Models","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-01-camera-geometry-and-single-view-geometry/chapter-06-camera-models/06-camera-models.ipynb","source_span":"printed pages 153-177; PDF pages 171-195.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Camera Models","notes":"This chapter, printed pages 153 through 177, builds the projective camera from scratch. We treat the camera as a single three by four matrix that maps homogeneous world points to homogeneous image points, then spend the rest of the lecture reading geometry directly off that matrix and its blocks."},
+{"slide":2,"label":"The Basic Pinhole Camera","notes":"Start with the central projection idea. A world point, the camera center, and the image point are collinear, so similar triangles give the focal-length scaling. Writing this in homogeneous coordinates linearizes the nonlinear division by depth, which is the whole reason projective coordinates earn their keep here."},
+{"slide":3,"label":"The Camera Matrix P = K[R | t]","notes":"Here is the master equation. The full finite camera factors into a calibration matrix times a rigid motion. K holds everything internal to the sensor, while R and t encode where the camera sits and how it points. Every later camera model is a constrained special case of this factorization."},
+{"slide":4,"label":"Intrinsics: The Calibration Matrix K","notes":"K is upper triangular and carries five degrees of freedom: two focal lengths in pixel units, the principal point offset, and skew. Skew is nearly zero for real CCD sensors. Aspect ratio is the ratio of the two focal entries. These parameters live entirely in the image plane and ignore world pose."},
+{"slide":5,"label":"Extrinsics: Pose R and t","notes":"The extrinsics place the camera in the world. R rotates world axes into the camera frame, and the translation satisfies t equals minus R times C. Emphasize that t is not the camera position; you must invert the rotation to recover the center C, a common source of sign and frame confusion."},
+{"slide":6,"label":"The Camera Center","notes":"The camera center is the unique point the camera cannot see, and algebraically it is the right null vector of P. Because P has rank three, its null space is one-dimensional, giving exactly one center up to scale. We verify this numerically: P times the homogeneous center returns the zero vector."},
+{"slide":7,"label":"Principal Plane, Axis, and Point","notes":"Read the rows of P geometrically. The third row is the principal plane through the center, parallel to the image plane. Its left three entries give the principal axis direction. The principal axis pierces the image plane at the principal point, which is also where the optical axis meets the sensor."},
+{"slide":8,"label":"Columns and Rows of P","notes":"The columns are vanishing points of the world coordinate axes, and the fourth column is the image of the world origin. The rows are world planes: two through image axes and one principal plane. Knowing this lets you sketch a camera's behavior without ever multiplying it out fully."},
+{"slide":9,"label":"Forward Projection x = PX","notes":"Forward projection is one matrix multiply followed by a homogeneous divide. Scaling the world point or the matrix does not change the image point, because both live in projective space. We confirm scale invariance numerically: projecting X and seven point five times X yields the identical pixel."},
+{"slide":10,"label":"Back-Projection to a Ray","notes":"A single image point does not fix depth, so back-projection returns a ray, not a point. The ray passes through the camera center and the back-projected point given by the pseudo-inverse of P. This one-to-many inverse is exactly why a second view is needed to triangulate structure."},
+{"slide":11,"label":"Cameras at Infinity: Affine Models","notes":"Push the camera center to infinity and perspective division disappears. The result is the affine camera family: orthographic, weak perspective, and para-perspective. Their bottom row is fixed at zero zero zero one, so parallel world lines stay parallel in the image. They are linear approximations valid for shallow, distant scenes."},
+{"slide":12,"label":"Synthesis and Checks","notes":"Close by tying the algebra to runnable invariants from the notebook. The center sits in the null space, the block product reconstructs P up to scale, projection is scale invariant, and affine projection preserves parallel directions while perspective does not. Each claim is carried by a residual, not just by prose."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Camera Models">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h1>Camera Models</h1>
+<p class="lead">The finite projective camera and its matrix $P = K[R \mid t]$</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>One matrix</h3><p>A $3\times 4$ map from homogeneous world points to image points.</p></div>
+<div class="panel teal"><h3>Two halves</h3><p>Intrinsics $K$ inside the sensor; extrinsics $R,t$ in the world.</p></div>
+<div class="panel amber"><h3>Read the geometry</h3><p>Center, principal plane, axis, and point come straight from $P$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="A camera center projecting a world point onto an image plane">
+<rect x="0" y="0" width="380" height="240" fill="#f8fafc"/>
+<rect x="120" y="60" width="120" height="90" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<line x1="40" y1="105" x2="340" y2="105" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5 4"/>
+<circle cx="55" cy="105" r="6" fill="#B45309"/>
+<text x="40" y="95" font-size="14" fill="#B45309">C</text>
+<circle cx="320" cy="60" r="6" fill="#0F766E"/>
+<text x="328" y="58" font-size="14" fill="#0F766E">X</text>
+<line x1="55" y1="105" x2="320" y2="60" stroke="#6D28D9" stroke-width="2"/>
+<circle cx="180" cy="83" r="5" fill="#6D28D9"/>
+<text x="186" y="80" font-size="14" fill="#6D28D9">x</text>
+<text x="150" y="170" font-size="14" fill="#2563EB">image plane</text>
+</svg><figcaption class="small">Central projection: $C$, image plane, and $x = PX$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Camera Models</span></div>
+<aside class="speaker-notes">This chapter, printed pages 153 through 177, builds the projective camera from scratch. We treat the camera as a single three by four matrix that maps homogeneous world points to homogeneous image points, then spend the rest of the lecture reading geometry directly off that matrix and its blocks.</aside>
+</section>
+
+<section class="slide alt" data-label="The Basic Pinhole Camera">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>The Basic Pinhole Camera</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Central projection</h3><p>Center $C$, world point $X$, and image $x$ are collinear.</p></div>
+<div class="panel teal"><h3>Similar triangles</h3><p>Depth $Z$ scales the projection; focal length $f$ sets the rate.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Pinhole map</div><p class="formula">$(X,Y,Z)^\top \mapsto (fX/Z,\; fY/Z)^\top$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Pinhole geometry with focal length f and depth Z">
+<rect x="0" y="0" width="380" height="240" fill="#fff"/>
+<line x1="40" y1="200" x2="360" y2="200" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="40" y1="40" x2="40" y2="200" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="40" cy="200" r="6" fill="#B45309"/><text x="20" y="215" font-size="14" fill="#B45309">C</text>
+<line x1="120" y1="40" x2="120" y2="200" stroke="#2563EB" stroke-width="2"/>
+<text x="92" y="55" font-size="13" fill="#2563EB">image</text>
+<circle cx="320" cy="70" r="6" fill="#0F766E"/><text x="328" y="68" font-size="14" fill="#0F766E">X</text>
+<line x1="40" y1="200" x2="320" y2="70" stroke="#6D28D9" stroke-width="2"/>
+<circle cx="120" cy="163" r="5" fill="#6D28D9"/><text x="126" y="160" font-size="13" fill="#6D28D9">x</text>
+<line x1="40" y1="225" x2="120" y2="225" stroke="#B45309" stroke-width="1.5"/><text x="68" y="238" font-size="13" fill="#B45309">f</text>
+<line x1="120" y1="218" x2="320" y2="218" stroke="#0F766E" stroke-width="1.5"/><text x="210" y="232" font-size="13" fill="#0F766E">Z</text>
+</svg><figcaption class="small">Similar triangles give the $f/Z$ scaling.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>The Basic Pinhole Camera</span></div>
+<aside class="speaker-notes">Start with the central projection idea. A world point, the camera center, and the image point are collinear, so similar triangles give the focal-length scaling. Writing this in homogeneous coordinates linearizes the nonlinear division by depth, which is the whole reason projective coordinates earn their keep here.</aside>
+</section>
+
+<section class="slide" data-label="The Camera Matrix P = K[R | t]">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>The Camera Matrix $P = K[R \mid t]$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Finite camera</div><p class="formula">$x = PX,\qquad P = K\,[\,R \mid t\,],\quad t = -RC$</p></div>
+<div class="panel teal"><h3>11 degrees of freedom</h3><p>Five in $K$, three in $R$, three in $C$ — $P$ is defined up to scale.</p></div>
+<div class="panel amber"><h3>Rank three</h3><p>The left $3\times 3$ block $M = KR$ is invertible for a finite camera.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Block decomposition of P into K, R and t">
+<rect x="0" y="0" width="380" height="240" fill="#f8fafc"/>
+<rect x="30" y="80" width="80" height="80" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="70" y="125" font-size="22" fill="#2563EB" text-anchor="middle">K</text>
+<text x="55" y="180" font-size="13" fill="#2563EB">intrinsics</text>
+<rect x="150" y="80" width="80" height="80" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<text x="190" y="125" font-size="22" fill="#0F766E" text-anchor="middle">R</text>
+<rect x="240" y="80" width="36" height="80" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="258" y="125" font-size="20" fill="#B45309" text-anchor="middle">t</text>
+<text x="165" y="180" font-size="13" fill="#0F766E">extrinsics</text>
+<text x="285" y="125" font-size="22" fill="#6D28D9">= P</text>
+<rect x="310" y="80" width="50" height="80" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/>
+<text x="335" y="125" font-size="20" fill="#6D28D9" text-anchor="middle">3×4</text>
+</svg><figcaption class="small">$K[R\mid t]$ assembles the $3\times4$ projective camera.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>The Camera Matrix</span></div>
+<aside class="speaker-notes">Here is the master equation. The full finite camera factors into a calibration matrix times a rigid motion. K holds everything internal to the sensor, while R and t encode where the camera sits and how it points. Every later camera model is a constrained special case of this factorization.</aside>
+</section>
+
+<section class="slide alt" data-label="Intrinsics: The Calibration Matrix K">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Intrinsics: The Calibration Matrix $K$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Upper triangular</div><p class="formula">$K = \begin{bmatrix} f_x & s & x_0 \\ 0 & f_y & y_0 \\ 0 & 0 & 1 \end{bmatrix}$</p></div>
+<div class="panel teal"><h3>Five parameters</h3><p>Focal lengths $f_x,f_y$; principal point $(x_0,y_0)$; skew $s$.</p></div>
+<div class="panel amber"><h3>Aspect &amp; skew</h3><p>Aspect ratio $=f_y/f_x$; skew $s\approx 0$ for real CCD sensors.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Image plane showing principal point, focal scaling and skew">
+<rect x="40" y="30" width="300" height="180" fill="#fff" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="40" y1="120" x2="340" y2="120" stroke="#CBD5E1" stroke-width="1"/>
+<line x1="190" y1="30" x2="190" y2="210" stroke="#CBD5E1" stroke-width="1"/>
+<circle cx="215" cy="100" r="6" fill="#2563EB"/>
+<text x="222" y="96" font-size="14" fill="#2563EB">(x₀, y₀)</text>
+<line x1="60" y1="190" x2="120" y2="190" stroke="#B45309" stroke-width="3"/>
+<text x="62" y="205" font-size="13" fill="#B45309">fₓ</text>
+<line x1="60" y1="190" x2="60" y2="150" stroke="#0F766E" stroke-width="3"/>
+<text x="30" y="172" font-size="13" fill="#0F766E">f_y</text>
+<line x1="270" y1="60" x2="300" y2="40" stroke="#6D28D9" stroke-width="2.5"/>
+<text x="280" y="35" font-size="13" fill="#6D28D9">skew s</text>
+</svg><figcaption class="small">$K$ parameters act on the image plane only.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>The Calibration Matrix</span></div>
+<aside class="speaker-notes">K is upper triangular and carries five degrees of freedom: two focal lengths in pixel units, the principal point offset, and skew. Skew is nearly zero for real CCD sensors. Aspect ratio is the ratio of the two focal entries. These parameters live entirely in the image plane and ignore world pose.</aside>
+</section>
+
+<section class="slide" data-label="Extrinsics: Pose R and t">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Extrinsics: Pose $R$ and $t$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">World to camera</div><p class="formula">$X_{\text{cam}} = R\,(X - C),\qquad t = -RC$</p></div>
+<div class="panel blue"><h3>Rotation $R$</h3><p>Orthonormal: world axes expressed in camera coordinates.</p></div>
+<div class="panel amber"><h3>Watch out</h3><p>$t$ is <em>not</em> the position; recover $C = -R^\top t$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="World frame and camera frame related by rotation and translation">
+<rect x="0" y="0" width="380" height="240" fill="#f8fafc"/>
+<line x1="60" y1="190" x2="140" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="60" y1="190" x2="60" y2="110" stroke="#CBD5E1" stroke-width="2"/>
+<text x="45" y="205" font-size="13" fill="#475569">world O</text>
+<circle cx="270" cy="90" r="6" fill="#B45309"/><text x="278" y="88" font-size="13" fill="#B45309">C</text>
+<line x1="270" y1="90" x2="330" y2="70" stroke="#2563EB" stroke-width="2.5"/>
+<line x1="270" y1="90" x2="250" y2="40" stroke="#0F766E" stroke-width="2.5"/>
+<text x="332" y="68" font-size="12" fill="#2563EB">x_c</text>
+<text x="232" y="38" font-size="12" fill="#0F766E">y_c</text>
+<line x1="60" y1="190" x2="270" y2="90" stroke="#6D28D9" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="150" y="130" font-size="13" fill="#6D28D9">R, t</text>
+</svg><figcaption class="small">$R,t$ relate the world frame to the camera frame.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Extrinsics</span></div>
+<aside class="speaker-notes">The extrinsics place the camera in the world. R rotates world axes into the camera frame, and the translation satisfies t equals minus R times C. Emphasize that t is not the camera position; you must invert the rotation to recover the center C, a common source of sign and frame confusion.</aside>
+</section>
+
+<section class="slide alt" data-label="The Camera Center">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>The Camera Center</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Null vector</div><p class="formula">$P\,C = 0,\qquad C = \text{right null space of } P$</p></div>
+<div class="panel blue"><h3>Unique</h3><p>$\operatorname{rank} P = 3$, so the null space is one-dimensional.</p></div>
+<div class="panel teal"><h3>Check</h3><p>Numerically $\lVert P\,C\rVert \approx 10^{-15}$ in the notebook lab.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="All rays converge at the camera center, the null vector of P">
+<rect x="0" y="0" width="380" height="240" fill="#fff"/>
+<circle cx="70" cy="120" r="8" fill="#B45309"/>
+<text x="40" y="115" font-size="14" fill="#B45309">C</text>
+<text x="42" y="148" font-size="12" fill="#475569">PC = 0</text>
+<line x1="70" y1="120" x2="340" y2="40" stroke="#6D28D9" stroke-width="1.8"/>
+<line x1="70" y1="120" x2="340" y2="90" stroke="#6D28D9" stroke-width="1.8"/>
+<line x1="70" y1="120" x2="340" y2="140" stroke="#6D28D9" stroke-width="1.8"/>
+<line x1="70" y1="120" x2="340" y2="200" stroke="#6D28D9" stroke-width="1.8"/>
+<circle cx="300" cy="55" r="5" fill="#0F766E"/>
+<circle cx="300" cy="98" r="5" fill="#0F766E"/>
+<circle cx="300" cy="135" r="5" fill="#0F766E"/>
+<circle cx="300" cy="183" r="5" fill="#0F766E"/>
+<text x="312" y="120" font-size="12" fill="#0F766E">scene</text>
+</svg><figcaption class="small">Every viewing ray passes through $C$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>The Camera Center</span></div>
+<aside class="speaker-notes">The camera center is the unique point the camera cannot see, and algebraically it is the right null vector of P. Because P has rank three, its null space is one-dimensional, giving exactly one center up to scale. We verify this numerically: P times the homogeneous center returns the zero vector.</aside>
+</section>
+
+<section class="slide" data-label="Principal Plane, Axis, and Point">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Principal Plane, Axis, and Point</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Principal plane</h3><p>Row $P^3$ is the plane through $C$ parallel to the image plane.</p></div>
+<div class="panel teal"><h3>Principal axis</h3><p>Direction $m^3$ (left part of $P^3$) points along the optical axis.</p></div>
+<div class="panel amber"><h3>Principal point</h3><p>$x_0 = M\,m^3$ — where the axis meets the image plane.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Principal plane, principal axis and principal point relative to the camera">
+<rect x="0" y="0" width="380" height="240" fill="#f8fafc"/>
+<circle cx="60" cy="120" r="6" fill="#B45309"/><text x="42" y="115" font-size="13" fill="#B45309">C</text>
+<line x1="60" y1="40" x2="60" y2="200" stroke="#2563EB" stroke-width="3"/>
+<text x="20" y="55" font-size="12" fill="#2563EB">principal plane</text>
+<line x1="60" y1="120" x2="340" y2="120" stroke="#0F766E" stroke-width="2.5" stroke-dasharray="7 4"/>
+<text x="250" y="112" font-size="12" fill="#0F766E">principal axis</text>
+<rect x="250" y="60" width="90" height="120" fill="#eff6ff" stroke="#2563EB" stroke-width="1.5" opacity="0.7"/>
+<circle cx="295" cy="120" r="5" fill="#6D28D9"/>
+<text x="300" y="115" font-size="12" fill="#6D28D9">x₀</text>
+<text x="260" y="195" font-size="12" fill="#475569">image plane</text>
+</svg><figcaption class="small">Axis pierces the image plane at $x_0$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Principal Geometry</span></div>
+<aside class="speaker-notes">Read the rows of P geometrically. The third row is the principal plane through the center, parallel to the image plane. Its left three entries give the principal axis direction. The principal axis pierces the image plane at the principal point, which is also where the optical axis meets the sensor.</aside>
+</section>
+
+<section class="slide alt" data-label="Columns and Rows of P">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Columns and Rows of $P$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Columns</div><p class="formula">$P = [\,p_1\;\; p_2\;\; p_3\;\; p_4\,]$</p></div>
+<div class="panel teal"><h3>Columns 1–3</h3><p>Vanishing points of the world $X,Y,Z$ axes.</p></div>
+<div class="panel amber"><h3>Column 4</h3><p>$p_4$ is the image of the world origin.</p></div>
+<div class="panel violet"><h3>Rows</h3><p>Three world planes; $P^3$ is the principal plane.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Image vanishing points as the projections of world axis directions">
+<rect x="40" y="30" width="300" height="180" fill="#fff" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="120" cy="150" r="5" fill="#6D28D9"/><text x="100" y="170" font-size="12" fill="#6D28D9">origin p₄</text>
+<line x1="120" y1="150" x2="320" y2="80" stroke="#2563EB" stroke-width="2"/>
+<circle cx="320" cy="80" r="5" fill="#2563EB"/><text x="300" y="72" font-size="12" fill="#2563EB">v_X (p₁)</text>
+<line x1="120" y1="150" x2="290" y2="190" stroke="#0F766E" stroke-width="2"/>
+<circle cx="290" cy="190" r="5" fill="#0F766E"/><text x="270" y="205" font-size="12" fill="#0F766E">v_Y (p₂)</text>
+<line x1="120" y1="150" x2="100" y2="50" stroke="#B45309" stroke-width="2"/>
+<circle cx="100" cy="50" r="5" fill="#B45309"/><text x="60" y="48" font-size="12" fill="#B45309">v_Z (p₃)</text>
+</svg><figcaption class="small">Columns of $P$ as axis vanishing points.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Columns and Rows</span></div>
+<aside class="speaker-notes">The columns are vanishing points of the world coordinate axes, and the fourth column is the image of the world origin. The rows are world planes: two through image axes and one principal plane. Knowing this lets you sketch a camera's behavior without ever multiplying it out fully.</aside>
+</section>
+
+<section class="slide" data-label="Forward Projection x = PX">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Forward Projection $x = PX$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">One multiply, one divide</div><p class="formula">$\tilde{x} = PX,\qquad (u,v) = (\tilde{x}_1/\tilde{x}_3,\; \tilde{x}_2/\tilde{x}_3)$</p></div>
+<div class="panel teal"><h3>Scale invariant</h3><p>$P(\lambda X)$ and $(\mu P)X$ give the same image point.</p></div>
+<div class="panel amber"><h3>Check</h3><p>Projecting $X$ and $7.5\,X$ yields the identical pixel.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Two scaled world points projecting to the same image pixel">
+<rect x="0" y="0" width="380" height="240" fill="#f8fafc"/>
+<circle cx="55" cy="200" r="6" fill="#B45309"/><text x="38" y="218" font-size="13" fill="#B45309">C</text>
+<line x1="55" y1="200" x2="340" y2="40" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5 4"/>
+<circle cx="200" cy="118" r="6" fill="#0F766E"/><text x="206" y="113" font-size="12" fill="#0F766E">X</text>
+<circle cx="300" cy="62" r="6" fill="#0F766E"/><text x="306" y="57" font-size="12" fill="#0F766E">7.5X</text>
+<line x1="150" y1="40" x2="150" y2="220" stroke="#2563EB" stroke-width="2"/>
+<circle cx="150" cy="147" r="6" fill="#6D28D9"/><text x="100" y="143" font-size="12" fill="#6D28D9">same x</text>
+<text x="120" y="235" font-size="12" fill="#2563EB">image plane</text>
+</svg><figcaption class="small">Homogeneous scale does not move the pixel.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Forward Projection</span></div>
+<aside class="speaker-notes">Forward projection is one matrix multiply followed by a homogeneous divide. Scaling the world point or the matrix does not change the image point, because both live in projective space. We confirm scale invariance numerically: projecting X and seven point five times X yields the identical pixel.</aside>
+</section>
+
+<section class="slide alt" data-label="Back-Projection to a Ray">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Back-Projection to a Ray</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Image point to ray</div><p class="formula">$X(\lambda) = P^{+}x + \lambda\,C$</p></div>
+<div class="panel blue"><h3>Not a point</h3><p>One pixel fixes a direction, not depth — depth is free.</p></div>
+<div class="panel teal"><h3>Through $C$</h3><p>The ray joins the center $C$ and the pseudo-inverse point $P^{+}x$.</p></div>
+<div class="panel amber"><h3>Why two views</h3><p>A second camera intersects rays to triangulate $X$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="A pixel back-projects to a ray of candidate world points">
+<rect x="0" y="0" width="380" height="240" fill="#fff"/>
+<circle cx="60" cy="170" r="6" fill="#B45309"/><text x="42" y="188" font-size="13" fill="#B45309">C</text>
+<line x1="130" y1="40" x2="130" y2="220" stroke="#2563EB" stroke-width="2"/>
+<circle cx="130" cy="120" r="5" fill="#6D28D9"/><text x="100" y="115" font-size="12" fill="#6D28D9">x</text>
+<line x1="60" y1="170" x2="350" y2="50" stroke="#0F766E" stroke-width="2.5"/>
+<circle cx="220" cy="98" r="4" fill="#0F766E"/>
+<circle cx="280" cy="73" r="4" fill="#0F766E"/>
+<circle cx="340" cy="48" r="4" fill="#0F766E"/>
+<text x="250" y="125" font-size="12" fill="#0F766E">candidate X(λ)</text>
+</svg><figcaption class="small">Back-projection yields a ray of depths.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Back-Projection</span></div>
+<aside class="speaker-notes">A single image point does not fix depth, so back-projection returns a ray, not a point. The ray passes through the camera center and the back-projected point given by the pseudo-inverse of P. This one-to-many inverse is exactly why a second view is needed to triangulate structure.</aside>
+</section>
+
+<section class="slide" data-label="Cameras at Infinity: Affine Models">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Cameras at Infinity: Affine Models</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Affine camera</div><p class="formula">$P_\infty = \begin{bmatrix} m_{11} & m_{12} & m_{13} & t_1 \\ m_{21} & m_{22} & m_{23} & t_2 \\ 0 & 0 & 0 & 1 \end{bmatrix}$</p></div>
+<div class="panel blue"><h3>Center at infinity</h3><p>Perspective division vanishes; projection becomes linear.</p></div>
+<div class="panel violet"><h3>The family</h3><p>Orthographic, weak perspective, para-perspective.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Affine projection keeps parallel rails parallel unlike perspective">
+<rect x="0" y="0" width="380" height="240" fill="#f8fafc"/>
+<text x="30" y="40" font-size="13" fill="#2563EB">perspective: rails meet</text>
+<line x1="40" y1="100" x2="180" y2="70" stroke="#2563EB" stroke-width="2"/>
+<line x1="40" y1="120" x2="180" y2="70" stroke="#2563EB" stroke-width="2"/>
+<circle cx="180" cy="70" r="4" fill="#B45309"/>
+<text x="30" y="170" font-size="13" fill="#0F766E">affine: rails stay parallel</text>
+<line x1="220" y1="190" x2="360" y2="160" stroke="#0F766E" stroke-width="2"/>
+<line x1="220" y1="210" x2="360" y2="180" stroke="#0F766E" stroke-width="2"/>
+<text x="250" y="120" font-size="12" fill="#6D28D9">l∞ → l∞</text>
+</svg><figcaption class="small">Affine projection preserves parallelism.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Affine Cameras</span></div>
+<aside class="speaker-notes">Push the camera center to infinity and perspective division disappears. The result is the affine camera family: orthographic, weak perspective, and para-perspective. Their bottom row is fixed at zero zero zero one, so parallel world lines stay parallel in the image. They are linear approximations valid for shallow, distant scenes.</aside>
+</section>
+
+<section class="slide alt" data-label="Synthesis and Checks">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 6</span></div>
+<h2>Synthesis and Checks</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Null space</h3><p>$PC=0$: center recovered with residual $\approx 10^{-15}$.</p></div>
+<div class="panel teal"><h3>Factorization</h3><p>$K[R\mid -RC]$ reconstructs $P$ up to scale; RQ recovers $K,R$.</p></div>
+<div class="panel amber"><h3>Scale</h3><p>Projection is invariant to homogeneous scale.</p></div>
+<div class="panel violet"><h3>Parallelism</h3><p>Affine keeps parallel directions; perspective does not.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Summary linking the camera matrix to four numerical invariants">
+<rect x="0" y="0" width="380" height="240" fill="#fff"/>
+<rect x="140" y="20" width="100" height="44" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/>
+<text x="190" y="48" font-size="18" fill="#6D28D9" text-anchor="middle">P = K[R|t]</text>
+<line x1="170" y1="64" x2="70" y2="120" stroke="#334155" stroke-width="1.5"/>
+<line x1="190" y1="64" x2="190" y2="120" stroke="#334155" stroke-width="1.5"/>
+<line x1="210" y1="64" x2="310" y2="120" stroke="#334155" stroke-width="1.5"/>
+<rect x="20" y="125" width="100" height="40" fill="#eff6ff" stroke="#2563EB" stroke-width="1.5"/><text x="70" y="150" font-size="12" fill="#2563EB" text-anchor="middle">PC = 0</text>
+<rect x="140" y="125" width="100" height="40" fill="#f0fdfa" stroke="#0F766E" stroke-width="1.5"/><text x="190" y="150" font-size="12" fill="#0F766E" text-anchor="middle">RQ → K,R</text>
+<rect x="260" y="125" width="100" height="40" fill="#fffbeb" stroke="#B45309" stroke-width="1.5"/><text x="310" y="150" font-size="12" fill="#B45309" text-anchor="middle">scale inv.</text>
+<rect x="140" y="185" width="100" height="40" fill="#f5f3ff" stroke="#6D28D9" stroke-width="1.5"/><text x="190" y="210" font-size="12" fill="#6D28D9" text-anchor="middle">parallel test</text>
+<line x1="190" y1="165" x2="190" y2="185" stroke="#334155" stroke-width="1.5"/>
+</svg><figcaption class="small">One matrix, four runnable invariants.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 153-177</span><span>Synthesis and Checks</span></div>
+<aside class="speaker-notes">Close by tying the algebra to runnable invariants from the notebook. The center sits in the null space, the block product reconstructs P up to scale, projection is scale invariant, and affine projection preserves parallel directions while perspective does not. Each claim is carried by a residual, not just by prose.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

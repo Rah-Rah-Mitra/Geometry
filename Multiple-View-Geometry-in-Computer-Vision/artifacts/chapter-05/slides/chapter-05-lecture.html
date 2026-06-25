@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-05">
+<meta name="chapter_title" content="Chapter 05: Algorithm Evaluation and Error Analysis">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-00-background-projective-geometry-transformations-and-estimation/chapter-05-algorithm-evaluation-and-error-analysis/05-algorithm-evaluation-and-error-analysis.ipynb">
+<meta name="source_span" content="printed pages 132-150; PDF pages 150-168.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 05: Algorithm Evaluation and Error Analysis</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-05","chapter_title":"Chapter 05: Algorithm Evaluation and Error Analysis","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-00-background-projective-geometry-transformations-and-estimation/chapter-05-algorithm-evaluation-and-error-analysis/05-algorithm-evaluation-and-error-analysis.ipynb","source_span":"printed pages 132-150; PDF pages 150-168.","source_pdf":"Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Evaluating Geometric Estimators","notes":"This chapter, printed pages 132 to 150, asks how good an estimated transformation really is. We separate two questions: how well the estimate fits the noisy data, and how close it sits to the truth. The whole lecture builds tools to measure error and propagate uncertainty."},
+{"slide":2,"label":"Residual versus Estimation Error","notes":"Stress that these two errors answer different questions. Residual compares the estimate against noisy measurements; estimation error compares it against the noise-free truth. Four correspondences interpolate perfectly, so residual is zero yet the transfer is noisy. Adding points raises the residual but constrains the truth, lowering estimation error."},
+{"slide":3,"label":"Measurement and Model Manifold","notes":"Set up the geometric picture. Measurements live in a high-dimensional space; the model manifold is every measurement reachable by some parameter vector. Maximum likelihood under Gaussian noise finds the nearest manifold point. This nearest-point view is what turns estimation into orthogonal projection on the following slide."},
+{"slide":4,"label":"Tangent-Plane Projection Identity","notes":"Explain the linearization. Replacing the curved manifold by its tangent plane makes maximum likelihood an orthogonal projection, so the measured-to-true vector splits into estimated-to-true plus measured-to-estimated legs that are perpendicular. Pythagoras then gives the squared-error identity the notebook verifies to machine precision, the backbone of the bounds."},
+{"slide":5,"label":"Performance Bounds","notes":"Walk through the bound formulas. With N measurements and d essential parameters, residual scales with the parameters projected away and estimation with the parameters kept. For one-image homography noise, N equals two n and d equals eight; the two-image case also estimates point positions, so d grows. Residual rises while estimation falls."},
+{"slide":6,"label":"Covariance by Forward Propagation","notes":"Introduce first-order propagation. A function f carries an input covariance to an output covariance through the Jacobian sandwich J Sigma J transpose. This forward rule is the workhorse: feed it the covariance of measurements or of homography entries and it returns the covariance of any derived quantity, such as a transferred point."},
+{"slide":7,"label":"Backward Propagation to Parameters","notes":"Contrast backward propagation. To get the covariance of estimated parameters we invert the information matrix J transpose Sigma inverse J. Because a homography is homogeneous, it has a scale null direction, so the information matrix is rank deficient and we take a pseudo-inverse. The notebook confirms the information rank is eight."},
+{"slide":8,"label":"Confidence Ellipses","notes":"Make covariance visual. The eigenvectors of a two-by-two covariance give the ellipse axes and its eigenvalues set their lengths; scaling by the chi-square quantile fixes the confidence level. Mahalanobis distance is the natural metric, and its square follows a chi-square law, so a chosen probability picks the ellipse radius directly."},
+{"slide":9,"label":"Transfer Covariance Under a Homography","notes":"Connect propagation to point transfer. The transfer Jacobian maps homography-entry covariance to a point covariance, J h Sigma h J h transpose. On the unit-circle correspondences the ellipses stay tight inside the support but balloon outside it; the radial uncertainty grows like root one plus r to the fourth, exposing extrapolation risk."},
+{"slide":10,"label":"Monte Carlo Covariance","notes":"Present Monte Carlo as the empirical audit. We perturb the data many times, re-estimate, and collect a cloud of outputs whose sample covariance we fit with an ellipse. It needs no Jacobian and so validates the linear theory, exposing bias, variance, and degeneracy that small-noise formulas might silently miss."},
+{"slide":11,"label":"Configuration Hides Degeneracy","notes":"Drive home the warning from the Monte Carlo run. Well-spread and nearly collinear layouts gave almost identical training residuals, yet the collinear probe-transfer covariance was tens of thousands of times larger. A small reprojection residual does not certify a reliable transformation; the point configuration governs covariance far more than the residual."},
+{"slide":12,"label":"Evaluation Workflow Recap","notes":"Close with the workflow. Always report residual and estimation error, propagate covariance to the quantity you will actually use, compare against the lower bound, and confirm with Monte Carlo across noise levels and configurations. Evaluation is geometric: residual, parameter covariance, and extrapolation each measure something different."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Evaluating Geometric Estimators">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h1>Algorithm Evaluation and Error Analysis</h1>
+<p class="lead">How good is an estimated transformation, and how uncertain?</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Measure the error</h3><p>Residual and estimation error are two distinct projections of the noise.</p></div>
+<div class="panel teal"><h3>Propagate uncertainty</h3><p>Carry covariance through the estimation map with the Jacobian.</p></div>
+<div class="panel amber"><h3>Audit empirically</h3><p>Monte Carlo trials confirm the small-noise theory survives.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="An estimated point with a confidence ellipse showing covariance">
+<rect x="0" y="0" width="380" height="240" fill="#eff6ff"/>
+<line x1="30" y1="210" x2="360" y2="210" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="40" y1="220" x2="40" y2="20" stroke="#CBD5E1" stroke-width="1.5"/>
+<ellipse cx="220" cy="120" rx="95" ry="48" transform="rotate(-22 220 120)" fill="#2563EB" fill-opacity="0.12" stroke="#2563EB" stroke-width="2"/>
+<circle cx="220" cy="120" r="5" fill="#6D28D9"/>
+<text x="232" y="116" font-size="15" fill="#6D28D9">estimate</text>
+<line x1="220" y1="120" x2="308" y2="84" stroke="#B45309" stroke-width="2"/>
+<text x="290" y="74" font-size="13" fill="#B45309">major axis</text>
+<text x="150" y="200" font-size="14" fill="#2563EB">confidence ellipse = covariance</text>
+</svg><figcaption class="small">An estimated image point carries a covariance, drawn as a confidence ellipse.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Evaluating Geometric Estimators</span></div>
+<aside class="speaker-notes">This chapter, printed pages 132 to 150, asks how good an estimated transformation really is. We separate two questions: how well the estimate fits the noisy data, and how close it sits to the truth. The whole lecture builds tools to measure error and propagate uncertainty.</aside>
+</section>
+
+<section class="slide alt" data-label="Residual versus Estimation Error">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Residual Error Is Not Estimation Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Residual error</h3><p>Estimate $\hat X$ versus the noisy measurement $X$. What the fit leaves behind.</p></div>
+<div class="panel amber"><h3>Estimation error</h3><p>Estimate $\hat X$ versus the noise-free truth $\bar X$. What we actually care about.</p></div>
+<div class="panel violet"><h3>The trap</h3><p>Four points interpolate exactly: zero residual, yet noisy transfer.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Two distances</div><p class="formula">$e_{\text{res}}=\lVert X-\hat X\rVert,\quad e_{\text{est}}=\lVert \bar X-\hat X\rVert$</p></div>
+<div class="panel teal"><h3>More data, opposite trends</h3><p>Extra correspondences raise the residual but constrain the truth, so estimation error falls.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Residual versus Estimation Error</span></div>
+<aside class="speaker-notes">Stress that these two errors answer different questions. Residual compares the estimate against noisy measurements; estimation error compares it against the noise-free truth. Four correspondences interpolate perfectly, so residual is zero yet the transfer is noisy. Adding points raises the residual but constrains the truth, lowering estimation error.</aside>
+</section>
+
+<section class="slide" data-label="Measurement and Model Manifold">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Measurement Space and the Model Manifold</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Measurement vector</h3><p>$X$ stacks all observed image coordinates into one high-dimensional point.</p></div>
+<div class="panel teal"><h3>Model manifold</h3><p>$\mathcal S_M$ is every $X$ reachable by some parameter vector $P$.</p></div>
+<div class="panel amber"><h3>Maximum likelihood</h3><p>Gaussian noise makes ML the nearest point of $\mathcal S_M$ to $X$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="A curved model manifold with a measurement projected to its nearest point">
+<rect x="0" y="0" width="380" height="250" fill="#f0fdfa"/>
+<path d="M30 190 Q150 60 350 130" fill="none" stroke="#0F766E" stroke-width="3"/>
+<text x="40" y="175" font-size="14" fill="#0F766E">model manifold S_M</text>
+<circle cx="250" cy="55" r="5" fill="#B45309"/>
+<text x="258" y="50" font-size="14" fill="#B45309">measurement X</text>
+<circle cx="232" cy="106" r="5" fill="#2563EB"/>
+<text x="150" y="120" font-size="14" fill="#2563EB">nearest point = ML estimate</text>
+<line x1="250" y1="55" x2="232" y2="106" stroke="#6D28D9" stroke-width="2" stroke-dasharray="5 4"/>
+</svg><figcaption class="small">ML estimation is projection of the measurement onto the model manifold.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Measurement and Model Manifold</span></div>
+<aside class="speaker-notes">Set up the geometric picture. Measurements live in a high-dimensional space; the model manifold is every measurement reachable by some parameter vector. Maximum likelihood under Gaussian noise finds the nearest manifold point. This nearest-point view is what turns estimation into orthogonal projection on the following slide.</aside>
+</section>
+
+<section class="slide alt" data-label="Tangent-Plane Projection Identity">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>The Tangent-Plane Projection Identity</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Linearize</h3><p>Replace the curved manifold by its tangent plane at the estimate.</p></div>
+<div class="panel violet"><h3>Orthogonality</h3><p>The residual leg is normal to the tangent; the estimation leg lies in it.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Pythagoras</div><p class="formula">$\lVert X-\bar X\rVert^2=\lVert X-\hat X\rVert^2+\lVert \hat X-\bar X\rVert^2$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Orthogonal decomposition of measurement noise into residual and estimation legs">
+<rect x="0" y="0" width="380" height="250" fill="#f5f3ff"/>
+<line x1="30" y1="180" x2="350" y2="180" stroke="#CBD5E1" stroke-width="2.5"/>
+<text x="250" y="200" font-size="13" fill="#94A3B8">tangent plane</text>
+<circle cx="90" cy="180" r="5" fill="#000000"/>
+<text x="60" y="172" font-size="13" fill="#111827">truth X&#772;</text>
+<circle cx="250" cy="180" r="5" fill="#2563EB"/>
+<text x="252" y="200" font-size="13" fill="#2563EB">estimate X&#770;</text>
+<circle cx="250" cy="70" r="5" fill="#B45309"/>
+<text x="258" y="66" font-size="13" fill="#B45309">measurement X</text>
+<line x1="90" y1="180" x2="250" y2="180" stroke="#2563EB" stroke-width="3"/>
+<text x="120" y="172" font-size="13" fill="#2563EB">estimation</text>
+<line x1="250" y1="180" x2="250" y2="70" stroke="#B45309" stroke-width="3"/>
+<text x="256" y="130" font-size="13" fill="#B45309">residual</text>
+<line x1="90" y1="180" x2="250" y2="70" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5 4"/>
+<rect x="238" y="168" width="12" height="12" fill="none" stroke="#6D28D9" stroke-width="1.5"/>
+</svg><figcaption class="small">The right angle gives the squared-error split verified to machine precision.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Tangent-Plane Projection Identity</span></div>
+<aside class="speaker-notes">Explain the linearization. Replacing the curved manifold by its tangent plane makes maximum likelihood an orthogonal projection, so the measured-to-true vector splits into estimated-to-true plus measured-to-estimated legs that are perpendicular. Pythagoras then gives the squared-error identity the notebook verifies to machine precision, the backbone of the bounds.</aside>
+</section>
+
+<section class="slide" data-label="Performance Bounds">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Lower Bounds for Residual and Estimation Error</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">General bound</div><p class="formula">$e_{\text{res}}\!\approx\!\sigma\sqrt{\tfrac{N-d}{N}},\quad e_{\text{est}}\!\approx\!\sigma\sqrt{\tfrac{d}{N}}$</p></div>
+<div class="panel blue"><h3>One-image noise</h3><p>$N=2n$ measurements, $d=8$ homography parameters.</p></div>
+<div class="panel amber"><h3>Two-image noise</h3><p>$N=4n$ and $d=2n+8$: point positions are estimated too.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Residual bound rising and estimation bound falling with number of correspondences">
+<rect x="0" y="0" width="380" height="250" fill="#eff6ff"/>
+<line x1="40" y1="210" x2="360" y2="210" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="40" y1="210" x2="40" y2="25" stroke="#CBD5E1" stroke-width="1.5"/>
+<text x="300" y="228" font-size="13" fill="#64748B">points n</text>
+<text x="6" y="40" font-size="13" fill="#64748B">RMS</text>
+<path d="M55 205 Q160 120 350 95" fill="none" stroke="#2563EB" stroke-width="3"/>
+<text x="250" y="85" font-size="13" fill="#2563EB">residual bound rises</text>
+<path d="M55 60 Q160 150 350 195" fill="none" stroke="#B45309" stroke-width="3"/>
+<text x="120" y="55" font-size="13" fill="#B45309">estimation bound falls</text>
+</svg><figcaption class="small">Complementary subspaces: residual climbs while estimation error shrinks.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Performance Bounds</span></div>
+<aside class="speaker-notes">Walk through the bound formulas. With N measurements and d essential parameters, residual scales with the parameters projected away and estimation with the parameters kept. For one-image homography noise, N equals two n and d equals eight; the two-image case also estimates point positions, so d grows. Residual rises while estimation falls.</aside>
+</section>
+
+<section class="slide alt" data-label="Covariance by Forward Propagation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Forward Propagation: the Jacobian Sandwich</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Linearize $f$</h3><p>Near the operating point, $f(X+\delta)\approx f(X)+J\delta$ with $J=\partial f/\partial X$.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Propagation law</div><p class="formula">$\Sigma_{f}=J\,\Sigma_{X}\,J^{\!\top}$</p></div>
+<div class="panel teal"><h3>Workhorse</h3><p>Maps any input covariance to the covariance of a derived quantity.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="An input covariance ellipse mapped through a function to an output ellipse">
+<rect x="0" y="0" width="380" height="250" fill="#f0fdfa"/>
+<ellipse cx="80" cy="130" rx="42" ry="42" fill="#2563EB" fill-opacity="0.14" stroke="#2563EB" stroke-width="2"/>
+<circle cx="80" cy="130" r="4" fill="#2563EB"/>
+<text x="40" y="200" font-size="13" fill="#2563EB">input &#931;_X</text>
+<path d="M135 130 H245" fill="none" stroke="#6D28D9" stroke-width="2.5" marker-end="url(#ar5)"/>
+<text x="150" y="118" font-size="14" fill="#6D28D9">f, Jacobian J</text>
+<ellipse cx="300" cy="120" rx="58" ry="26" transform="rotate(-28 300 120)" fill="#0F766E" fill-opacity="0.14" stroke="#0F766E" stroke-width="2"/>
+<circle cx="300" cy="120" r="4" fill="#0F766E"/>
+<text x="250" y="205" font-size="13" fill="#0F766E">output J&#931;_XJ&#7488;</text>
+<defs><marker id="ar5" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#6D28D9"/></marker></defs>
+</svg><figcaption class="small">A circular input covariance becomes a tilted, stretched output ellipse.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Covariance by Forward Propagation</span></div>
+<aside class="speaker-notes">Introduce first-order propagation. A function f carries an input covariance to an output covariance through the Jacobian sandwich J Sigma J transpose. This forward rule is the workhorse: feed it the covariance of measurements or of homography entries and it returns the covariance of any derived quantity, such as a transferred point.</aside>
+</section>
+
+<section class="slide" data-label="Backward Propagation to Parameters">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Backward Propagation to Estimated Parameters</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Information matrix</div><p class="formula">$\Sigma_{P}=\big(J^{\!\top}\Sigma_{X}^{-1}J\big)^{+}$</p></div>
+<div class="panel amber"><h3>Scale null space</h3><p>A homography is homogeneous, so one direction is unconstrained.</p></div>
+<div class="panel violet"><h3>Pseudo-inverse</h3><p>$J^{\!\top}\Sigma^{-1}J$ is rank deficient; use $(\cdot)^{+}$, not a plain inverse.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Notebook check</h3><p>The $9\times 9$ information matrix has rank exactly $8$ on four correspondences.</p></div>
+<div class="panel teal"><h3>Forward vs backward</h3><p>Forward sends $X\!\to\!f$; backward recovers parameter covariance from data covariance.</p></div>
+<figure class="diagram"><svg viewBox="0 0 380 150" width="100%" role="img" aria-label="A nine by nine matrix with one zero eigenvalue indicating rank eight">
+<rect x="0" y="0" width="380" height="150" fill="#eff6ff"/>
+<rect x="40" y="25" width="180" height="100" fill="none" stroke="#2563EB" stroke-width="2"/>
+<text x="60" y="80" font-size="16" fill="#2563EB">J&#7488;&#931;&#8315;&#185;J  (9&#215;9)</text>
+<text x="245" y="60" font-size="14" fill="#0F766E">8 positive</text>
+<text x="245" y="60" font-size="14" fill="#0F766E"></text>
+<text x="245" y="62" font-size="14" fill="#0F766E"></text>
+<text x="245" y="95" font-size="14" fill="#B45309">1 zero: scale</text>
+<line x1="225" y1="75" x2="240" y2="60" stroke="#0F766E" stroke-width="1.5"/>
+<line x1="225" y1="80" x2="240" y2="92" stroke="#B45309" stroke-width="1.5"/>
+</svg><figcaption class="small">Rank-8 information matrix: the missing eigenvalue is the homogeneous scale.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Backward Propagation to Parameters</span></div>
+<aside class="speaker-notes">Contrast backward propagation. To get the covariance of estimated parameters we invert the information matrix J transpose Sigma inverse J. Because a homography is homogeneous, it has a scale null direction, so the information matrix is rank deficient and we take a pseudo-inverse. The notebook confirms the information rank is eight.</aside>
+</section>
+
+<section class="slide alt" data-label="Confidence Ellipses">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Confidence Ellipses and Mahalanobis Distance</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Mahalanobis distance</div><p class="formula">$\delta^2=(x-\mu)^{\!\top}\Sigma^{-1}(x-\mu)\sim\chi^2_k$</p></div>
+<div class="panel blue"><h3>Axes from eigenvectors</h3><p>Eigenvectors of $\Sigma$ orient the ellipse; eigenvalues set axis lengths.</p></div>
+<div class="panel amber"><h3>Level from chi-square</h3><p>Radius $\sqrt{\chi^2_k(\alpha)}$ fixes the confidence probability.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="A covariance ellipse with eigenvector axes and chi-square confidence radius">
+<rect x="0" y="0" width="380" height="250" fill="#fffbeb"/>
+<ellipse cx="190" cy="125" rx="120" ry="60" transform="rotate(-25 190 125)" fill="#2563EB" fill-opacity="0.10" stroke="#2563EB" stroke-width="2"/>
+<ellipse cx="190" cy="125" rx="78" ry="39" transform="rotate(-25 190 125)" fill="none" stroke="#6D28D9" stroke-width="1.6" stroke-dasharray="5 4"/>
+<circle cx="190" cy="125" r="4" fill="#111827"/>
+<text x="196" y="122" font-size="13" fill="#111827">&#956;</text>
+<line x1="190" y1="125" x2="298" y2="74" stroke="#0F766E" stroke-width="2.5"/>
+<text x="262" y="66" font-size="13" fill="#0F766E">&#955;&#8321; axis</text>
+<line x1="190" y1="125" x2="165" y2="178" stroke="#B45309" stroke-width="2.5"/>
+<text x="120" y="190" font-size="13" fill="#B45309">&#955;&#8322; axis</text>
+<text x="60" y="40" font-size="13" fill="#6D28D9">68% region</text>
+<text x="250" y="220" font-size="13" fill="#2563EB">90% region</text>
+</svg><figcaption class="small">Nested ellipses: chi-square quantiles set each confidence level.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Confidence Ellipses</span></div>
+<aside class="speaker-notes">Make covariance visual. The eigenvectors of a two-by-two covariance give the ellipse axes and its eigenvalues set their lengths; scaling by the chi-square quantile fixes the confidence level. Mahalanobis distance is the natural metric, and its square follows a chi-square law, so a chosen probability picks the ellipse radius directly.</aside>
+</section>
+
+<section class="slide" data-label="Transfer Covariance Under a Homography">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Point-Transfer Covariance Under a Mapping</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Transfer covariance</div><p class="formula">$\Sigma_{x'}=J_h\,\Sigma_h\,J_h^{\!\top}$</p></div>
+<div class="panel blue"><h3>Inside the support</h3><p>On the unit-circle correspondences the ellipses stay tight.</p></div>
+<div class="panel amber"><h3>Extrapolation risk</h3><p>RMS uncertainty grows like $\sqrt{1+r^4}$ away from the center.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Small ellipses near the correspondences and large ellipses far away">
+<rect x="0" y="0" width="380" height="250" fill="#eff6ff"/>
+<circle cx="190" cy="125" r="62" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="5 4"/>
+<line x1="245" y1="125" x2="265" y2="125" stroke="#B45309" stroke-width="2.5"/>
+<line x1="135" y1="125" x2="115" y2="125" stroke="#B45309" stroke-width="2.5"/>
+<line x1="190" y1="70" x2="190" y2="50" stroke="#B45309" stroke-width="2.5"/>
+<line x1="190" y1="180" x2="190" y2="200" stroke="#B45309" stroke-width="2.5"/>
+<text x="150" y="120" font-size="12" fill="#94A3B8">support circle</text>
+<ellipse cx="190" cy="125" rx="9" ry="7" fill="#2563EB" fill-opacity="0.3" stroke="#2563EB" stroke-width="1.4"/>
+<ellipse cx="320" cy="55" rx="34" ry="16" transform="rotate(30 320 55)" fill="#6D28D9" fill-opacity="0.18" stroke="#6D28D9" stroke-width="1.6"/>
+<ellipse cx="55" cy="205" rx="34" ry="16" transform="rotate(30 55 205)" fill="#6D28D9" fill-opacity="0.18" stroke="#6D28D9" stroke-width="1.6"/>
+<text x="250" y="40" font-size="12" fill="#6D28D9">far probe: large ellipse</text>
+</svg><figcaption class="small">Uncertainty balloons outside the correspondences that defined the map.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Transfer Covariance Under a Homography</span></div>
+<aside class="speaker-notes">Connect propagation to point transfer. The transfer Jacobian maps homography-entry covariance to a point covariance, J h Sigma h J h transpose. On the unit-circle correspondences the ellipses stay tight inside the support but balloon outside it; the radial uncertainty grows like root one plus r to the fourth, exposing extrapolation risk.</aside>
+</section>
+
+<section class="slide alt" data-label="Monte Carlo Covariance">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>Monte Carlo: Covariance from a Cloud</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Perturb and re-estimate</h3><p>Add noise to the data, run the estimator, repeat many times.</p></div>
+<div class="panel teal"><h3>Fit the spread</h3><p>The sample covariance of the output cloud, fitted as an ellipse.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Empirical covariance</div><p class="formula">$\hat\Sigma=\tfrac{1}{M-1}\sum_{i}(x_i-\bar x)(x_i-\bar x)^{\!\top}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="A scattered cloud of estimates with a fitted covariance ellipse">
+<rect x="0" y="0" width="380" height="250" fill="#f0fdfa"/>
+<ellipse cx="195" cy="125" rx="105" ry="52" transform="rotate(-20 195 125)" fill="#0F766E" fill-opacity="0.10" stroke="#0F766E" stroke-width="2"/>
+<circle cx="150" cy="110" r="3" fill="#2563EB"/><circle cx="210" cy="140" r="3" fill="#2563EB"/><circle cx="180" cy="95" r="3" fill="#2563EB"/>
+<circle cx="240" cy="120" r="3" fill="#2563EB"/><circle cx="130" cy="135" r="3" fill="#2563EB"/><circle cx="265" cy="100" r="3" fill="#2563EB"/>
+<circle cx="200" cy="155" r="3" fill="#2563EB"/><circle cx="160" cy="150" r="3" fill="#2563EB"/><circle cx="225" cy="98" r="3" fill="#2563EB"/>
+<circle cx="120" cy="115" r="3" fill="#2563EB"/><circle cx="250" cy="145" r="3" fill="#2563EB"/><circle cx="190" cy="125" r="4" fill="#6D28D9"/>
+<text x="200" y="122" font-size="12" fill="#6D28D9">mean</text>
+<text x="70" y="40" font-size="13" fill="#0F766E">fitted ellipse matches Jacobian theory</text>
+</svg><figcaption class="small">A cloud of re-estimates; its fitted ellipse validates the analytic covariance.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Monte Carlo Covariance</span></div>
+<aside class="speaker-notes">Present Monte Carlo as the empirical audit. We perturb the data many times, re-estimate, and collect a cloud of outputs whose sample covariance we fit with an ellipse. It needs no Jacobian and so validates the linear theory, exposing bias, variance, and degeneracy that small-noise formulas might silently miss.</aside>
+</section>
+
+<section class="slide" data-label="Configuration Hides Degeneracy">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>A Small Residual Can Hide Degeneracy</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Well-spread layout</h3><p>Grid correspondences give a tight, near-isotropic transfer cloud.</p></div>
+<div class="panel amber"><h3>Nearly collinear layout</h3><p>Almost the same training residual, vastly larger transfer covariance.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Notebook result</div><p class="formula">$\dfrac{\operatorname{tr}\Sigma_{\text{collinear}}}{\operatorname{tr}\Sigma_{\text{spread}}}>10^{4}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="A compact ellipse for spread points beside a long thin ellipse for collinear points">
+<rect x="0" y="0" width="380" height="250" fill="#eff6ff"/>
+<ellipse cx="110" cy="125" rx="34" ry="28" fill="#2563EB" fill-opacity="0.16" stroke="#2563EB" stroke-width="2"/>
+<circle cx="110" cy="125" r="3" fill="#2563EB"/>
+<text x="60" y="190" font-size="13" fill="#2563EB">well spread</text>
+<ellipse cx="285" cy="120" rx="78" ry="13" transform="rotate(-38 285 120)" fill="#B45309" fill-opacity="0.16" stroke="#B45309" stroke-width="2"/>
+<circle cx="285" cy="120" r="3" fill="#B45309"/>
+<text x="240" y="200" font-size="13" fill="#B45309">near collinear</text>
+<text x="60" y="40" font-size="13" fill="#64748B">same residual, very different spread</text>
+</svg><figcaption class="small">Reprojection residual alone does not certify a reliable transformation.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Configuration Hides Degeneracy</span></div>
+<aside class="speaker-notes">Drive home the warning from the Monte Carlo run. Well-spread and nearly collinear layouts gave almost identical training residuals, yet the collinear probe-transfer covariance was tens of thousands of times larger. A small reprojection residual does not certify a reliable transformation; the point configuration governs covariance far more than the residual.</aside>
+</section>
+
+<section class="slide alt" data-label="Evaluation Workflow Recap">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 05</span></div>
+<h2>An Evaluation Workflow You Can Reuse</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Report both errors</h3><p>Residual and estimation RMS; a low residual alone is not enough.</p></div>
+<div class="panel teal"><h3>Propagate to the target</h3><p>Carry covariance to the transferred point, line, or triangulation you will use.</p></div>
+<div class="panel amber"><h3>Compare to the bound</h3><p>Benchmark the estimator against the tangent-plane lower bound.</p></div>
+<div class="panel violet"><h3>Audit with Monte Carlo</h3><p>Sweep noise levels and at least two configurations.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Three distinct rulers</div><p class="formula">$e_{\text{res}},\quad \Sigma_P=(J^{\!\top}\Sigma^{-1}J)^{+},\quad \Sigma_{x'}=J_h\Sigma_h J_h^{\!\top}$</p></div>
+<div class="panel teal"><h3>The core lesson</h3><p>Evaluation is geometric: residual, parameter covariance, and extrapolation each measure something different.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 132-150</span><span>Evaluation Workflow Recap</span></div>
+<aside class="speaker-notes">Close with the workflow. Always report residual and estimation error, propagate covariance to the quantity you will actually use, compare against the lower bound, and confirm with Monte Carlo across noise levels and configurations. Evaluation is geometric: residual, parameter covariance, and extrapolation each measure something different.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

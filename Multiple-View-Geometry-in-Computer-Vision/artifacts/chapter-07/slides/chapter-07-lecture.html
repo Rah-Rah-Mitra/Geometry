@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-07">
+<meta name="chapter_title" content="Chapter 07: Computation of the Camera Matrix P">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-01-camera-geometry-and-single-view-geometry/chapter-07-computation-of-the-camera-matrix-p/07-computation-of-the-camera-matrix-p.ipynb">
+<meta name="source_span" content="printed pages 178-194; PDF pages 196-212.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 07: Computation of the Camera Matrix P</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-07","chapter_title":"Chapter 07: Computation of the Camera Matrix P","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-01-camera-geometry-and-single-view-geometry/chapter-07-computation-of-the-camera-matrix-p/07-computation-of-the-camera-matrix-p.ipynb","source_span":"printed pages 178-194; PDF pages 196-212.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Computing the Camera Matrix P","notes":"This chapter, printed pages 178 through 194, attacks camera resectioning: recovering the projection matrix from known three dimensional points and their measured images. We frame P as a geometric object with a center, a rank, and reprojection residuals, not merely a list of twelve numbers, and preview the DLT estimate that anchors the chapter."},
+{"slide":2,"label":"The Resectioning Problem","notes":"Resectioning assumes a calibration object with accurately known world coordinates imaged to noisy pixel measurements. Each correspondence is one equation source. The goal is the homogeneous three by four matrix mapping world points to image points, defined only up to scale, so eleven degrees of freedom must be pinned down from the data."},
+{"slide":3,"label":"DLT Linear Equations","notes":"The Direct Linear Transformation turns each correspondence into two independent rows by exploiting that the image point and its projection are parallel, so their cross product vanishes. Stacking these rows builds the design matrix A, and the camera vector p lives in its null space, recovered by singular value decomposition."},
+{"slide":4,"label":"Minimal and Over-determined Solution","notes":"Eleven unknowns need at least five and a half correspondences, so six points in general position give an exact minimal solution. More points over-determine the system; the singular vector for the smallest singular value gives the algebraic least squares answer, which we then must judge in pixels rather than trust blindly."},
+{"slide":5,"label":"Data Normalization","notes":"Raw pixel and world coordinates span wildly different magnitudes, wrecking the conditioning of A. We translate each cloud to its centroid and scale so the mean distance is root two in two dimensions and root three in three dimensions, run DLT on normalized data, then denormalize the matrix. This step is essential, not cosmetic."},
+{"slide":6,"label":"Algebraic versus Geometric Error","notes":"The DLT minimizes the algebraic residual A p, which has no direct geometric meaning. What we actually care about is the geometric image error: the pixel distance between each measured point and its reprojection. Inspecting residual vectors, not just the residual norm, reveals whether errors are random noise or structured model failure."},
+{"slide":7,"label":"Gold Standard Refinement","notes":"The gold standard estimate refines the DLT seed by minimizing total squared reprojection error over all eleven parameters using iterative nonlinear least squares such as Levenberg Marquardt. Under Gaussian image noise this is the maximum likelihood estimate, and the algebraic DLT solution merely provides the starting point for that descent."},
+{"slide":8,"label":"Recovering K, R, t by RQ","notes":"A finite projective camera factors as K times R bracket minus R C. Its leading three by three block is an upper triangular calibration matrix times a rotation, so an RQ decomposition splits it into intrinsics K and orientation R. The camera center C follows as the right null vector of P, fixing the translation."},
+{"slide":9,"label":"Restricted Camera Estimation","notes":"When skew is zero, pixels are square, or aspect ratio is known, the general projective camera over-parametrizes the problem. Restricted estimation fits only the free physical parameters, typically by minimizing geometric error with those constraints enforced. The result is less flexible but more honest, exposing wrong intrinsics that a full P would silently absorb."},
+{"slide":10,"label":"Radial Distortion Correction","notes":"Real lenses bend straight lines, displacing points radially from the principal point by an amount growing toward the periphery. Forcing a pinhole model onto distorted data leaves a structured, radially patterned residual field rather than random scatter. We fit or correct the distortion coefficients first, then judge the remaining residual as genuine measurement noise."},
+{"slide":11,"label":"Calibration Lab Comparison","notes":"The notebook fits three models on one synthetic two plane target: full projective DLT, a known intrinsics solvePnP pose, and a deliberately limited affine camera. DLT and solvePnP reach sub pixel error near zero point six seven pixels, while the affine model fails on perspective depth, its large residuals exposing the missing structure directly."},
+{"slide":12,"label":"Recap and Checklist","notes":"Resectioning turns correspondences into a homogeneous system solved by SVD, but every estimate must be validated geometrically. Normalize before DLT, inspect pixel residuals, factor P by RQ to read intrinsics and pose, restrict parameters when physics is known, and remove radial distortion before declaring the remaining error to be noise."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Computing the Camera Matrix P">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h1>Computation of the Camera Matrix P</h1>
+<p class="lead">Camera resectioning: estimating $P$ from known 3D-to-2D correspondences</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The task</h3><p>Recover the $3\times4$ projection $P$ from points $\mathbf{X}_i \leftrightarrow \mathbf{x}_i$.</p></div>
+<div class="panel teal"><h3>The tools</h3><p>DLT linear estimate, then gold-standard geometric refinement.</p></div>
+<div class="panel amber"><h3>The check</h3><p>$P$ has a center, rank 3, and reprojection residuals to inspect.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="World points imaged through a camera center to the image plane">
+<rect x="0" y="0" width="380" height="230" fill="#eff6ff"/>
+<polygon points="40,40 110,30 110,150 40,160" fill="#0f766e" fill-opacity="0.12" stroke="#0F766E" stroke-width="2"/>
+<polygon points="110,30 150,55 150,175 110,150" fill="#0f766e" fill-opacity="0.18" stroke="#0F766E" stroke-width="2"/>
+<circle cx="62" cy="70" r="4" fill="#2563EB"/><circle cx="90" cy="120" r="4" fill="#2563EB"/><circle cx="128" cy="95" r="4" fill="#2563EB"/>
+<circle cx="330" cy="115" r="6" fill="#B45309"/><text x="310" y="108" font-size="14" fill="#B45309">C</text>
+<rect x="225" y="60" width="60" height="110" fill="#fff" stroke="#CBD5E1" stroke-width="2"/>
+<circle cx="246" cy="92" r="3" fill="#6D28D9"/><circle cx="258" cy="128" r="3" fill="#6D28D9"/><circle cx="270" cy="106" r="3" fill="#6D28D9"/>
+<line x1="62" y1="70" x2="330" y2="115" stroke="#475569" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="90" y1="120" x2="330" y2="115" stroke="#475569" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="128" y1="95" x2="330" y2="115" stroke="#475569" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="50" y="180" font-size="13" fill="#0F766E">3D target $\mathbf{X}_i$</text><text x="228" y="190" font-size="13" fill="#6D28D9">image $\mathbf{x}_i$</text>
+</svg><figcaption class="small">Known world points project through the camera to measured image points.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Computing the Camera Matrix P</span></div>
+<aside class="speaker-notes">This chapter, printed pages 178 through 194, attacks camera resectioning: recovering the projection matrix from known three dimensional points and their measured images. We frame P as a geometric object with a center, a rank, and reprojection residuals, not merely a list of twelve numbers, and preview the DLT estimate that anchors the chapter.</aside>
+</section>
+
+<section class="slide alt" data-label="The Resectioning Problem">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>The Resectioning Problem</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Given</h3><p>World points $\mathbf{X}_i$ on a calibration object and noisy image points $\mathbf{x}_i$.</p></div>
+<div class="panel teal"><h3>Sought</h3><p>The homogeneous matrix with $\mathbf{x}_i = P\,\mathbf{X}_i$.</p></div>
+<div class="panel amber"><h3>Degrees of freedom</h3><p>$P$ is defined up to scale: 12 entries, 11 free.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Projection</div><p class="formula">$$\mathbf{x}_i \simeq P\,\mathbf{X}_i, \quad P \in \mathbb{R}^{3\times4}$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Homogeneous scale</div><p class="formula">$$P \;\sim\; \lambda P, \quad \lambda \neq 0$$</p></div>
+<div class="panel violet"><h3>Why depth matters</h3><p>A single plane underconstrains a full projective camera; use depth relief.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>The Resectioning Problem</span></div>
+<aside class="speaker-notes">Resectioning assumes a calibration object with accurately known world coordinates imaged to noisy pixel measurements. Each correspondence is one equation source. The goal is the homogeneous three by four matrix mapping world points to image points, defined only up to scale, so eleven degrees of freedom must be pinned down from the data.</aside>
+</section>
+
+<section class="slide" data-label="DLT Linear Equations">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>The DLT Linear Equations</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Cross-product trick</h3><p>$\mathbf{x}_i \times P\mathbf{X}_i = \mathbf{0}$ because the vectors are parallel.</p></div>
+<div class="panel teal"><h3>Two rows each</h3><p>Each correspondence yields two independent linear equations in $\mathbf{p}$.</p></div>
+<div class="panel amber"><h3>Solve</h3><p>$\mathbf{p}$ is the null space of $A$, found by SVD.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Per-point equations</div><p class="formula">$$\begin{bmatrix} \mathbf{0}^\top & -w_i\mathbf{X}_i^\top & y_i\mathbf{X}_i^\top \\ w_i\mathbf{X}_i^\top & \mathbf{0}^\top & -x_i\mathbf{X}_i^\top \end{bmatrix}\mathbf{p}=\mathbf{0}$$</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Stacked system</div><p class="formula">$$A\,\mathbf{p}=\mathbf{0}, \quad \mathbf{p}=\operatorname{vec}(P)$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>DLT Linear Equations</span></div>
+<aside class="speaker-notes">The Direct Linear Transformation turns each correspondence into two independent rows by exploiting that the image point and its projection are parallel, so their cross product vanishes. Stacking these rows builds the design matrix A, and the camera vector p lives in its null space, recovered by singular value decomposition.</aside>
+</section>
+
+<section class="slide alt" data-label="Minimal and Over-determined Solution">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Minimal and Over-determined Solution</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Minimal case</h3><p>11 unknowns need $5\tfrac12$ points, so 6 points in general position give an exact fit.</p></div>
+<div class="panel teal"><h3>Over-determined</h3><p>More points $\Rightarrow$ least squares via the smallest singular vector.</p></div>
+<div class="panel amber"><h3>Caveat</h3><p>This minimizes <em>algebraic</em> error, to be judged later in pixels.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Singular value spectrum with a small last singular value marking the null direction">
+<rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/>
+<line x1="40" y1="180" x2="340" y2="180" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="20" x2="40" y2="180" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="60" y="40" width="22" height="140" fill="#2563EB"/>
+<rect x="95" y="55" width="22" height="125" fill="#2563EB"/>
+<rect x="130" y="72" width="22" height="108" fill="#2563EB"/>
+<rect x="165" y="90" width="22" height="90" fill="#2563EB"/>
+<rect x="200" y="112" width="22" height="68" fill="#2563EB"/>
+<rect x="235" y="138" width="22" height="42" fill="#2563EB"/>
+<rect x="270" y="168" width="22" height="12" fill="#B45309"/>
+<text x="262" y="200" font-size="13" fill="#B45309">$\sigma_{\min}$</text>
+<text x="120" y="200" font-size="13" fill="#475569">singular values of $A$</text>
+<text x="295" y="160" font-size="12" fill="#B45309">null direction</text>
+</svg><figcaption class="small">The vector for the smallest singular value is the DLT solution $\mathbf{p}$.</figcaption></figure>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Least squares</div><p class="formula">$$\min_{\|\mathbf{p}\|=1}\|A\mathbf{p}\| \Rightarrow \mathbf{p}=\mathbf{v}_{\min}$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Minimal and Over-determined Solution</span></div>
+<aside class="speaker-notes">Eleven unknowns need at least five and a half correspondences, so six points in general position give an exact minimal solution. More points over-determine the system; the singular vector for the smallest singular value gives the algebraic least squares answer, which we then must judge in pixels rather than trust blindly.</aside>
+</section>
+
+<section class="slide" data-label="Data Normalization">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Data Normalization in 2D and 3D</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Translate</h3><p>Shift each point cloud to its centroid.</p></div>
+<div class="panel teal"><h3>Scale</h3><p>Mean distance to $\sqrt2$ (image) and $\sqrt3$ (world).</p></div>
+<div class="panel amber"><h3>Denormalize</h3><p>Recover $P$ as $T^{-1}\tilde P\,U$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Conditioning transforms</div><p class="formula">$$\tilde{\mathbf{x}}=T\mathbf{x}, \quad \tilde{\mathbf{X}}=U\mathbf{X}$$</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Denormalized camera</div><p class="formula">$$P = T^{-1}\,\tilde{P}\,U$$</p></div>
+<div class="panel violet"><h3>Why</h3><p>Raw pixel and metric scales differ by orders of magnitude, wrecking the null vector.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Data Normalization</span></div>
+<aside class="speaker-notes">Raw pixel and world coordinates span wildly different magnitudes, wrecking the conditioning of A. We translate each cloud to its centroid and scale so the mean distance is root two in two dimensions and root three in three dimensions, run DLT on normalized data, then denormalize the matrix. This step is essential, not cosmetic.</aside>
+</section>
+
+<section class="slide alt" data-label="Algebraic versus Geometric Error">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Algebraic versus Geometric Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Algebraic</h3><p>The residual $\|A\mathbf{p}\|$; cheap to minimize, no metric meaning.</p></div>
+<div class="panel teal"><h3>Geometric</h3><p>Pixel distance between $\mathbf{x}_i$ and its reprojection $P\mathbf{X}_i$.</p></div>
+<div class="panel amber"><h3>Inspect direction</h3><p>Random residuals mean noise; structured residuals mean model error.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Measured image point, reprojected point, and the residual arrow between them">
+<rect x="0" y="0" width="360" height="220" fill="#eff6ff"/>
+<circle cx="120" cy="90" r="6" fill="#2563EB"/><text x="60" y="86" font-size="13" fill="#2563EB">measured $\mathbf{x}_i$</text>
+<circle cx="180" cy="130" r="6" fill="#0F766E"/><text x="190" y="135" font-size="13" fill="#0F766E">reproj $P\mathbf{X}_i$</text>
+<line x1="180" y1="130" x2="126" y2="94" stroke="#B45309" stroke-width="3" marker-end="url(#a7arr)"/>
+<text x="120" y="155" font-size="13" fill="#B45309">residual $d(\mathbf{x}_i, P\mathbf{X}_i)$</text>
+<line x1="40" y1="190" x2="330" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="30" x2="40" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<defs><marker id="a7arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#B45309"/></marker></defs>
+</svg><figcaption class="small">Geometric error is the pixel gap minimized by the gold standard.</figcaption></figure>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Reprojection cost</div><p class="formula">$$\sum_i d\big(\mathbf{x}_i,\,P\mathbf{X}_i\big)^2$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Algebraic versus Geometric Error</span></div>
+<aside class="speaker-notes">The DLT minimizes the algebraic residual A p, which has no direct geometric meaning. What we actually care about is the geometric image error: the pixel distance between each measured point and its reprojection. Inspecting residual vectors, not just the residual norm, reveals whether errors are random noise or structured model failure.</aside>
+</section>
+
+<section class="slide" data-label="Gold Standard Refinement">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>The Gold Standard Estimate</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Objective</h3><p>Minimize total squared reprojection error over all 11 parameters.</p></div>
+<div class="panel teal"><h3>Method</h3><p>Iterative nonlinear least squares, e.g. Levenberg-Marquardt.</p></div>
+<div class="panel amber"><h3>Seed</h3><p>The normalized DLT estimate initializes the descent.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Maximum likelihood (Gaussian noise)</div><p class="formula">$$\hat P=\arg\min_{P}\sum_i \big\| \mathbf{x}_i - \widehat{P\mathbf{X}_i}\big\|^2$$</p></div>
+<div class="panel violet"><h3>Interpretation</h3><p>Under isotropic Gaussian image noise this is the MLE camera.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Gold Standard Refinement</span></div>
+<aside class="speaker-notes">The gold standard estimate refines the DLT seed by minimizing total squared reprojection error over all eleven parameters using iterative nonlinear least squares such as Levenberg Marquardt. Under Gaussian image noise this is the maximum likelihood estimate, and the algebraic DLT solution merely provides the starting point for that descent.</aside>
+</section>
+
+<section class="slide alt" data-label="Recovering K, R, t by RQ">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Extracting $K$, $R$, $t$ by RQ Decomposition</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Factor the front block</h3><p>$M = K R$ with $K$ upper triangular, $R$ a rotation.</p></div>
+<div class="panel teal"><h3>RQ split</h3><p>RQ decomposition of $M$ yields intrinsics $K$ and pose $R$.</p></div>
+<div class="panel amber"><h3>Center</h3><p>$C$ is the right null vector of $P$; then $t=-RC$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Block diagram factoring the camera matrix into intrinsics rotation and translation">
+<rect x="0" y="0" width="360" height="220" fill="#f5f3ff"/>
+<rect x="20" y="80" width="100" height="60" fill="#fff" stroke="#2563EB" stroke-width="2"/><text x="55" y="116" font-size="20" fill="#2563EB">P</text>
+<text x="128" y="116" font-size="22" fill="#475569">=</text>
+<rect x="150" y="80" width="50" height="60" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><text x="168" y="116" font-size="20" fill="#2563EB">K</text>
+<rect x="205" y="80" width="50" height="60" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/><text x="222" y="116" font-size="20" fill="#0F766E">R</text>
+<rect x="260" y="80" width="80" height="60" fill="#fffbeb" stroke="#B45309" stroke-width="2"/><text x="278" y="116" font-size="18" fill="#B45309">-RC</text>
+<text x="150" y="170" font-size="13" fill="#6D28D9">intrinsics</text><text x="205" y="170" font-size="13" fill="#0F766E">rotation</text><text x="262" y="170" font-size="13" fill="#B45309">translation</text>
+</svg><figcaption class="small">$P = K\,[\,R \mid -RC\,]$ recovers calibration and pose.</figcaption></figure>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Calibrated form</div><p class="formula">$$P = K\,[\,R \mid \mathbf{t}\,], \quad \mathbf{t}=-R\mathbf{C}$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Recovering K, R, t by RQ</span></div>
+<aside class="speaker-notes">A finite projective camera factors as K times R bracket minus R C. Its leading three by three block is an upper triangular calibration matrix times a rotation, so an RQ decomposition splits it into intrinsics K and orientation R. The camera center C follows as the right null vector of P, fixing the translation.</aside>
+</section>
+
+<section class="slide" data-label="Restricted Camera Estimation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Restricted Camera Estimation</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Constraints</h3><p>Zero skew, known aspect ratio, or fixed principal point.</p></div>
+<div class="panel teal"><h3>Fewer parameters</h3><p>Fit only the free physical unknowns, not a general $P$.</p></div>
+<div class="panel amber"><h3>Honest fit</h3><p>Exposes wrong intrinsics a full $P$ would silently absorb.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">General intrinsics</div><p class="formula">$$K=\begin{bmatrix} \alpha_x & s & x_0 \\ 0 & \alpha_y & y_0 \\ 0 & 0 & 1 \end{bmatrix}$$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Typical restriction</div><p class="formula">$$s=0, \quad \alpha_x=\alpha_y$$</p></div>
+<div class="panel violet"><h3>In the lab</h3><p>Known-$K$ pose via <code>solvePnP</code> matches full DLT at sub-pixel error.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Restricted Camera Estimation</span></div>
+<aside class="speaker-notes">When skew is zero, pixels are square, or aspect ratio is known, the general projective camera over-parametrizes the problem. Restricted estimation fits only the free physical parameters, typically by minimizing geometric error with those constraints enforced. The result is less flexible but more honest, exposing wrong intrinsics that a full P would silently absorb.</aside>
+</section>
+
+<section class="slide alt" data-label="Radial Distortion Correction">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Radial (Lens) Distortion Correction</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Symptom</h3><p>Straight lines bow; residuals grow radially toward the image edge.</p></div>
+<div class="panel teal"><h3>Model</h3><p>Radial displacement $L(r)$ about the principal point.</p></div>
+<div class="panel amber"><h3>Fix first</h3><p>Correct distortion before reading residuals as noise.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Radial residual arrows growing in length away from the principal point">
+<rect x="0" y="0" width="360" height="220" fill="#fffbeb"/>
+<circle cx="180" cy="110" r="5" fill="#222"/><text x="190" y="106" font-size="12" fill="#475569">principal point</text>
+<circle cx="180" cy="110" r="40" fill="none" stroke="#CBD5E1" stroke-width="1"/>
+<circle cx="180" cy="110" r="80" fill="none" stroke="#CBD5E1" stroke-width="1"/>
+<line x1="180" y1="70" x2="180" y2="58" stroke="#B45309" stroke-width="2" marker-end="url(#a7r)"/>
+<line x1="260" y1="110" x2="282" y2="110" stroke="#B45309" stroke-width="3" marker-end="url(#a7r)"/>
+<line x1="180" y1="150" x2="180" y2="172" stroke="#B45309" stroke-width="3" marker-end="url(#a7r)"/>
+<line x1="100" y1="110" x2="78" y2="110" stroke="#B45309" stroke-width="3" marker-end="url(#a7r)"/>
+<line x1="208" y1="82" x2="222" y2="68" stroke="#B45309" stroke-width="2.5" marker-end="url(#a7r)"/>
+<line x1="152" y1="138" x2="138" y2="152" stroke="#B45309" stroke-width="2.5" marker-end="url(#a7r)"/>
+<defs><marker id="a7r" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#B45309"/></marker></defs>
+</svg><figcaption class="small">Distortion arrows point radially and lengthen with radius $r$.</figcaption></figure>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Radial model</div><p class="formula">$$\mathbf{x}_d = L(r)\,(\mathbf{x}-\mathbf{x}_0)+\mathbf{x}_0$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Radial Distortion Correction</span></div>
+<aside class="speaker-notes">Real lenses bend straight lines, displacing points radially from the principal point by an amount growing toward the periphery. Forcing a pinhole model onto distorted data leaves a structured, radially patterned residual field rather than random scatter. We fit or correct the distortion coefficients first, then judge the remaining residual as genuine measurement noise.</aside>
+</section>
+
+<section class="slide" data-label="Calibration Lab Comparison">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Calibration Lab: Three Models, One Target</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Full $P$ (DLT)</h3><p>Normalized DLT on a two-plane target: RMSE $\approx 0.66$ px.</p></div>
+<div class="panel teal"><h3>Known-$K$ pose</h3><p><code>solvePnP</code> recovers $R,t$: RMSE $\approx 0.67$ px.</p></div>
+<div class="panel amber"><h3>Affine camera</h3><p>Weak-perspective fit fails on depth: RMSE $\approx 19.5$ px.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Bar chart comparing reprojection RMSE of three camera models">
+<rect x="0" y="0" width="360" height="220" fill="#eff6ff"/>
+<line x1="50" y1="180" x2="340" y2="180" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="50" y1="20" x2="50" y2="180" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="80" y="172" width="50" height="8" fill="#0F766E"/><text x="78" y="196" font-size="12" fill="#0F766E">full P</text>
+<rect x="160" y="171" width="50" height="9" fill="#2563EB"/><text x="155" y="196" font-size="12" fill="#2563EB">known-K</text>
+<rect x="240" y="40" width="50" height="140" fill="#B45309"/><text x="245" y="196" font-size="12" fill="#B45309">affine</text>
+<text x="90" y="165" font-size="11" fill="#0F766E">0.66</text><text x="170" y="164" font-size="11" fill="#2563EB">0.67</text><text x="248" y="34" font-size="11" fill="#B45309">19.5</text>
+<text x="10" y="100" font-size="12" fill="#475569" transform="rotate(-90 10 100)">RMSE [px]</text>
+</svg><figcaption class="small">Residual size exposes the affine model's missing perspective structure.</figcaption></figure>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Invariants checked</div><p class="formula">$$\operatorname{rank}(P)=3, \quad \|P\mathbf{C}\|\approx 0$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Calibration Lab Comparison</span></div>
+<aside class="speaker-notes">The notebook fits three models on one synthetic two plane target: full projective DLT, a known intrinsics solvePnP pose, and a deliberately limited affine camera. DLT and solvePnP reach sub pixel error near zero point six seven pixels, while the affine model fails on perspective depth, its large residuals exposing the missing structure directly.</aside>
+</section>
+
+<section class="slide alt" data-label="Recap and Checklist">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 07</span></div>
+<h2>Recap and Calibration Checklist</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Estimate</h3><p>Stack DLT equations, normalize, solve the null space by SVD.</p></div>
+<div class="panel teal"><h3>Validate</h3><p>Refine to the gold standard; inspect pixel residual fields.</p></div>
+<div class="panel amber"><h3>Decompose</h3><p>RQ-factor $P$ into $K$, $R$, $t$; center is the null vector.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>Constrain and correct</h3><p>Restrict known intrinsics; remove radial distortion before judging error.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Workflow</div><p class="formula">$$\text{DLT}\;\to\;\text{gold standard}\;\to\;K,R,t$$</p></div>
+<div class="panel teal"><h3>Key invariant</h3><p>The camera center $\mathbf{C}$ satisfies $P\mathbf{C}=\mathbf{0}$ for any valid $P$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 178-194</span><span>Recap and Checklist</span></div>
+<aside class="speaker-notes">Resectioning turns correspondences into a homogeneous system solved by SVD, but every estimate must be validated geometrically. Normalize before DLT, inspect pixel residuals, factor P by RQ to read intrinsics and pose, restrict parameters when physics is known, and remove radial distortion before declaring the remaining error to be noise.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
