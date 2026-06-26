@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-22">
+<meta name="chapter_title" content="Chapter 22: Degenerate Configurations">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-22-degenerate-configurations/22-degenerate-configurations.ipynb">
+<meta name="source_span" content="printed pages 533-560; PDF pages 551-578.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 22: Degenerate Configurations</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-22","chapter_title":"Chapter 22: Degenerate Configurations","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-22-degenerate-configurations/22-degenerate-configurations.ipynb","source_span":"printed pages 533-560; PDF pages 551-578.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Degenerate Configurations","notes":"Open by reframing degeneracy as geometric non-uniqueness rather than measurement noise. A critical configuration leaves a whole alternative camera or reconstruction model consistent with the same images, so estimation has no preferred answer. We will diagnose each case through rank, nullspace, surface incidence, or homography fit across this chapter."},
+{"slide":2,"label":"What Degeneracy Means","notes":"Stress the distinction between a noisy estimate and a degenerate one. With noise a unique model exists but is perturbed; with degeneracy a one-parameter or larger family of models fits the data exactly. The remedy is not better optimisation but detecting the condition and routing to a smaller, well-posed model."},
+{"slide":3,"label":"Planar Scenes Fail to Fix F","notes":"Explain the most common practical degeneracy: all points on a plane. One plane-induced homography transfers every correspondence, so the fundamental matrix is undetermined. Point at the singular-value tail of the eight-point design matrix, where extra nullity appears, contrasting the clean rank-eight spatial case against the rank-deficient planar one."},
+{"slide":4,"label":"Homography Explains the Data","notes":"Make the algebra explicit. When points lie on a plane the correspondences satisfy x' equals H x, and any F of the form skew-e times H solves the epipolar constraint, giving a pencil of valid fundamental matrices. The epipole is free, so the second camera is not recovered. This motivates the homography-versus-F decision."},
+{"slide":5,"label":"Pure Rotation","notes":"Cover the second motion degeneracy: zero baseline. With a fixed camera centre the images differ only by the calibration-conjugated rotation homography, and there is no parallax to triangulate. The essential matrix collapses because the translation is null. A spatial, non-planar cloud still degenerates, showing the cause is motion, not scene shape."},
+{"slide":6,"label":"Critical Surfaces and the Horopter","notes":"Introduce the two-view critical surface theorem: ambiguity arises when both camera centres and all scene points lie on a ruled quadric. The horopter, a twisted cubic through both centres, is the locus of points imaged identically. Emphasise that incidence with this quadric is the hidden geometric reason behind the ambiguity, not coincidence."},
+{"slide":7,"label":"The Ruled Quadric Visualised","notes":"Walk through the doubly ruled quadric z equals xy. Fixing x gives one family of straight generators, fixing y gives the other; both camera centres and the points sit exactly on the surface. The conjugate reconstruction slides points along generators, so structure and motion are recoverable only up to this quadric family."},
+{"slide":8,"label":"Resectioning Degeneracy","notes":"Turn to single-camera resection. Ambiguity is organised by the pencil P-theta equals P plus theta P-alt. When the pencil keeps rank three the nullspace is a single centre; when rank drops the nullspace becomes a line or plane joining the critical set. The classical case is the centre with points on a twisted cubic through it."},
+{"slide":9,"label":"Rank Drop in the Pencil","notes":"Read the numerical proof. As theta sweeps, the smallest singular value of P-theta dips to zero at the exceptional value where the shared block cancels; rank falls from three to one and nullity rises to three. That dimension jump is exactly the linear component the chapter adds to the resection critical set."},
+{"slide":10,"label":"Carlsson-Weinshall Duality","notes":"Sketch the duality map Gamma sending each homogeneous coordinate to the product of the other three. Away from coordinate planes it acts like reciprocation, exchanging points and cameras. The lesson is that a simple line statement about points and centres dualises into a twisted-cubic statement, unifying resection and reconstruction degeneracies under one map."},
+{"slide":11,"label":"Detecting Degeneracy: H vs F","notes":"Bring in model selection. RANSAC alone can fit a confident but meaningless F on planar or rotational data, so compare a homography against the fundamental matrix on the same matches. GRIC scores each model with a penalty for parameters and structure dimension, selecting H when the plane explanation wins and avoiding a spurious projective reconstruction."},
+{"slide":12,"label":"Diagnostic Scorecard","notes":"Close with a preflight checklist an implementation should run before trusting a reconstruction: eight-point nullity, planarity ratio, baseline length, homography transfer versus Sampson error, and three-view quadric dependence. The aim is not to reject planar or rotational data but to route each sequence to the correctly posed model."},
+{"slide":13,"label":"Summary","notes":"Recap the unifying thread: degeneracy is non-uniqueness diagnosed through rank, nullspace, and surface incidence. Planar scenes and pure rotation are homography-dominated; two-view ambiguity lives on a ruled quadric and horopter; resection critical sets are rank drops in a camera pencil; and model selection separates the cases in practice."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Degenerate Configurations">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h1>Degenerate Configurations</h1>
+<p class="lead">When structure and motion cannot be uniquely recovered</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Critical configuration</h3><p>Point and camera arrangements that leave an alternative model consistent with the same images.</p></div>
+<div class="panel teal"><h3>Diagnosis</h3><p>Read off a rank, a nullspace, a surface incidence, or a homography fit.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Two camera centres and points lying on a curved critical surface">
+<rect x="0" y="0" width="360" height="220" fill="#eff6ff"/>
+<path d="M20 160 Q120 60 200 90 Q300 120 340 60" fill="none" stroke="#6D28D9" stroke-width="2.5"/>
+<path d="M20 180 Q120 90 200 120 Q300 150 340 100" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+<circle cx="60" cy="150" r="6" fill="#2563EB"/><text x="48" y="142" font-size="13" fill="#2563EB">C</text>
+<circle cx="300" cy="92" r="6" fill="#0F766E"/><text x="296" y="84" font-size="13" fill="#0F766E">C'</text>
+<circle cx="130" cy="98" r="4" fill="#B45309"/><circle cx="190" cy="100" r="4" fill="#B45309"/><circle cx="250" cy="104" r="4" fill="#B45309"/>
+<text x="120" y="205" font-size="14" fill="#6D28D9">ruled quadric through both centres</text>
+</svg><figcaption class="small">Centres and points sharing one critical surface.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Degenerate Configurations</span></div>
+<aside class="speaker-notes">Open by reframing degeneracy as geometric non-uniqueness rather than measurement noise. A critical configuration leaves a whole alternative camera or reconstruction model consistent with the same images, so estimation has no preferred answer. We will diagnose each case through rank, nullspace, surface incidence, or homography fit across this chapter.</aside>
+</section>
+
+<section class="slide alt" data-label="What Degeneracy Means">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Noise Is Not Degeneracy</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Noisy data</h3><p>A unique model exists and is merely perturbed; better optimisation recovers it.</p></div>
+<div class="panel blue"><h3>Degenerate data</h3><p>A whole family of models fits the images exactly. No optimiser can choose.</p></div>
+<div class="panel teal"><h3>Remedy</h3><p>Detect the condition, then route to a smaller well-posed model.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Ambiguity</div><p class="formula">$$\{M_\theta : \theta\in\mathbb{R}\}\ \text{all reproject the data}$$</p></div>
+<div class="panel violet"><h3>Map of cases</h3><p>Planar scene, pure rotation, ruled quadric, resection pencil, three-view quadrics.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>What Degeneracy Means</span></div>
+<aside class="speaker-notes">Stress the distinction between a noisy estimate and a degenerate one. With noise a unique model exists but is perturbed; with degeneracy a one-parameter or larger family of models fits the data exactly. The remedy is not better optimisation but detecting the condition and routing to a smaller, well-posed model.</aside>
+</section>
+
+<section class="slide" data-label="Planar Scenes Fail to Fix F">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Planar Scenes Do Not Determine F</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>All points on a plane</h3><p>The most common practical degeneracy: one plane-induced homography transfers every correspondence.</p></div>
+<div class="panel amber"><h3>Extra nullity</h3><p>The eight-point design matrix loses rank, so many $F$ agree with the same transfer.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Singular value tails for planar versus spatial eight-point matrices">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<line x1="40" y1="20" x2="40" y2="180" stroke="#CBD5E1" stroke-width="1.5"/><line x1="40" y1="180" x2="340" y2="180" stroke="#CBD5E1" stroke-width="1.5"/>
+<polyline points="55,40 90,55 125,72 160,90 195,108 230,126 265,144 300,158 320,168" fill="none" stroke="#0F766E" stroke-width="2.5"/>
+<polyline points="55,40 90,56 125,74 160,92 195,110 230,130 265,150 300,176 320,177" fill="none" stroke="#2563EB" stroke-width="2.5"/>
+<circle cx="320" cy="168" r="4" fill="#0F766E"/><text x="240" y="36" font-size="13" fill="#0F766E">spatial: nullity 1</text>
+<circle cx="320" cy="177" r="4" fill="#2563EB"/><text x="200" y="200" font-size="13" fill="#2563EB">planar: extra null directions</text>
+<text x="150" y="16" font-size="13" fill="#475569">relative singular values</text>
+</svg><figcaption class="small">A plane leaves more than one null direction for $F$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Planar Scenes Fail to Fix F</span></div>
+<aside class="speaker-notes">Explain the most common practical degeneracy: all points on a plane. One plane-induced homography transfers every correspondence, so the fundamental matrix is undetermined. Point at the singular-value tail of the eight-point design matrix, where extra nullity appears, contrasting the clean rank-eight spatial case against the rank-deficient planar one.</aside>
+</section>
+
+<section class="slide alt" data-label="Homography Explains the Data">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>A Homography Explains the Correspondences</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Plane transfer</div><p class="formula">$$\mathbf{x}' \simeq H\,\mathbf{x}$$</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Pencil of F</div><p class="formula">$$F = [\mathbf{e}']_\times H \ \text{solves}\ \mathbf{x}'^\top F \mathbf{x}=0$$</p></div>
+<div class="panel violet"><h3>Free epipole</h3><p>Any $\mathbf{e}'$ works, so the second camera is not pinned down.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="A plane maps points between two image planes by one homography">
+<rect x="0" y="0" width="360" height="210" fill="#f5f3ff"/>
+<polygon points="40,150 150,120 150,40 40,70" fill="#dbeafe" stroke="#2563EB" stroke-width="2"/>
+<polygon points="210,150 320,120 320,40 210,70" fill="#ccfbf1" stroke="#0F766E" stroke-width="2"/>
+<line x1="60" y1="95" x2="232" y2="95" stroke="#B45309" stroke-width="2" stroke-dasharray="5 4"/>
+<line x1="100" y1="120" x2="272" y2="120" stroke="#B45309" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="150" y="85" font-size="14" fill="#B45309">H</text>
+<text x="70" y="170" font-size="13" fill="#2563EB">view 1</text><text x="240" y="170" font-size="13" fill="#0F766E">view 2</text>
+<circle cx="60" cy="95" r="3.5" fill="#6D28D9"/><circle cx="232" cy="95" r="3.5" fill="#6D28D9"/>
+</svg><figcaption class="small">Plane-induced transfer leaves $F$ underdetermined.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Homography Explains the Data</span></div>
+<aside class="speaker-notes">Make the algebra explicit. When points lie on a plane the correspondences satisfy x' equals H x, and any F of the form skew-e times H solves the epipolar constraint, giving a pencil of valid fundamental matrices. The epipole is free, so the second camera is not recovered. This motivates the homography-versus-F decision.</aside>
+</section>
+
+<section class="slide" data-label="Pure Rotation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Pure Rotation As Critical Motion</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Zero baseline</h3><p>The camera centre is unchanged, so there is no parallax to triangulate.</p></div>
+<div class="panel teal"><h3>Warp survives</h3><p>Images relate by the rotation homography $H = K R K^{-1}$.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Essential matrix</div><p class="formula">$$E = [\mathbf{t}]_\times R = 0 \ \text{when}\ \mathbf{t}=\mathbf{0}$$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="A single camera centre rotating with no translation">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<circle cx="180" cy="150" r="8" fill="#2563EB"/><text x="156" y="175" font-size="13" fill="#2563EB">fixed centre C</text>
+<polygon points="120,70 220,70 235,110 105,110" fill="#ccfbf1" stroke="#0F766E" stroke-width="2"/>
+<polygon points="140,40 240,55 250,95 130,80" fill="#ede9fe" stroke="#6D28D9" stroke-width="2" opacity="0.8"/>
+<path d="M250 60 A60 60 0 0 1 245 95" fill="none" stroke="#B45309" stroke-width="2" marker-end="url(#ar)"/>
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#B45309"/></marker></defs>
+<text x="262" y="80" font-size="13" fill="#B45309">R</text>
+<line x1="180" y1="150" x2="170" y2="90" stroke="#CBD5E1" stroke-width="1.5"/><line x1="180" y1="150" x2="190" y2="68" stroke="#CBD5E1" stroke-width="1.5"/>
+</svg><figcaption class="small">No translation means no epipolar baseline.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Pure Rotation</span></div>
+<aside class="speaker-notes">Cover the second motion degeneracy: zero baseline. With a fixed camera centre the images differ only by the calibration-conjugated rotation homography, and there is no parallax to triangulate. The essential matrix collapses because the translation is null. A spatial, non-planar cloud still degenerates, showing the cause is motion, not scene shape.</aside>
+</section>
+
+<section class="slide alt" data-label="Critical Surfaces and the Horopter">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Critical Surfaces: The Ruled Quadric</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Two-view theorem</div><p class="formula">$$\mathbf{X}^\top Q\,\mathbf{X}=0,\quad C,\,C'\in Q$$</p></div>
+<div class="panel blue"><h3>Ambiguity locus</h3><p>Both centres and all points on a ruled quadric leave the reconstruction ambiguous.</p></div>
+<div class="panel teal"><h3>Horopter</h3><p>A twisted cubic through both centres: points imaged identically.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="A twisted cubic horopter threading two camera centres">
+<rect x="0" y="0" width="360" height="210" fill="#f5f3ff"/>
+<path d="M30 170 C 110 40, 150 200, 230 70 S 320 120, 340 50" fill="none" stroke="#6D28D9" stroke-width="3"/>
+<circle cx="62" cy="120" r="7" fill="#2563EB"/><text x="40" y="112" font-size="13" fill="#2563EB">C</text>
+<circle cx="296" cy="76" r="7" fill="#0F766E"/><text x="300" y="68" font-size="13" fill="#0F766E">C'</text>
+<circle cx="138" cy="120" r="4" fill="#B45309"/><circle cx="205" cy="118" r="4" fill="#B45309"/><circle cx="252" cy="92" r="4" fill="#B45309"/>
+<text x="95" y="200" font-size="14" fill="#6D28D9">twisted cubic horopter</text>
+</svg><figcaption class="small">The horopter passes through both camera centres.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Critical Surfaces and the Horopter</span></div>
+<aside class="speaker-notes">Introduce the two-view critical surface theorem: ambiguity arises when both camera centres and all scene points lie on a ruled quadric. The horopter, a twisted cubic through both centres, is the locus of points imaged identically. Emphasise that incidence with this quadric is the hidden geometric reason behind the ambiguity, not coincidence.</aside>
+</section>
+
+<section class="slide" data-label="The Ruled Quadric Visualised">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>The Doubly Ruled Quadric $z=xy$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Projective form</div><p class="formula">$$z\,t - x\,y = 0$$</p></div>
+<div class="panel blue"><h3>Generator family 1</h3><p>Fixing $x=a$ gives a straight line on the surface.</p></div>
+<div class="panel teal"><h3>Generator family 2</h3><p>Fixing $y=b$ gives the second straight ruling.</p></div>
+<div class="panel amber"><h3>Conjugate model</h3><p>The alternative reconstruction slides points along the generators.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A doubly ruled quadric with two families of straight generators and points on it">
+<rect x="0" y="0" width="360" height="230" fill="#ffffff"/>
+<g stroke="#2563EB" stroke-width="1.6">
+<line x1="40" y1="60" x2="150" y2="40"/><line x1="60" y1="110" x2="190" y2="80"/><line x1="80" y1="160" x2="230" y2="120"/><line x1="100" y1="205" x2="270" y2="160"/>
+</g>
+<g stroke="#0F766E" stroke-width="1.6">
+<line x1="40" y1="60" x2="100" y2="205"/><line x1="100" y1="50" x2="170" y2="190"/><line x1="160" y1="44" x2="240" y2="178"/><line x1="220" y1="40" x2="300" y2="168"/>
+</g>
+<circle cx="120" cy="105" r="4.5" fill="#B45309"/><circle cx="190" cy="120" r="4.5" fill="#B45309"/><circle cx="80" cy="160" r="4.5" fill="#B45309"/>
+<circle cx="55" cy="80" r="6" fill="#6D28D9"/><text x="34" y="78" font-size="12" fill="#6D28D9">C</text>
+<circle cx="288" cy="150" r="6" fill="#6D28D9"/><text x="292" y="146" font-size="12" fill="#6D28D9">C'</text>
+<text x="120" y="222" font-size="13" fill="#475569">two straight rulings through every point</text>
+</svg><figcaption class="small">Centres and points lie on the same ruled surface.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>The Ruled Quadric Visualised</span></div>
+<aside class="speaker-notes">Walk through the doubly ruled quadric z equals xy. Fixing x gives one family of straight generators, fixing y gives the other; both camera centres and the points sit exactly on the surface. The conjugate reconstruction slides points along generators, so structure and motion are recoverable only up to this quadric family.</aside>
+</section>
+
+<section class="slide alt" data-label="Resectioning Degeneracy">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Resectioning Degeneracy</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Camera pencil</div><p class="formula">$$P_\theta = P + \theta\,P_{\text{alt}}$$</p></div>
+<div class="panel blue"><h3>Rank three</h3><p>Right nullspace is a single camera centre.</p></div>
+<div class="panel amber"><h3>Rank drop</h3><p>Nullspace becomes a line or plane and joins the critical set.</p></div>
+<div class="panel violet"><h3>Classical case</h3><p>The centre with the points lying on a twisted cubic through it.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Camera centre and points on a twisted cubic causing resection ambiguity">
+<rect x="0" y="0" width="360" height="210" fill="#f5f3ff"/>
+<path d="M30 60 C 120 200, 200 20, 330 150" fill="none" stroke="#6D28D9" stroke-width="2.8"/>
+<circle cx="78" cy="118" r="7" fill="#2563EB"/><text x="56" y="112" font-size="13" fill="#2563EB">C</text>
+<circle cx="120" cy="150" r="4" fill="#B45309"/><circle cx="170" cy="92" r="4" fill="#B45309"/><circle cx="232" cy="82" r="4" fill="#B45309"/><circle cx="290" cy="120" r="4" fill="#B45309"/>
+<text x="100" y="198" font-size="14" fill="#6D28D9">twisted cubic through the centre</text>
+</svg><figcaption class="small">Points on a twisted cubic through $C$ leave resection ambiguous.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Resectioning Degeneracy</span></div>
+<aside class="speaker-notes">Turn to single-camera resection. Ambiguity is organised by the pencil P-theta equals P plus theta P-alt. When the pencil keeps rank three the nullspace is a single centre; when rank drops the nullspace becomes a line or plane joining the critical set. The classical case is the centre with points on a twisted cubic through it.</aside>
+</section>
+
+<section class="slide" data-label="Rank Drop in the Pencil">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Rank Drop In The Pencil</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Sweep $\theta$</h3><p>The smallest singular value of $P_\theta$ dips to zero where the shared block cancels.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">At the exception</div><p class="formula">$$\mathrm{rank}\,3\to 1,\qquad \mathrm{null}\,1\to 3$$</p></div>
+<div class="panel teal"><h3>Meaning</h3><p>The dimension jump is the linear component added to the critical set.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Rank and nullity curves crossing at the exceptional pencil parameter">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<line x1="40" y1="20" x2="40" y2="180" stroke="#CBD5E1" stroke-width="1.5"/><line x1="40" y1="180" x2="340" y2="180" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="180" y1="20" x2="180" y2="180" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+<polyline points="55,60 160,60 180,140 200,60 330,60" fill="none" stroke="#2563EB" stroke-width="2.6"/>
+<polyline points="55,150 160,150 180,60 200,150 330,150" fill="none" stroke="#B45309" stroke-width="2.6"/>
+<text x="250" y="52" font-size="13" fill="#2563EB">rank</text><text x="250" y="168" font-size="13" fill="#B45309">nullity</text>
+<text x="150" y="200" font-size="13" fill="#475569">&theta; (sweep)</text>
+<text x="186" y="32" font-size="12" fill="#475569">exception</text>
+</svg><figcaption class="small">Rank falls and nullity rises at the exceptional $\theta$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Rank Drop in the Pencil</span></div>
+<aside class="speaker-notes">Read the numerical proof. As theta sweeps, the smallest singular value of P-theta dips to zero at the exceptional value where the shared block cancels; rank falls from three to one and nullity rises to three. That dimension jump is exactly the linear component the chapter adds to the resection critical set.</aside>
+</section>
+
+<section class="slide alt" data-label="Carlsson-Weinshall Duality">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Carlsson-Weinshall Duality</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Duality map</div><p class="formula">$$\Gamma(X,Y,Z,T)=(YZT,\ ZTX,\ TXY,\ XYZ)$$</p></div>
+<div class="panel blue"><h3>Reciprocation</h3><p>Away from coordinate planes $\Gamma$ acts like coordinate reciprocation up to scale.</p></div>
+<div class="panel teal"><h3>Points and cameras swap</h3><p>The map exchanges point and camera roles.</p></div>
+<div class="panel violet"><h3>Lesson</h3><p>A line statement dualises into a twisted-cubic statement.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="A projective line mapped by the duality map to a cubic curve">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<line x1="30" y1="160" x2="160" y2="50" stroke="#2563EB" stroke-width="2.6"/>
+<text x="40" y="150" font-size="13" fill="#2563EB">line</text>
+<path d="M210 170 C 250 60, 300 200, 340 70" fill="none" stroke="#6D28D9" stroke-width="2.6"/>
+<text x="276" y="200" font-size="13" fill="#6D28D9">cubic</text>
+<path d="M165 100 C 185 95, 195 105, 205 102" fill="none" stroke="#B45309" stroke-width="2" marker-end="url(#ar2)"/>
+<defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#B45309"/></marker></defs>
+<text x="172" y="90" font-size="13" fill="#B45309">&Gamma;</text>
+<circle cx="65" cy="131" r="3.5" fill="#0F766E"/><circle cx="110" cy="93" r="3.5" fill="#0F766E"/>
+</svg><figcaption class="small">$\Gamma$ sends a line to a cubic trace.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Carlsson-Weinshall Duality</span></div>
+<aside class="speaker-notes">Sketch the duality map Gamma sending each homogeneous coordinate to the product of the other three. Away from coordinate planes it acts like reciprocation, exchanging points and cameras. The lesson is that a simple line statement about points and centres dualises into a twisted-cubic statement, unifying resection and reconstruction degeneracies under one map.</aside>
+</section>
+
+<section class="slide" data-label="Detecting Degeneracy: H vs F">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Detecting Degeneracy: H vs F</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>RANSAC is not enough</h3><p>It can fit a confident but meaningless $F$ on planar or rotational data.</p></div>
+<div class="panel blue"><h3>Fit both models</h3><p>Estimate $H$ and $F$ on the same matches and compare.</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">GRIC model score</div><p class="formula">$$\sum \rho(e_i^2) + \lambda_1 d\,n + \lambda_2 k$$</p></div>
+<div class="panel violet"><h3>Decision</h3><p>Pick $H$ when the plane explanation wins; avoid a spurious projective reconstruction.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Bar comparison of GRIC scores selecting the homography on planar data">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<line x1="50" y1="20" x2="50" y2="175" stroke="#CBD5E1" stroke-width="1.5"/><line x1="50" y1="175" x2="340" y2="175" stroke="#CBD5E1" stroke-width="1.5"/>
+<rect x="90" y="80" width="70" height="95" fill="#0F766E"/><text x="92" y="200" font-size="13" fill="#0F766E">GRIC(H)</text>
+<rect x="220" y="40" width="70" height="135" fill="#B45309"/><text x="222" y="200" font-size="13" fill="#B45309">GRIC(F)</text>
+<text x="78" y="70" font-size="13" fill="#0F766E">lower</text>
+<text x="200" y="32" font-size="13" fill="#475569">planar data &rarr; choose H</text>
+</svg><figcaption class="small">Lower GRIC selects the homography model.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Detecting Degeneracy: H vs F</span></div>
+<aside class="speaker-notes">Bring in model selection. RANSAC alone can fit a confident but meaningless F on planar or rotational data, so compare a homography against the fundamental matrix on the same matches. GRIC scores each model with a penalty for parameters and structure dimension, selecting H when the plane explanation wins and avoiding a spurious projective reconstruction.</aside>
+</section>
+
+<section class="slide alt" data-label="Diagnostic Scorecard">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>A Preflight Diagnostic Scorecard</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Eight-point nullity</h3><p>More than one null direction flags a plane.</p></div>
+<div class="panel teal"><h3>Planarity ratio</h3><p>Smallest over largest singular value of centred 3D points.</p></div>
+<div class="panel amber"><h3>Baseline length</h3><p>Near zero flags pure or near-pure rotation.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>H transfer vs Sampson</h3><p>Compare homography transfer error against the Sampson error of $F$.</p></div>
+<div class="panel blue"><h3>Three-view quadric rank</h3><p>Dependent pairwise quadrics leave an intersection curve, not finite points.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Goal</div><p class="formula">$$\text{route each sequence to the well-posed model}$$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Diagnostic Scorecard</span></div>
+<aside class="speaker-notes">Close with a preflight checklist an implementation should run before trusting a reconstruction: eight-point nullity, planarity ratio, baseline length, homography transfer versus Sampson error, and three-view quadric dependence. The aim is not to reject planar or rotational data but to route each sequence to the correctly posed model.</aside>
+</section>
+
+<section class="slide" data-label="Summary">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 22</span></div>
+<h2>Summary</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Degeneracy is non-uniqueness</h3><p>Diagnosed through rank, nullspace, and surface incidence, not residual size.</p></div>
+<div class="panel teal"><h3>Planar and rotational</h3><p>Homography-dominated data where $F$ is undetermined.</p></div>
+<div class="panel violet"><h3>Two-view ambiguity</h3><p>Lives on a ruled quadric with the horopter through both centres.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Resection critical sets</h3><p>Rank drops in the camera pencil $P_\theta$.</p></div>
+<div class="panel teal"><h3>Duality</h3><p>Carlsson-Weinshall ties lines to twisted cubics.</p></div>
+<div class="panel blue"><h3>Practice</h3><p>H-vs-F model selection separates the cases before reconstruction.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 533-560</span><span>Summary</span></div>
+<aside class="speaker-notes">Recap the unifying thread: degeneracy is non-uniqueness diagnosed through rank, nullspace, and surface incidence. Planar scenes and pure rotation are homography-dominated; two-view ambiguity lives on a ruled quadric and horopter; resection critical sets are rank drops in a camera pencil; and model selection separates the cases in practice.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

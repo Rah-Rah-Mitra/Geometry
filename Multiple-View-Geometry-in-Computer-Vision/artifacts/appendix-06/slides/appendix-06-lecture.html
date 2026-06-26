@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="appendix-06">
+<meta name="chapter_title" content="Appendix 06: Iterative Estimation Methods">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-06-iterative-estimation-methods/a06-iterative-estimation-methods.ipynb">
+<meta name="source_span" content="printed pages 597-627; PDF pages 615-645.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Appendix 06: Iterative Estimation Methods</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"appendix-06","chapter_title":"Appendix 06: Iterative Estimation Methods","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-06-iterative-estimation-methods/a06-iterative-estimation-methods.ipynb","source_span":"printed pages 597-627; PDF pages 615-645.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Iterative Estimation Methods","notes":"This appendix spans printed pages 597 through 627 and treats nonlinear estimation as repeated local linearization. We minimize geometric reprojection error rather than an algebraic surrogate, so each residual carries pixel units. The thread runs from Newton through Gauss-Newton and Levenberg-Marquardt to sparse bundle adjustment."},
+{"slide":2,"label":"The Nonlinear Least-Squares Problem","notes":"State the target precisely: find parameters that minimize the squared norm of a vector of residuals measuring geometric error. The cost surface is nonlinear and non-convex, so we cannot solve in one shot. Stress that geometric error in image units is the quantity we actually care about."},
+{"slide":3,"label":"Newton's Method","notes":"Newton uses the full Hessian, so it needs second derivatives of every residual. Near a minimum it converges quadratically, but the Hessian is expensive and can be indefinite far from the solution, sending steps uphill. This motivates the cheaper Gauss-Newton approximation that follows."},
+{"slide":4,"label":"Gauss-Newton","notes":"Gauss-Newton drops the second-derivative term and approximates the Hessian by J-transpose-J. The step solves the normal equations built from the Jacobian alone. It is fast and accurate near the solution where residuals are small, but it offers no safeguard when the linear model is a poor fit far away."},
+{"slide":5,"label":"Gradient Descent and the Two Regimes","notes":"Gradient descent moves along the negative gradient and is robust but slow, crawling through narrow valleys. Gauss-Newton is fast but reckless. Levenberg-Marquardt blends the two so the solver can be cautious when far out and aggressive when close, choosing automatically rather than by hand."},
+{"slide":6,"label":"Levenberg-Marquardt","notes":"Levenberg-Marquardt augments the diagonal of the normal matrix with a damping term lambda. Small lambda recovers Gauss-Newton; large lambda yields a short gradient-descent step. After each trial the step is accepted or rejected and lambda is adapted from the trust ratio, the agreement between predicted and actual reduction."},
+{"slide":7,"label":"Damping as a Trust Region","notes":"Reframe damping geometrically: increasing lambda shrinks the region in which we trust the local quadratic model, so the step gets shorter and bends toward steepest descent. The notebook confirms step norms fall monotonically as lambda grows while predicted reductions stay positive, exactly the trust-region picture."},
+{"slide":8,"label":"Convergence Diagnostics","notes":"A final parameter vector is not evidence. We audit four traces together: accepted objective, damping lambda, the trust ratio comparing actual to predicted reduction, and pixel residual statistics. Accepted objectives are monotone non-increasing, and the median pixel error falls below one pixel by the end."},
+{"slide":9,"label":"Parametrization and the Manifold","notes":"Many vision quantities live on manifolds, not flat vector spaces. Over-parametrization with a constraint or a redundant rotation representation distorts the update. We prefer a minimal local parametrization and apply the increment on the manifold so each step respects the geometry of the unknown."},
+{"slide":10,"label":"Robust Cost and Influence","notes":"Outliers wreck a pure least-squares fit. A robust cost is rewritten as a weighted residual norm with an attenuation factor, downweighting large residuals through iteratively reweighted solves. The notebook shows Cauchy attenuation cutting outlier influence while keeping the bad points visible in the diagnostic, not deleted."},
+{"slide":11,"label":"Sparse Bundle Adjustment","notes":"In bundle adjustment the unknowns split into camera blocks and point blocks, and one observation touches exactly one camera and one point. The normal matrix gains a block arrowhead structure. Exploiting this sparsity is what makes adjusting thousands of cameras and points computationally tractable at all."},
+{"slide":12,"label":"The Schur Complement Reduction","notes":"Eliminate the point blocks first. The Schur complement folds point information into a much smaller reduced camera system, which we solve, then back-substitute for the points. The notebook verifies the Schur camera and point steps match the dense solve to machine precision: same step, cheaper route."},
+{"slide":13,"label":"Synthesis and Takeaways","notes":"Tie the appendix together: iterative estimation is repeated local linearization plus disciplined step acceptance. Levenberg-Marquardt interpolates cautious descent and fast Gauss-Newton. Robust costs change influence, not existence. Schur structure is the computational reason large multiple-view optimizations are solvable. Always keep the starting estimate and residual units in view."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Iterative Estimation Methods">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h1>Iterative Estimation Methods</h1>
+<p class="lead">Minimizing geometric error by repeated local linearization</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Geometric cost</h3><p>Minimize reprojection error in pixel units, not an algebraic surrogate.</p></div>
+<div class="panel teal"><h3>The toolkit</h3><p>Newton, Gauss-Newton, gradient descent, Levenberg-Marquardt.</p></div>
+<div class="panel amber"><h3>At scale</h3><p>Sparse bundle adjustment via the Schur complement.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="A nonlinear cost valley with an iterative path descending to the minimum">
+<rect x="0" y="0" width="380" height="230" fill="#eff6ff"/>
+<ellipse cx="250" cy="150" rx="115" ry="62" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+<ellipse cx="250" cy="150" rx="78" ry="42" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+<ellipse cx="250" cy="150" rx="42" ry="22" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="250" cy="150" r="4" fill="#0F766E"/>
+<text x="258" y="146" font-size="13" fill="#0F766E">minimum</text>
+<polyline points="55,40 120,80 175,118 218,138 245,148" fill="none" stroke="#2563EB" stroke-width="2.5"/>
+<circle cx="55" cy="40" r="4" fill="#B45309"/>
+<circle cx="120" cy="80" r="3.5" fill="#2563EB"/>
+<circle cx="175" cy="118" r="3.5" fill="#2563EB"/>
+<circle cx="218" cy="138" r="3.5" fill="#2563EB"/>
+<text x="20" y="36" font-size="13" fill="#B45309">start</text>
+</svg><figcaption class="small">Descent on a nonlinear cost surface toward the minimizer.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Iterative Estimation Methods</span></div>
+<aside class="speaker-notes">This appendix spans printed pages 597 through 627 and treats nonlinear estimation as repeated local linearization. We minimize geometric reprojection error rather than an algebraic surrogate, so each residual carries pixel units. The thread runs from Newton through Gauss-Newton and Levenberg-Marquardt to sparse bundle adjustment.</aside>
+</section>
+
+<section class="slide alt" data-label="The Nonlinear Least-Squares Problem">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>The Nonlinear Least-Squares Problem</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Residual vector</h3><p>$\boldsymbol\epsilon(\mathbf P)$ stacks per-point reprojection errors in pixels.</p></div>
+<div class="panel teal"><h3>Cost</h3><p>Half the squared norm of the residual; nonlinear and non-convex in $\mathbf P$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Objective</div><p class="formula">$$C(\mathbf P)=\tfrac12\,\lVert \boldsymbol\epsilon(\mathbf P)\rVert^2=\tfrac12\sum_i \lVert \hat{\mathbf x}_i(\mathbf P)-\mathbf x_i\rVert^2$$</p></div>
+<div class="panel amber"><h3>No closed form</h3><p>Projection is nonlinear, so we iterate from a starting estimate $\mathbf P_0$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>The Nonlinear Least-Squares Problem</span></div>
+<aside class="speaker-notes">State the target precisely: find parameters that minimize the squared norm of a vector of residuals measuring geometric error. The cost surface is nonlinear and non-convex, so we cannot solve in one shot. Stress that geometric error in image units is the quantity we actually care about.</aside>
+</section>
+
+<section class="slide" data-label="Newton's Method">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Newton's Method</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Full Hessian</h3><p>Uses gradient $\mathbf g$ and the true second-derivative matrix $\mathbf H$.</p></div>
+<div class="panel amber"><h3>Cost &amp; risk</h3><p>Quadratic convergence near the optimum, but $\mathbf H$ is expensive and may be indefinite far away.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Newton step</div><p class="formula">$$\mathbf H\,\boldsymbol\delta=-\mathbf g,\qquad \mathbf H=\sum_i \nabla\epsilon_i\,\nabla\epsilon_i^{\!\top}+\sum_i \epsilon_i\,\nabla^2\epsilon_i$$</p></div>
+<div class="panel teal"><h3>The wrinkle</h3><p>The second term needs $\nabla^2\epsilon_i$; dropping it gives Gauss-Newton.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Newton's Method</span></div>
+<aside class="speaker-notes">Newton uses the full Hessian, so it needs second derivatives of every residual. Near a minimum it converges quadratically, but the Hessian is expensive and can be indefinite far from the solution, sending steps uphill. This motivates the cheaper Gauss-Newton approximation that follows.</aside>
+</section>
+
+<section class="slide alt" data-label="Gauss-Newton">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Gauss-Newton</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Approximate Hessian</h3><p>Replace $\mathbf H$ by $\mathbf J^{\!\top}\mathbf J$, using only first derivatives.</p></div>
+<div class="panel teal"><h3>Normal equations</h3><p>One linear solve per iteration from the Jacobian alone.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Gauss-Newton step</div><p class="formula">$$(\mathbf J^{\!\top}\mathbf J)\,\boldsymbol\delta=-\mathbf J^{\!\top}\boldsymbol\epsilon,\qquad \mathbf J=\frac{\partial\boldsymbol\epsilon}{\partial\mathbf P}$$</p></div>
+<div class="panel amber"><h3>Caveat</h3><p>Fast where residuals are small; no safeguard when the linear model is poor.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Gauss-Newton</span></div>
+<aside class="speaker-notes">Gauss-Newton drops the second-derivative term and approximates the Hessian by J-transpose-J. The step solves the normal equations built from the Jacobian alone. It is fast and accurate near the solution where residuals are small, but it offers no safeguard when the linear model is a poor fit far away.</aside>
+</section>
+
+<section class="slide" data-label="Gradient Descent and the Two Regimes">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Gradient Descent and the Two Regimes</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Gradient descent</h3><p>Step along $-\mathbf g$. Robust but slow; crawls down narrow valleys.</p></div>
+<div class="panel blue"><h3>Gauss-Newton</h3><p>Fast curvature-aware jumps, but reckless when far from the basin.</p></div>
+<div class="panel violet"><h3>The blend</h3><p>Levenberg-Marquardt chooses between them automatically.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="An elongated valley showing a zig-zagging gradient-descent path versus a direct Gauss-Newton step">
+<rect x="0" y="0" width="380" height="240" fill="#f0fdfa"/>
+<ellipse cx="250" cy="120" rx="120" ry="34" fill="none" stroke="#CBD5E1" stroke-width="1.5" transform="rotate(-18 250 120)"/>
+<ellipse cx="250" cy="120" rx="80" ry="22" fill="none" stroke="#CBD5E1" stroke-width="1.5" transform="rotate(-18 250 120)"/>
+<circle cx="250" cy="120" r="4" fill="#0F766E"/>
+<polyline points="60,50 95,95 130,70 165,108 200,90 235,118" fill="none" stroke="#0F766E" stroke-width="2.2"/>
+<line x1="60" y1="50" x2="244" y2="118" stroke="#2563EB" stroke-width="2.6"/>
+<circle cx="60" cy="50" r="4" fill="#B45309"/>
+<text x="22" y="46" font-size="13" fill="#B45309">start</text>
+<text x="92" y="135" font-size="12" fill="#0F766E">gradient zig-zag</text>
+<text x="120" y="62" font-size="12" fill="#2563EB">Gauss-Newton</text>
+</svg><figcaption class="small">Slow descent versus a direct curvature-aware step.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Gradient Descent and the Two Regimes</span></div>
+<aside class="speaker-notes">Gradient descent moves along the negative gradient and is robust but slow, crawling through narrow valleys. Gauss-Newton is fast but reckless. Levenberg-Marquardt blends the two so the solver can be cautious when far out and aggressive when close, choosing automatically rather than by hand.</aside>
+</section>
+
+<section class="slide alt" data-label="Levenberg-Marquardt">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Levenberg-Marquardt</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Damped normal equations</h3><p>Add $\lambda$ to the diagonal of $\mathbf J^{\!\top}\mathbf J$.</p></div>
+<div class="panel violet"><h3>Interpolation</h3><p>$\lambda\!\to\!0$ gives Gauss-Newton; $\lambda$ large gives a short descent step.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">LM step</div><p class="formula">$$(\mathbf J^{\!\top}\mathbf J+\lambda\,\mathbf D)\,\boldsymbol\delta=-\mathbf J^{\!\top}\boldsymbol\epsilon$$</p></div>
+<div class="panel amber"><h3>Adapt $\lambda$</h3><p>Accept or reject each trial; tune $\lambda$ from the trust ratio.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Levenberg-Marquardt</span></div>
+<aside class="speaker-notes">Levenberg-Marquardt augments the diagonal of the normal matrix with a damping term lambda. Small lambda recovers Gauss-Newton; large lambda yields a short gradient-descent step. After each trial the step is accepted or rejected and lambda is adapted from the trust ratio, the agreement between predicted and actual reduction.</aside>
+</section>
+
+<section class="slide" data-label="Damping as a Trust Region">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Damping as a Trust Region</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Trust shrinks with $\lambda$</h3><p>Larger damping trusts a smaller neighborhood, so the step shortens.</p></div>
+<div class="panel teal"><h3>Notebook check</h3><p>Step norms fell as $\lambda$ rose: $0.26\to0.26\to0.06\to0.008$.</p></div>
+<div class="panel amber"><h3>Predicted gain</h3><p>The local quadratic model keeps a positive predicted reduction.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Concentric trust radii with damped steps of decreasing length bending toward steepest descent">
+<rect x="0" y="0" width="380" height="240" fill="#fffbeb"/>
+<circle cx="90" cy="160" r="120" fill="none" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="4 4"/>
+<circle cx="90" cy="160" r="80" fill="none" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="4 4"/>
+<circle cx="90" cy="160" r="42" fill="none" stroke="#CBD5E1" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="90" y1="160" x2="200" y2="58" stroke="#2563EB" stroke-width="2.6"/>
+<text x="205" y="56" font-size="12" fill="#2563EB">&#955;=0 (GN)</text>
+<line x1="90" y1="160" x2="158" y2="98" stroke="#6D28D9" stroke-width="2.6"/>
+<text x="162" y="96" font-size="12" fill="#6D28D9">&#955;=10</text>
+<line x1="90" y1="160" x2="120" y2="128" stroke="#B45309" stroke-width="2.6"/>
+<text x="124" y="126" font-size="12" fill="#B45309">&#955;=100</text>
+<circle cx="90" cy="160" r="4" fill="#0F766E"/>
+<text x="40" y="180" font-size="12" fill="#0F766E">current</text>
+</svg><figcaption class="small">Higher $\lambda$ shortens the step and turns it toward descent.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Damping as a Trust Region</span></div>
+<aside class="speaker-notes">Reframe damping geometrically: increasing lambda shrinks the region in which we trust the local quadratic model, so the step gets shorter and bends toward steepest descent. The notebook confirms step norms fall monotonically as lambda grows while predicted reductions stay positive, exactly the trust-region picture.</aside>
+</section>
+
+<section class="slide alt" data-label="Convergence Diagnostics">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Convergence Diagnostics</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Four traces</h3><p>Accepted objective, damping $\lambda$, trust ratio, pixel residuals.</p></div>
+<div class="panel teal"><h3>Trust ratio</h3><p>Actual reduction over predicted; near $1$ means the model is reliable.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Acceptance test</div><p class="formula">$$\rho=\frac{C(\mathbf P)-C(\mathbf P+\boldsymbol\delta)}{\text{predicted reduction}}$$</p></div>
+<div class="panel amber"><h3>Result</h3><p>Objective $2.4\!\times\!10^5\!\to\!15$; median error below one pixel.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Convergence Diagnostics</span></div>
+<aside class="speaker-notes">A final parameter vector is not evidence. We audit four traces together: accepted objective, damping lambda, the trust ratio comparing actual to predicted reduction, and pixel residual statistics. Accepted objectives are monotone non-increasing, and the median pixel error falls below one pixel by the end.</aside>
+</section>
+
+<section class="slide" data-label="Parametrization and the Manifold">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Parametrization and the Manifold</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Over-parametrization</h3><p>Redundant coordinates (e.g. a $4$-vector for a rotation) carry a constraint.</p></div>
+<div class="panel blue"><h3>Minimal local chart</h3><p>Use the right number of free directions in the tangent space.</p></div>
+<div class="panel teal"><h3>Update on manifold</h3><p>Apply the increment so each step respects the geometry.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="A curved manifold with a tangent plane at a point and an increment mapped back onto the surface">
+<rect x="0" y="0" width="380" height="240" fill="#eff6ff"/>
+<path d="M30,170 C120,90 260,90 350,170" fill="none" stroke="#0F766E" stroke-width="2.4"/>
+<path d="M30,200 C120,120 260,120 350,200" fill="none" stroke="#CBD5E1" stroke-width="1.4"/>
+<polygon points="150,70 290,70 250,120 110,120" fill="#6D28D9" fill-opacity="0.10" stroke="#6D28D9" stroke-width="1.6"/>
+<circle cx="200" cy="95" r="4" fill="#2563EB"/>
+<text x="150" y="60" font-size="12" fill="#6D28D9">tangent space</text>
+<line x1="200" y1="95" x2="262" y2="86" stroke="#B45309" stroke-width="2.4" marker-end="url(#ar)"/>
+<path d="M262,86 C268,110 252,130 240,138" fill="none" stroke="#B45309" stroke-width="1.6" stroke-dasharray="4 3"/>
+<circle cx="240" cy="138" r="4" fill="#B45309"/>
+<text x="206" y="92" font-size="12" fill="#B45309">&#948;</text>
+<text x="244" y="155" font-size="12" fill="#0F766E">updated point</text>
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#B45309"/></marker></defs>
+</svg><figcaption class="small">Increment in the tangent space, retracted onto the manifold.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Parametrization and the Manifold</span></div>
+<aside class="speaker-notes">Many vision quantities live on manifolds, not flat vector spaces. Over-parametrization with a constraint or a redundant rotation representation distorts the update. We prefer a minimal local parametrization and apply the increment on the manifold so each step respects the geometry of the unknown.</aside>
+</section>
+
+<section class="slide alt" data-label="Robust Cost and Influence">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Robust Cost and Influence</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Attenuated residual</h3><p>Rewrite a robust cost as a weighted residual norm.</p></div>
+<div class="panel teal"><h3>Reweighting</h3><p>Iterate the weighted solve; outliers earn small weights.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Weight from cost</div><p class="formula">$$w=\frac{\sqrt{C(\delta)}}{\delta},\qquad C(\mathbf P)=\tfrac12\sum_i w_i^2\,\epsilon_i^2$$</p></div>
+<div class="panel amber"><h3>Notebook result</h3><p>Cauchy attenuation cut clean-data error $6.0\!\to\!1.3$ px; outliers stay visible.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Robust Cost and Influence</span></div>
+<aside class="speaker-notes">Outliers wreck a pure least-squares fit. A robust cost is rewritten as a weighted residual norm with an attenuation factor, downweighting large residuals through iteratively reweighted solves. The notebook shows Cauchy attenuation cutting outlier influence while keeping the bad points visible in the diagnostic, not deleted.</aside>
+</section>
+
+<section class="slide" data-label="Sparse Bundle Adjustment">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Sparse Bundle Adjustment</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Block split</h3><p>Unknowns separate into camera blocks and point blocks.</p></div>
+<div class="panel teal"><h3>Locality</h3><p>One observation touches exactly one camera and one point.</p></div>
+<div class="panel amber"><h3>Arrowhead</h3><p>Block-diagonal $\mathbf B$, $\mathbf C$ with a coupling band $\mathbf E$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="A block arrowhead normal matrix with a camera diagonal block, a point diagonal block, and off-diagonal coupling">
+<rect x="0" y="0" width="380" height="250" fill="#f0fdfa"/>
+<rect x="60" y="30" width="70" height="70" fill="#2563EB" fill-opacity="0.18" stroke="#2563EB" stroke-width="2"/>
+<text x="78" y="70" font-size="16" fill="#2563EB">B</text>
+<rect x="130" y="30" width="190" height="70" fill="#B45309" fill-opacity="0.12" stroke="#B45309" stroke-width="1.6"/>
+<text x="215" y="70" font-size="16" fill="#B45309">E</text>
+<rect x="60" y="100" width="70" height="150" fill="#B45309" fill-opacity="0.12" stroke="#B45309" stroke-width="1.6"/>
+<text x="82" y="180" font-size="16" fill="#B45309">E&#7488;</text>
+<g stroke="#0F766E" stroke-width="2" fill="#0F766E" fill-opacity="0.18">
+<rect x="130" y="100" width="48" height="48"/>
+<rect x="178" y="148" width="48" height="48"/>
+<rect x="226" y="196" width="48" height="48"/>
+</g>
+<text x="278" y="180" font-size="16" fill="#0F766E">C</text>
+<text x="70" y="22" font-size="12" fill="#475569">cameras</text>
+<text x="180" y="22" font-size="12" fill="#475569">points</text>
+</svg><figcaption class="small">Block arrowhead structure of the bundle normal matrix.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Sparse Bundle Adjustment</span></div>
+<aside class="speaker-notes">In bundle adjustment the unknowns split into camera blocks and point blocks, and one observation touches exactly one camera and one point. The normal matrix gains a block arrowhead structure. Exploiting this sparsity is what makes adjusting thousands of cameras and points computationally tractable at all.</aside>
+</section>
+
+<section class="slide alt" data-label="The Schur Complement Reduction">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>The Schur Complement Reduction</h2>
+<div class="content">
+<div class="stack">
+<div class="panel violet"><h3>Eliminate points</h3><p>Fold point information into the camera block first.</p></div>
+<div class="panel blue"><h3>Reduced solve</h3><p>Solve the small camera system, then back-substitute for points.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Schur complement</div><p class="formula">$$(\mathbf B-\mathbf E\,\mathbf C^{-1}\mathbf E^{\!\top})\,\boldsymbol\delta_c=-\mathbf g_c+\mathbf E\,\mathbf C^{-1}\mathbf g_p$$</p></div>
+<div class="panel teal"><h3>Verified</h3><p>Schur camera and point steps match the dense solve to $\sim\!10^{-14}$.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>The Schur Complement Reduction</span></div>
+<aside class="speaker-notes">Eliminate the point blocks first. The Schur complement folds point information into a much smaller reduced camera system, which we solve, then back-substitute for the points. The notebook verifies the Schur camera and point steps match the dense solve to machine precision: same step, cheaper route.</aside>
+</section>
+
+<section class="slide" data-label="Synthesis and Takeaways">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 06</span></div>
+<h2>Synthesis and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Core loop</h3><p>Iterative estimation is local linearization plus disciplined step acceptance.</p></div>
+<div class="panel violet"><h3>LM</h3><p>Interpolates cautious descent and fast Gauss-Newton via $\lambda$.</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Robustness</h3><p>Robust costs change influence, not the existence of a measurement.</p></div>
+<div class="panel amber"><h3>Scale</h3><p>Schur structure is why large multiple-view problems stay tractable.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 597-627</span><span>Synthesis and Takeaways</span></div>
+<aside class="speaker-notes">Tie the appendix together: iterative estimation is repeated local linearization plus disciplined step acceptance. Levenberg-Marquardt interpolates cautious descent and fast Gauss-Newton. Robust costs change influence, not existence. Schur structure is the computational reason large multiple-view optimizations are solvable. Always keep the starting estimate and residual units in view.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

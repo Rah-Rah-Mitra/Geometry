@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="appendix-04">
+<meta name="chapter_title" content="Appendix 04: Matrix Properties and Decompositions">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-04-matrix-properties-and-decompositions/a04-matrix-properties-and-decompositions.ipynb">
+<meta name="source_span" content="printed pages 578-587; PDF pages 596-605.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Appendix 04: Matrix Properties and Decompositions</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"appendix-04","chapter_title":"Appendix 04: Matrix Properties and Decompositions","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-04-matrix-properties-and-decompositions/a04-matrix-properties-and-decompositions.ipynb","source_span":"printed pages 578-587; PDF pages 596-605.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Matrix Properties and Decompositions","notes":"This appendix is the linear-algebra toolbox standing behind every camera, epipole, homography, and tensor estimate in the book. Across these ten printed pages we tour the SVD, eigen and Cholesky factorizations, and the QR and RQ decompositions, treating each one as a geometric act on vectors rather than a recipe."},
+{"slide":2,"label":"Rank and Null Space","notes":"Rank counts the independent columns, while the null space collects every direction the matrix annihilates. In vision these are not abstractions: a homogeneous solution is a null vector, and a constraint matrix that should be rank deficient announces estimable structure exactly when its smallest singular value drops toward zero."},
+{"slide":3,"label":"The Singular Value Decomposition","notes":"Every real matrix factors as a rotation, an axis-aligned scaling, and another rotation. The singular values are the scale factors along the principal axes. This rotate-scale-rotate picture is the single most useful mental model in the appendix, because it reduces an opaque matrix to three geometric moves."},
+{"slide":4,"label":"Null Space from the SVD","notes":"When we minimize the norm of A x subject to unit x, the answer is the last column of V, the right singular vector with the smallest singular value. Almost every linear estimator in the course, from the DLT homography to the fundamental matrix, ends with exactly this one line."},
+{"slide":5,"label":"Low-Rank Approximation","notes":"Zeroing the smallest singular values gives the closest rank r matrix in Frobenius and spectral norm, the Eckart and Young theorem. This is how we force the fundamental matrix to rank two and how noisy measurement or track matrices are cleaned by discarding the singular values that merely encode noise."},
+{"slide":6,"label":"Eigen-decomposition and Symmetry","notes":"A symmetric matrix has real eigenvalues and an orthonormal eigenbasis, so it diagonalizes by a rotation. Positive definiteness means every eigenvalue is strictly positive, which is what makes a covariance matrix valid and a conic a genuine ellipse rather than a degenerate or imaginary curve."},
+{"slide":7,"label":"QR and RQ Decomposition","notes":"QR writes a matrix as an orthogonal factor times upper triangular; RQ reverses the order to upper triangular times orthogonal. RQ is the one we want for cameras, because the calibration matrix is upper triangular and the orientation is a rotation, matching the physical structure of a finite projective camera."},
+{"slide":8,"label":"Factoring the Camera P","notes":"The left three by three block of a finite camera is calibration times rotation. RQ recovers both: K is the upper-triangular intrinsics and R is the rotation. We fix signs so the focal lengths are positive and the determinant of R equals one, then read the centre from the remaining column."},
+{"slide":9,"label":"Cholesky and the Absolute Conic","notes":"A positive definite matrix factors as a lower triangular times its transpose. Applied to the image of the absolute conic, Cholesky extracts the calibration directly: omega equals K inverse transpose times K inverse, so factoring omega and inverting gives K without ever decomposing a full camera matrix."},
+{"slide":10,"label":"Pseudo-inverse and Conditioning","notes":"The pseudo-inverse inverts the nonzero singular values and solves least squares; the back-projection of an image point through a camera uses it directly. The condition number, the ratio of largest to smallest singular value, predicts how measurement noise is amplified, which is why data normalization matters so much in practice."},
+{"slide":11,"label":"Skew-Symmetric Matrices","notes":"The cross product a cross b equals the skew matrix of a times b. That skew matrix is rank two, and its one-dimensional null space is the vector a itself. This is the algebra behind epipolar lines, the essential matrix, and triangulation constraints written as vanishing cross products."},
+{"slide":12,"label":"Toolbox Recap","notes":"Hold on to the rotate-scale-rotate picture of the SVD, the last column of V as a null space, rank-r truncation as the closest low-rank matrix, RQ as the camera factorization, and Cholesky as the route from omega to K. Each decomposition turns a matrix back into geometry you can reason about."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Matrix Properties and Decompositions">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h1>Matrix Properties and Decompositions</h1>
+<p class="lead">The linear-algebra toolbox behind cameras, epipoles, and homographies</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Decompositions as geometry</h3><p>SVD, eigen, Cholesky, QR / RQ — each one turns coefficients back into geometric action.</p></div>
+<div class="panel teal"><h3>Why it matters</h3><p>Null spaces solve homogeneous systems; RQ factors a camera; Cholesky extracts calibration.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="A matrix factored into three labelled blocks">
+<rect x="0" y="0" width="380" height="230" fill="#f8fafc"/>
+<rect x="20" y="60" width="80" height="80" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="60" y="105" font-size="22" fill="#2563EB" text-anchor="middle" font-style="italic">A</text>
+<text x="120" y="105" font-size="26" fill="#475569" text-anchor="middle">=</text>
+<rect x="150" y="60" width="60" height="80" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<text x="180" y="105" font-size="20" fill="#0F766E" text-anchor="middle">U</text>
+<rect x="216" y="60" width="60" height="80" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="246" y="105" font-size="20" fill="#B45309" text-anchor="middle">D</text>
+<rect x="282" y="60" width="60" height="80" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/>
+<text x="312" y="105" font-size="20" fill="#6D28D9" text-anchor="middle">Vᵀ</text>
+<text x="190" y="175" font-size="17" fill="#64748B" text-anchor="middle">rotate · scale · rotate</text>
+</svg><figcaption class="small">One matrix, three geometric moves.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Matrix Properties and Decompositions</span></div>
+<aside class="speaker-notes">This appendix is the linear-algebra toolbox standing behind every camera, epipole, homography, and tensor estimate in the book. Across these ten printed pages we tour the SVD, eigen and Cholesky factorizations, and the QR and RQ decompositions, treating each one as a geometric act on vectors rather than a recipe.</aside>
+</section>
+
+<section class="slide alt" data-label="Rank and Null Space">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Rank and Null Space</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Rank</h3><p>Number of independent columns: the dimension of the image of the map.</p></div>
+<div class="panel violet"><h3>Null space</h3><p>All directions sent to zero. A homogeneous solution lives here.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Rank-nullity</div><p class="formula">$\operatorname{rank}(A) + \dim\ker(A) = n$</p></div>
+<div class="panel teal"><h3>Vision cue</h3><p>A constraint matrix that should be rank deficient flags estimable structure when its smallest singular value collapses.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Rank and Null Space</span></div>
+<aside class="speaker-notes">Rank counts the independent columns, while the null space collects every direction the matrix annihilates. In vision these are not abstractions: a homogeneous solution is a null vector, and a constraint matrix that should be rank deficient announces estimable structure exactly when its smallest singular value drops toward zero.</aside>
+</section>
+
+<section class="slide" data-label="The Singular Value Decomposition">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>The Singular Value Decomposition</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Factorization</div><p class="formula">$A = U D V^{\mathsf T}$</p></div>
+<div class="panel amber"><h3>Read it geometrically</h3><p>$V^{\mathsf T}$ rotates, $D$ scales along axes by the singular values $\sigma_i \ge 0$, $U$ rotates again.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 400 230" width="100%" role="img" aria-label="Unit circle rotated, scaled to an ellipse, then rotated again">
+<rect x="0" y="0" width="400" height="230" fill="#ffffff"/>
+<circle cx="70" cy="115" r="40" fill="none" stroke="#2563EB" stroke-width="2.5"/>
+<text x="70" y="180" font-size="15" fill="#2563EB" text-anchor="middle">unit ball</text>
+<path d="M120 115 L160 115" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
+<ellipse cx="240" cy="115" rx="58" ry="26" fill="none" stroke="#B45309" stroke-width="2.5" transform="rotate(-22 240 115)"/>
+<line x1="240" y1="115" x2="294" y2="93" stroke="#0F766E" stroke-width="2"/>
+<line x1="240" y1="115" x2="230" y2="139" stroke="#6D28D9" stroke-width="2"/>
+<text x="300" y="86" font-size="14" fill="#0F766E">σ₁</text>
+<text x="208" y="150" font-size="14" fill="#6D28D9">σ₂</text>
+<text x="240" y="190" font-size="15" fill="#B45309" text-anchor="middle">image ellipse</text>
+<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+</svg><figcaption class="small">Singular values are the ellipse semi-axes.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>The Singular Value Decomposition</span></div>
+<aside class="speaker-notes">Every real matrix factors as a rotation, an axis-aligned scaling, and another rotation. The singular values are the scale factors along the principal axes. This rotate-scale-rotate picture is the single most useful mental model in the appendix, because it reduces an opaque matrix to three geometric moves.</aside>
+</section>
+
+<section class="slide alt" data-label="Null Space from the SVD">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Null Space from the SVD</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Homogeneous least squares</div><p class="formula">$\min_{\lVert x\rVert=1}\lVert Ax\rVert \;\Rightarrow\; x = v_n$</p></div>
+<div class="panel blue"><h3>The answer is one column</h3><p>$v_n$ is the last column of $V$, the right singular vector with the smallest $\sigma$.</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Used everywhere</h3><p>DLT homography, the fundamental matrix, conic fitting — all end on this single line.</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 170" width="100%" role="img" aria-label="A column matrix V with its last column highlighted">
+<rect x="0" y="0" width="360" height="170" fill="#f8fafc"/>
+<rect x="40" y="30" width="40" height="110" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<rect x="84" y="30" width="40" height="110" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<rect x="128" y="30" width="40" height="110" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<rect x="172" y="30" width="40" height="110" fill="#f5f3ff" stroke="#6D28D9" stroke-width="3"/>
+<text x="192" y="90" font-size="20" fill="#6D28D9" text-anchor="middle">vₙ</text>
+<text x="126" y="160" font-size="16" fill="#475569" text-anchor="middle">V</text>
+<text x="300" y="90" font-size="16" fill="#6D28D9">smallest σ</text>
+</svg><figcaption class="small">Null vector = last column of V.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Null Space from the SVD</span></div>
+<aside class="speaker-notes">When we minimize the norm of A x subject to unit x, the answer is the last column of V, the right singular vector with the smallest singular value. Almost every linear estimator in the course, from the DLT homography to the fundamental matrix, ends with exactly this one line.</aside>
+</section>
+
+<section class="slide" data-label="Low-Rank Approximation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Low-Rank Approximation</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Eckart–Young</div><p class="formula">$A_r = \sum_{i=1}^{r}\sigma_i u_i v_i^{\mathsf T}$</p></div>
+<div class="panel blue"><h3>Closest rank-$r$ matrix</h3><p>Zero the smallest singular values: $A_r$ minimizes $\lVert A - B\rVert$ over all rank-$r$ $B$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Bar chart of singular values with small ones truncated">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<line x1="40" y1="170" x2="340" y2="170" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="55" y="40" width="34" height="130" fill="#2563EB"/>
+<rect x="100" y="70" width="34" height="100" fill="#2563EB"/>
+<rect x="145" y="110" width="34" height="60" fill="#0F766E"/>
+<line x1="195" y1="20" x2="195" y2="180" stroke="#B45309" stroke-width="2" stroke-dasharray="6 5"/>
+<rect x="205" y="150" width="34" height="20" fill="#94a3b8"/>
+<rect x="250" y="158" width="34" height="12" fill="#94a3b8"/>
+<rect x="295" y="163" width="34" height="7" fill="#94a3b8"/>
+<text x="120" y="200" font-size="15" fill="#2563EB">kept (rank r)</text>
+<text x="270" y="200" font-size="15" fill="#64748B">zeroed: noise</text>
+</svg><figcaption class="small">Truncate small σ to denoise and force rank.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Low-Rank Approximation</span></div>
+<aside class="speaker-notes">Zeroing the smallest singular values gives the closest rank r matrix in Frobenius and spectral norm, the Eckart and Young theorem. This is how we force the fundamental matrix to rank two and how noisy measurement or track matrices are cleaned by discarding the singular values that merely encode noise.</aside>
+</section>
+
+<section class="slide alt" data-label="Eigen-decomposition and Symmetry">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Eigen-decomposition and Symmetry</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Symmetric matrix</div><p class="formula">$S = Q \Lambda Q^{\mathsf T}, \quad Q^{\mathsf T}Q = I$</p></div>
+<div class="panel teal"><h3>Spectral theorem</h3><p>Real eigenvalues, orthonormal eigenvectors — $S$ diagonalizes by a pure rotation.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Positive definite</h3><p>All $\lambda_i > 0$: valid covariances and genuine ellipse conics.</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 180" width="100%" role="img" aria-label="An ellipse with its eigenvector axes drawn">
+<rect x="0" y="0" width="360" height="180" fill="#f8fafc"/>
+<ellipse cx="180" cy="90" rx="110" ry="55" fill="#f0fdfa" stroke="#0F766E" stroke-width="2.5" transform="rotate(-20 180 90)"/>
+<line x1="180" y1="90" x2="283" y2="52" stroke="#2563EB" stroke-width="2.5"/>
+<line x1="180" y1="90" x2="161" y2="142" stroke="#6D28D9" stroke-width="2.5"/>
+<text x="288" y="46" font-size="15" fill="#2563EB">√λ₁</text>
+<text x="120" y="150" font-size="15" fill="#6D28D9">√λ₂</text>
+<circle cx="180" cy="90" r="3" fill="#111827"/>
+</svg><figcaption class="small">Eigenvectors are the conic axes; √λ are the radii.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Eigen-decomposition and Symmetry</span></div>
+<aside class="speaker-notes">A symmetric matrix has real eigenvalues and an orthonormal eigenbasis, so it diagonalizes by a rotation. Positive definiteness means every eigenvalue is strictly positive, which is what makes a covariance matrix valid and a conic a genuine ellipse rather than a degenerate or imaginary curve.</aside>
+</section>
+
+<section class="slide" data-label="QR and RQ Decomposition">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>QR and RQ Decomposition</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Two orderings</div><p class="formula">$A = QR \qquad A = RQ$</p></div>
+<div class="panel blue"><h3>QR</h3><p>Orthogonal $Q$ times upper-triangular $R$. Gram–Schmidt in matrix form.</p></div>
+<div class="panel teal"><h3>RQ</h3><p>Upper-triangular $R$ times orthogonal $Q$ — the camera-friendly order.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="An upper-triangular matrix times a rotation matrix">
+<rect x="0" y="0" width="360" height="220" fill="#ffffff"/>
+<rect x="30" y="70" width="90" height="90" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<path d="M40 80 H110 M40 110 H110 M60 140 H110 M70 80 V150 M90 80 V150" stroke="#B45309" stroke-width="1" opacity="0.5"/>
+<text x="75" y="190" font-size="15" fill="#B45309" text-anchor="middle">R upper-△</text>
+<text x="135" y="120" font-size="24" fill="#475569" text-anchor="middle">×</text>
+<rect x="160" y="70" width="90" height="90" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<path d="M205 90 a30 30 0 1 0 18 8" fill="none" stroke="#0F766E" stroke-width="2" marker-end="url(#ah2)"/>
+<text x="205" y="190" font-size="15" fill="#0F766E" text-anchor="middle">Q rotation</text>
+<text x="265" y="120" font-size="24" fill="#475569" text-anchor="middle">=</text>
+<rect x="280" y="70" width="60" height="90" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="310" y="120" font-size="18" fill="#2563EB" text-anchor="middle">A</text>
+<defs><marker id="ah2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0F766E"/></marker></defs>
+</svg><figcaption class="small">RQ = triangular × rotation.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>QR and RQ Decomposition</span></div>
+<aside class="speaker-notes">QR writes a matrix as an orthogonal factor times upper triangular; RQ reverses the order to upper triangular times orthogonal. RQ is the one we want for cameras, because the calibration matrix is upper triangular and the orientation is a rotation, matching the physical structure of a finite projective camera.</aside>
+</section>
+
+<section class="slide alt" data-label="Factoring the Camera P">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Factoring the Camera P</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Finite camera</div><p class="formula">$P = K\,[\,R \mid t\,], \quad M = KR$</p></div>
+<div class="panel blue"><h3>RQ on the left block</h3><p>Apply RQ to $M = P_{1:3}$: upper-triangular $K$, rotation $R$.</p></div>
+<div class="panel amber"><h3>Sign fixing</h3><p>Force positive focal terms ($k_{ii}>0$) and $\det R = +1$; centre from $-M^{-1}p_4$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="Camera block M split into K and R blocks">
+<rect x="0" y="0" width="380" height="220" fill="#f8fafc"/>
+<rect x="20" y="80" width="80" height="80" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="60" y="125" font-size="20" fill="#2563EB" text-anchor="middle" font-style="italic">M</text>
+<text x="60" y="178" font-size="14" fill="#64748B" text-anchor="middle">P[:, :3]</text>
+<text x="115" y="125" font-size="22" fill="#475569" text-anchor="middle">=</text>
+<rect x="135" y="80" width="80" height="80" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<path d="M145 92 H205 M145 118 H205 M165 144 H205" stroke="#B45309" stroke-width="1" opacity="0.5"/>
+<text x="175" y="178" font-size="14" fill="#B45309" text-anchor="middle">K (calib △)</text>
+<text x="230" y="125" font-size="22" fill="#475569" text-anchor="middle">·</text>
+<rect x="245" y="80" width="80" height="80" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<path d="M285 100 a22 22 0 1 0 14 6" fill="none" stroke="#0F766E" stroke-width="2"/>
+<text x="285" y="178" font-size="14" fill="#0F766E" text-anchor="middle">R (rotation)</text>
+</svg><figcaption class="small">RQ splits M into intrinsics and orientation.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Factoring the Camera P</span></div>
+<aside class="speaker-notes">The left three by three block of a finite camera is calibration times rotation. RQ recovers both: K is the upper-triangular intrinsics and R is the rotation. We fix signs so the focal lengths are positive and the determinant of R equals one, then read the centre from the remaining column.</aside>
+</section>
+
+<section class="slide" data-label="Cholesky and the Absolute Conic">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Cholesky and the Absolute Conic</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Cholesky of a PD matrix</div><p class="formula">$S = L L^{\mathsf T}, \quad L \text{ lower-}\triangle$</p></div>
+<div class="panel violet"><h3>From $\omega$ to $K$</h3><p>The IAC obeys $\omega = K^{-\mathsf T}K^{-1}$. Cholesky-factor $\omega$, then invert to read off $K$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Omega factored by Cholesky to recover the calibration K">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<rect x="30" y="60" width="80" height="80" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/>
+<text x="70" y="105" font-size="22" fill="#6D28D9" text-anchor="middle">ω</text>
+<text x="70" y="160" font-size="14" fill="#64748B" text-anchor="middle">PD, symmetric</text>
+<path d="M120 100 L165 100" stroke="#0F766E" stroke-width="2.5" marker-end="url(#ah3)"/>
+<text x="142" y="90" font-size="13" fill="#0F766E" text-anchor="middle">Cholesky</text>
+<rect x="175" y="60" width="80" height="80" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<path d="M185 72 H245 M185 98 H245 M205 124 H245" stroke="#B45309" stroke-width="1" opacity="0.5"/>
+<text x="215" y="160" font-size="14" fill="#B45309" text-anchor="middle">L L ᵀ</text>
+<path d="M265 100 L305 100" stroke="#2563EB" stroke-width="2.5" marker-end="url(#ah3)"/>
+<text x="285" y="90" font-size="13" fill="#2563EB" text-anchor="middle">invert</text>
+<rect x="280" y="60" width="60" height="80" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="310" y="105" font-size="20" fill="#2563EB" text-anchor="middle">K</text>
+<defs><marker id="ah3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker></defs>
+</svg><figcaption class="small">Calibration straight out of the absolute conic.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Cholesky and the Absolute Conic</span></div>
+<aside class="speaker-notes">A positive definite matrix factors as a lower triangular times its transpose. Applied to the image of the absolute conic, Cholesky extracts the calibration directly: omega equals K inverse transpose times K inverse, so factoring omega and inverting gives K without ever decomposing a full camera matrix.</aside>
+</section>
+
+<section class="slide alt" data-label="Pseudo-inverse and Conditioning">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Pseudo-inverse and Conditioning</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Moore–Penrose</div><p class="formula">$A^{+} = V D^{+} U^{\mathsf T}$</p></div>
+<div class="panel blue"><h3>Solves least squares</h3><p>$D^{+}$ inverts the nonzero $\sigma_i$. Back-projecting an image point uses $P^{+}$.</p></div>
+<div class="panel amber"><h3>Condition number</h3><p>$\kappa = \sigma_{\max}/\sigma_{\min}$ predicts how noise is amplified — normalize data.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Two error bars showing noise amplified by conditioning">
+<rect x="0" y="0" width="360" height="200" fill="#f8fafc"/>
+<line x1="40" y1="160" x2="340" y2="160" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="70" y="120" width="60" height="40" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="100" y="180" font-size="14" fill="#2563EB" text-anchor="middle">well-cond.</text>
+<text x="100" y="110" font-size="13" fill="#2563EB" text-anchor="middle">κ ≈ 1</text>
+<rect x="230" y="40" width="60" height="120" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="260" y="180" font-size="14" fill="#B45309" text-anchor="middle">ill-cond.</text>
+<text x="260" y="30" font-size="13" fill="#B45309" text-anchor="middle">κ ≫ 1</text>
+<text x="180" y="95" font-size="15" fill="#64748B" text-anchor="middle">output error</text>
+</svg><figcaption class="small">Large κ inflates measurement noise.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Pseudo-inverse and Conditioning</span></div>
+<aside class="speaker-notes">The pseudo-inverse inverts the nonzero singular values and solves least squares; the back-projection of an image point through a camera uses it directly. The condition number, the ratio of largest to smallest singular value, predicts how measurement noise is amplified, which is why data normalization matters so much in practice.</aside>
+</section>
+
+<section class="slide" data-label="Skew-Symmetric Matrices">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Skew-Symmetric Matrices</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Cross product as a matrix</div><p class="formula">$a \times b = [a]_\times\, b$</p></div>
+<div class="panel teal"><h3>Rank two, null vector $a$</h3><p>$[a]_\times$ is $3\times3$, rank $2$; its one-dimensional null space is $a$ itself.</p></div>
+<div class="panel violet"><h3>Where it appears</h3><p>Epipolar lines, the essential matrix $E=[t]_\times R$, triangulation constraints.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Two vectors a and b with their cross product perpendicular">
+<rect x="0" y="0" width="360" height="210" fill="#ffffff"/>
+<circle cx="120" cy="140" r="3" fill="#111827"/>
+<line x1="120" y1="140" x2="250" y2="120" stroke="#2563EB" stroke-width="2.5" marker-end="url(#ah4)"/>
+<text x="258" y="118" font-size="16" fill="#2563EB">a</text>
+<line x1="120" y1="140" x2="180" y2="50" stroke="#0F766E" stroke-width="2.5" marker-end="url(#ah4)"/>
+<text x="184" y="46" font-size="16" fill="#0F766E">b</text>
+<line x1="120" y1="140" x2="95" y2="55" stroke="#B45309" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#ah4)"/>
+<text x="70" y="50" font-size="16" fill="#B45309">a×b</text>
+<text x="180" y="195" font-size="14" fill="#64748B" text-anchor="middle">a×b ⟂ both; [a]ₓ a = 0</text>
+<defs><marker id="ah4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#475569"/></marker></defs>
+</svg><figcaption class="small">Skew matrix encodes the cross product.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Skew-Symmetric Matrices</span></div>
+<aside class="speaker-notes">The cross product a cross b equals the skew matrix of a times b. That skew matrix is rank two, and its one-dimensional null space is the vector a itself. This is the algebra behind epipolar lines, the essential matrix, and triangulation constraints written as vanishing cross products.</aside>
+</section>
+
+<section class="slide alt" data-label="Toolbox Recap">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 04</span></div>
+<h2>Toolbox Recap</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>SVD</h3><p>Rotate–scale–rotate; null space is $v_n$; rank-$r$ truncation is the closest low-rank matrix.</p></div>
+<div class="panel teal"><h3>RQ</h3><p>Factor $M=KR$ into upper-triangular calibration and rotation.</p></div>
+</div>
+<div class="stack">
+<div class="panel violet"><h3>Cholesky</h3><p>$\omega = K^{-\mathsf T}K^{-1}$ gives $K$ from the absolute conic.</p></div>
+<div class="panel amber"><h3>Diagnostics</h3><p>Pseudo-inverse for least squares; condition number for noise sensitivity; skew matrices for cross products.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 578-587</span><span>Toolbox Recap</span></div>
+<aside class="speaker-notes">Hold on to the rotate-scale-rotate picture of the SVD, the last column of V as a null space, rank-r truncation as the closest low-rank matrix, RQ as the camera factorization, and Cholesky as the route from omega to K. Each decomposition turns a matrix back into geometry you can reason about.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

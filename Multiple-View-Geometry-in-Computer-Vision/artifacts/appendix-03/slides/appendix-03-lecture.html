@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="appendix-03">
+<meta name="chapter_title" content="Appendix 03: Parameter Estimation">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-03-parameter-estimation/a03-parameter-estimation.ipynb">
+<meta name="source_span" content="printed pages 568-577; PDF pages 586-595.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Appendix 03: Parameter Estimation</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"appendix-03","chapter_title":"Appendix 03: Parameter Estimation","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-03-parameter-estimation/a03-parameter-estimation.ipynb","source_span":"printed pages 568-577; PDF pages 586-595.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Parameter Estimation","notes":"This appendix spans printed pages 568 through 577 and underpins every gold-standard method in the book. We frame estimation as recovering parameters from noisy measurements, then derive why minimizing geometric reprojection error is the principled choice rather than a convenient heuristic."},
+{"slide":2,"label":"The Measurement Model","notes":"Everything starts with a model: measurements equal a deterministic function of the parameters plus random noise. Fixing the noise distribution is what converts a vague fitting problem into a well-posed statistical one, and it dictates which cost function we should actually minimize."},
+{"slide":3,"label":"Maximum Likelihood","notes":"Maximum likelihood selects the parameters that make the observed data most probable. For independent isotropic Gaussian noise the log-likelihood reduces to a negative sum of squared residuals, so the maximum likelihood estimate is exactly the least-squares minimizer of geometric error."},
+{"slide":4,"label":"Likelihood Surface and the MLE","notes":"The likelihood is a surface over parameter space whose peak is the maximum likelihood estimate. Curvature at that peak controls how sharply the data pin the parameters; a broad flat ridge signals a poorly conditioned or near-degenerate estimation problem."},
+{"slide":5,"label":"MAP and Bayesian Estimation","notes":"A prior multiplies the likelihood to give a posterior, and its mode is the maximum a posteriori estimate. The prior pulls the solution away from the raw maximum likelihood point toward prior belief, while full Bayesian estimation keeps the whole posterior instead of one number."},
+{"slide":6,"label":"Bias and Variance","notes":"We judge an estimator by two quantities: bias measures systematic offset of its average from the truth, variance measures its scatter under resampling. Mean squared error decomposes into both, so a slightly biased estimator can still beat an unbiased but high-variance competitor."},
+{"slide":7,"label":"Fisher Information","notes":"The Fisher information matrix is the expected curvature of the log-likelihood, equivalently the variance of the score. Large Fisher information means the likelihood is sharply peaked and the data are highly informative about the parameters, which is the quantity the Cramer-Rao bound depends on."},
+{"slide":8,"label":"The Cramer-Rao Lower Bound","notes":"The Cramer-Rao bound states that any unbiased estimator has covariance no smaller than the inverse Fisher information. It sets a hard floor on achievable precision; an estimator that meets it is efficient, and maximum likelihood attains it asymptotically as samples grow."},
+{"slide":9,"label":"Algebraic vs Geometric Error","notes":"Linear algorithms minimize an algebraic residual that is fast but lacks statistical meaning and weights points unevenly. Geometric or reprojection error measures true image-plane distance, so its minimizer is the maximum likelihood estimate under Gaussian image noise and is the gold standard."},
+{"slide":10,"label":"Nuisance Parameters","notes":"Triangulation and reconstruction carry nuisance parameters such as the unknown scene points that we must estimate but do not ultimately care about. They inflate the problem dimension yet are essential; profiling or marginalizing them yields a correct covariance for the parameters we want."},
+{"slide":11,"label":"Why the Gold Standard","notes":"Putting the pieces together: the Gaussian measurement model makes maximum likelihood equal to least-squares geometric error, the Cramer-Rao bound certifies its optimal precision, and a linear estimate supplies the starting point. This is exactly why reprojection-error minimization is the book's gold standard."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Parameter Estimation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h1>Parameter Estimation</h1>
+<p class="lead">From noisy measurements to principled parameters</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The question</h3><p>Given noisy image data, which model parameters do we trust?</p></div>
+<div class="panel teal"><h3>The answer</h3><p>A noise model plus likelihood justifies minimizing geometric error.</p></div>
+<div class="panel amber"><h3>The payoff</h3><p>This is the statistical backbone of every gold-standard algorithm.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 220" width="100%" role="img" aria-label="Noisy measurements scattered around a fitted line in the image plane">
+<rect x="0" y="0" width="360" height="220" fill="#f0fdfa"/>
+<line x1="30" y1="190" x2="340" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="30" y1="20" x2="30" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="170" x2="330" y2="50" stroke="#2563EB" stroke-width="3"/>
+<circle cx="70" cy="158" r="4" fill="#0F766E"/><circle cx="110" cy="150" r="4" fill="#0F766E"/><circle cx="150" cy="120" r="4" fill="#0F766E"/><circle cx="190" cy="118" r="4" fill="#0F766E"/><circle cx="230" cy="92" r="4" fill="#0F766E"/><circle cx="270" cy="84" r="4" fill="#0F766E"/><circle cx="300" cy="58" r="4" fill="#0F766E"/>
+<line x1="150" y1="120" x2="150" y2="139" stroke="#B45309" stroke-width="2" stroke-dasharray="3 2"/>
+<line x1="230" y1="92" x2="230" y2="79" stroke="#B45309" stroke-width="2" stroke-dasharray="3 2"/>
+<text x="250" y="180" font-size="13" fill="#2563EB">f(x;θ)</text>
+<text x="120" y="150" font-size="12" fill="#B45309">residual</text>
+</svg><figcaption class="small">Measurements (teal) scatter around the model (blue); residuals (amber) drive estimation.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Parameter Estimation</span></div>
+<aside class="speaker-notes">This appendix spans printed pages 568 through 577 and underpins every gold-standard method in the book. We frame estimation as recovering parameters from noisy measurements, then derive why minimizing geometric reprojection error is the principled choice rather than a convenient heuristic.</aside>
+</section>
+
+<section class="slide alt" data-label="The Measurement Model">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>The Measurement Model</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Signal plus noise</h3><p>Each observation is a deterministic prediction corrupted by random error.</p></div>
+<div class="panel amber"><h3>Noise model matters</h3><p>Choosing the error distribution turns fitting into a well-posed problem.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Model</div><p class="formula">$\mathbf{y} = f(\mathbf{x};\boldsymbol\theta) + \boldsymbol\varepsilon, \quad \boldsymbol\varepsilon \sim \mathcal{N}(\mathbf{0},\Sigma)$</p></div>
+<div class="panel teal"><h3>In vision</h3><p>$f$ is projection; $\boldsymbol\theta$ holds camera, point, or tensor parameters.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>The Measurement Model</span></div>
+<aside class="speaker-notes">Everything starts with a model: measurements equal a deterministic function of the parameters plus random noise. Fixing the noise distribution is what converts a vague fitting problem into a well-posed statistical one, and it dictates which cost function we should actually minimize.</aside>
+</section>
+
+<section class="slide" data-label="Maximum Likelihood">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>Maximum Likelihood</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Definition</h3><p>Pick the parameters that make the observed data most probable.</p></div>
+<div class="panel teal"><h3>Gaussian case</h3><p>Log-likelihood becomes a negative sum of squared residuals.</p></div>
+<div class="panel amber"><h3>Consequence</h3><p>ML estimate equals the least-squares geometric-error minimizer.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Estimator</div><p class="formula">$\hat{\boldsymbol\theta}_{\mathrm{ML}} = \arg\max_{\boldsymbol\theta} \prod_i p(\mathbf{y}_i\mid\boldsymbol\theta)$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Reduces to</div><p class="formula">$\arg\min_{\boldsymbol\theta} \sum_i \lVert \mathbf{y}_i - f(\mathbf{x}_i;\boldsymbol\theta)\rVert^2$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Maximum Likelihood</span></div>
+<aside class="speaker-notes">Maximum likelihood selects the parameters that make the observed data most probable. For independent isotropic Gaussian noise the log-likelihood reduces to a negative sum of squared residuals, so the maximum likelihood estimate is exactly the least-squares minimizer of geometric error.</aside>
+</section>
+
+<section class="slide alt" data-label="Likelihood Surface and the MLE">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>Likelihood Surface and the MLE</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The peak</h3><p>The MLE sits at the top of the likelihood surface.</p></div>
+<div class="panel violet"><h3>Curvature</h3><p>Sharp peak means precise; flat ridge means weakly constrained.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A bell-shaped likelihood surface with its peak marking the maximum likelihood estimate">
+<rect x="0" y="0" width="360" height="230" fill="#fff"/>
+<line x1="30" y1="200" x2="340" y2="200" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="30" y1="20" x2="30" y2="200" stroke="#CBD5E1" stroke-width="2"/>
+<path d="M40 198 C 120 196, 150 40, 185 40 C 220 40, 250 196, 330 198" fill="none" stroke="#2563EB" stroke-width="3"/>
+<line x1="185" y1="40" x2="185" y2="200" stroke="#B45309" stroke-width="2" stroke-dasharray="4 3"/>
+<circle cx="185" cy="40" r="5" fill="#B45309"/>
+<path d="M120 196 C 150 120, 220 120, 250 196" fill="none" stroke="#0F766E" stroke-width="2" stroke-dasharray="3 2"/>
+<text x="150" y="34" font-size="13" fill="#B45309">MLE</text>
+<text x="280" y="125" font-size="12" fill="#0F766E">curvature</text>
+<text x="300" y="218" font-size="13" fill="#475569">θ</text>
+</svg><figcaption class="small">Peak gives the estimate; curvature at the peak sets its precision.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Likelihood Surface and the MLE</span></div>
+<aside class="speaker-notes">The likelihood is a surface over parameter space whose peak is the maximum likelihood estimate. Curvature at that peak controls how sharply the data pin the parameters; a broad flat ridge signals a poorly conditioned or near-degenerate estimation problem.</aside>
+</section>
+
+<section class="slide" data-label="MAP and Bayesian Estimation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>MAP and Bayesian Estimation</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Posterior</h3><p>Prior times likelihood, normalized, gives the posterior over parameters.</p></div>
+<div class="panel violet"><h3>MAP estimate</h3><p>The posterior mode shifts from the MLE toward the prior.</p></div>
+<div class="panel teal"><h3>Full Bayesian</h3><p>Keep the whole posterior, not just a single point estimate.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Bayes rule</div><p class="formula">$p(\boldsymbol\theta\mid\mathbf{y}) \propto p(\mathbf{y}\mid\boldsymbol\theta)\, p(\boldsymbol\theta)$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 150" width="100%" role="img" aria-label="A prior distribution shifting the likelihood peak to the maximum a posteriori estimate">
+<rect x="0" y="0" width="360" height="150" fill="#f5f3ff"/>
+<line x1="20" y1="125" x2="345" y2="125" stroke="#CBD5E1" stroke-width="2"/>
+<path d="M30 124 C 120 122, 150 40, 185 40 C 220 40, 250 122, 340 124" fill="none" stroke="#2563EB" stroke-width="2.5"/>
+<path d="M30 124 C 90 122, 110 70, 135 70 C 160 70, 180 122, 300 124" fill="none" stroke="#0F766E" stroke-width="2.5" stroke-dasharray="4 3"/>
+<path d="M30 124 C 110 122, 140 54, 168 54 C 196 54, 226 122, 340 124" fill="none" stroke="#6D28D9" stroke-width="2.5"/>
+<line x1="185" y1="40" x2="185" y2="125" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="2 2"/>
+<line x1="168" y1="54" x2="168" y2="125" stroke="#6D28D9" stroke-width="1.5" stroke-dasharray="2 2"/>
+<text x="190" y="36" font-size="11" fill="#2563EB">ML</text>
+<text x="105" y="66" font-size="11" fill="#0F766E">prior</text>
+<text x="130" y="50" font-size="11" fill="#6D28D9">MAP</text>
+</svg><figcaption class="small">The prior (teal) pulls the ML peak (blue) to the MAP estimate (violet).</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>MAP and Bayesian Estimation</span></div>
+<aside class="speaker-notes">A prior multiplies the likelihood to give a posterior, and its mode is the maximum a posteriori estimate. The prior pulls the solution away from the raw maximum likelihood point toward prior belief, while full Bayesian estimation keeps the whole posterior instead of one number.</aside>
+</section>
+
+<section class="slide alt" data-label="Bias and Variance">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>Bias and Variance</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Bias</h3><p>Systematic gap between the estimator's average and the truth.</p></div>
+<div class="panel violet"><h3>Variance</h3><p>Scatter of the estimate under repeated noisy samples.</p></div>
+<div class="panel teal"><h3>Trade-off</h3><p>A little bias can lower total error if it cuts variance.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">MSE decomposition</div><p class="formula">$\mathrm{MSE}(\hat\theta) = \mathrm{Bias}(\hat\theta)^2 + \mathrm{Var}(\hat\theta)$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 150" width="100%" role="img" aria-label="A cloud of estimates scattered around the true value, with mean offset showing bias">
+<rect x="0" y="0" width="360" height="150" fill="#fff"/>
+<circle cx="120" cy="75" r="42" fill="none" stroke="#6D28D9" stroke-width="1.5" stroke-dasharray="4 3"/>
+<circle cx="110" cy="60" r="2.5" fill="#2563EB"/><circle cx="135" cy="70" r="2.5" fill="#2563EB"/><circle cx="100" cy="85" r="2.5" fill="#2563EB"/><circle cx="128" cy="92" r="2.5" fill="#2563EB"/><circle cx="118" cy="68" r="2.5" fill="#2563EB"/><circle cx="142" cy="82" r="2.5" fill="#2563EB"/><circle cx="105" cy="72" r="2.5" fill="#2563EB"/>
+<circle cx="120" cy="75" r="5" fill="#B45309"/>
+<circle cx="240" cy="75" r="6" fill="#0F766E"/>
+<line x1="126" y1="75" x2="234" y2="75" stroke="#B45309" stroke-width="2" stroke-dasharray="3 2"/>
+<text x="150" y="68" font-size="11" fill="#B45309">bias</text>
+<text x="225" y="100" font-size="11" fill="#0F766E">truth</text>
+<text x="80" y="120" font-size="11" fill="#6D28D9">variance spread</text>
+</svg><figcaption class="small">Spread is variance; mean offset (amber) from truth (teal) is bias.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Bias and Variance</span></div>
+<aside class="speaker-notes">We judge an estimator by two quantities: bias measures systematic offset of its average from the truth, variance measures its scatter under resampling. Mean squared error decomposes into both, so a slightly biased estimator can still beat an unbiased but high-variance competitor.</aside>
+</section>
+
+<section class="slide" data-label="Fisher Information">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>Fisher Information</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Definition</h3><p>Expected curvature of the log-likelihood at the true parameter.</p></div>
+<div class="panel teal"><h3>Score variance</h3><p>Equivalently, the variance of the log-likelihood gradient.</p></div>
+<div class="panel amber"><h3>Reading</h3><p>More information means a sharper peak and more informative data.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Fisher matrix</div><p class="formula">$\mathcal{I}(\boldsymbol\theta) = -\,\mathbb{E}\!\left[\dfrac{\partial^2 \log p}{\partial\boldsymbol\theta\,\partial\boldsymbol\theta^\top}\right]$</p></div>
+<div class="panel violet"><h3>Geometry link</h3><p>It is the metric that turns parameter shifts into measurable change.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Fisher Information</span></div>
+<aside class="speaker-notes">The Fisher information matrix is the expected curvature of the log-likelihood, equivalently the variance of the score. Large Fisher information means the likelihood is sharply peaked and the data are highly informative about the parameters, which is the quantity the Cramer-Rao bound depends on.</aside>
+</section>
+
+<section class="slide alt" data-label="The Cramer-Rao Lower Bound">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>The Cramer-Rao Lower Bound</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The bound</h3><p>No unbiased estimator beats the inverse Fisher information.</p></div>
+<div class="panel teal"><h3>Efficiency</h3><p>An estimator meeting the bound is called efficient.</p></div>
+<div class="panel amber"><h3>ML is asymptotically efficient</h3><p>Maximum likelihood attains it as the sample count grows.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">CRLB</div><p class="formula">$\mathrm{Cov}(\hat{\boldsymbol\theta}) \;\succeq\; \mathcal{I}(\boldsymbol\theta)^{-1}$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 160" width="100%" role="img" aria-label="A small minimal covariance ellipse set by curvature, with a larger achievable estimator ellipse around it">
+<rect x="0" y="0" width="360" height="160" fill="#fff"/>
+<ellipse cx="180" cy="80" rx="95" ry="55" fill="#eff6ff" stroke="#2563EB" stroke-width="2.5"/>
+<ellipse cx="180" cy="80" rx="52" ry="30" fill="#f0fdfa" stroke="#0F766E" stroke-width="2.5"/>
+<circle cx="180" cy="80" r="4" fill="#B45309"/>
+<text x="200" y="40" font-size="12" fill="#2563EB">estimator covariance</text>
+<text x="148" y="80" font-size="11" fill="#0F766E">CRLB floor</text>
+<text x="160" y="150" font-size="12" fill="#475569">inverse Fisher information</text>
+</svg><figcaption class="small">The inner ellipse (teal) is the precision floor; any estimator lives outside it.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>The Cramer-Rao Lower Bound</span></div>
+<aside class="speaker-notes">The Cramer-Rao bound states that any unbiased estimator has covariance no smaller than the inverse Fisher information. It sets a hard floor on achievable precision; an estimator that meets it is efficient, and maximum likelihood attains it asymptotically as samples grow.</aside>
+</section>
+
+<section class="slide" data-label="Algebraic vs Geometric Error">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>Algebraic vs Geometric Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Algebraic error</h3><p>Cheap linear residual, but no clear statistical meaning.</p></div>
+<div class="panel teal"><h3>Geometric error</h3><p>True image-plane reprojection distance; the ML cost under Gaussian noise.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="A measured point and its reprojection, with the geometric distance between them in the image plane">
+<rect x="0" y="0" width="360" height="200" fill="#f0fdfa"/>
+<line x1="30" y1="170" x2="340" y2="170" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="30" y1="20" x2="30" y2="170" stroke="#CBD5E1" stroke-width="2"/>
+<circle cx="160" cy="80" r="6" fill="#0F766E"/>
+<circle cx="215" cy="120" r="6" fill="#2563EB"/>
+<line x1="160" y1="80" x2="215" y2="120" stroke="#B45309" stroke-width="3"/>
+<text x="120" y="74" font-size="13" fill="#0F766E">measured y</text>
+<text x="220" y="135" font-size="13" fill="#2563EB">reprojected f(x;θ)</text>
+<text x="165" y="108" font-size="12" fill="#B45309">geometric distance</text>
+</svg><figcaption class="small">Geometric error is the image-plane gap between measurement and reprojection.</figcaption></figure>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Why it matters</div><p class="formula">$\min \sum_i d\big(\mathbf{y}_i,\, f(\mathbf{x}_i;\boldsymbol\theta)\big)^2$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Algebraic vs Geometric Error</span></div>
+<aside class="speaker-notes">Linear algorithms minimize an algebraic residual that is fast but lacks statistical meaning and weights points unevenly. Geometric or reprojection error measures true image-plane distance, so its minimizer is the maximum likelihood estimate under Gaussian image noise and is the gold standard.</aside>
+</section>
+
+<section class="slide alt" data-label="Nuisance Parameters">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>Nuisance Parameters</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Definition</h3><p>Parameters we must estimate but do not ultimately care about.</p></div>
+<div class="panel teal"><h3>Example</h3><p>Unknown scene points in triangulation and bundle adjustment.</p></div>
+<div class="panel amber"><h3>Handling</h3><p>Profile or marginalize them for a correct parameter covariance.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Split</div><p class="formula">$\boldsymbol\theta = (\boldsymbol\theta_{\text{wanted}},\; \boldsymbol\theta_{\text{nuisance}})$</p></div>
+<div class="panel violet"><h3>Cost</h3><p>They enlarge the problem yet are essential to a consistent fit.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Nuisance Parameters</span></div>
+<aside class="speaker-notes">Triangulation and reconstruction carry nuisance parameters such as the unknown scene points that we must estimate but do not ultimately care about. They inflate the problem dimension yet are essential; profiling or marginalizing them yields a correct covariance for the parameters we want.</aside>
+</section>
+
+<section class="slide" data-label="Why the Gold Standard">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 03</span></div>
+<h2>Why the Gold Standard</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Model</h3><p>Gaussian image noise sets the likelihood.</p></div>
+<div class="panel teal"><h3>Estimator</h3><p>ML equals least-squares geometric error.</p></div>
+<div class="panel amber"><h3>Certificate</h3><p>Cramer-Rao bounds its achievable precision.</p></div>
+<div class="panel violet"><h3>Initialization</h3><p>A linear algebraic estimate seeds the iteration.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Gold-standard recipe</div><p class="formula">$\hat{\boldsymbol\theta} = \arg\min_{\boldsymbol\theta} \sum_i \lVert \mathbf{y}_i - f(\mathbf{x}_i;\boldsymbol\theta)\rVert^2$</p></div>
+<div class="panel blue"><h3>Takeaway</h3><p>Reprojection-error minimization is statistics made geometric.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 568-577</span><span>Why the Gold Standard</span></div>
+<aside class="speaker-notes">Putting the pieces together: the Gaussian measurement model makes maximum likelihood equal to least-squares geometric error, the Cramer-Rao bound certifies its optimal precision, and a linear estimate supplies the starting point. This is exactly why reprojection-error minimization is the book's gold standard.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

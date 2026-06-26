@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="appendix-02">
+<meta name="chapter_title" content="Appendix 02: Gaussian and Chi-square Distributions">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-02-gaussian-normal-and-chi2-distributions/a02-gaussian-normal-and-chi2-distributions.ipynb">
+<meta name="source_span" content="printed pages 565-567; PDF pages 583-585.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Appendix 02: Gaussian and Chi-square Distributions</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"appendix-02","chapter_title":"Appendix 02: Gaussian and Chi-square Distributions","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-05-appendices/appendix-02-gaussian-normal-and-chi2-distributions/a02-gaussian-normal-and-chi2-distributions.ipynb","source_span":"printed pages 565-567; PDF pages 583-585.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Gaussian and Chi-square Distributions","notes":"This short appendix on printed pages 565 to 567 supplies the statistical bridge of multiple-view geometry. A vision residual is not just a length; it is a vector measured in the units and correlations of its covariance. We turn residual magnitudes into calibrated acceptance tests using Gaussian models, Mahalanobis distance, and chi-square gates."},
+{"slide":2,"label":"The Multivariate Gaussian","notes":"The multivariate Gaussian is fixed by a mean vector and a covariance matrix. Its negative log density is, up to a constant, half the squared Mahalanobis distance, so the level sets of the density are exactly the ellipsoids of constant covariance-weighted distance. Diagonal entries set marginal variance; off-diagonal entries encode correlation."},
+{"slide":3,"label":"Covariance Sets the Ellipse","notes":"Reading the covariance geometrically is the key skill here. Eigenvectors give the principal axes of the uncertainty ellipse and eigenvalues give the squared semi-axis lengths. Correlation rotates the ellipse away from the coordinate axes. A one-pixel residual along a noisy direction must not count the same as one along a tightly constrained direction."},
+{"slide":4,"label":"Mahalanobis Distance","notes":"Mahalanobis distance is the central object. The squared form is the residual sandwiched around the inverse covariance, which is exactly ordinary squared length measured after whitening. Whitening multiplies residuals by the inverse square root of covariance, turning an anisotropic correlated cloud into an isotropic unit cloud where Euclidean comparison is finally fair."},
+{"slide":5,"label":"Whitening the Residual Cloud","notes":"This slide shows whitening as a coordinate change. The raw correlated ellipse maps to a circle once we apply the inverse square root of the covariance. In whitened coordinates the covariance becomes the identity, every direction carries equal uncertainty, and a Mahalanobis gate becomes a plain circular radius test."},
+{"slide":6,"label":"Mahalanobis Follows Chi-square","notes":"Here is the distributional fact that makes gates calibrated. If a residual of rank r is truly zero-mean Gaussian with the assumed covariance, its squared Mahalanobis distance follows a chi-square distribution with r degrees of freedom. Equivalently, chi-square is a sum of r independent squared standardized residuals, one per whitened coordinate."},
+{"slide":7,"label":"Chi-square Confidence Gates","notes":"A confidence gate accepts a residual when its squared Mahalanobis distance falls below a chi-square quantile at the chosen probability. We read off the 68, 95, and 99 percent thresholds for two degrees of freedom. These thresholds are ellipses in residual coordinates and concentric circles in whitened coordinates, the same gate seen two ways."},
+{"slide":8,"label":"The Chi-square Density","notes":"The chi-square density shifts right and flattens as degrees of freedom grow, so the same probability level demands a larger threshold for larger residual vectors. The shaded tail beyond the quantile is the false-rejection rate. Forgetting that the threshold depends on residual rank is a classic calibration error in reconstruction pipelines."},
+{"slide":9,"label":"Residual Diagnostics","notes":"The gate is only as good as the covariance model. If residuals are correctly modeled, their squared Mahalanobis values histogram onto the chi-square density and empirical gate coverage matches the target probabilities. Mismatch flags underestimated covariance, ignored correlation, or outliers. This diagnostic is a cheap, decisive health check for an estimator."},
+{"slide":10,"label":"RANSAC and Goodness of Fit","notes":"Chi-square gating drives two everyday tasks. In RANSAC the inlier threshold is a chi-square quantile on per-point reprojection or Sampson residuals, not an arbitrary pixel number. As a goodness-of-fit test, the total summed squared residual is compared against chi-square with degrees of freedom equal to the number of constraints minus parameters."},
+{"slide":11,"label":"Pitfalls and Takeaways","notes":"Close on the failure modes. Euclidean gates on anisotropic residuals reject good points and accept bad ones. The degrees of freedom must track residual rank. A non-positive-definite or badly scaled covariance makes distance meaningless, and a singular covariance forces the pseudo-inverse with rank in place of dimension. Density near the mean is not acceptance."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Gaussian and Chi-square Distributions">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h1>Gaussian and Chi-square Distributions</h1>
+<p class="lead">Turning residual magnitudes into calibrated acceptance tests</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Gaussian residual</h3><p>A residual is a vector measured in the units and correlations of its covariance $\Sigma$.</p></div>
+<div class="panel teal"><h3>Mahalanobis distance</h3><p>Covariance-weighted length whose square gates plausible residuals.</p></div>
+<div class="panel amber"><h3>Chi-square gate</h3><p>Acceptance thresholds for RANSAC inliers and goodness of fit.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Anisotropic residual cloud with covariance ellipse and a confidence gate">
+<rect x="0" y="0" width="380" height="240" fill="#eff6ff"/>
+<line x1="20" y1="120" x2="360" y2="120" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="190" y1="20" x2="190" y2="220" stroke="#CBD5E1" stroke-width="1.5"/>
+<ellipse cx="190" cy="120" rx="120" ry="48" transform="rotate(-22 190 120)" fill="#2563EB" fill-opacity="0.10" stroke="#2563EB" stroke-width="2"/>
+<ellipse cx="190" cy="120" rx="78" ry="31" transform="rotate(-22 190 120)" fill="none" stroke="#0F766E" stroke-width="2"/>
+<circle cx="190" cy="120" r="3.5" fill="#B45309"/>
+<circle cx="240" cy="92" r="3" fill="#2563EB"/><circle cx="150" cy="150" r="3" fill="#2563EB"/><circle cx="220" cy="138" r="3" fill="#2563EB"/><circle cx="160" cy="98" r="3" fill="#2563EB"/><circle cx="265" cy="118" r="3" fill="#2563EB"/>
+<circle cx="330" cy="60" r="3" fill="#B45309"/>
+<text x="195" y="113" font-size="12" fill="#B45309" font-style="italic">&#956;</text>
+<text x="296" y="60" font-size="11" fill="#0F766E">95% gate</text>
+<text x="338" y="56" font-size="11" fill="#B45309">outlier</text>
+</svg><figcaption class="small">Mean, correlated covariance ellipse, and a confidence gate.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Gaussian and Chi-square Distributions</span></div>
+<aside class="speaker-notes">This short appendix on printed pages 565 to 567 supplies the statistical bridge of multiple-view geometry. A vision residual is not just a length; it is a vector measured in the units and correlations of its covariance. We turn residual magnitudes into calibrated acceptance tests using Gaussian models, Mahalanobis distance, and chi-square gates.</aside>
+</section>
+
+<section class="slide alt" data-label="The Multivariate Gaussian">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>The Multivariate Gaussian</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Density</div><p class="formula">$p(\mathbf{x}) = \dfrac{\exp\!\big(-\tfrac12 (\mathbf{x}-\boldsymbol{\mu})^{\!\top}\Sigma^{-1}(\mathbf{x}-\boldsymbol{\mu})\big)}{(2\pi)^{n/2}\,|\Sigma|^{1/2}}$</p></div>
+<div class="panel blue"><h3>Two parameters</h3><p>Mean $\boldsymbol{\mu}$ locates the cloud; covariance $\Sigma$ sets its shape, scale, and tilt.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Level sets</div><p class="formula">$(\mathbf{x}-\boldsymbol{\mu})^{\!\top}\Sigma^{-1}(\mathbf{x}-\boldsymbol{\mu}) = k^2$</p></div>
+<div class="panel teal"><h3>Geometry</h3><p>Constant-density contours are ellipsoids. The exponent is half the squared Mahalanobis distance.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>The Multivariate Gaussian</span></div>
+<aside class="speaker-notes">The multivariate Gaussian is fixed by a mean vector and a covariance matrix. Its negative log density is, up to a constant, half the squared Mahalanobis distance, so the level sets of the density are exactly the ellipsoids of constant covariance-weighted distance. Diagonal entries set marginal variance; off-diagonal entries encode correlation.</aside>
+</section>
+
+<section class="slide" data-label="Covariance Sets the Ellipse">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>Covariance Sets the Ellipse</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Eigendecomposition</h3><p>$\Sigma = U\Lambda U^{\!\top}$. Columns of $U$ are principal axes; eigenvalues are squared semi-axes.</p></div>
+<div class="panel violet"><h3>Correlation tilts</h3><p>Off-diagonal terms rotate the ellipse; unequal variances stretch it.</p></div>
+<div class="panel amber"><h3>Why it matters</h3><p>A pixel along a noisy axis is not worth a pixel along a precise axis.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Covariance ellipse with labelled major and minor eigen-axes">
+<rect x="0" y="0" width="380" height="250" fill="#ffffff"/>
+<line x1="30" y1="200" x2="350" y2="200" stroke="#CBD5E1" stroke-width="1.5"/>
+<line x1="60" y1="30" x2="60" y2="220" stroke="#CBD5E1" stroke-width="1.5"/>
+<ellipse cx="210" cy="125" rx="120" ry="55" transform="rotate(-26 210 125)" fill="#6D28D9" fill-opacity="0.08" stroke="#2563EB" stroke-width="2.5"/>
+<line x1="210" y1="125" x2="318" y2="72" stroke="#0F766E" stroke-width="3"/>
+<line x1="210" y1="125" x2="186" y2="175" stroke="#B45309" stroke-width="3"/>
+<circle cx="210" cy="125" r="3.5" fill="#111827"/>
+<text x="322" y="68" font-size="12" fill="#0F766E">$\sqrt{\lambda_1}\,u_1$</text>
+<text x="150" y="190" font-size="12" fill="#B45309">$\sqrt{\lambda_2}\,u_2$</text>
+<text x="200" y="118" font-size="12" fill="#111827" font-style="italic">&#956;</text>
+</svg><figcaption class="small">Eigenvectors orient the ellipse; eigenvalues scale its axes.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Covariance Sets the Ellipse</span></div>
+<aside class="speaker-notes">Reading the covariance geometrically is the key skill here. Eigenvectors give the principal axes of the uncertainty ellipse and eigenvalues give the squared semi-axis lengths. Correlation rotates the ellipse away from the coordinate axes. A one-pixel residual along a noisy direction must not count the same as one along a tightly constrained direction.</aside>
+</section>
+
+<section class="slide alt" data-label="Mahalanobis Distance">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>Mahalanobis Distance</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Squared distance</div><p class="formula">$d^2 = (\mathbf{x}-\boldsymbol{\mu})^{\!\top}\Sigma^{-1}(\mathbf{x}-\boldsymbol{\mu})$</p></div>
+<div class="panel blue"><h3>Inverse covariance</h3><p>$\Sigma^{-1}$ is part of the distance. It down-weights high-variance directions.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Whitening</div><p class="formula">$\mathbf{z} = \Sigma^{-1/2}(\mathbf{x}-\boldsymbol{\mu}),\quad d^2 = \mathbf{z}^{\!\top}\mathbf{z}$</p></div>
+<div class="panel amber"><h3>Plain length</h3><p>After whitening, $d^2$ is ordinary squared Euclidean length, so residuals compare fairly.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Mahalanobis Distance</span></div>
+<aside class="speaker-notes">Mahalanobis distance is the central object. The squared form is the residual sandwiched around the inverse covariance, which is exactly ordinary squared length measured after whitening. Whitening multiplies residuals by the inverse square root of covariance, turning an anisotropic correlated cloud into an isotropic unit cloud where Euclidean comparison is finally fair.</aside>
+</section>
+
+<section class="slide" data-label="Whitening the Residual Cloud">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>Whitening the Residual Cloud</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Tilted covariance ellipse mapped by whitening into a unit circle">
+<rect x="0" y="0" width="380" height="250" fill="#ffffff"/>
+<ellipse cx="95" cy="135" rx="62" ry="26" transform="rotate(-28 95 135)" fill="#2563EB" fill-opacity="0.10" stroke="#2563EB" stroke-width="2.5"/>
+<circle cx="95" cy="135" r="2.5" fill="#111827"/>
+<text x="55" y="210" font-size="12" fill="#2563EB">raw $\Sigma$</text>
+<circle cx="285" cy="125" r="48" fill="#0F766E" fill-opacity="0.10" stroke="#0F766E" stroke-width="2.5"/>
+<circle cx="285" cy="125" r="2.5" fill="#111827"/>
+<text x="250" y="200" font-size="12" fill="#0F766E">identity</text>
+<path d="M165 130 C 200 110, 215 110, 232 122" fill="none" stroke="#B45309" stroke-width="2.5" marker-end="url(#arrow)"/>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#B45309"/></marker></defs>
+<text x="168" y="100" font-size="12" fill="#B45309">$\Sigma^{-1/2}$</text>
+</svg><figcaption class="small">The inverse square root maps the ellipse to a unit circle.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Coordinate change</div><p class="formula">$\operatorname{Cov}(\mathbf{z}) = \Sigma^{-1/2}\,\Sigma\,\Sigma^{-1/2} = I$</p></div>
+<div class="panel teal"><h3>Equal footing</h3><p>Every direction now carries the same uncertainty.</p></div>
+<div class="panel amber"><h3>Gate becomes a radius</h3><p>A Mahalanobis gate is simply $\|\mathbf{z}\| \le k$ in whitened space.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Whitening the Residual Cloud</span></div>
+<aside class="speaker-notes">This slide shows whitening as a coordinate change. The raw correlated ellipse maps to a circle once we apply the inverse square root of the covariance. In whitened coordinates the covariance becomes the identity, every direction carries equal uncertainty, and a Mahalanobis gate becomes a plain circular radius test.</aside>
+</section>
+
+<section class="slide alt" data-label="Mahalanobis Follows Chi-square">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>Mahalanobis Follows Chi-square</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Key fact</div><p class="formula">$\mathbf{x}\sim\mathcal{N}(\boldsymbol{\mu},\Sigma)\ \Rightarrow\ d^2 \sim \chi^2_{r}$</p></div>
+<div class="panel blue"><h3>Degrees of freedom</h3><p>$r$ equals the residual rank, the dimension of the residual vector.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Sum of squares</div><p class="formula">$d^2 = \sum_{i=1}^{r} z_i^2,\quad z_i \sim \mathcal{N}(0,1)$</p></div>
+<div class="panel teal"><h3>Reading</h3><p>Chi-square is a sum of squared standardized residuals, one per whitened coordinate.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Mahalanobis Follows Chi-square</span></div>
+<aside class="speaker-notes">Here is the distributional fact that makes gates calibrated. If a residual of rank r is truly zero-mean Gaussian with the assumed covariance, its squared Mahalanobis distance follows a chi-square distribution with r degrees of freedom. Equivalently, chi-square is a sum of r independent squared standardized residuals, one per whitened coordinate.</aside>
+</section>
+
+<section class="slide" data-label="Chi-square Confidence Gates">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>Chi-square Confidence Gates</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Acceptance rule</div><p class="formula">$\text{accept} \iff d^2 \le F^{-1}_{\chi^2_r}(\alpha)$</p></div>
+<div class="panel blue"><h3>Two views, one gate</h3><p>An ellipse in residual coordinates; a concentric circle after whitening.</p></div>
+<div class="panel violet"><h3>$r = 2$ thresholds</h3><p>$68\% \to 2.28$, &nbsp; $95\% \to 5.99$, &nbsp; $99\% \to 9.21$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Nested confidence ellipses at 68, 95, and 99 percent around the mean">
+<rect x="0" y="0" width="380" height="250" fill="#ffffff"/>
+<ellipse cx="190" cy="125" rx="150" ry="66" transform="rotate(-20 190 125)" fill="none" stroke="#B91C1C" stroke-width="2.2"/>
+<ellipse cx="190" cy="125" rx="108" ry="48" transform="rotate(-20 190 125)" fill="none" stroke="#B45309" stroke-width="2.2" stroke-dasharray="6 4"/>
+<ellipse cx="190" cy="125" rx="60" ry="27" transform="rotate(-20 190 125)" fill="#0F766E" fill-opacity="0.10" stroke="#0F766E" stroke-width="2.2"/>
+<circle cx="190" cy="125" r="3" fill="#111827"/>
+<text x="300" y="60" font-size="11" fill="#B91C1C">99%</text>
+<text x="250" y="90" font-size="11" fill="#B45309">95%</text>
+<text x="196" y="120" font-size="11" fill="#0F766E">68%</text>
+</svg><figcaption class="small">Nested gates: each ring is a fixed chi-square probability.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Chi-square Confidence Gates</span></div>
+<aside class="speaker-notes">A confidence gate accepts a residual when its squared Mahalanobis distance falls below a chi-square quantile at the chosen probability. We read off the 68, 95, and 99 percent thresholds for two degrees of freedom. These thresholds are ellipses in residual coordinates and concentric circles in whitened coordinates, the same gate seen two ways.</aside>
+</section>
+
+<section class="slide alt" data-label="The Chi-square Density">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>The Chi-square Density</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 400 250" width="100%" role="img" aria-label="Chi-square densities for several degrees of freedom with a shaded rejection tail">
+<rect x="0" y="0" width="400" height="250" fill="#ffffff"/>
+<line x1="40" y1="210" x2="385" y2="210" stroke="#111827" stroke-width="1.5"/>
+<line x1="40" y1="210" x2="40" y2="25" stroke="#111827" stroke-width="1.5"/>
+<path d="M40 40 C 70 120, 110 200, 200 206 C 280 209, 340 210, 385 210" fill="none" stroke="#2563EB" stroke-width="2.5"/>
+<path d="M40 210 C 90 80, 130 70, 175 110 C 240 165, 300 205, 385 209" fill="none" stroke="#0F766E" stroke-width="2.5"/>
+<path d="M40 210 C 110 200, 150 110, 210 100 C 280 90, 330 200, 385 208" fill="none" stroke="#6D28D9" stroke-width="2.5"/>
+<line x1="300" y1="210" x2="300" y2="70" stroke="#B45309" stroke-width="2" stroke-dasharray="5 4"/>
+<path d="M300 208 C 330 205, 360 209, 385 209 L385 210 L300 210 Z" fill="#B45309" fill-opacity="0.30" stroke="none"/>
+<text x="62" y="60" font-size="11" fill="#2563EB">$r=1$</text>
+<text x="120" y="62" font-size="11" fill="#0F766E">$r=2$</text>
+<text x="215" y="92" font-size="11" fill="#6D28D9">$r=4$</text>
+<text x="262" y="64" font-size="11" fill="#B45309">95% cutoff</text>
+<text x="320" y="195" font-size="10" fill="#B45309">tail</text>
+<text x="360" y="226" font-size="11" fill="#111827">$d^2$</text>
+</svg><figcaption class="small">Larger rank shifts the density right; the tail is the rejection rate.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Shape vs. dof</h3><p>Mean is $r$; the density spreads and shifts right as $r$ grows.</p></div>
+<div class="panel amber"><h3>Rank-dependent cutoff</h3><p>Bigger residual vectors need a larger threshold for the same probability.</p></div>
+<div class="panel teal"><h3>Tail = false rejects</h3><p>The shaded area beyond the cutoff is the fraction of valid residuals wrongly gated out.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>The Chi-square Density</span></div>
+<aside class="speaker-notes">The chi-square density shifts right and flattens as degrees of freedom grow, so the same probability level demands a larger threshold for larger residual vectors. The shaded tail beyond the quantile is the false-rejection rate. Forgetting that the threshold depends on residual rank is a classic calibration error in reconstruction pipelines.</aside>
+</section>
+
+<section class="slide" data-label="Residual Diagnostics">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>Residual Diagnostics</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Histogram vs. density</h3><p>Plot sampled $d^2$ against the $\chi^2_r$ curve. A correct model overlays cleanly.</p></div>
+<div class="panel teal"><h3>Coverage check</h3><p>Roughly 68, 95, 99 percent of residuals should fall inside the matching gates.</p></div>
+<div class="panel amber"><h3>What mismatch means</h3><p>Underestimated covariance, ignored correlation, or genuine outliers.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Histogram of squared Mahalanobis values overlaid with the chi-square density">
+<rect x="0" y="0" width="380" height="250" fill="#ffffff"/>
+<line x1="35" y1="205" x2="360" y2="205" stroke="#111827" stroke-width="1.5"/>
+<line x1="35" y1="205" x2="35" y2="30" stroke="#111827" stroke-width="1.5"/>
+<rect x="42" y="70" width="26" height="135" fill="#93C5FD" stroke="#fff"/>
+<rect x="70" y="100" width="26" height="105" fill="#93C5FD" stroke="#fff"/>
+<rect x="98" y="128" width="26" height="77" fill="#93C5FD" stroke="#fff"/>
+<rect x="126" y="150" width="26" height="55" fill="#93C5FD" stroke="#fff"/>
+<rect x="154" y="166" width="26" height="39" fill="#93C5FD" stroke="#fff"/>
+<rect x="182" y="178" width="26" height="27" fill="#93C5FD" stroke="#fff"/>
+<rect x="210" y="187" width="26" height="18" fill="#93C5FD" stroke="#fff"/>
+<rect x="238" y="193" width="26" height="12" fill="#93C5FD" stroke="#fff"/>
+<path d="M42 66 C 90 96, 130 150, 200 180 C 270 198, 320 203, 358 205" fill="none" stroke="#111827" stroke-width="2.5"/>
+<line x1="180" y1="205" x2="180" y2="40" stroke="#B45309" stroke-width="1.8" stroke-dasharray="4 3"/>
+<text x="184" y="52" font-size="10" fill="#B45309">95%</text>
+<text x="250" y="60" font-size="11" fill="#111827">$\chi^2_2$</text>
+<text x="330" y="225" font-size="11" fill="#111827">$d^2$</text>
+</svg><figcaption class="small">Sampled $d^2$ tracks the chi-square reference when the model is right.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Residual Diagnostics</span></div>
+<aside class="speaker-notes">The gate is only as good as the covariance model. If residuals are correctly modeled, their squared Mahalanobis values histogram onto the chi-square density and empirical gate coverage matches the target probabilities. Mismatch flags underestimated covariance, ignored correlation, or outliers. This diagnostic is a cheap, decisive health check for an estimator.</aside>
+</section>
+
+<section class="slide alt" data-label="RANSAC and Goodness of Fit">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>RANSAC and Goodness of Fit</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">RANSAC inlier test</div><p class="formula">$d^2_i \le \chi^2_r(\alpha)\ \Rightarrow\ \text{inlier}$</p></div>
+<div class="panel blue"><h3>Principled threshold</h3><p>The inlier cutoff is a chi-square quantile on per-point reprojection or Sampson residuals, not a guessed pixel count.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Goodness of fit</div><p class="formula">$\textstyle\sum_i d^2_i \sim \chi^2_{\,m-p}$</p></div>
+<div class="panel teal"><h3>Test the model</h3><p>Compare the total summed squared residual against chi-square with dof = constraints minus parameters.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>RANSAC and Goodness of Fit</span></div>
+<aside class="speaker-notes">Chi-square gating drives two everyday tasks. In RANSAC the inlier threshold is a chi-square quantile on per-point reprojection or Sampson residuals, not an arbitrary pixel number. As a goodness-of-fit test, the total summed squared residual is compared against chi-square with degrees of freedom equal to the number of constraints minus parameters.</aside>
+</section>
+
+<section class="slide" data-label="Pitfalls and Takeaways">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Appendix 02</span></div>
+<h2>Pitfalls and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Pitfalls</h3>
+<ul>
+<li>Euclidean gates on anisotropic residuals reject good points, accept bad ones.</li>
+<li>Wrong degrees of freedom: dof must track residual rank.</li>
+<li>Non-PSD or badly scaled $\Sigma$ makes distance meaningless.</li>
+<li>Singular $\Sigma$: use the pseudo-inverse with rank, not dimension.</li>
+</ul>
+</div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Takeaways</h3>
+<ul>
+<li>A Gaussian residual is fixed by mean and covariance; $\Sigma$ sets scale and direction.</li>
+<li>Mahalanobis distance is Euclidean length after whitening.</li>
+<li>Squared distance follows $\chi^2_r$ when the model is correct.</li>
+<li>Gates are cumulative probability tests, not correctness guarantees.</li>
+</ul>
+</div>
+<div class="panel violet"><h3>Carry forward</h3><p>State model, dimension, and probability level together for every gate.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 565-567</span><span>Pitfalls and Takeaways</span></div>
+<aside class="speaker-notes">Close on the failure modes. Euclidean gates on anisotropic residuals reject good points and accept bad ones. The degrees of freedom must track residual rank. A non-positive-definite or badly scaled covariance makes distance meaningless, and a singular covariance forces the pseudo-inverse with rank in place of dimension. Density near the mean is not acceptance.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
