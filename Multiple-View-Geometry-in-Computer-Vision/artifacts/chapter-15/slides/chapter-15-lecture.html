@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-15">
+<meta name="chapter_title" content="Chapter 15: The Trifocal Tensor">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-03-three-view-geometry/chapter-15-the-trifocal-tensor/15-the-trifocal-tensor.ipynb">
+<meta name="source_span" content="printed pages 365-390; PDF pages 383-408.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 15: The Trifocal Tensor</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-15","chapter_title":"Chapter 15: The Trifocal Tensor","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-03-three-view-geometry/chapter-15-the-trifocal-tensor/15-the-trifocal-tensor.ipynb","source_span":"printed pages 365-390; PDF pages 383-408.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"The Trifocal Tensor","notes":"This chapter spans printed pages 365 to 390 and introduces the trifocal tensor as the three-view analogue of the fundamental matrix. Emphasise that it is a single homogeneous object with eighteen degrees of freedom that ties together the geometry of three cameras, governing line and point transfer between the views."},
+{"slide":2,"label":"From Two Views to Three","notes":"Remind students that the fundamental matrix encodes pairwise epipolar geometry but cannot transfer a point uniquely. With three views the constraints become richer: corresponding features satisfy trilinear relations. Stress that the trifocal tensor captures exactly the part of three-view geometry that is independent of scene structure."},
+{"slide":3,"label":"Canonical Cameras and Definition","notes":"Work through the canonical frame where the first camera is the identity projection. Show that the tensor slices are differences of outer products formed from the columns of the second and third camera matrices. Make clear the index convention: the slice index belongs to view one, rows to view two, columns to view three."},
+{"slide":4,"label":"Line-Triplet Incidence","notes":"Explain that each image line back-projects to a plane through its camera centre, and three corresponding lines must share one space line. Derive the point-line-line relation: contracting the tensor with the two image lines reproduces the line in the first view up to scale. This incidence is what creates the tensor."},
+{"slide":5,"label":"Tensor Slices and Rank","notes":"Each slice is a rank-two matrix because it is a difference of two outer products. Its left null-vector is an epipolar line in view two and its right null-vector an epipolar line in view three. Have students compute slice ranks numerically and confirm the null-vectors directly from the singular value decomposition."},
+{"slide":6,"label":"Epipoles and Fundamental Matrices","notes":"The null-lines of the three slices meet at the epipoles of the first camera seen in views two and three. Once those epipoles are recovered, the tensor yields the two fundamental matrices relating the first view to the others. Stress that pairwise fundamentals are shadows of the fuller three-view geometry."},
+{"slide":7,"label":"Plane-Induced Homographies","notes":"Contracting the tensor with a line in the second view produces a homography from view one to view three. Geometrically the line selects a plane through the second camera centre, and that plane induces the point-to-point map. This is the engine behind tensor-based point transfer, so make the construction explicit."},
+{"slide":8,"label":"Point Transfer","notes":"Show how a correspondence between views one and two predicts the third image. Choose a non-epipolar line through the second-view point, build the induced homography, and map the first-view point. Contrast this with intersecting two epipolar lines, which is the pairwise alternative students already know from earlier chapters."},
+{"slide":9,"label":"Transfer Stability","notes":"Pairwise epipolar transfer intersects two lines in the third image and degenerates when those lines are nearly parallel, which happens near the trifocal plane through the three centres. Tensor transfer avoids that collapse. Walk through the error-versus-offset curve so students see the conditioning advantage quantitatively, not just conceptually."},
+{"slide":10,"label":"Choosing the Transfer Line","notes":"Warn that the line through the second-view point must not be the epipolar line. For an exact correspondence any other line gives the same transferred point, but the epipolar choice sends the transfer vector to zero and leaves the homogeneous point undefined. This is the practical caveat behind tensor point transfer."},
+{"slide":11,"label":"Trilinear Constraints","notes":"Present the point-point-point relation as an executable incidence test built from the two skew-symmetric point matrices and the contracted tensor. For a consistent triple all nine entries vanish to roundoff; perturbing one view leaves a structured residual signature. These trilinearities are the algebraic heart of three-view matching."},
+{"slide":12,"label":"Constraints and Takeaways","notes":"Close by noting the tensor has twenty-seven entries but only eighteen degrees of freedom, so a valid tensor must satisfy internal constraints. Recap that it is homogeneous and projectively invariant, unifies line and point transfer, and exposes the epipoles and fundamental matrices of the triple."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="The Trifocal Tensor">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h1>The Trifocal Tensor</h1>
+<p class="lead">The three-view analogue of the fundamental matrix</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>One object, three views</h3><p>A single homogeneous tensor $T_i{}^{jk}$ ties the geometry of three cameras together.</p></div>
+<div class="panel teal"><h3>27 entries, 18 dof</h3><p>Independent of scene structure; it governs line and point transfer.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Three image planes viewing one scene point"><rect x="0" y="0" width="360" height="200" fill="#eff6ff"/><circle cx="180" cy="40" r="6" fill="#6D28D9"/><text x="190" y="38" font-size="13" fill="#6D28D9">X</text><rect x="35" y="120" width="60" height="42" fill="none" stroke="#2563EB" stroke-width="2"/><rect x="150" y="120" width="60" height="42" fill="none" stroke="#0F766E" stroke-width="2"/><rect x="265" y="120" width="60" height="42" fill="none" stroke="#B45309" stroke-width="2"/><line x1="180" y1="46" x2="65" y2="120" stroke="#2563EB" stroke-width="1.5"/><line x1="180" y1="46" x2="180" y2="120" stroke="#0F766E" stroke-width="1.5"/><line x1="180" y1="46" x2="295" y2="120" stroke="#B45309" stroke-width="1.5"/><text x="52" y="178" font-size="13" fill="#2563EB">view 1</text><text x="167" y="178" font-size="13" fill="#0F766E">view 2</text><text x="282" y="178" font-size="13" fill="#B45309">view 3</text></svg><figcaption class="small">One scene point seen across the three image planes.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>The Trifocal Tensor</span></div>
+<aside class="speaker-notes">This chapter spans printed pages 365 to 390 and introduces the trifocal tensor as the three-view analogue of the fundamental matrix. Emphasise that it is a single homogeneous object with eighteen degrees of freedom that ties together the geometry of three cameras, governing line and point transfer between the views.</aside>
+</section>
+
+<section class="slide alt" data-label="From Two Views to Three">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>From Two Views to Three</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Two views</h3><p>The fundamental matrix gives epipolar lines but cannot transfer a point uniquely.</p></div>
+<div class="panel amber"><h3>Three views</h3><p>Features now satisfy trilinear relations; a point in two views predicts the third.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">What it captures</div><p class="formula">$F:\ x'^\top F x = 0 \quad\Longrightarrow\quad T:\ \text{trilinearities}$</p></div>
+<div class="panel teal"><h3>Structure-free</h3><p>The tensor encodes only the part of three-view geometry independent of the scene.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>From Two Views to Three</span></div>
+<aside class="speaker-notes">Remind students that the fundamental matrix encodes pairwise epipolar geometry but cannot transfer a point uniquely. With three views the constraints become richer: corresponding features satisfy trilinear relations. Stress that the trifocal tensor captures exactly the part of three-view geometry that is independent of scene structure.</aside>
+</section>
+
+<section class="slide" data-label="Canonical Cameras and Definition">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Canonical Cameras and Definition</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Canonical frame</h3><p>A projective change of coordinates puts the first camera at the identity.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Cameras</div><p class="formula">$P=[\,I\mid 0\,],\ P'=[\,A\mid a_4\,],\ P''=[\,B\mid b_4\,]$</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Tensor slices</div><p class="formula">$T_i = a_i\, b_4^\top - a_4\, b_i^\top$</p></div>
+<div class="panel violet"><h3>Index convention</h3><p>Slice index belongs to view 1; rows to view 2, columns to view 3.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Canonical Cameras and Definition</span></div>
+<aside class="speaker-notes">Work through the canonical frame where the first camera is the identity projection. Show that the tensor slices are differences of outer products formed from the columns of the second and third camera matrices. Make clear the index convention: the slice index belongs to view one, rows to view two, columns to view three.</aside>
+</section>
+
+<section class="slide alt" data-label="Line-Triplet Incidence">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Line-Triplet Incidence Creates the Tensor</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Back-projection</h3><p>Each image line back-projects to a plane through its camera centre.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Point-line-line relation</div><p class="formula">$l_i = l'_j\, l''_k\, T_i{}^{jk}$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Three back-projected planes meeting along one space line"><rect x="0" y="0" width="360" height="210" fill="#f0fdfa"/><polygon points="60,40 150,30 175,150 70,165" fill="#2563EB" fill-opacity="0.12" stroke="#2563EB" stroke-width="1.5"/><polygon points="140,35 235,28 250,150 150,158" fill="#0F766E" fill-opacity="0.12" stroke="#0F766E" stroke-width="1.5"/><polygon points="220,32 310,40 300,160 235,150" fill="#B45309" fill-opacity="0.12" stroke="#B45309" stroke-width="1.5"/><line x1="150" y1="55" x2="245" y2="60" stroke="#6D28D9" stroke-width="3"/><text x="250" y="56" font-size="13" fill="#6D28D9">L</text><circle cx="60" cy="190" r="4" fill="#2563EB"/><circle cx="185" cy="195" r="4" fill="#0F766E"/><circle cx="305" cy="190" r="4" fill="#B45309"/><text x="40" y="205" font-size="12" fill="#2563EB">C</text><text x="178" y="208" font-size="12" fill="#0F766E">C'</text><text x="305" y="205" font-size="12" fill="#B45309">C''</text></svg><figcaption class="small">Three corresponding lines back-project to planes sharing one space line $L$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Line-Triplet Incidence</span></div>
+<aside class="speaker-notes">Explain that each image line back-projects to a plane through its camera centre, and three corresponding lines must share one space line. Derive the point-line-line relation: contracting the tensor with the two image lines reproduces the line in the first view up to scale. This incidence is what creates the tensor.</aside>
+</section>
+
+<section class="slide" data-label="Tensor Slices and Rank">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Tensor Slices and Rank</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Rank two</h3><p>Each slice is a difference of two outer products, so $\operatorname{rank} T_i \le 2$.</p></div>
+<div class="panel amber"><h3>Null-vectors</h3><p>Left null-vector is an epipolar line in view 2; right null-vector in view 3.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">From the SVD</div><p class="formula">$u_i^\top T_i = 0,\qquad T_i\, v_i = 0$</p></div>
+<div class="panel teal"><h3>Numerical check</h3><p>Compute slice ranks and confirm null-vectors directly from the decomposition.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Tensor Slices and Rank</span></div>
+<aside class="speaker-notes">Each slice is a rank-two matrix because it is a difference of two outer products. Its left null-vector is an epipolar line in view two and its right null-vector an epipolar line in view three. Have students compute slice ranks numerically and confirm the null-vectors directly from the singular value decomposition.</aside>
+</section>
+
+<section class="slide alt" data-label="Epipoles and Fundamental Matrices">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Epipoles and Fundamental Matrices</h2>
+<div class="content">
+<div class="stack">
+<div class="panel violet"><h3>Epipoles</h3><p>The slice null-lines meet at the epipoles $e'$ and $e''$ of the first camera.</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 180" width="100%" role="img" aria-label="Three null-lines meeting at an epipole"><rect x="0" y="0" width="360" height="180" fill="#f5f3ff"/><line x1="30" y1="30" x2="300" y2="150" stroke="#2563EB" stroke-width="2"/><line x1="40" y1="150" x2="300" y2="60" stroke="#0F766E" stroke-width="2"/><line x1="120" y1="20" x2="250" y2="160" stroke="#B45309" stroke-width="2"/><circle cx="206" cy="103" r="6" fill="#6D28D9"/><text x="214" y="100" font-size="14" fill="#6D28D9">e'</text><text x="40" y="24" font-size="12" fill="#2563EB">null-lines of slices</text></svg><figcaption class="small">Null-lines of the three slices intersect at the epipole.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Recovered fundamentals</div><p class="formula">$F_{21}=[e']_\times[T_1,T_2,T_3]\,e''$</p><p class="formula">$F_{31}=[e'']_\times[T_1^\top,T_2^\top,T_3^\top]\,e'$</p></div>
+<div class="panel teal"><h3>Shadows</h3><p>Pairwise fundamentals are projections of the fuller three-view geometry.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Epipoles and Fundamental Matrices</span></div>
+<aside class="speaker-notes">The null-lines of the three slices meet at the epipoles of the first camera seen in views two and three. Once those epipoles are recovered, the tensor yields the two fundamental matrices relating the first view to the others. Stress that pairwise fundamentals are shadows of the fuller three-view geometry.</aside>
+</section>
+
+<section class="slide" data-label="Plane-Induced Homographies">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Plane-Induced Homographies</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Line selects a plane</h3><p>A line $l'$ in view 2 back-projects to a plane through the second camera centre.</p></div>
+<div class="panel amber"><h3>Induced map</h3><p>That plane induces a homography from view 1 to view 3.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Contraction</div><p class="formula">$H_{13}(l') = [\,T_1^\top l',\ T_2^\top l',\ T_3^\top l'\,]$</p></div>
+<div class="panel teal"><h3>Transfer engine</h3><p>This contraction is the mechanism behind tensor-based point transfer.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Plane-Induced Homographies</span></div>
+<aside class="speaker-notes">Contracting the tensor with a line in the second view produces a homography from view one to view three. Geometrically the line selects a plane through the second camera centre, and that plane induces the point-to-point map. This is the engine behind tensor-based point transfer, so make the construction explicit.</aside>
+</section>
+
+<section class="slide alt" data-label="Point Transfer">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Point Transfer to the Third View</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Given</h3><p>A correspondence $x \leftrightarrow x'$ between views 1 and 2.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Predict view 3</div><p class="formula">$x'' = H_{13}(l')\, x,\quad l' \ni x'$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Transferring a point from two views into a third"><rect x="0" y="0" width="360" height="200" fill="#f0fdfa"/><rect x="20" y="40" width="80" height="60" fill="none" stroke="#2563EB" stroke-width="2"/><circle cx="60" cy="70" r="5" fill="#2563EB"/><text x="40" y="120" font-size="13" fill="#2563EB">x (view 1)</text><rect x="140" y="40" width="80" height="60" fill="none" stroke="#0F766E" stroke-width="2"/><circle cx="180" cy="70" r="5" fill="#0F766E"/><line x1="150" y1="55" x2="212" y2="92" stroke="#6D28D9" stroke-width="2"/><text x="150" y="120" font-size="13" fill="#0F766E">x' on line l'</text><rect x="260" y="40" width="80" height="60" fill="none" stroke="#B45309" stroke-width="2" stroke-dasharray="5 4"/><circle cx="300" cy="70" r="5" fill="#B45309"/><text x="270" y="120" font-size="13" fill="#B45309">x'' predicted</text><path d="M105 70 q20 0 32 0" stroke="#94A3B8" stroke-width="1.5" fill="none" marker-end="url(#a)"/><path d="M225 70 q20 0 32 0" stroke="#94A3B8" stroke-width="1.5" fill="none" marker-end="url(#a)"/><defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94A3B8"/></marker></defs></svg><figcaption class="small">A line through $x'$ induces the homography that places $x''$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Point Transfer</span></div>
+<aside class="speaker-notes">Show how a correspondence between views one and two predicts the third image. Choose a non-epipolar line through the second-view point, build the induced homography, and map the first-view point. Contrast this with intersecting two epipolar lines, which is the pairwise alternative students already know from earlier chapters.</aside>
+</section>
+
+<section class="slide" data-label="Transfer Stability">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Why Tensor Transfer Is More Stable</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Epipolar transfer fails</h3><p>Intersecting $F_{31}x$ and $F_{32}x'$ degenerates when the lines are near-parallel.</p></div>
+<div class="panel violet"><h3>Trifocal plane</h3><p>The collapse occurs near the plane through the three camera centres.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Error versus offset curve for two transfer methods"><rect x="0" y="0" width="360" height="200" fill="#fffbeb"/><line x1="40" y1="170" x2="340" y2="170" stroke="#CBD5E1" stroke-width="2"/><line x1="40" y1="20" x2="40" y2="170" stroke="#CBD5E1" stroke-width="2"/><path d="M50 150 C140 148 160 30 190 28 C220 30 240 148 330 150" stroke="#B45309" stroke-width="2.5" fill="none"/><path d="M50 140 C150 132 210 128 330 122" stroke="#0F766E" stroke-width="2.5" fill="none"/><text x="200" y="190" font-size="12" fill="#475569">offset from trifocal plane</text><text x="8" y="95" font-size="12" fill="#475569" transform="rotate(-90 12 95)">error</text><text x="200" y="48" font-size="12" fill="#B45309">epipolar</text><text x="250" y="112" font-size="12" fill="#0F766E">tensor</text></svg><figcaption class="small">Epipolar transfer spikes near the trifocal plane; tensor transfer stays flat.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Transfer Stability</span></div>
+<aside class="speaker-notes">Pairwise epipolar transfer intersects two lines in the third image and degenerates when those lines are nearly parallel, which happens near the trifocal plane through the three centres. Tensor transfer avoids that collapse. Walk through the error-versus-offset curve so students see the conditioning advantage quantitatively, not just conceptually.</aside>
+</section>
+
+<section class="slide alt" data-label="Choosing the Transfer Line">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Choosing the Transfer Line</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Free choice</h3><p>For an exact pair, any non-epipolar line through $x'$ gives the same $x''$.</p></div>
+<div class="panel amber"><h3>Forbidden choice</h3><p>The epipolar line sends the transfer vector toward zero.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Degeneracy</div><p class="formula">$l' = l'_{\text{epi}} \ \Rightarrow\ H_{13}(l')\,x \to 0$</p></div>
+<div class="panel violet"><h3>Practical rule</h3><p>Pick a line well away from the epipolar direction so the point stays well defined.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Choosing the Transfer Line</span></div>
+<aside class="speaker-notes">Warn that the line through the second-view point must not be the epipolar line. For an exact correspondence any other line gives the same transferred point, but the epipolar choice sends the transfer vector to zero and leaves the homogeneous point undefined. This is the practical caveat behind tensor point transfer.</aside>
+</section>
+
+<section class="slide" data-label="Trilinear Constraints">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Trilinear Constraints as Incidence Tests</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Point-point-point</h3><p>An executable test built from the two skew-symmetric point matrices.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Relation</div><p class="formula">$[x']_\times \Big(\textstyle\sum_i x_i T_i\Big) [x'']_\times = 0$</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Consistent triple</h3><p>All nine entries vanish to floating-point roundoff.</p></div>
+<div class="panel amber"><h3>Perturbed view</h3><p>Disturbing one image leaves a structured residual signature.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Trilinear Constraints</span></div>
+<aside class="speaker-notes">Present the point-point-point relation as an executable incidence test built from the two skew-symmetric point matrices and the contracted tensor. For a consistent triple all nine entries vanish to roundoff; perturbing one view leaves a structured residual signature. These trilinearities are the algebraic heart of three-view matching.</aside>
+</section>
+
+<section class="slide alt" data-label="Constraints and Takeaways">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 15</span></div>
+<h2>Internal Constraints and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel violet"><h3>18 of 27</h3><p>The tensor has twenty-seven entries but only eighteen degrees of freedom.</p></div>
+<div class="panel blue"><h3>Valid tensor</h3><p>Internal constraints must hold; not every $3\times3\times3$ array is a trifocal tensor.</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Projectively invariant</h3><p>Homogeneous; the 3D frame choice and scale must not be mistaken for geometry.</p></div>
+<div class="panel amber"><h3>Unifies transfer</h3><p>Encodes line and point transfer and exposes epipoles and fundamentals of the triple.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 365-390</span><span>Constraints and Takeaways</span></div>
+<aside class="speaker-notes">Close by noting the tensor has twenty-seven entries but only eighteen degrees of freedom, so a valid tensor must satisfy internal constraints. Recap that it is homogeneous and projectively invariant, unifies line and point transfer, and exposes the epipoles and fundamental matrices of the triple.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

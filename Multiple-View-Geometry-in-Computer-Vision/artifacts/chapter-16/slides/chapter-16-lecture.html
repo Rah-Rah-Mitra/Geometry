@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-16">
+<meta name="chapter_title" content="Chapter 16: Computation of the Trifocal Tensor T">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-03-three-view-geometry/chapter-16-computation-of-the-trifocal-tensor-t/16-computation-of-the-trifocal-tensor-t.ipynb">
+<meta name="source_span" content="printed pages 391-408; PDF pages 409-426.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 16: Computation of the Trifocal Tensor T</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-16","chapter_title":"Chapter 16: Computation of the Trifocal Tensor T","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-03-three-view-geometry/chapter-16-computation-of-the-trifocal-tensor-t/16-computation-of-the-trifocal-tensor-t.ipynb","source_span":"printed pages 391-408; PDF pages 409-426.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Computing the Trifocal Tensor","notes":"Chapter 15 told us what the trifocal tensor does; this chapter, spanning printed pages 391 to 408, asks how to estimate one from image data. The shift is computational: a valid tensor is supported by trilinear equations, has a stable nullspace, normalizes sensibly, and produces small reprojection residuals on real triplets."},
+{"slide":2,"label":"Trilinear Equations","notes":"Each point-point-point correspondence over three views contributes four linearly independent trilinear equations in the twenty-seven entries of the tensor. Stacking these gives a homogeneous system A t equals zero. Line correspondences supply two equations each, so points and lines mix freely to build the design matrix."},
+{"slide":3,"label":"Minimum Data","notes":"The tensor has twenty-six degrees of freedom up to scale but only eighteen are geometrically independent. Seven point correspondences give twenty-eight equations, enough to solve linearly. Mixtures count too: a point is worth four equations, a line two, so six points and four lines also suffice for the linear estimate."},
+{"slide":4,"label":"The Linear Algorithm","notes":"With more than the minimum data the system is overdetermined, so we seek the unit vector minimizing the algebraic residual. The singular value decomposition of the design matrix delivers it: the right singular vector for the smallest singular value is the least-squares nullspace estimate, reshaped into a three by three by three array."},
+{"slide":5,"label":"Why Normalize","notes":"Raw pixel coordinates make some rows of the design matrix vastly larger than others, so the algebraic minimum no longer tracks the geometric one. Hartley normalization translates each image so points are centred and scales them to mean distance root two from the origin, equalizing the rows before the null vector is chosen."},
+{"slide":6,"label":"Normalized Linear Pipeline","notes":"The standard recipe is four stages: normalize each view with a similarity transform, solve the homogeneous system for the raw tensor, enforce the internal constraints to make it valid, then denormalize. In the notebook normalization cut the effective condition number by roughly twentyfold without changing the underlying equations."},
+{"slide":7,"label":"Internal Constraints","notes":"A generic twenty-seven entry array is not a trifocal tensor. The valid tensors form an eighteen degree of freedom manifold, so the linear solution must be projected onto it. Each correlation slice has rank two, and the three left and right null vectors are constrained, encoding consistency with three genuine cameras."},
+{"slide":8,"label":"Parametrization via Epipoles","notes":"The clean way to enforce validity is to parametrize the tensor by the two epipoles in the second and third views plus a linear part. Given the epipoles the remaining entries are linear, so an iterative scheme alternates between solving that linear problem and updating the epipoles, guaranteeing a geometrically valid result."},
+{"slide":9,"label":"Algebraic vs Geometric Error","notes":"Algebraic error is the residual of the linear equations: cheap, but not what we ultimately care about. Geometric error is reprojection error, the distance in pixels between measured and predicted image points. The linear estimate minimizes algebraic error and serves as the initializer for the geometric refinement."},
+{"slide":10,"label":"Gold Standard Estimate","notes":"The gold-standard method assumes Gaussian measurement noise and minimizes total reprojection error over the cameras consistent with the tensor, using Levenberg-Marquardt. The transfer residual landscape sampled in the notebook shows a clean basin whose minimum sits exactly at the correct correspondence, the picture motivating Sampson and full geometric refinement."},
+{"slide":11,"label":"Robust Estimation","notes":"Real correspondence sets contain mismatches. RANSAC samples minimal sets of seven points, estimates a tensor, and counts inliers whose transfer residual stays below a threshold. The notebook corrupts four triplets and shows their residuals jump by orders of magnitude, exactly the separation that lets robust voting reject outliers."},
+{"slide":12,"label":"The Estimation Recipe","notes":"Putting it together: interest points across three views, RANSAC to discard outliers, normalized linear estimation for an initializer, constraint enforcement for validity, then the gold-standard reprojection minimization. Each stage in the notebook has a numerical check beside it, from the isolated nullspace gap to the near-zero scaled tensor error."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Computing the Trifocal Tensor">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h1>Computation of the Trifocal Tensor $T$</h1>
+<p class="lead">From three-view correspondences to a geometrically valid tensor</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The question</h3><p>Chapter 15 said what $T$ does. Now: how do we estimate one from image data?</p></div>
+<div class="panel teal"><h3>What counts as valid</h3><p>Not 27 numbers, but a tensor backed by trilinear equations, a stable nullspace, and small residuals.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Three camera centres viewing one scene point with image planes">
+<rect x="0" y="0" width="360" height="210" fill="#f0fdfa"/>
+<circle cx="60" cy="60" r="6" fill="#2563EB"/><circle cx="300" cy="55" r="6" fill="#0F766E"/><circle cx="180" cy="180" r="6" fill="#6D28D9"/>
+<circle cx="185" cy="100" r="5" fill="#B45309"/>
+<line x1="60" y1="60" x2="185" y2="100" stroke="#2563EB" stroke-width="1.5"/>
+<line x1="300" y1="55" x2="185" y2="100" stroke="#0F766E" stroke-width="1.5"/>
+<line x1="180" y1="180" x2="185" y2="100" stroke="#6D28D9" stroke-width="1.5"/>
+<text x="40" y="50" font-size="13" fill="#2563EB">C</text>
+<text x="305" y="48" font-size="13" fill="#0F766E">C'</text>
+<text x="160" y="198" font-size="13" fill="#6D28D9">C''</text>
+<text x="195" y="98" font-size="13" fill="#B45309">X</text>
+</svg><figcaption class="small">One scene point seen by three cameras: the data that constrains $T$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Computing the Trifocal Tensor</span></div>
+<aside class="speaker-notes">Chapter 15 told us what the trifocal tensor does; this chapter, spanning printed pages 391 to 408, asks how to estimate one from image data. The shift is computational: a valid tensor is supported by trilinear equations, has a stable nullspace, normalizes sensibly, and produces small reprojection residuals on real triplets.</aside>
+</section>
+
+<section class="slide alt" data-label="Trilinear Equations">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Correspondences Give Linear Equations</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Point triplet</h3><p>$x \leftrightarrow x' \leftrightarrow x''$ yields four independent trilinear equations in the 27 entries $T_i^{jk}$.</p></div>
+<div class="panel teal"><h3>Line triplet</h3><p>$l \leftrightarrow l' \leftrightarrow l''$ yields two equations. Points and lines mix in one matrix.</p></div>
+<div class="panel amber"><h3>Stack them</h3><p>All equations form a homogeneous system $A\,\mathbf{t}=\mathbf{0}$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Point relation</div><p class="formula">$x^i \big(x'^j x''^k \epsilon_{jpr}\epsilon_{kqs}\, T_i^{pq}\big) = 0_{rs}$</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Line relation</div><p class="formula">$l'_j\, l''_k\, T_i^{jk} = \mu\, l_i$</p></div>
+<p class="small">Four point equations have only two independent; lines give a single vector constraint.</p>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Trilinear Equations</span></div>
+<aside class="speaker-notes">Each point-point-point correspondence over three views contributes four linearly independent trilinear equations in the twenty-seven entries of the tensor. Stacking these gives a homogeneous system A t equals zero. Line correspondences supply two equations each, so points and lines mix freely to build the design matrix.</aside>
+</section>
+
+<section class="slide" data-label="Minimum Data">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>How Much Data Is Needed</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Counting</h3><p>$T$ has 27 entries, 26 dof up to scale, but only 18 are geometrically free.</p></div>
+<div class="panel violet"><h3>Per correspondence</h3><p>Point $=$ 4 equations. Line $=$ 2 equations.</p></div>
+<div class="panel teal"><h3>Linear minimum</h3><p>7 points give 28 equations — enough to solve. Or mix: 6 points $+$ 4 lines.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Bar comparison of equation supply from points and lines against the requirement">
+<rect x="0" y="0" width="360" height="200" fill="#eff6ff"/>
+<line x1="40" y1="20" x2="40" y2="170" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="170" x2="345" y2="170" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="60" x2="345" y2="60" stroke="#B45309" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="250" y="54" font-size="12" fill="#B45309">need 26</text>
+<rect x="70" y="30" width="40" height="140" fill="#2563EB" opacity="0.8"/><text x="68" y="186" font-size="12" fill="#2563EB">7 pts</text>
+<rect x="160" y="80" width="40" height="90" fill="#0F766E" opacity="0.8"/><text x="150" y="186" font-size="12" fill="#0F766E">6p+4l</text>
+<rect x="250" y="120" width="40" height="50" fill="#6D28D9" opacity="0.8"/><text x="244" y="186" font-size="12" fill="#6D28D9">13 lines</text>
+</svg><figcaption class="small">Each configuration must clear the requirement (dashed) of 26 equations.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Minimum Data</span></div>
+<aside class="speaker-notes">The tensor has twenty-six degrees of freedom up to scale but only eighteen are geometrically independent. Seven point correspondences give twenty-eight equations, enough to solve linearly. Mixtures count too: a point is worth four equations, a line two, so six points and four lines also suffice for the linear estimate.</aside>
+</section>
+
+<section class="slide alt" data-label="The Linear Algorithm">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Solving $A\,\mathbf{t}=\mathbf{0}$ by SVD</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Overdetermined</h3><p>With $n>7$ points, $A$ has more rows than 27. No exact null vector exists under noise.</p></div>
+<div class="panel teal"><h3>Least squares</h3><p>Minimize $\lVert A\mathbf{t}\rVert$ subject to $\lVert\mathbf{t}\rVert=1$.</p></div>
+<div class="panel amber"><h3>Solution</h3><p>Last right singular vector of $A$ — reshape to a $3\times3\times3$ array.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Algebraic minimizer</div><p class="formula">$\mathbf{t}^{*}=\arg\min_{\lVert\mathbf{t}\rVert=1}\lVert A\mathbf{t}\rVert = \mathbf{v}_{27}$</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 150" width="100%" role="img" aria-label="Singular value spectrum with isolated final value">
+<rect x="0" y="0" width="360" height="150" fill="#fff"/>
+<line x1="30" y1="120" x2="345" y2="120" stroke="#CBD5E1" stroke-width="2"/>
+<polyline points="40,30 90,42 140,55 190,68 240,82 290,96" fill="none" stroke="#6D28D9" stroke-width="2"/>
+<circle cx="40" cy="30" r="3" fill="#6D28D9"/><circle cx="90" cy="42" r="3" fill="#6D28D9"/><circle cx="140" cy="55" r="3" fill="#6D28D9"/><circle cx="190" cy="68" r="3" fill="#6D28D9"/><circle cx="240" cy="82" r="3" fill="#6D28D9"/>
+<circle cx="320" cy="118" r="5" fill="#B45309"/>
+<text x="300" y="138" font-size="12" fill="#B45309">tiny $\sigma_{27}$</text>
+</svg><figcaption class="small">A clear gap before the last singular value means one isolated nullspace direction.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>The Linear Algorithm</span></div>
+<aside class="speaker-notes">With more than the minimum data the system is overdetermined, so we seek the unit vector minimizing the algebraic residual. The singular value decomposition of the design matrix delivers it: the right singular vector for the smallest singular value is the least-squares nullspace estimate, reshaped into a three by three by three array.</aside>
+</section>
+
+<section class="slide" data-label="Why Normalize">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Normalization Is Not Cosmetic</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The hazard</h3><p>Pixel coordinates like $(700,500)$ make some rows of $A$ dwarf others, so the algebraic min drifts from the geometric one.</p></div>
+<div class="panel teal"><h3>Hartley fix</h3><p>Translate each image so points centre at the origin; scale so mean distance is $\sqrt 2$.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Similarity transform</div><p class="formula">$H=\begin{bmatrix} s&0&-s\bar x\\ 0&s&-s\bar y\\ 0&0&1\end{bmatrix},\ s=\dfrac{\sqrt2}{\mathrm{rms}}$</p></div>
+<div class="panel blue"><h3>Result</h3><p>Equalized rows, far smaller condition number — same geometry, better numerics.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Why Normalize</span></div>
+<aside class="speaker-notes">Raw pixel coordinates make some rows of the design matrix vastly larger than others, so the algebraic minimum no longer tracks the geometric one. Hartley normalization translates each image so points are centred and scales them to mean distance root two from the origin, equalizing the rows before the null vector is chosen.</aside>
+</section>
+
+<section class="slide alt" data-label="Normalized Linear Pipeline">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>The Normalized Linear Pipeline</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Four stage pipeline from normalize to denormalize">
+<rect x="0" y="0" width="380" height="230" fill="#f5f3ff"/>
+<rect x="30" y="20" width="320" height="38" rx="6" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><text x="48" y="44" font-size="15" fill="#2563EB">1. Normalize each view: $\hat x = Hx$</text>
+<rect x="30" y="72" width="320" height="38" rx="6" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/><text x="48" y="96" font-size="15" fill="#0F766E">2. Solve $A\hat{\mathbf t}=0$ by SVD</text>
+<rect x="30" y="124" width="320" height="38" rx="6" fill="#fffbeb" stroke="#B45309" stroke-width="2"/><text x="48" y="148" font-size="15" fill="#B45309">3. Enforce internal constraints</text>
+<rect x="30" y="176" width="320" height="38" rx="6" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/><text x="48" y="200" font-size="15" fill="#6D28D9">4. Denormalize $T$ back to pixels</text>
+<line x1="190" y1="58" x2="190" y2="72" stroke="#CBD5E1" stroke-width="2"/><line x1="190" y1="110" x2="190" y2="124" stroke="#CBD5E1" stroke-width="2"/><line x1="190" y1="162" x2="190" y2="176" stroke="#CBD5E1" stroke-width="2"/>
+</svg><figcaption class="small">The four canonical stages of normalized linear estimation.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Notebook check</h3><p>Normalization cut the effective condition number by roughly $22\times$ — same equations, healthier spectrum.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Denormalization</div><p class="formula">$T_i^{jk}\ \leftarrow\ \text{undo } H,H',H''$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Normalized Linear Pipeline</span></div>
+<aside class="speaker-notes">The standard recipe is four stages: normalize each view with a similarity transform, solve the homogeneous system for the raw tensor, enforce the internal constraints to make it valid, then denormalize. In the notebook normalization cut the effective condition number by roughly twentyfold without changing the underlying equations.</aside>
+</section>
+
+<section class="slide" data-label="Internal Constraints">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Internal Constraints: the Valid Manifold</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The gap</h3><p>A generic 27-entry array is not a trifocal tensor. The linear solution has 26 dof; valid tensors have only 18.</p></div>
+<div class="panel blue"><h3>Slice structure</h3><p>Each correlation slice $T_i$ has rank 2; the slices share epipolar null directions.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 210" width="100%" role="img" aria-label="Projection of an over-parametrized point onto the valid tensor manifold">
+<rect x="0" y="0" width="360" height="210" fill="#fff"/>
+<path d="M30,150 C120,90 240,90 330,150 C240,180 120,180 30,150 Z" fill="#0F766E" opacity="0.12" stroke="#0F766E" stroke-width="2"/>
+<text x="250" y="170" font-size="13" fill="#0F766E">valid tensors (18 dof)</text>
+<circle cx="170" cy="40" r="6" fill="#B45309"/><text x="185" y="38" font-size="13" fill="#B45309">linear $\hat T$ (26 dof)</text>
+<circle cx="180" cy="132" r="6" fill="#2563EB"/><text x="195" y="130" font-size="13" fill="#2563EB">projected $T$</text>
+<line x1="170" y1="46" x2="180" y2="126" stroke="#6D28D9" stroke-width="2" stroke-dasharray="4 3"/>
+</svg><figcaption class="small">Constraint enforcement projects the over-parametrized estimate onto the valid manifold.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Internal Constraints</span></div>
+<aside class="speaker-notes">A generic twenty-seven entry array is not a trifocal tensor. The valid tensors form an eighteen degree of freedom manifold, so the linear solution must be projected onto it. Each correlation slice has rank two, and the three left and right null vectors are constrained, encoding consistency with three genuine cameras.</aside>
+</section>
+
+<section class="slide alt" data-label="Parametrization via Epipoles">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Enforcing Validity via the Epipoles</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The handle</h3><p>Parametrize $T$ by epipoles $e'$, $e''$ (second, third views) plus a linear part $a_i$.</p></div>
+<div class="panel teal"><h3>Linear given epipoles</h3><p>Fix $e',e''$ and the rest of $T$ is linear in the data.</p></div>
+<div class="panel violet"><h3>Alternate</h3><p>Solve linear step, update epipoles, repeat — output is always valid.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Camera-consistent form</div><p class="formula">$T_i^{jk}=a_i^{j}\,e''^{k}-e'^{j}\,b_i^{k}$</p></div>
+<p class="small">The epipoles are the null vectors of the slice transposes; recovering them is the first step in building consistent cameras $P',P''$.</p>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Parametrization via Epipoles</span></div>
+<aside class="speaker-notes">The clean way to enforce validity is to parametrize the tensor by the two epipoles in the second and third views plus a linear part. Given the epipoles the remaining entries are linear, so an iterative scheme alternates between solving that linear problem and updating the epipoles, guaranteeing a geometrically valid result.</aside>
+</section>
+
+<section class="slide" data-label="Algebraic vs Geometric Error">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Algebraic vs Geometric Error</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Algebraic</h3><p>$\lVert A\mathbf t\rVert$: cheap, linear, but not the quantity we care about.</p></div>
+<div class="panel teal"><h3>Geometric</h3><p>Reprojection error in pixels — the distance between measured and predicted image points.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Measured versus predicted image point and the reprojection residual">
+<rect x="0" y="0" width="360" height="200" fill="#f0fdfa"/>
+<line x1="30" y1="170" x2="340" y2="170" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="30" y1="170" x2="30" y2="20" stroke="#CBD5E1" stroke-width="2"/>
+<circle cx="180" cy="70" r="6" fill="#2563EB"/><text x="120" y="64" font-size="13" fill="#2563EB">measured $x''$</text>
+<circle cx="240" cy="120" r="6" fill="#0F766E"/><text x="252" y="118" font-size="13" fill="#0F766E">predicted $\hat x''$</text>
+<line x1="180" y1="70" x2="240" y2="120" stroke="#B45309" stroke-width="2.5" stroke-dasharray="5 3"/>
+<text x="190" y="108" font-size="13" fill="#B45309">residual $d$</text>
+</svg><figcaption class="small">Geometric error measures the pixel gap between observed and reprojected points.</figcaption></figure>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Roles</div><p class="formula">$\text{algebraic} \;\to\; \text{initializer}\;\to\; \text{geometric refinement}$</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Algebraic vs Geometric Error</span></div>
+<aside class="speaker-notes">Algebraic error is the residual of the linear equations: cheap, but not what we ultimately care about. Geometric error is reprojection error, the distance in pixels between measured and predicted image points. The linear estimate minimizes algebraic error and serves as the initializer for the geometric refinement.</aside>
+</section>
+
+<section class="slide alt" data-label="Gold Standard Estimate">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>The Gold-Standard Iterative Estimate</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Noise model</h3><p>Assume Gaussian measurement noise; the maximum-likelihood fit minimizes total reprojection error.</p></div>
+<div class="panel teal"><h3>Optimizer</h3><p>Levenberg–Marquardt over cameras $P',P''$ consistent with $T$, started from the linear estimate.</p></div>
+<div class="panel violet"><h3>Sampson</h3><p>First-order approximation of geometric error — a fast stand-in for the full basin.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Residual basin around the correct correspondence">
+<rect x="0" y="0" width="360" height="200" fill="#fff"/>
+<ellipse cx="180" cy="110" rx="135" ry="70" fill="none" stroke="#CBD5E1" stroke-width="2"/>
+<ellipse cx="180" cy="110" rx="95" ry="48" fill="none" stroke="#0F766E" stroke-width="2"/>
+<ellipse cx="180" cy="110" rx="50" ry="25" fill="#0F766E" opacity="0.15" stroke="#0F766E" stroke-width="2"/>
+<circle cx="180" cy="110" r="5" fill="#B45309"/><text x="190" y="108" font-size="13" fill="#B45309">min at correct $x''$</text>
+<text x="60" y="50" font-size="12" fill="#0F766E">transfer residual basin</text>
+</svg><figcaption class="small">The notebook's transfer landscape: a clean basin minimized at the true correspondence.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Gold Standard Estimate</span></div>
+<aside class="speaker-notes">The gold-standard method assumes Gaussian measurement noise and minimizes total reprojection error over the cameras consistent with the tensor, using Levenberg-Marquardt. The transfer residual landscape sampled in the notebook shows a clean basin whose minimum sits exactly at the correct correspondence, the picture motivating Sampson and full geometric refinement.</aside>
+</section>
+
+<section class="slide" data-label="Robust Estimation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Robust Estimation with RANSAC</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Reality</h3><p>Real correspondence sets contain mismatches that wreck a least-squares fit.</p></div>
+<div class="panel blue"><h3>RANSAC loop</h3><p>Sample 7 points, estimate $T$, count inliers below a transfer-residual threshold, keep the best support.</p></div>
+<div class="panel teal"><h3>Notebook</h3><p>Corrupting 4 triplets makes their residuals jump orders of magnitude — clean separation.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 200" width="100%" role="img" aria-label="Residual stem plot separating inliers from corrupted outliers">
+<rect x="0" y="0" width="360" height="200" fill="#fffbeb"/>
+<line x1="30" y1="160" x2="345" y2="160" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="30" y1="95" x2="345" y2="95" stroke="#6D28D9" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="255" y="90" font-size="12" fill="#6D28D9">threshold</text>
+<line x1="55" y1="160" x2="55" y2="150" stroke="#0F766E" stroke-width="3"/><line x1="85" y1="160" x2="85" y2="152" stroke="#0F766E" stroke-width="3"/><line x1="115" y1="160" x2="115" y2="148" stroke="#0F766E" stroke-width="3"/><line x1="145" y1="160" x2="145" y2="153" stroke="#0F766E" stroke-width="3"/><line x1="175" y1="160" x2="175" y2="149" stroke="#0F766E" stroke-width="3"/>
+<line x1="245" y1="160" x2="245" y2="45" stroke="#B45309" stroke-width="3"/><line x1="275" y1="160" x2="275" y2="55" stroke="#B45309" stroke-width="3"/><line x1="305" y1="160" x2="305" y2="40" stroke="#B45309" stroke-width="3"/><line x1="335" y1="160" x2="335" y2="60" stroke="#B45309" stroke-width="3"/>
+<text x="55" y="178" font-size="12" fill="#0F766E">inliers</text><text x="270" y="178" font-size="12" fill="#B45309">outliers</text>
+</svg><figcaption class="small">Outlier residuals cross the threshold; inliers vote together below it.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>Robust Estimation</span></div>
+<aside class="speaker-notes">Real correspondence sets contain mismatches. RANSAC samples minimal sets of seven points, estimates a tensor, and counts inliers whose transfer residual stays below a threshold. The notebook corrupts four triplets and shows their residuals jump by orders of magnitude, exactly the separation that lets robust voting reject outliers.</aside>
+</section>
+
+<section class="slide alt" data-label="The Estimation Recipe">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 16</span></div>
+<h2>Putting It Together</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Full recipe</h3><ul>
+<li>Interest points across three views</li>
+<li>RANSAC to discard outliers</li>
+<li>Normalized linear estimate (initializer)</li>
+<li>Constraint enforcement for validity</li>
+<li>Gold-standard reprojection minimization</li>
+</ul></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Every step has a check</h3><p>Isolated nullspace gap, $\sim22\times$ conditioning gain, near-zero scaled tensor error, outlier residual ratio $>10^{6}$.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Validity target</div><p class="formula">$26 \text{ dof} \;\longrightarrow\; 18 \text{ dof valid } T$</p></div>
+<div class="panel amber"><h3>Takeaway</h3><p>A tensor earns trust through equations, normalization, validity, and residuals — not by having 27 numbers.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 391-408</span><span>The Estimation Recipe</span></div>
+<aside class="speaker-notes">Putting it together: interest points across three views, RANSAC to discard outliers, normalized linear estimation for an initializer, constraint enforcement for validity, then the gold-standard reprojection minimization. Each stage in the notebook has a numerical check beside it, from the isolated nullspace gap to the near-zero scaled tensor error.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
