@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-19">
+<meta name="chapter_title" content="Chapter 19: Auto-Calibration">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-19-auto-calibration/19-auto-calibration.ipynb">
+<meta name="source_span" content="printed pages 458-501; PDF pages 476-519.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 19: Auto-Calibration</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-19","chapter_title":"Chapter 19: Auto-Calibration","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-19-auto-calibration/19-auto-calibration.ipynb","source_span":"printed pages 458-501; PDF pages 476-519.","source_pdf":"Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"Auto-Calibration","notes":"Open by framing the goal: we already have a projective reconstruction that reprojects perfectly, yet its metric geometry is wrong. Auto-calibration uses only constraints on the cameras' internal parameters to pin down the plane at infinity and the absolute conic, with no calibration target in the scene."},
+{"slide":2,"label":"The Stratified Picture","notes":"Explain the three strata. Projective structure is known up to a fifteen-parameter homography, affine structure fixes the plane at infinity, and metric structure fixes the absolute conic on that plane. Stress that constancy or known form of the intrinsics is the physical fact that lets us climb the ladder."},
+{"slide":3,"label":"The Absolute Conic and Its Image","notes":"Define the absolute conic as the fixed imaginary conic on the plane at infinity, invariant under similarity transforms. Its image omega equals the inverse of K K transpose, so once omega is found the calibration matrix follows by Cholesky. Emphasize that a moving rigid camera always sees the same absolute conic."},
+{"slide":4,"label":"The Absolute Dual Quadric","notes":"Introduce the dual absolute quadric as the single four by four rank-three object that packages both unknowns. Its null vector is the plane at infinity and its non-trivial part is the absolute conic. This is the fixed object every auto-calibration method solves for; everything else is bookkeeping around it."},
+{"slide":5,"label":"The Projection Equation","notes":"Derive the central identity: a camera projects the dual quadric to the dual image of the absolute conic, P times Q-star times P transpose proportional to K K transpose. Make clear this single equation turns assumptions about the internals into constraints on one shared 3D quadric across all views."},
+{"slide":6,"label":"Recovering the Rectifying Homography","notes":"Show how the recovered quadric yields the upgrade. Eigendecompose Q-star to read off the calibration block and the plane at infinity, assemble the four by four rectifying homography, and apply it to every camera and point. Note the residual scale and sign care needed when forming H from the factorization."},
+{"slide":7,"label":"Linear Self-Calibration","notes":"Work the varying-focal-length special case. Known principal point, zero skew, and unit aspect ratio make the projected dual conic diagonal, giving four linear rows per view on the ten entries of Q-star. The stacked system's nullspace recovers the quadric; the focal lengths drop out per view."},
+{"slide":8,"label":"The Kruppa Equations","notes":"Present Kruppa as the two-view route that needs only fundamental matrices, no explicit reconstruction. The epipole-bracketed dual conic must be proportional to F omega-star F transpose. Warn that Kruppa is weaker than a known infinite homography and does not enforce full multiview quadric consistency."},
+{"slide":9,"label":"Kruppa as Epipolar Tangency","notes":"Give the geometric intuition behind Kruppa: epipolar planes tangent to the absolute conic induce corresponding tangent epipolar lines in both images. Walk through the tangent-line picture with an ordinary visible conic, then connect tangency, a dual-conic notion, to why the algebra is written with omega-star."},
+{"slide":10,"label":"Stratified Upgrade via the Infinite Homography","notes":"Once the plane at infinity is known the affine-to-metric step is linear. The infinite homography H-infinity equals A minus a p transpose, and it transfers the image of the absolute conic between views. A rotating camera's inter-image homography is already an infinite homography, so the same equation calibrates it."},
+{"slide":11,"label":"Critical Motions and Degeneracy","notes":"Drive home the practical warning. Auto-calibration fails when motion is too restricted: a single rotation axis, planar rig motion, pure translation, or turntable sequences leave unobservable directions. Show these as extra nullity in the constraint spectrum, and recommend checking conditioning before trusting any recovered calibration."},
+{"slide":12,"label":"Synthesis","notes":"Close by tying the strands together. Auto-calibration is a metric upgrade: find the plane at infinity and the absolute conic, or package both in the dual quadric. The projection identity converts internal-parameter assumptions into constraints; degeneracy shows up as extra nullity, and bundle adjustment refines the final result."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="Auto-Calibration">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h1>Auto-Calibration</h1>
+<p class="lead">Metric structure from internal-parameter constraints alone</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>The problem</h3><p>A projective reconstruction reprojects perfectly yet has the wrong metric shape.</p></div>
+<div class="panel teal"><h3>The lever</h3><p>Constraints on each camera's internal matrix $K$ replace the missing calibration object.</p></div>
+<div class="panel amber"><h3>The targets</h3><p>Locate the plane at infinity $\pi_\infty$ and the absolute conic $\Omega_\infty$ on it.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="A projective cube sheared relative to its metric counterpart"><rect x="0" y="0" width="380" height="240" fill="#f0fdfa"/><g fill="none" stroke="#2563EB" stroke-width="2"><rect x="40" y="70" width="90" height="90"/><path d="M40 70 L80 40 L170 40 L130 70"/><path d="M130 70 L170 40 L170 130 L130 160"/></g><g fill="none" stroke="#B45309" stroke-width="2" stroke-dasharray="5 4"><path d="M230 80 L300 55 L355 95 L290 125 Z"/><path d="M230 80 L235 165 L290 200 L290 125"/><path d="M290 125 L355 95 L355 175 L290 200"/></g><text x="55" y="195" font-size="15" fill="#2563EB">metric</text><text x="250" y="225" font-size="15" fill="#B45309">projective</text></svg><figcaption class="small">Same image data, different 3D shape: only the metric stratum is rigid.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>Auto-Calibration</span></div>
+<aside class="speaker-notes">Open by framing the goal: we already have a projective reconstruction that reprojects perfectly, yet its metric geometry is wrong. Auto-calibration uses only constraints on the cameras' internal parameters to pin down the plane at infinity and the absolute conic, with no calibration target in the scene.</aside>
+</section>
+
+<section class="slide alt" data-label="The Stratified Picture">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>The Stratified Ladder: Projective &rarr; Affine &rarr; Metric</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Projective</h3><p>Known up to a $15$-DoF homography $H$. Incidence preserved; angles and ratios are not.</p></div>
+<div class="panel teal"><h3>Affine</h3><p>Fix $\pi_\infty$. Parallelism and ratios of lengths along a line become meaningful.</p></div>
+<div class="panel violet"><h3>Metric</h3><p>Fix $\Omega_\infty$ on $\pi_\infty$. Angles and length ratios are restored up to a similarity.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 240" width="100%" role="img" aria-label="Three-rung ladder from projective to affine to metric"><rect x="0" y="0" width="380" height="240" fill="#fff"/><line x1="60" y1="30" x2="60" y2="210" stroke="#CBD5E1" stroke-width="3"/><line x1="320" y1="30" x2="320" y2="210" stroke="#CBD5E1" stroke-width="3"/><line x1="60" y1="190" x2="320" y2="190" stroke="#2563EB" stroke-width="5"/><line x1="60" y1="120" x2="320" y2="120" stroke="#0F766E" stroke-width="5"/><line x1="60" y1="50" x2="320" y2="50" stroke="#6D28D9" stroke-width="5"/><text x="70" y="180" font-size="16" fill="#2563EB">projective</text><text x="70" y="110" font-size="16" fill="#0F766E">affine: find $\pi$&infin;</text><text x="70" y="40" font-size="16" fill="#6D28D9">metric: find &Omega;&infin;</text><path d="M195 185 L195 130" stroke="#B45309" stroke-width="2" marker-end="url(#a19)"/><path d="M195 115 L195 60" stroke="#B45309" stroke-width="2" marker-end="url(#a19)"/><defs><marker id="a19" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#B45309"/></marker></defs></svg><figcaption class="small">Each rung removes a group of unwanted transformations.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>The Stratified Picture</span></div>
+<aside class="speaker-notes">Explain the three strata. Projective structure is known up to a fifteen-parameter homography, affine structure fixes the plane at infinity, and metric structure fixes the absolute conic on that plane. Stress that constancy or known form of the intrinsics is the physical fact that lets us climb the ladder.</aside>
+</section>
+
+<section class="slide" data-label="The Absolute Conic and Its Image">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>The Absolute Conic $\Omega_\infty$ and Its Image</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Definition</h3><p>$\Omega_\infty$ is the imaginary point conic on $\pi_\infty$, fixed by every similarity transform.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Image of the absolute conic</div><p class="formula">$\omega = (KK^\top)^{-1}, \qquad \omega^* = KK^\top$</p></div>
+<div class="panel teal"><h3>Why it calibrates</h3><p>Recover $K$ from $\omega$ by Cholesky factorization; a moving rigid camera always images the same $\Omega_\infty$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Absolute conic on plane at infinity projecting to image conic omega"><rect x="0" y="0" width="380" height="250" fill="#fff"/><ellipse cx="270" cy="70" rx="90" ry="30" fill="none" stroke="#6D28D9" stroke-width="2.5" stroke-dasharray="6 4"/><text x="245" y="35" font-size="15" fill="#6D28D9">&Omega;&infin; on $\pi$&infin;</text><circle cx="120" cy="195" r="6" fill="#111827"/><text x="70" y="215" font-size="14" fill="#475569">camera C</text><line x1="120" y1="195" x2="200" y2="80" stroke="#CBD5E1" stroke-width="1.5"/><line x1="120" y1="195" x2="340" y2="85" stroke="#CBD5E1" stroke-width="1.5"/><ellipse cx="150" cy="150" rx="34" ry="13" fill="none" stroke="#2563EB" stroke-width="2.5" transform="rotate(-20 150 150)"/><text x="120" y="135" font-size="15" fill="#2563EB">&omega; in image</text></svg><figcaption class="small">The image conic $\omega$ encodes $K$ directly.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>The Absolute Conic and Its Image</span></div>
+<aside class="speaker-notes">Define the absolute conic as the fixed imaginary conic on the plane at infinity, invariant under similarity transforms. Its image omega equals the inverse of K K transpose, so once omega is found the calibration matrix follows by Cholesky. Emphasize that a moving rigid camera always sees the same absolute conic.</aside>
+</section>
+
+<section class="slide alt" data-label="The Absolute Dual Quadric">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>The Absolute Dual Quadric $Q^*_\infty$</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">A single packaged unknown</div><p class="formula">$Q^*_\infty = \begin{bmatrix} I_3 & 0 \\ 0 & 0 \end{bmatrix}$ (metric frame)</p></div>
+<div class="panel teal"><h3>Rank and shape</h3><p>$4\times4$, symmetric, positive semidefinite, rank $3$. One zero eigenvalue.</p></div>
+<div class="panel amber"><h3>Two unknowns in one</h3><p>Null vector $Q^*_\infty\,\pi_\infty = 0$ gives the plane; the $3$-block carries $\Omega_\infty$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Rank-3 dual quadric with null direction equal to plane at infinity"><rect x="0" y="0" width="380" height="250" fill="#fff"/><g transform="translate(190 120)"><ellipse cx="0" cy="0" rx="120" ry="70" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><ellipse cx="0" cy="0" rx="120" ry="22" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3"/><line x1="0" y1="0" x2="0" y2="-120" stroke="#B45309" stroke-width="2.5" marker-end="url(#n19)"/><circle cx="0" cy="0" r="4" fill="#111827"/></g><defs><marker id="n19" markerWidth="9" markerHeight="9" refX="4" refY="8" orient="auto"><path d="M0 0 L8 0 L4 8 Z" fill="#B45309"/></marker></defs><text x="200" y="20" font-size="15" fill="#B45309">null dir = $\pi$&infin;</text><text x="150" y="135" font-size="15" fill="#2563EB">rank-3 quadric</text></svg><figcaption class="small">The fixed object every method solves for.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>The Absolute Dual Quadric</span></div>
+<aside class="speaker-notes">Introduce the dual absolute quadric as the single four by four rank-three object that packages both unknowns. Its null vector is the plane at infinity and its non-trivial part is the absolute conic. This is the fixed object every auto-calibration method solves for; everything else is bookkeeping around it.</aside>
+</section>
+
+<section class="slide" data-label="The Projection Equation">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>The Auto-Calibration Equation</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Dual quadric projects to the DIAC</div><p class="formula">$$P_i\,Q^*_\infty\,P_i^\top \;\simeq\; \omega_i^* \;=\; K_iK_i^\top$$</p></div>
+<div class="panel teal"><h3>The trick</h3><p>One shared 3D quadric; each view's assumed $K_i$ becomes equations on its entries.</p></div>
+<div class="panel violet"><h3>Constant intrinsics</h3><p>If $K_i=K$, every $\omega_i^*$ is equal, sharply over-constraining $Q^*_\infty$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="One dual quadric projecting to a DIAC in three cameras"><rect x="0" y="0" width="380" height="250" fill="#fff"/><ellipse cx="190" cy="40" rx="55" ry="20" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/><text x="150" y="20" font-size="14" fill="#6D28D9">$Q^*$&infin;</text><g stroke="#CBD5E1" stroke-width="1.5"><line x1="190" y1="55" x2="60" y2="200"/><line x1="190" y1="55" x2="190" y2="200"/><line x1="190" y1="55" x2="320" y2="200"/></g><g fill="#eff6ff" stroke="#2563EB" stroke-width="2"><ellipse cx="60" cy="210" rx="30" ry="12"/><ellipse cx="190" cy="210" rx="30" ry="12"/><ellipse cx="320" cy="210" rx="30" ry="12"/></g><text x="40" y="240" font-size="13" fill="#2563EB">&omega;&#8321;*</text><text x="172" y="240" font-size="13" fill="#2563EB">&omega;&#8322;*</text><text x="302" y="240" font-size="13" fill="#2563EB">&omega;&#8323;*</text></svg><figcaption class="small">$P_iQ^*_\infty P_i^\top$ must match $K_iK_i^\top$ in every view.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>The Projection Equation</span></div>
+<aside class="speaker-notes">Derive the central identity: a camera projects the dual quadric to the dual image of the absolute conic, P times Q-star times P transpose proportional to K K transpose. Make clear this single equation turns assumptions about the internals into constraints on one shared 3D quadric across all views.</aside>
+</section>
+
+<section class="slide alt" data-label="Recovering the Rectifying Homography">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>Recovering the Rectifying Homography $H$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Factorize</h3><p>Eigendecompose $Q^*_\infty$. The leading block factors as $KK^\top$; the null vector is $\pi_\infty$.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Block form of H</div><p class="formula">$H = \begin{bmatrix} K & 0 \\ -p^\top K & 1 \end{bmatrix}, \quad p = \pi_\infty$</p></div>
+<div class="panel teal"><h3>Apply</h3><p>Map every camera $P_i\!\to\!P_iH$ and point $X\!\to\!H^{-1}X$ to land in a metric frame.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Skewed projective grid rectified to a square metric grid by H"><rect x="0" y="0" width="380" height="250" fill="#fff"/><g stroke="#B45309" stroke-width="1.8" fill="none"><path d="M30 60 L150 40 L165 150 L40 175 Z"/><path d="M70 53 L82 161 M110 47 L125 156 M30 95 L160 78 M35 135 L163 116"/></g><text x="55" y="200" font-size="14" fill="#B45309">projective</text><path d="M180 110 L235 110" stroke="#6D28D9" stroke-width="3" marker-end="url(#h19)"/><text x="185" y="100" font-size="15" fill="#6D28D9">$H$</text><defs><marker id="h19" markerWidth="9" markerHeight="9" refX="5" refY="4" orient="auto"><path d="M0 0 L9 4 L0 8 Z" fill="#6D28D9"/></marker></defs><g stroke="#2563EB" stroke-width="1.8" fill="none"><rect x="255" y="55" width="110" height="110"/><path d="M291 55 L291 165 M328 55 L328 165 M255 91 L365 91 M255 128 L365 128"/></g><text x="280" y="195" font-size="14" fill="#2563EB">metric</text></svg><figcaption class="small">$H$ un-shears the reconstruction to a similarity frame.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>Recovering the Rectifying Homography</span></div>
+<aside class="speaker-notes">Show how the recovered quadric yields the upgrade. Eigendecompose Q-star to read off the calibration block and the plane at infinity, assemble the four by four rectifying homography, and apply it to every camera and point. Note the residual scale and sign care needed when forming H from the factorization.</aside>
+</section>
+
+<section class="slide" data-label="Linear Self-Calibration">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>Linear Self-Calibration: Varying Focal Length</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Assumptions</h3><p>Known principal point (shifted to origin), zero skew, unit aspect ratio; $f_i$ free per view.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Target form of the DIAC</div><p class="formula">$\omega_i^* \simeq \mathrm{diag}(f_i^2,\,f_i^2,\,1)$</p></div>
+<div class="panel teal"><h3>Linear rows</h3><p>Entries $(1,3),(2,3),(1,2)$ vanish and $(1,1)=(2,2)$: four rows per view on the $10$ entries of $Q^*_\infty$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="SVD spectrum with a single small singular value indicating one-dimensional nullspace"><rect x="0" y="0" width="380" height="250" fill="#fff"/><line x1="50" y1="200" x2="350" y2="200" stroke="#CBD5E1" stroke-width="2"/><line x1="50" y1="200" x2="50" y2="40" stroke="#CBD5E1" stroke-width="2"/><g fill="#2563EB"><rect x="70" y="55" width="26" height="145"/><rect x="110" y="70" width="26" height="130"/><rect x="150" y="90" width="26" height="110"/><rect x="190" y="110" width="26" height="90"/><rect x="230" y="135" width="26" height="65"/><rect x="270" y="160" width="26" height="40"/></g><rect x="310" y="194" width="26" height="6" fill="#B45309"/><text x="300" y="225" font-size="14" fill="#B45309">&sigma;&#8321;&#8320; &asymp; 0</text><text x="100" y="35" font-size="14" fill="#475569">singular values</text></svg><figcaption class="small">A clean rank drop signals a $1$-D nullspace: $Q^*_\infty$ up to scale.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>Linear Self-Calibration</span></div>
+<aside class="speaker-notes">Work the varying-focal-length special case. Known principal point, zero skew, and unit aspect ratio make the projected dual conic diagonal, giving four linear rows per view on the ten entries of Q-star. The stacked system's nullspace recovers the quadric; the focal lengths drop out per view.</aside>
+</section>
+
+<section class="slide alt" data-label="The Kruppa Equations">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>The Kruppa Equations</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Two-view only</h3><p>Need just the fundamental matrix $F$ and epipole $e'$; no explicit projective reconstruction.</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Constant-K proportionality</div><p class="formula">$$[e']_\times\,\omega^*\,[e']_\times \;\simeq\; F\,\omega^*\,F^\top$$</p></div>
+<div class="panel amber"><h3>Caveat</h3><p>Weaker than a known infinite homography; it omits much multiview $Q^*_\infty$ structure.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Two image planes with epipoles and corresponding dual conics linked by F"><rect x="0" y="0" width="380" height="250" fill="#fff"/><rect x="30" y="60" width="130" height="130" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><rect x="220" y="60" width="130" height="130" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><ellipse cx="95" cy="125" rx="34" ry="22" fill="none" stroke="#0F766E" stroke-width="2.5"/><ellipse cx="285" cy="125" rx="34" ry="22" fill="none" stroke="#0F766E" stroke-width="2.5"/><circle cx="150" cy="80" r="4" fill="#B45309"/><circle cx="232" cy="80" r="4" fill="#B45309"/><text x="135" y="72" font-size="13" fill="#B45309">e</text><text x="232" y="72" font-size="13" fill="#B45309">e&prime;</text><path d="M160 90 C195 70 200 70 230 88" stroke="#6D28D9" stroke-width="2" fill="none" marker-end="url(#f19)"/><text x="178" y="62" font-size="14" fill="#6D28D9">$F$</text><defs><marker id="f19" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#6D28D9"/></marker></defs><text x="78" y="220" font-size="13" fill="#0F766E">&omega;*</text><text x="268" y="220" font-size="13" fill="#0F766E">&omega;*</text></svg><figcaption class="small">$F$ transfers one dual conic to the other through the epipoles.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>The Kruppa Equations</span></div>
+<aside class="speaker-notes">Present Kruppa as the two-view route that needs only fundamental matrices, no explicit reconstruction. The epipole-bracketed dual conic must be proportional to F omega-star F transpose. Warn that Kruppa is weaker than a known infinite homography and does not enforce full multiview quadric consistency.</aside>
+</section>
+
+<section class="slide" data-label="Kruppa as Epipolar Tangency">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>Kruppa as Epipolar Tangency</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Geometric picture</h3><p>Two epipolar planes are tangent to $\Omega_\infty$; they meet each image in tangent epipolar lines.</p></div>
+<div class="panel blue"><h3>Why dual</h3><p>Tangency is a line condition, so the algebra is naturally written with the dual conic $\omega^*$.</p></div>
+<div class="panel violet"><h3>Reading</h3><p>Matching tangent lines through the epipoles give the proportionality on the previous slide.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Two tangent lines from an epipole touching a conic"><rect x="0" y="0" width="380" height="250" fill="#fff"/><ellipse cx="240" cy="135" rx="70" ry="48" fill="#f0fdfa" stroke="#0F766E" stroke-width="2.5"/><text x="210" y="140" font-size="15" fill="#0F766E">&omega;*</text><circle cx="55" cy="135" r="6" fill="#B45309"/><text x="35" y="125" font-size="14" fill="#B45309">e&prime;</text><line x1="55" y1="135" x2="298" y2="92" stroke="#2563EB" stroke-width="2"/><line x1="55" y1="135" x2="298" y2="178" stroke="#2563EB" stroke-width="2"/><circle cx="252" cy="88" r="4" fill="#6D28D9"/><circle cx="252" cy="182" r="4" fill="#6D28D9"/><text x="120" y="100" font-size="13" fill="#2563EB">tangent</text><text x="120" y="195" font-size="13" fill="#2563EB">tangent</text></svg><figcaption class="small">Tangent epipolar lines encode the conic as a dual object.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>Kruppa as Epipolar Tangency</span></div>
+<aside class="speaker-notes">Give the geometric intuition behind Kruppa: epipolar planes tangent to the absolute conic induce corresponding tangent epipolar lines in both images. Walk through the tangent-line picture with an ordinary visible conic, then connect tangency, a dual-conic notion, to why the algebra is written with omega-star.</aside>
+</section>
+
+<section class="slide alt" data-label="Stratified Upgrade via the Infinite Homography">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>Stratified Upgrade via $H_\infty$</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Once $\pi_\infty$ is known</h3><p>The affine-to-metric step is linear: transfer the IAC between views.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">IAC transfer</div><p class="formula">$\omega_i = H_\infty^{-\top}\,\omega\,H_\infty^{-1}, \quad H_\infty = A - a\,p^\top$</p></div>
+<div class="panel teal"><h3>Rotating camera</h3><p>The inter-image homography of a camera rotating about its centre is already an $H_\infty$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="The infinite homography mapping the image conic between two views"><rect x="0" y="0" width="380" height="250" fill="#fff"/><ellipse cx="90" cy="130" rx="38" ry="26" fill="none" stroke="#2563EB" stroke-width="2.5" transform="rotate(-15 90 130)"/><text x="70" y="190" font-size="14" fill="#2563EB">&omega; (view 1)</text><ellipse cx="290" cy="120" rx="30" ry="34" fill="none" stroke="#0F766E" stroke-width="2.5" transform="rotate(25 290 120)"/><text x="255" y="190" font-size="14" fill="#0F766E">&omega;&#7522; (view i)</text><path d="M140 120 C200 90 220 95 250 105" stroke="#6D28D9" stroke-width="2.5" fill="none" marker-end="url(#hi19)"/><text x="175" y="85" font-size="15" fill="#6D28D9">$H$&infin;</text><defs><marker id="hi19" markerWidth="9" markerHeight="9" refX="5" refY="4" orient="auto"><path d="M0 0 L9 4 L0 8 Z" fill="#6D28D9"/></marker></defs></svg><figcaption class="small">Transfer is a congruence by $H_\infty$ - purely linear.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>Stratified Upgrade via the Infinite Homography</span></div>
+<aside class="speaker-notes">Once the plane at infinity is known the affine-to-metric step is linear. The infinite homography H-infinity equals A minus a p transpose, and it transfers the image of the absolute conic between views. A rotating camera's inter-image homography is already an infinite homography, so the same equation calibrates it.</aside>
+</section>
+
+<section class="slide" data-label="Critical Motions and Degeneracy">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>Critical Motions: Degeneracy as Extra Nullity</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>The warning</h3><p>Self-calibration fails when motion is too restricted: unobservable degrees of freedom remain.</p></div>
+<div class="panel blue"><h3>Examples</h3><p>Single rotation axis, planar rig motion, pure translation, turntable sequences.</p></div>
+<div class="panel teal"><h3>Diagnostic</h3><p>Inspect the constraint singular spectrum; extra small singular values flag the ambiguity.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Two spectra, one with a single null value, one with a wider null space"><rect x="0" y="0" width="380" height="250" fill="#fff"/><text x="30" y="30" font-size="14" fill="#0F766E">general motion</text><g fill="#0F766E"><rect x="30" y="60" width="16" height="55"/><rect x="52" y="68" width="16" height="47"/><rect x="74" y="80" width="16" height="35"/><rect x="96" y="112" width="16" height="3"/></g><line x1="28" y1="115" x2="120" y2="115" stroke="#CBD5E1" stroke-width="1.5"/><text x="210" y="30" font-size="14" fill="#B45309">critical motion</text><g fill="#B45309"><rect x="210" y="60" width="16" height="55"/><rect x="232" y="70" width="16" height="45"/><rect x="254" y="110" width="16" height="5"/><rect x="276" y="111" width="16" height="4"/><rect x="298" y="112" width="16" height="3"/></g><line x1="208" y1="115" x2="320" y2="115" stroke="#CBD5E1" stroke-width="1.5"/><text x="40" y="160" font-size="13" fill="#475569">1-D null</text><text x="230" y="160" font-size="13" fill="#475569">wider null space = ambiguity</text></svg><figcaption class="small">Restricted motion widens the nullspace of the constraints.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>Critical Motions and Degeneracy</span></div>
+<aside class="speaker-notes">Drive home the practical warning. Auto-calibration fails when motion is too restricted: a single rotation axis, planar rig motion, pure translation, or turntable sequences leave unobservable directions. Show these as extra nullity in the constraint spectrum, and recommend checking conditioning before trusting any recovered calibration.</aside>
+</section>
+
+<section class="slide alt" data-label="Synthesis">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 19</span></div>
+<h2>Synthesis</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>One goal</h3><p>Find $\pi_\infty$ and $\Omega_\infty$, or package both in $Q^*_\infty$, to upgrade projective to metric.</p></div>
+<div class="panel teal"><h3>One equation</h3><p>$P_iQ^*_\infty P_i^\top \simeq K_iK_i^\top$ turns internal assumptions into quadric constraints.</p></div>
+<div class="panel violet"><h3>Toolbox</h3><p>Linear self-calibration, Kruppa, stratified $H_\infty$ transfer, stereo-rig $\pi_\infty$ recovery.</p></div>
+<div class="panel amber"><h3>Caution</h3><p>Degeneracy is extra nullity; refine with bundle adjustment.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="Pipeline from projective reconstruction through quadric to metric output"><rect x="0" y="0" width="380" height="250" fill="#fff"/><rect x="20" y="100" width="92" height="52" rx="6" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><text x="34" y="132" font-size="14" fill="#2563EB">projective</text><rect x="145" y="100" width="92" height="52" rx="6" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/><text x="168" y="132" font-size="15" fill="#6D28D9">$Q^*$&infin;</text><rect x="270" y="100" width="92" height="52" rx="6" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/><text x="295" y="132" font-size="14" fill="#0F766E">metric</text><path d="M112 126 L143 126" stroke="#B45309" stroke-width="2.5" marker-end="url(#s19)"/><path d="M237 126 L268 126" stroke="#B45309" stroke-width="2.5" marker-end="url(#s19)"/><defs><marker id="s19" markerWidth="9" markerHeight="9" refX="5" refY="4" orient="auto"><path d="M0 0 L9 4 L0 8 Z" fill="#B45309"/></marker></defs><text x="110" y="90" font-size="13" fill="#475569">constraints</text><text x="245" y="90" font-size="13" fill="#475569">$H$</text></svg><figcaption class="small">The quadric is the hinge of the whole pipeline.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 458-501</span><span>Synthesis</span></div>
+<aside class="speaker-notes">Close by tying the strands together. Auto-calibration is a metric upgrade: find the plane at infinity and the absolute conic, or package both in the dual quadric. The projection identity converts internal-parameter assumptions into constraints; degeneracy shows up as extra nullity, and bundle adjustment refines the final result.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-18">
+<meta name="chapter_title" content="Chapter 18: N-View Computational Methods">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-18-n-view-computational-methods/18-n-view-computational-methods.ipynb">
+<meta name="source_span" content="printed pages 434-457; PDF pages 452-475.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 18: N-View Computational Methods</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-18","chapter_title":"Chapter 18: N-View Computational Methods","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-18-n-view-computational-methods/18-n-view-computational-methods.ipynb","source_span":"printed pages 434-457; PDF pages 452-475.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"N-View Computational Methods","notes":"This chapter, printed pages 434 through 457, asks how a long set of image measurements becomes a reconstruction. Frame the two pillars: bundle adjustment as the gold-standard nonlinear refinement, and factorization as a direct linear route. Each method is tied to one inspection target, rank, sparsity, conditioning, or connectivity."},
+{"slide":2,"label":"The Reconstruction Pipeline","notes":"Walk the learners through the pipeline shape. Local matching produces tracks and a visibility mask, an initialization route gives a coarse projective structure, and bundle adjustment polishes everything. Stress that every reconstruction stays projective until a metric upgrade or calibration constraint is stated, so ambiguity tracking is part of the workflow."},
+{"slide":3,"label":"Measurements and the Observation Graph","notes":"Define the raw data carefully. Image points indexed by camera and point form a bipartite observation graph whose edges are the visible measurements. Missing data is the rule, not the exception. Bundle adjustment tolerates holes because residuals are local, while direct SVD factorization needs complete tracks, a distinction worth repeating."},
+{"slide":4,"label":"Bundle Adjustment: The Cost","notes":"Introduce the gold standard. Bundle adjustment jointly optimizes all cameras and all points to minimize total squared reprojection error under an assumed noise model. It is maximum likelihood when noise is Gaussian. Emphasize that it needs a good initialization because the cost is non-convex, so it is the last step, not the first."},
+{"slide":5,"label":"Sparse Structure and Schur Complement","notes":"This is the computational heart of the chapter. Each residual touches exactly one camera and one point, so the normal matrix is block-arrowhead sparse. Levenberg-Marquardt with the Schur complement eliminates the large point block first, leaving a small reduced camera system. Walk the partition U, W, V slowly on the diagram."},
+{"slide":6,"label":"Affine Factorization","notes":"Present Tomasi and Kanade. Affine cameras map centroids to centroids, so subtracting each image centroid removes translation and leaves a measurement matrix that factors as motion times structure. The matrix is rank three in the noiseless case, so the closest reconstruction is the rank-three SVD truncation. This is the cleanest result in the chapter."},
+{"slide":7,"label":"The Factorization W = M S","notes":"Make the SVD mechanics concrete. Take the centered two-m by n matrix, compute its SVD, keep the top three singular values, and split the truncated factors into a motion matrix and a structure matrix. The rank-three plateau in the spectrum is the auditable invariant. The remaining linear ambiguity is fixed by metric constraints."},
+{"slide":8,"label":"Non-Rigid Factorization","notes":"Extend the subspace idea to deforming scenes. With l basis shapes each trajectory lives in a 3l-dimensional subspace, so the singular value drop moves from after three to after 3l, here six for two shapes. The motion matrix keeps repeated camera blocks, and the factorization ambiguity is harder, which is the honest caveat to state."},
+{"slide":9,"label":"Projective Factorization with Depths","notes":"Now the projective case. Image points are scale classes, so the equation only becomes a rank-four factorization once the correct projective depths weight each measurement. Unit depths generally do not give rank four. Depths are estimated iteratively, and the row-column scaling freedom is an exact gauge that should be normalized between iterations."},
+{"slide":10,"label":"Conditioning and Normalization","notes":"Drive home the warning that the algebraic matrix is not the geometric error. Isotropic image normalization sharply lowers the effective condition number of the homogeneous system before the SVD, so the same rank-four object is recovered far more reliably. Pair this with the residual descent curve from the bundle solve as a diagnostic habit."},
+{"slide":11,"label":"Plane-Based and Sequence Methods","notes":"Cover two initialization devices. A known reference-plane homography fixes the left three-by-three camera block, leaving a linear homogeneous system for the final columns whose null space is the one-dimensional common scale. For sequences, pairwise and triplet windows are merged into a global start. Both are initializers, not substitutes for final bundle adjustment."},
+{"slide":12,"label":"Synthesis and Takeaways","notes":"Close by tying the routes together. Bundle adjustment is sparse nonlinear least squares on the observation graph; affine factorization is a rank-three approximation; projective factorization needs depths and normalization to mean anything geometric; plane and sequence methods initialize. Always state the remaining projective, affine, or metric ambiguity before claiming success."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="N-View Computational Methods">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h1>N-View Computational Methods</h1>
+<p class="lead">From a long set of image measurements to structure and motion</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Bundle adjustment</h3><p>Gold-standard joint nonlinear refinement of all cameras and points.</p></div>
+<div class="panel teal"><h3>Factorization</h3><p>Direct linear recovery from a rank-constrained measurement matrix.</p></div>
+<div class="panel amber"><h3>Initialization</h3><p>Plane homographies and sequence merging seed the solver.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Several cameras observing a shared cloud of 3D points">
+<rect x="0" y="0" width="380" height="230" fill="#f0fdfa"/>
+<circle cx="250" cy="110" r="3" fill="#6D28D9"/><circle cx="280" cy="90" r="3" fill="#6D28D9"/><circle cx="300" cy="130" r="3" fill="#6D28D9"/><circle cx="265" cy="150" r="3" fill="#6D28D9"/><circle cx="290" cy="115" r="3" fill="#6D28D9"/>
+<polygon points="40,60 70,50 70,80" fill="none" stroke="#2563EB" stroke-width="2"/>
+<polygon points="40,170 70,160 70,190" fill="none" stroke="#2563EB" stroke-width="2"/>
+<polygon points="130,200 160,185 160,215" fill="none" stroke="#2563EB" stroke-width="2"/>
+<line x1="70" y1="65" x2="280" y2="100" stroke="#0F766E" stroke-width="1"/>
+<line x1="70" y1="175" x2="265" y2="150" stroke="#0F766E" stroke-width="1"/>
+<line x1="160" y1="200" x2="300" y2="130" stroke="#0F766E" stroke-width="1"/>
+<text x="20" y="55" font-size="13" fill="#2563EB">P₁</text><text x="20" y="165" font-size="13" fill="#2563EB">P₂</text><text x="115" y="225" font-size="13" fill="#2563EB">Pₘ</text>
+<text x="305" y="105" font-size="13" fill="#6D28D9">Xⱼ</text>
+</svg><figcaption class="small">m cameras, n shared points: the data for structure and motion.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>N-View Computational Methods</span></div>
+<aside class="speaker-notes">This chapter, printed pages 434 through 457, asks how a long set of image measurements becomes a reconstruction. Frame the two pillars: bundle adjustment as the gold-standard nonlinear refinement, and factorization as a direct linear route. Each method is tied to one inspection target, rank, sparsity, conditioning, or connectivity.</aside>
+</section>
+
+<section class="slide alt" data-label="The Reconstruction Pipeline">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>The Reconstruction Pipeline</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Match</h3><p>Track interest points across frames; store a visibility mask.</p></div>
+<div class="panel teal"><h3>Initialize</h3><p>Factorization, plane homographies, or sequence merging.</p></div>
+<div class="panel amber"><h3>Refine</h3><p>Run bundle adjustment last; record residuals and conditioning.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 200" width="100%" role="img" aria-label="A pipeline flow from tracks to initialization to bundle adjustment">
+<rect x="0" y="0" width="380" height="200" fill="#eff6ff"/>
+<rect x="20" y="80" width="90" height="44" rx="6" fill="#fff" stroke="#2563EB" stroke-width="2"/>
+<rect x="145" y="80" width="90" height="44" rx="6" fill="#fff" stroke="#0F766E" stroke-width="2"/>
+<rect x="270" y="80" width="90" height="44" rx="6" fill="#fff" stroke="#B45309" stroke-width="2"/>
+<text x="40" y="106" font-size="14" fill="#2563EB">tracks</text>
+<text x="158" y="106" font-size="13" fill="#0F766E">init P,X</text>
+<text x="282" y="106" font-size="13" fill="#B45309">bundle</text>
+<line x1="110" y1="102" x2="143" y2="102" stroke="#475569" stroke-width="2" marker-end="url(#a18)"/>
+<line x1="235" y1="102" x2="268" y2="102" stroke="#475569" stroke-width="2" marker-end="url(#a18)"/>
+<text x="120" y="160" font-size="13" fill="#6D28D9">projective → metric upgrade last</text>
+<defs><marker id="a18" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker></defs>
+</svg><figcaption class="small">Stay projective until a metric upgrade is explicitly stated.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>The Reconstruction Pipeline</span></div>
+<aside class="speaker-notes">Walk the learners through the pipeline shape. Local matching produces tracks and a visibility mask, an initialization route gives a coarse projective structure, and bundle adjustment polishes everything. Stress that every reconstruction stays projective until a metric upgrade or calibration constraint is stated, so ambiguity tracking is part of the workflow.</aside>
+</section>
+
+<section class="slide" data-label="Measurements and the Observation Graph">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Measurements and the Observation Graph</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Data</h3><p>Image point $x_{ij}$: camera $i$ sees point $j$, often incompletely.</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Bipartite edges</div><p class="formula">$E=\{(i,j): X_j \text{ visible in } P_i\}$</p></div>
+<div class="panel amber"><h3>Missing data</h3><p>Holes are normal; visibility is a mask, not a full grid.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="A bipartite graph of cameras and points with some edges missing">
+<rect x="0" y="0" width="380" height="220" fill="#f5f3ff"/>
+<circle cx="70" cy="50" r="10" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<circle cx="70" cy="110" r="10" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<circle cx="70" cy="170" r="10" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<circle cx="300" cy="40" r="9" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<circle cx="300" cy="95" r="9" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<circle cx="300" cy="150" r="9" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<circle cx="300" cy="200" r="9" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<line x1="80" y1="50" x2="291" y2="40" stroke="#6D28D9" stroke-width="1.5"/>
+<line x1="80" y1="50" x2="291" y2="95" stroke="#6D28D9" stroke-width="1.5"/>
+<line x1="80" y1="110" x2="291" y2="95" stroke="#6D28D9" stroke-width="1.5"/>
+<line x1="80" y1="110" x2="291" y2="150" stroke="#6D28D9" stroke-width="1.5"/>
+<line x1="80" y1="170" x2="291" y2="150" stroke="#6D28D9" stroke-width="1.5"/>
+<line x1="80" y1="170" x2="291" y2="200" stroke="#6D28D9" stroke-width="1.5"/>
+<text x="40" y="30" font-size="13" fill="#2563EB">cameras</text>
+<text x="280" y="25" font-size="13" fill="#0F766E">points</text>
+</svg><figcaption class="small">Edges are visible measurements; absent edges are missing data.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Measurements and the Observation Graph</span></div>
+<aside class="speaker-notes">Define the raw data carefully. Image points indexed by camera and point form a bipartite observation graph whose edges are the visible measurements. Missing data is the rule, not the exception. Bundle adjustment tolerates holes because residuals are local, while direct SVD factorization needs complete tracks, a distinction worth repeating.</aside>
+</section>
+
+<section class="slide alt" data-label="Bundle Adjustment: The Cost">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Bundle Adjustment: The Cost</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Total reprojection error</div><p class="formula">$$\min_{P_i,\,X_j}\;\sum_{(i,j)\in E} d\!\big(x_{ij},\,P_i X_j\big)^2$$</p></div>
+<div class="panel teal"><h3>Maximum likelihood</h3><p>Optimal under Gaussian image-noise; the geometric gold standard.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Non-convex</h3><p>Needs a good initialization; it polishes, it does not bootstrap.</p></div>
+<div class="panel violet"><h3>Parameters</h3><p>All cameras, all points, optionally calibration, jointly refined.</p></div>
+<div class="panel blue"><h3>Residual</h3><p>Each term measures one point reprojected into one image.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Bundle Adjustment: The Cost</span></div>
+<aside class="speaker-notes">Introduce the gold standard. Bundle adjustment jointly optimizes all cameras and all points to minimize total squared reprojection error under an assumed noise model. It is maximum likelihood when noise is Gaussian. Emphasize that it needs a good initialization because the cost is non-convex, so it is the last step, not the first.</aside>
+</section>
+
+<section class="slide" data-label="Sparse Structure and Schur Complement">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Sparse Structure and the Schur Complement</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Block arrowhead</h3><p>Each residual touches one camera block and one point block.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Reduced camera system</div><p class="formula">$$\big(U - W V^{-1} W^{\top}\big)\,\delta_c = e_c$$</p></div>
+<div class="panel amber"><h3>Sparse LM</h3><p>Levenberg-Marquardt exploits the pattern; never form a dense $J^\top J$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 260" width="100%" role="img" aria-label="An arrowhead block normal matrix with dense camera block, diagonal point block, and sparse coupling">
+<rect x="0" y="0" width="360" height="260" fill="#fffbeb"/>
+<rect x="40" y="30" width="80" height="80" fill="#bfdbfe" stroke="#2563EB" stroke-width="2"/>
+<text x="62" y="76" font-size="16" fill="#1E3A8A">U</text>
+<rect x="130" y="30" width="190" height="80" fill="#cbd5e1" opacity="0.5" stroke="#64748B" stroke-width="1"/>
+<text x="210" y="76" font-size="16" fill="#475569">W</text>
+<rect x="40" y="120" width="80" height="120" fill="#cbd5e1" opacity="0.5" stroke="#64748B" stroke-width="1"/>
+<text x="62" y="184" font-size="16" fill="#475569">Wᵀ</text>
+<rect x="135" y="120" width="30" height="30" fill="#99f6e4" stroke="#0F766E" stroke-width="1.5"/>
+<rect x="175" y="155" width="30" height="30" fill="#99f6e4" stroke="#0F766E" stroke-width="1.5"/>
+<rect x="215" y="190" width="30" height="30" fill="#99f6e4" stroke="#0F766E" stroke-width="1.5"/>
+<rect x="255" y="210" width="30" height="30" fill="#99f6e4" stroke="#0F766E" stroke-width="1.5"/>
+<text x="290" y="184" font-size="16" fill="#0F766E">V</text>
+<text x="120" y="255" font-size="13" fill="#B45309">eliminate V first → small dense camera system</text>
+</svg><figcaption class="small">Schur complement removes the large diagonal point block.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Sparse Structure and Schur Complement</span></div>
+<aside class="speaker-notes">This is the computational heart of the chapter. Each residual touches exactly one camera and one point, so the normal matrix is block-arrowhead sparse. Levenberg-Marquardt with the Schur complement eliminates the large point block first, leaving a small reduced camera system. Walk the partition U, W, V slowly on the diagram.</aside>
+</section>
+
+<section class="slide alt" data-label="Affine Factorization">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Affine Factorization (Tomasi-Kanade)</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Center</h3><p>Affine cameras map centroids to centroids; subtract each image centroid.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Rank-3 factorization</div><p class="formula">$$\hat W_{2m\times n} = M_{2m\times 3}\,S_{3\times n}$$</p></div>
+<div class="panel amber"><h3>Truncate</h3><p>Closest noisy solution is the rank-3 SVD; the 4th singular value is noise.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Bar chart of singular values dropping sharply after the third">
+<rect x="0" y="0" width="360" height="230" fill="#f0fdfa"/>
+<line x1="40" y1="200" x2="340" y2="200" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="30" x2="40" y2="200" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="60" y="50" width="34" height="150" fill="#2563EB"/>
+<rect x="110" y="80" width="34" height="120" fill="#2563EB"/>
+<rect x="160" y="120" width="34" height="80" fill="#2563EB"/>
+<rect x="210" y="188" width="34" height="12" fill="#B45309"/>
+<rect x="260" y="192" width="34" height="8" fill="#B45309"/>
+<rect x="310" y="194" width="20" height="6" fill="#B45309"/>
+<text x="65" y="220" font-size="13" fill="#2563EB">σ₁</text><text x="115" y="220" font-size="13" fill="#2563EB">σ₂</text><text x="165" y="220" font-size="13" fill="#2563EB">σ₃</text>
+<text x="212" y="220" font-size="13" fill="#B45309">σ₄</text><text x="262" y="220" font-size="13" fill="#B45309">σ₅</text>
+<text x="180" y="42" font-size="13" fill="#0F766E">rank-3 plateau, then noise floor</text>
+</svg><figcaption class="small">Singular spectrum: the auditable rank-3 invariant.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Affine Factorization</span></div>
+<aside class="speaker-notes">Present Tomasi and Kanade. Affine cameras map centroids to centroids, so subtracting each image centroid removes translation and leaves a measurement matrix that factors as motion times structure. The matrix is rank three in the noiseless case, so the closest reconstruction is the rank-three SVD truncation. This is the cleanest result in the chapter.</aside>
+</section>
+
+<section class="slide" data-label="The Factorization W = M S">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>The Factorization $W = M\,S$ via SVD</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Truncated SVD</div><p class="formula">$$W \approx U_3 \Sigma_3 V_3^{\top},\quad M = U_3\Sigma_3^{1/2},\; S=\Sigma_3^{1/2}V_3^{\top}$$</p></div>
+<div class="panel teal"><h3>Motion $M$</h3><p>Stacked camera rows: the $2m\times 3$ factor.</p></div>
+<div class="panel violet"><h3>Structure $S$</h3><p>3D point coordinates: the $3\times n$ factor.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="The measurement matrix W splitting into a tall motion factor times a wide structure factor">
+<rect x="0" y="0" width="380" height="220" fill="#f5f3ff"/>
+<rect x="20" y="40" width="120" height="140" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="62" y="115" font-size="20" fill="#2563EB">W</text>
+<text x="55" y="200" font-size="12" fill="#475569">2m × n</text>
+<text x="155" y="115" font-size="22" fill="#111827">=</text>
+<rect x="185" y="40" width="44" height="140" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<text x="198" y="115" font-size="18" fill="#0F766E">M</text>
+<text x="180" y="200" font-size="12" fill="#475569">2m × 3</text>
+<rect x="245" y="40" width="115" height="44" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/>
+<text x="295" y="68" font-size="18" fill="#6D28D9">S</text>
+<text x="270" y="105" font-size="12" fill="#475569">3 × n</text>
+</svg><figcaption class="small">Rank-constrained $W$ factors into motion times structure.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>The Factorization W = M S</span></div>
+<aside class="speaker-notes">Make the SVD mechanics concrete. Take the centered two-m by n matrix, compute its SVD, keep the top three singular values, and split the truncated factors into a motion matrix and a structure matrix. The rank-three plateau in the spectrum is the auditable invariant. The remaining linear ambiguity is fixed by metric constraints.</aside>
+</section>
+
+<section class="slide alt" data-label="Non-Rigid Factorization">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Non-Rigid Factorization: Larger Subspace</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Shape basis</h3><p>A deforming object is a blend of $l$ basis shapes.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Rank bound</div><p class="formula">$\operatorname{rank} W \le 3l \quad(l=2 \Rightarrow 6)$</p></div>
+<div class="panel amber"><h3>Caveat</h3><p>Motion blocks repeat; the recovery ambiguity is harder than rigid.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Singular value bars dropping after the sixth value for two basis shapes">
+<rect x="0" y="0" width="360" height="230" fill="#fffbeb"/>
+<line x1="30" y1="200" x2="345" y2="200" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="30" y1="25" x2="30" y2="200" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="42" y="55" width="20" height="145" fill="#6D28D9"/>
+<rect x="70" y="70" width="20" height="130" fill="#6D28D9"/>
+<rect x="98" y="90" width="20" height="110" fill="#6D28D9"/>
+<rect x="126" y="110" width="20" height="90" fill="#6D28D9"/>
+<rect x="154" y="130" width="20" height="70" fill="#6D28D9"/>
+<rect x="182" y="150" width="20" height="50" fill="#6D28D9"/>
+<rect x="210" y="190" width="20" height="10" fill="#B45309"/>
+<rect x="238" y="193" width="20" height="7" fill="#B45309"/>
+<rect x="266" y="195" width="20" height="5" fill="#B45309"/>
+<line x1="200" y1="30" x2="200" y2="200" stroke="#0F766E" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="150" y="22" font-size="13" fill="#0F766E">drop after 6 = 3l</text>
+</svg><figcaption class="small">For $l=2$ the spectrum plateaus at rank six, not three.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Non-Rigid Factorization</span></div>
+<aside class="speaker-notes">Extend the subspace idea to deforming scenes. With l basis shapes each trajectory lives in a 3l-dimensional subspace, so the singular value drop moves from after three to after 3l, here six for two shapes. The motion matrix keeps repeated camera blocks, and the factorization ambiguity is harder, which is the honest caveat to state.</aside>
+</section>
+
+<section class="slide" data-label="Projective Factorization with Depths">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Projective Factorization: Rank 4 Needs Depths</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Depth-weighted measurement</div><p class="formula">$$\lambda_{ij}\,x_{ij} = P_i X_j,\qquad \operatorname{rank} W = 4$$</p></div>
+<div class="panel teal"><h3>Iterate depths</h3><p>Unknown $\lambda_{ij}$ are estimated, then rank-4 truncation is taken.</p></div>
+<div class="panel amber"><h3>Gauge</h3><p>Row-column rescaling is an exact freedom; renormalize each pass.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="Comparison of singular value drop after four for correct depths versus no clear drop for unit depths">
+<rect x="0" y="0" width="380" height="220" fill="#f0fdfa"/>
+<text x="35" y="22" font-size="13" fill="#2563EB">correct λ</text>
+<line x1="30" y1="100" x2="180" y2="100" stroke="#CBD5E1" stroke-width="1.5"/>
+<rect x="40" y="40" width="14" height="60" fill="#2563EB"/><rect x="60" y="50" width="14" height="50" fill="#2563EB"/><rect x="80" y="62" width="14" height="38" fill="#2563EB"/><rect x="100" y="74" width="14" height="26" fill="#2563EB"/>
+<rect x="120" y="96" width="14" height="4" fill="#B45309"/><rect x="140" y="97" width="14" height="3" fill="#B45309"/>
+<text x="95" y="118" font-size="11" fill="#0F766E">drop after σ₄</text>
+<text x="215" y="22" font-size="13" fill="#B45309">unit λ</text>
+<line x1="210" y1="200" x2="360" y2="200" stroke="#CBD5E1" stroke-width="1.5"/>
+<rect x="220" y="150" width="14" height="50" fill="#B45309"/><rect x="240" y="155" width="14" height="45" fill="#B45309"/><rect x="260" y="158" width="14" height="42" fill="#B45309"/><rect x="280" y="162" width="14" height="38" fill="#B45309"/><rect x="300" y="166" width="14" height="34" fill="#B45309"/><rect x="320" y="170" width="14" height="30" fill="#B45309"/>
+<text x="240" y="143" font-size="11" fill="#475569">no clean rank-4 drop</text>
+</svg><figcaption class="small">Correct depths separate rank 4; unit depths do not.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Projective Factorization with Depths</span></div>
+<aside class="speaker-notes">Now the projective case. Image points are scale classes, so the equation only becomes a rank-four factorization once the correct projective depths weight each measurement. Unit depths generally do not give rank four. Depths are estimated iteratively, and the row-column scaling freedom is an exact gauge that should be normalized between iterations.</aside>
+</section>
+
+<section class="slide alt" data-label="Conditioning and Normalization">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Conditioning and Normalization</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Algebraic ≠ geometric</h3><p>A small SVD residual is not yet a small reprojection error.</p></div>
+<div class="panel blue"><h3>Isotropic normalization</h3><p>Recenter and rescale image coordinates before the homogeneous SVD.</p></div>
+<div class="panel teal"><h3>Effect</h3><p>The same rank-4 object recovers with a far smaller condition number.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="A descending residual curve showing bundle adjustment error decreasing over iterations">
+<rect x="0" y="0" width="360" height="230" fill="#f5f3ff"/>
+<line x1="40" y1="195" x2="340" y2="195" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="25" x2="40" y2="195" stroke="#CBD5E1" stroke-width="2"/>
+<path d="M45,45 C90,70 110,150 160,170 C210,185 270,190 335,191" fill="none" stroke="#2563EB" stroke-width="3"/>
+<circle cx="45" cy="45" r="3" fill="#2563EB"/><circle cx="160" cy="170" r="3" fill="#2563EB"/><circle cx="335" cy="191" r="3" fill="#2563EB"/>
+<text x="120" y="215" font-size="13" fill="#475569">LM iteration</text>
+<text x="8" y="115" font-size="13" fill="#475569" transform="rotate(-90 12,115)">RMS</text>
+<text x="150" y="50" font-size="13" fill="#0F766E">reprojection error descends</text>
+</svg><figcaption class="small">Residual descent: the diagnostic that the solve converged.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Conditioning and Normalization</span></div>
+<aside class="speaker-notes">Drive home the warning that the algebraic matrix is not the geometric error. Isotropic image normalization sharply lowers the effective condition number of the homogeneous system before the SVD, so the same rank-four object is recovered far more reliably. Pair this with the residual descent curve from the bundle solve as a diagnostic habit.</aside>
+</section>
+
+<section class="slide" data-label="Plane-Based and Sequence Methods">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Plane-Based and Sequence Initialization</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Plane homographies</h3><p>A reference plane fixes the left $3\times 3$ block $M_i$; solve for columns $t_i$.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Scale ambiguity</div><p class="formula">$\dim \ker = 1 \;(\text{common projective scale})$</p></div>
+<div class="panel amber"><h3>Sequences</h3><p>Merge pair and triplet windows into one global start; bundle adjust.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 220" width="100%" role="img" aria-label="A chain of overlapping pair and triplet windows merging into a global sequence">
+<rect x="0" y="0" width="380" height="220" fill="#fffbeb"/>
+<circle cx="50" cy="60" r="11" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<circle cx="120" cy="60" r="11" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<circle cx="190" cy="60" r="11" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<circle cx="260" cy="60" r="11" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<circle cx="330" cy="60" r="11" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<line x1="61" y1="60" x2="109" y2="60" stroke="#475569" stroke-width="2"/>
+<line x1="131" y1="60" x2="179" y2="60" stroke="#475569" stroke-width="2"/>
+<line x1="201" y1="60" x2="249" y2="60" stroke="#475569" stroke-width="2"/>
+<line x1="271" y1="60" x2="319" y2="60" stroke="#475569" stroke-width="2"/>
+<rect x="35" y="90" width="120" height="30" rx="6" fill="none" stroke="#0F766E" stroke-width="2"/>
+<text x="60" y="110" font-size="13" fill="#0F766E">triplet</text>
+<rect x="125" y="135" width="120" height="30" rx="6" fill="none" stroke="#6D28D9" stroke-width="2"/>
+<text x="150" y="155" font-size="13" fill="#6D28D9">triplet</text>
+<rect x="215" y="90" width="120" height="30" rx="6" fill="none" stroke="#0F766E" stroke-width="2"/>
+<text x="240" y="110" font-size="13" fill="#0F766E">triplet</text>
+<text x="90" y="195" font-size="13" fill="#B45309">overlap in two frames → merge</text>
+</svg><figcaption class="small">Overlapping windows chain into a connected global graph.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Plane-Based and Sequence Methods</span></div>
+<aside class="speaker-notes">Cover two initialization devices. A known reference-plane homography fixes the left three-by-three camera block, leaving a linear homogeneous system for the final columns whose null space is the one-dimensional common scale. For sequences, pairwise and triplet windows are merged into a global start. Both are initializers, not substitutes for final bundle adjustment.</aside>
+</section>
+
+<section class="slide alt" data-label="Synthesis and Takeaways">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 18</span></div>
+<h2>Synthesis and Takeaways</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Bundle adjustment</h3><p>Sparse nonlinear least squares on the observation graph; the gold standard.</p></div>
+<div class="panel teal"><h3>Factorization</h3><p>Affine is a rank-3 SVD; non-rigid lifts to $3l$.</p></div>
+</div>
+<div class="stack">
+<div class="panel amber"><h3>Projective</h3><p>Depths and normalization decide whether rank-4 means anything geometric.</p></div>
+<div class="panel violet"><h3>Always</h3><p>State the residual checks and the remaining projective, affine, or metric ambiguity.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 434-457</span><span>Synthesis and Takeaways</span></div>
+<aside class="speaker-notes">Close by tying the routes together. Bundle adjustment is sparse nonlinear least squares on the observation graph; affine factorization is a rank-three approximation; projective factorization needs depths and normalization to mean anything geometric; plane and sequence methods initialize. Always state the remaining projective, affine, or metric ambiguity before claiming success.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>

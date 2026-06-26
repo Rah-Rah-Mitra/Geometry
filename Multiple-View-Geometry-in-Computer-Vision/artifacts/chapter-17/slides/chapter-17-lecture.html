@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<meta name="course" content="Multiple View Geometry in Computer Vision">
+<meta name="chapter_id" content="chapter-17">
+<meta name="chapter_title" content="Chapter 17: N-Linearities and Multiple View Tensors">
+<meta name="notebook_path" content="Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-17-n-linearities-and-multiple-view-tensors/17-n-linearities-and-multiple-view-tensors.ipynb">
+<meta name="source_span" content="printed pages 411-433; PDF pages 429-451.">
+<meta name="source_pdf" content="Multiple-View-Geometry-in-Computer-Vision/Multiple View Geometry in Computer Vision.pdf">
+<meta name="design_system_version" content="lecture-design-system-2026-05-23">
+<title>Chapter 17: N-Linearities and Multiple View Tensors</title>
+<link rel="stylesheet" href="../../../../lecture-design-system/colors_and_type.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<script type="module" src="../../../../lecture-design-system/slides/deck-stage.js"></script>
+<script type="application/json" id="deck-metadata">
+{"course":"Multiple View Geometry in Computer Vision","chapter_id":"chapter-17","chapter_title":"Chapter 17: N-Linearities and Multiple View Tensors","notebook_path":"Multiple-View-Geometry-in-Computer-Vision/part-04-n-view-geometry/chapter-17-n-linearities-and-multiple-view-tensors/17-n-linearities-and-multiple-view-tensors.ipynb","source_span":"printed pages 411-433; PDF pages 429-451.","design_system_version":"lecture-design-system-2026-05-23"}
+</script>
+<script id="speaker-notes" type="application/json">
+[
+{"slide":1,"label":"N-Linearities and Multiple View Tensors","notes":"This chapter unifies the two-, three-, and four-view constraints under one determinant idea. Image measurements back-project to rays and planes in three-space, and geometric consistency surfaces as the vanishing of selected row determinants of the stacked camera matrices. We will build the bifocal, trifocal, and quadrifocal tensors from that single recipe."},
+{"slide":2,"label":"Back-Projection: Rows are Planes","notes":"Every row of a camera matrix is a plane in homogeneous three-space, and an image line back-projects to the plane formed from those rows. A point back-projects to a ray, the meet of two planes. This reading is the foundation: incidence in the image becomes a statement about planes sharing a world point in three dimensions."},
+{"slide":3,"label":"The Stacked Camera Matrix","notes":"Collect the rows of all the cameras that view a point into one tall matrix and append the image measurements. A common world point exists exactly when this matrix is rank deficient, so every maximal minor must vanish. Expanding those four-by-four minors is the engine that produces every multi-view tensor in the chapter."},
+{"slide":4,"label":"Choosing Rows: One Determinant, Three Tensors","notes":"The tensors differ only in how the four rows of a four-by-four determinant are drawn from the cameras. Two rows from each of two cameras give the fundamental matrix; two from one camera and one each from two others give a trifocal entry; one row from each of four cameras gives a quadrifocal entry. Same recipe, different view counts."},
+{"slide":5,"label":"The Bifocal Tensor: Fundamental Matrix","notes":"With two views, deleting one row from each camera leaves four rows whose determinant is a bilinear form in the two image points. Collecting these gives the fundamental matrix, the two-view tensor. The epipolar relation states that corresponding points satisfy this single bilinear equation, and the matrix has rank two."},
+{"slide":6,"label":"The Trifocal Tensor","notes":"Three views give a three-by-three-by-three tensor. Each entry is a determinant using two rows from one distinguished camera and one row from each of the other two. The resulting trilinear relations tie a point to lines through its images, and a point-line-line incidence produces residuals that vanish on consistent data."},
+{"slide":7,"label":"The Quadrifocal Tensor","notes":"Four views give a three-by-three-by-three-by-three tensor with eighty-one entries, each a determinant taking exactly one row from each of the four cameras. The quadrilinear relations contract this tensor against four image lines through corresponding points. This is the four-view tensor, and the chapter argues it is the last genuinely new one."},
+{"slide":8,"label":"Why Four Views Is the Maximum","notes":"A four-by-four determinant has only four rows, so it can sample at most four distinct cameras. Any constraint among five or more views factors into the bifocal, trifocal, and quadrifocal tensors already in hand. There is no genuinely new five-view tensor; the quadrifocal tensor closes the hierarchy at four views."},
+{"slide":9,"label":"Counting Independent Equations","notes":"A four-view point track writes eighty-one rows because each free index runs over three values, yet each view contributes only a rank-two skew matrix. The Kronecker structure caps the rank at two to the fourth, sixteen, independent equations per track. The pattern sixteen, then trilinear, then bilinear mirrors the descending view counts."},
+{"slide":10,"label":"Tracks, Dependencies, and the Null Direction","notes":"Stacking several point tracks does not simply add sixteen equations apiece; pairwise dependencies subtract rank along the curve sixteen-n minus n-choose-two. Six camera-consistent tracks would reach eighty-one, but the true tensor sits in the homogeneous nullspace, so the rank caps at eighty and the tensor is recovered up to scale."},
+{"slide":11,"label":"Correspondence Counting Regimes","notes":"The remaining camera freedom decides how many correspondences are needed. General projective cameras carry eleven-m minus fifteen degrees of freedom; affine cameras drop to eight-m minus twelve; and known plane homographies leave only three-m minus four. Coplanar reference points therefore simplify the four-view problem far more than a small perturbation would suggest."},
+{"slide":12,"label":"Synthesis: One Determinant Pattern","notes":"All multi-view constraints reduce to rank and minor conditions on the joint image of the stacked cameras. The fundamental, trifocal, and quadrifocal tensors are one determinant pattern read at two, three, and four views. Choosing orthonormal lines through each point recovers exactly the independent equations with a controlled numerical scale."}
+]
+</script>
+<style>
+body{margin:0;background:#000;color:var(--slide-ink)}deck-stage:not(:defined){visibility:hidden}.speaker-notes{display:none}
+.slide{width:1920px;height:1080px;box-sizing:border-box;background:var(--slide-bg);color:var(--slide-ink);font-family:var(--font-sans);display:flex;flex-direction:column;padding:62px 92px 48px;gap:18px;border-top:10px solid var(--slide-accent);overflow:clip}
+.slide.alt{background:var(--slide-bg-alt)}h1,h2,h3,p{margin:0}h1{font-size:64px;font-weight:700}h2{font-size:50px;font-weight:700}h3{font-size:30px;font-weight:700;color:var(--slide-accent);margin-bottom:8px}
+p,li{font-size:26px;line-height:1.32}ul{margin:0;padding-left:30px}li+li{margin-top:8px}
+.topline{display:flex;justify-content:space-between;color:var(--slide-muted);font-size:22px}.eyebrow{color:var(--slide-teal);font-size:22px;font-weight:700;text-transform:uppercase}.badge{border:1px solid var(--slide-border);border-radius:6px;padding:8px 13px;background:#fff;color:var(--slide-accent);font-size:21px;font-weight:700}
+.lead{font-size:30px;color:var(--slide-muted)}.content{flex:1;display:grid;gap:26px;grid-template-columns:1fr 1fr;min-height:0}.stack{display:flex;flex-direction:column;gap:16px;min-height:0}
+.panel{border:1px solid var(--slide-border);border-radius:8px;padding:20px 22px;background:#fff}.panel.blue{border-left:6px solid var(--slide-blue);background:#eff6ff}.panel.teal{border-left:6px solid var(--slide-teal);background:#f0fdfa}.panel.amber{border-left:6px solid var(--slide-amber);background:#fffbeb}.panel.violet{border-left:6px solid var(--slide-violet);background:#f5f3ff}
+.math-box{padding:20px 22px;border-radius:8px}.math-box-label{font-size:21px;font-weight:700;text-transform:uppercase;margin-bottom:8px;color:var(--slide-accent)}.formula{font-family:var(--font-math);font-size:30px}
+.small{font-size:22px;color:var(--slide-muted)}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--slide-border-light);padding-top:12px;color:var(--slide-dimmed);font-size:21px;font-weight:600}
+.diagram{margin:0}
+</style>
+</head>
+<body>
+<deck-stage width="1920" height="1080">
+
+<section class="slide" data-label="N-Linearities and Multiple View Tensors">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h1>N-Linearities and Multiple View Tensors</h1>
+<p class="lead">One determinant idea for two-, three-, and four-view constraints</p>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Bifocal</h3><p>The fundamental matrix $F$ is the two-view tensor.</p></div>
+<div class="panel teal"><h3>Trifocal</h3><p>The tensor $\mathcal{T}$ ties three views together.</p></div>
+<div class="panel amber"><h3>Quadrifocal</h3><p>The tensor $\mathcal{Q}$ closes the hierarchy at four views.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 230" width="100%" role="img" aria-label="Hierarchy of multi-view tensors F, T, Q with rising view counts">
+<rect x="0" y="0" width="380" height="230" fill="#f8fafc"/>
+<rect x="30" y="30" width="90" height="50" rx="6" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="75" y="52" font-size="18" fill="#2563EB" text-anchor="middle" font-weight="700">F</text>
+<text x="75" y="70" font-size="12" fill="#475569" text-anchor="middle">2 views</text>
+<rect x="145" y="30" width="90" height="50" rx="6" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<text x="190" y="52" font-size="18" fill="#0F766E" text-anchor="middle" font-weight="700">T</text>
+<text x="190" y="70" font-size="12" fill="#475569" text-anchor="middle">3 views</text>
+<rect x="260" y="30" width="90" height="50" rx="6" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="305" y="52" font-size="18" fill="#B45309" text-anchor="middle" font-weight="700">Q</text>
+<text x="305" y="70" font-size="12" fill="#475569" text-anchor="middle">4 views</text>
+<line x1="120" y1="55" x2="145" y2="55" stroke="#CBD5E1" stroke-width="2" marker-end="url(#a17)"/>
+<line x1="235" y1="55" x2="260" y2="55" stroke="#CBD5E1" stroke-width="2" marker-end="url(#a17)"/>
+<defs><marker id="a17" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#CBD5E1"/></marker></defs>
+<text x="190" y="130" font-size="15" fill="#111827" text-anchor="middle" font-weight="700">All from 4×4 minors of stacked rows</text>
+<rect x="90" y="150" width="200" height="50" rx="6" fill="#f5f3ff" stroke="#6D28D9" stroke-width="2"/>
+<text x="190" y="172" font-size="14" fill="#6D28D9" text-anchor="middle" font-weight="700">4 views = maximum</text>
+<text x="190" y="190" font-size="12" fill="#475569" text-anchor="middle">no new tensor beyond Q</text>
+</svg><figcaption class="small">A single determinant recipe at three view counts.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>N-Linearities and Multiple View Tensors</span></div>
+<aside class="speaker-notes">This chapter unifies the two-, three-, and four-view constraints under one determinant idea. Image measurements back-project to rays and planes in three-space, and geometric consistency surfaces as the vanishing of selected row determinants of the stacked camera matrices. We will build the bifocal, trifocal, and quadrifocal tensors from that single recipe.</aside>
+</section>
+
+<section class="slide alt" data-label="Back-Projection: Rows are Planes">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>Back-Projection: Camera Rows are Planes</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Line to plane</h3><p>An image line $\ell$ back-projects to the plane $\pi = P^{\!\top}\ell$ through the camera center.</p></div>
+<div class="panel teal"><h3>Point to ray</h3><p>An image point back-projects to a ray, the meet of two such planes.</p></div>
+<div class="panel amber"><h3>Incidence</h3><p>Planes that share a world point $X$ give $\ell^{\!\top}(PX)=0$.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 250" width="100%" role="img" aria-label="A camera center, an image line, and the back-projected plane through a world point">
+<rect x="0" y="0" width="380" height="250" fill="#fff"/>
+<circle cx="60" cy="125" r="6" fill="#2563EB"/>
+<text x="44" y="120" font-size="13" fill="#2563EB" font-weight="700">C</text>
+<polygon points="60,125 320,40 320,210" fill="#0F766E" fill-opacity="0.10" stroke="#0F766E" stroke-width="2"/>
+<line x1="150" y1="95" x2="150" y2="170" stroke="#B45309" stroke-width="3"/>
+<text x="128" y="90" font-size="13" fill="#B45309" font-weight="700">&#8467;</text>
+<circle cx="300" cy="125" r="6" fill="#111827"/>
+<text x="306" y="122" font-size="13" fill="#111827" font-weight="700">X</text>
+<line x1="60" y1="125" x2="300" y2="125" stroke="#6D28D9" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="180" y="240" font-size="14" fill="#475569" text-anchor="middle">ray = back-projected point; plane = back-projected line</text>
+</svg><figcaption class="small">The plane $\pi=P^{\!\top}\ell$ contains $C$ and the world point $X$.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>Back-Projection: Rows are Planes</span></div>
+<aside class="speaker-notes">Every row of a camera matrix is a plane in homogeneous three-space, and an image line back-projects to the plane formed from those rows. A point back-projects to a ray, the meet of two planes. This reading is the foundation: incidence in the image becomes a statement about planes sharing a world point in three dimensions.</aside>
+</section>
+
+<section class="slide" data-label="The Stacked Camera Matrix">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>The Stacked Camera Matrix</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Joint constraint</div><p class="formula">$$M = \begin{bmatrix} P_1 & x_1 & 0 & 0\\ P_2 & 0 & x_2 & 0\\ \vdots & & & \ddots \end{bmatrix}$$</p></div>
+<div class="panel teal"><h3>Common point</h3><p>$X$ exists $\iff$ $M$ is rank deficient.</p></div>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>Minors vanish</h3><p>Rank deficiency forces every maximal $4\times4$ minor of the stacked rows to be zero.</p></div>
+<div class="panel violet"><h3>The engine</h3><p>Expanding those $4\times4$ minors generates every multi-view tensor in the chapter.</p></div>
+<div class="panel amber"><h3>Up to scale</h3><p>All homogeneous equalities hold up to a nonzero scale factor.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>The Stacked Camera Matrix</span></div>
+<aside class="speaker-notes">Collect the rows of all the cameras that view a point into one tall matrix and append the image measurements. A common world point exists exactly when this matrix is rank deficient, so every maximal minor must vanish. Expanding those four-by-four minors is the engine that produces every multi-view tensor in the chapter.</aside>
+</section>
+
+<section class="slide alt" data-label="Choosing Rows: One Determinant, Three Tensors">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>One $4\times4$ Determinant, Three Tensors</h2>
+<div class="content">
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 380 270" width="100%" role="img" aria-label="Row selection ladder showing how F, T and Q draw four rows from cameras">
+<rect x="0" y="0" width="380" height="270" fill="#f8fafc"/>
+<text x="10" y="30" font-size="15" fill="#2563EB" font-weight="700">F (2 views)</text>
+<rect x="120" y="16" width="30" height="18" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><rect x="150" y="16" width="30" height="18" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<rect x="200" y="16" width="30" height="18" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/><rect x="230" y="16" width="30" height="18" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="135" y="50" font-size="11" fill="#475569" text-anchor="middle">cam 1</text><text x="215" y="50" font-size="11" fill="#475569" text-anchor="middle">cam 2</text>
+<text x="10" y="110" font-size="15" fill="#0F766E" font-weight="700">T (3 views)</text>
+<rect x="120" y="96" width="30" height="18" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/><rect x="150" y="96" width="30" height="18" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<rect x="190" y="96" width="30" height="18" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<rect x="240" y="96" width="30" height="18" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<text x="135" y="130" font-size="11" fill="#475569" text-anchor="middle">cam 1 (×2)</text><text x="205" y="130" font-size="11" fill="#475569" text-anchor="middle">c2</text><text x="255" y="130" font-size="11" fill="#475569" text-anchor="middle">c3</text>
+<text x="10" y="190" font-size="15" fill="#B45309" font-weight="700">Q (4 views)</text>
+<rect x="120" y="176" width="30" height="18" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<rect x="160" y="176" width="30" height="18" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<rect x="200" y="176" width="30" height="18" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<rect x="240" y="176" width="30" height="18" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="135" y="210" font-size="11" fill="#475569" text-anchor="middle">c1</text><text x="175" y="210" font-size="11" fill="#475569" text-anchor="middle">c2</text><text x="215" y="210" font-size="11" fill="#475569" text-anchor="middle">c3</text><text x="255" y="210" font-size="11" fill="#475569" text-anchor="middle">c4</text>
+<text x="190" y="250" font-size="13" fill="#111827" text-anchor="middle" font-weight="700">4 rows total, drawn differently</text>
+</svg><figcaption class="small">Which camera each of the four rows comes from sets the tensor.</figcaption></figure>
+</div>
+<div class="stack">
+<div class="panel blue"><h3>$F$</h3><p>Two rows from each of two cameras.</p></div>
+<div class="panel teal"><h3>$\mathcal{T}$</h3><p>Two rows from one camera, one each from two others.</p></div>
+<div class="panel amber"><h3>$\mathcal{Q}$</h3><p>One row from each of four cameras.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>Choosing Rows: One Determinant, Three Tensors</span></div>
+<aside class="speaker-notes">The tensors differ only in how the four rows of a four-by-four determinant are drawn from the cameras. Two rows from each of two cameras give the fundamental matrix; two from one camera and one each from two others give a trifocal entry; one row from each of four cameras gives a quadrifocal entry. Same recipe, different view counts.</aside>
+</section>
+
+<section class="slide" data-label="The Bifocal Tensor: Fundamental Matrix">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>The Bifocal Tensor: Fundamental Matrix</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Construction</h3><p>Delete one row from each camera; the remaining four rows give a determinant bilinear in $x_1,x_2$.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Bilinear (epipolar) relation</div><p class="formula">$$x_2^{\!\top} F\, x_1 = 0$$</p></div>
+</div>
+<div class="stack">
+<div class="panel teal"><h3>Rank two</h3><p>$F$ has rank $2$; its left and right null vectors are the epipoles.</p></div>
+<div class="panel amber"><h3>One relation</h3><p>A point match yields a single bilinear epipolar equation per pair.</p></div>
+<figure class="diagram"><svg viewBox="0 0 360 110" width="100%" role="img" aria-label="Two image points joined by the fundamental matrix epipolar relation">
+<rect x="0" y="0" width="360" height="110" fill="#fff"/>
+<circle cx="70" cy="55" r="7" fill="#2563EB"/><text x="58" y="40" font-size="13" fill="#2563EB" font-weight="700">x&#8321;</text>
+<circle cx="290" cy="55" r="7" fill="#0F766E"/><text x="278" y="40" font-size="13" fill="#0F766E" font-weight="700">x&#8322;</text>
+<line x1="70" y1="55" x2="290" y2="55" stroke="#B45309" stroke-width="3"/>
+<text x="180" y="45" font-size="14" fill="#B45309" text-anchor="middle" font-weight="700">F</text>
+<text x="180" y="90" font-size="13" fill="#475569" text-anchor="middle">x&#8322; lies on the epipolar line Fx&#8321;</text>
+</svg></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>The Bifocal Tensor: Fundamental Matrix</span></div>
+<aside class="speaker-notes">With two views, deleting one row from each camera leaves four rows whose determinant is a bilinear form in the two image points. Collecting these gives the fundamental matrix, the two-view tensor. The epipolar relation states that corresponding points satisfy this single bilinear equation, and the matrix has rank two.</aside>
+</section>
+
+<section class="slide alt" data-label="The Trifocal Tensor">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>The Trifocal Tensor</h2>
+<div class="content">
+<div class="stack">
+<div class="panel teal"><h3>Shape</h3><p>A $3\times3\times3$ tensor $\mathcal{T}_i^{\,jk}$.</p></div>
+<div class="panel blue"><h3>Rows</h3><p>Two rows from one camera, one row from each of the other two views.</p></div>
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Trilinear relation</div><p class="formula">$$\ell'_j\,\ell''_k\,\mathcal{T}_i^{\,jk} = \ell_i$$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="A point in view one and lines in views two and three forming a trilinear relation">
+<rect x="0" y="0" width="360" height="240" fill="#fff"/>
+<circle cx="70" cy="60" r="7" fill="#2563EB"/><text x="56" y="48" font-size="13" fill="#2563EB" font-weight="700">x</text>
+<line x1="230" y1="30" x2="320" y2="120" stroke="#0F766E" stroke-width="3"/><text x="300" y="30" font-size="13" fill="#0F766E" font-weight="700">&#8467;'</text>
+<line x1="200" y1="200" x2="320" y2="200" stroke="#B45309" stroke-width="3"/><text x="250" y="190" font-size="13" fill="#B45309" font-weight="700">&#8467;''</text>
+<line x1="70" y1="60" x2="270" y2="75" stroke="#6D28D9" stroke-width="2" stroke-dasharray="5 4"/>
+<line x1="70" y1="60" x2="255" y2="200" stroke="#6D28D9" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="180" y="232" font-size="13" fill="#475569" text-anchor="middle">point-line-line incidence residual vanishes</text>
+</svg><figcaption class="small">Trifocal: a point and two lines in three views.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>The Trifocal Tensor</span></div>
+<aside class="speaker-notes">Three views give a three-by-three-by-three tensor. Each entry is a determinant using two rows from one distinguished camera and one row from each of the other two. The resulting trilinear relations tie a point to lines through its images, and a point-line-line incidence produces residuals that vanish on consistent data.</aside>
+</section>
+
+<section class="slide" data-label="The Quadrifocal Tensor">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>The Quadrifocal Tensor</h2>
+<div class="content">
+<div class="stack">
+<div class="panel amber"><h3>Shape</h3><p>A $3\times3\times3\times3$ tensor $\mathcal{Q}^{ijkl}$ with $3^4=81$ entries.</p></div>
+<div class="panel blue"><h3>Rows</h3><p>Exactly one row from each of the four cameras.</p></div>
+<div class="math-box" style="background:#fffbeb"><div class="math-box-label">Quadrilinear relation</div><p class="formula">$$\ell_i\,\ell'_j\,\ell''_k\,\ell'''_l\,\mathcal{Q}^{ijkl} = 0$$</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Four planes from four image lines meeting at a single world point">
+<rect x="0" y="0" width="360" height="240" fill="#fff"/>
+<circle cx="180" cy="120" r="7" fill="#111827"/><text x="190" y="116" font-size="13" fill="#111827" font-weight="700">X</text>
+<polygon points="180,120 40,60 70,30" fill="#2563EB" fill-opacity="0.12" stroke="#2563EB" stroke-width="2"/>
+<polygon points="180,120 320,60 290,30" fill="#0F766E" fill-opacity="0.12" stroke="#0F766E" stroke-width="2"/>
+<polygon points="180,120 40,180 70,210" fill="#B45309" fill-opacity="0.12" stroke="#B45309" stroke-width="2"/>
+<polygon points="180,120 320,180 290,210" fill="#6D28D9" fill-opacity="0.12" stroke="#6D28D9" stroke-width="2"/>
+<text x="180" y="232" font-size="13" fill="#475569" text-anchor="middle">four back-projected planes &#8658; det = 0</text>
+</svg><figcaption class="small">Four image lines, four planes, one shared point.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>The Quadrifocal Tensor</span></div>
+<aside class="speaker-notes">Four views give a three-by-three-by-three-by-three tensor with eighty-one entries, each a determinant taking exactly one row from each of the four cameras. The quadrilinear relations contract this tensor against four image lines through corresponding points. This is the four-view tensor, and the chapter argues it is the last genuinely new one.</aside>
+</section>
+
+<section class="slide alt" data-label="Why Four Views Is the Maximum">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>Why Four Views Is the Maximum</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Only four rows</h3><p>A $4\times4$ determinant has four rows, so it samples at most four distinct cameras.</p></div>
+<div class="panel teal"><h3>No fifth tensor</h3><p>Any five-view constraint factors through $F$, $\mathcal{T}$, and $\mathcal{Q}$.</p></div>
+<div class="panel violet"><h3>Hierarchy closes</h3><p>$\mathcal{Q}$ is the last genuinely new multi-view tensor.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="View count axis showing new tensors at two three four and none beyond four">
+<rect x="0" y="0" width="360" height="230" fill="#fff"/>
+<line x1="30" y1="180" x2="340" y2="180" stroke="#CBD5E1" stroke-width="2"/>
+<circle cx="80" cy="180" r="6" fill="#2563EB"/><text x="80" y="205" font-size="14" fill="#2563EB" text-anchor="middle">2</text><text x="80" y="160" font-size="13" fill="#2563EB" text-anchor="middle" font-weight="700">F</text>
+<circle cx="150" cy="180" r="6" fill="#0F766E"/><text x="150" y="205" font-size="14" fill="#0F766E" text-anchor="middle">3</text><text x="150" y="160" font-size="13" fill="#0F766E" text-anchor="middle" font-weight="700">T</text>
+<circle cx="220" cy="180" r="6" fill="#B45309"/><text x="220" y="205" font-size="14" fill="#B45309" text-anchor="middle">4</text><text x="220" y="160" font-size="13" fill="#B45309" text-anchor="middle" font-weight="700">Q</text>
+<circle cx="290" cy="180" r="6" fill="#CBD5E1"/><text x="290" y="205" font-size="14" fill="#64748B" text-anchor="middle">5+</text><text x="290" y="158" font-size="12" fill="#64748B" text-anchor="middle">none new</text>
+<line x1="270" y1="120" x2="310" y2="100" stroke="#B45309" stroke-width="2"/><line x1="310" y1="120" x2="270" y2="100" stroke="#B45309" stroke-width="2"/>
+<text x="185" y="40" font-size="14" fill="#111827" text-anchor="middle" font-weight="700">new tensor per added view, until 4</text>
+</svg><figcaption class="small">After four views the ladder stops producing new tensors.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>Why Four Views Is the Maximum</span></div>
+<aside class="speaker-notes">A four-by-four determinant has only four rows, so it can sample at most four distinct cameras. Any constraint among five or more views factors into the bifocal, trifocal, and quadrifocal tensors already in hand. There is no genuinely new five-view tensor; the quadrifocal tensor closes the hierarchy at four views.</aside>
+</section>
+
+<section class="slide" data-label="Counting Independent Equations">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>Counting Independent Equations</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Array size vs rank</h3><p>A four-view point track writes $81$ rows, one per free triple of indices.</p></div>
+<div class="math-box" style="background:#eff6ff"><div class="math-box-label">Per-view skew rank</div><p class="formula">$$S^{\!\top}S = \lVert x\rVert^2 I - x x^{\!\top},\quad \operatorname{rank} S = 2$$</p></div>
+<div class="panel teal"><h3>Kronecker cap</h3><p>Four rank-$2$ factors give rank $2^4=16$ per track.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Bar chart of 81 array rows versus 16 independent equations">
+<rect x="0" y="0" width="360" height="230" fill="#fff"/>
+<line x1="50" y1="20" x2="50" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="50" y1="190" x2="340" y2="190" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="90" y="35" width="70" height="155" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="125" y="25" font-size="14" fill="#2563EB" text-anchor="middle" font-weight="700">81</text><text x="125" y="208" font-size="13" fill="#475569" text-anchor="middle">array rows</text>
+<rect x="230" y="160" width="70" height="30" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="265" y="150" font-size="14" fill="#B45309" text-anchor="middle" font-weight="700">16</text><text x="265" y="208" font-size="13" fill="#475569" text-anchor="middle">independent</text>
+</svg><figcaption class="small">Algebraic size far exceeds the true rank per track.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>Counting Independent Equations</span></div>
+<aside class="speaker-notes">A four-view point track writes eighty-one rows because each free index runs over three values, yet each view contributes only a rank-two skew matrix. The Kronecker structure caps the rank at two to the fourth, sixteen, independent equations per track. The pattern sixteen, then trilinear, then bilinear mirrors the descending view counts.</aside>
+</section>
+
+<section class="slide alt" data-label="Tracks, Dependencies, and the Null Direction">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>Tracks, Dependencies, and the Null Direction</h2>
+<div class="content">
+<div class="stack">
+<div class="math-box" style="background:#f5f3ff"><div class="math-box-label">Independent-equation curve</div><p class="formula">$$r(n) = 16n - \tfrac{n(n-1)}{2}$$</p></div>
+<div class="panel violet"><h3>Not additive</h3><p>Pairwise dependencies subtract rank, so tracks do not simply add $16$ apiece.</p></div>
+<div class="panel amber"><h3>Six tracks</h3><p>The formula reaches $81$, but the true tensor sits in the nullspace.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Curve of independent equations rising and capping at eighty">
+<rect x="0" y="0" width="360" height="230" fill="#fff"/>
+<line x1="40" y1="20" x2="40" y2="195" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="195" x2="345" y2="195" stroke="#CBD5E1" stroke-width="2"/>
+<line x1="40" y1="50" x2="345" y2="50" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="320" y="44" font-size="12" fill="#B45309" font-weight="700">cap 80</text>
+<polyline points="60,180 110,135 160,100 210,75 260,58 300,52" fill="none" stroke="#6D28D9" stroke-width="3"/>
+<circle cx="60" cy="180" r="4" fill="#6D28D9"/><circle cx="110" cy="135" r="4" fill="#6D28D9"/><circle cx="160" cy="100" r="4" fill="#6D28D9"/><circle cx="210" cy="75" r="4" fill="#6D28D9"/><circle cx="260" cy="58" r="4" fill="#6D28D9"/><circle cx="300" cy="52" r="4" fill="#6D28D9"/>
+<text x="190" y="220" font-size="13" fill="#475569" text-anchor="middle">number of point tracks n</text>
+</svg><figcaption class="small">Rank caps at $80$; a one-dim nullspace fixes $\mathcal{Q}$ up to scale.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>Tracks, Dependencies, and the Null Direction</span></div>
+<aside class="speaker-notes">Stacking several point tracks does not simply add sixteen equations apiece; pairwise dependencies subtract rank along the curve sixteen-n minus n-choose-two. Six camera-consistent tracks would reach eighty-one, but the true tensor sits in the homogeneous nullspace, so the rank caps at eighty and the tensor is recovered up to scale.</aside>
+</section>
+
+<section class="slide" data-label="Correspondence Counting Regimes">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>Correspondence Counting Regimes</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Projective</h3><p>$11m - 15$ camera degrees of freedom.</p></div>
+<div class="panel teal"><h3>Affine</h3><p>$8m - 12$; the plane at infinity is fixed.</p></div>
+<div class="panel amber"><h3>Plane homographies</h3><p>$3m - 4$; only the last camera columns remain free.</p></div>
+</div>
+<div class="stack">
+<figure class="diagram"><svg viewBox="0 0 360 230" width="100%" role="img" aria-label="Three descending bars for projective affine and plane-plus-parallax freedom">
+<rect x="0" y="0" width="360" height="230" fill="#fff"/>
+<line x1="50" y1="195" x2="345" y2="195" stroke="#CBD5E1" stroke-width="2"/>
+<rect x="70" y="40" width="60" height="155" fill="#eff6ff" stroke="#2563EB" stroke-width="2"/>
+<text x="100" y="30" font-size="13" fill="#2563EB" text-anchor="middle" font-weight="700">11m−15</text>
+<rect x="160" y="90" width="60" height="105" fill="#f0fdfa" stroke="#0F766E" stroke-width="2"/>
+<text x="190" y="80" font-size="13" fill="#0F766E" text-anchor="middle" font-weight="700">8m−12</text>
+<rect x="250" y="145" width="60" height="50" fill="#fffbeb" stroke="#B45309" stroke-width="2"/>
+<text x="280" y="135" font-size="13" fill="#B45309" text-anchor="middle" font-weight="700">3m−4</text>
+<text x="195" y="218" font-size="13" fill="#475569" text-anchor="middle">remaining camera freedom shrinks</text>
+</svg><figcaption class="small">Less freedom means fewer correspondences are needed.</figcaption></figure>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>Correspondence Counting Regimes</span></div>
+<aside class="speaker-notes">The remaining camera freedom decides how many correspondences are needed. General projective cameras carry eleven-m minus fifteen degrees of freedom; affine cameras drop to eight-m minus twelve; and known plane homographies leave only three-m minus four. Coplanar reference points therefore simplify the four-view problem far more than a small perturbation would suggest.</aside>
+</section>
+
+<section class="slide alt" data-label="Synthesis: One Determinant Pattern">
+<div class="topline"><span class="eyebrow">Multiple View Geometry in Computer Vision</span><span>Chapter 17</span></div>
+<h2>Synthesis: One Determinant Pattern</h2>
+<div class="content">
+<div class="stack">
+<div class="panel blue"><h3>Joint image</h3><p>Every constraint is a rank or minor condition on the stacked cameras.</p></div>
+<div class="panel teal"><h3>One pattern, three reads</h3><p>$F$, $\mathcal{T}$, $\mathcal{Q}$ are the same determinant at $2$, $3$, $4$ views.</p></div>
+<div class="panel violet"><h3>Stable equations</h3><p>Orthonormal lines through each point recover the $16$ independent rows cleanly.</p></div>
+</div>
+<div class="stack">
+<div class="math-box" style="background:#f0fdfa"><div class="math-box-label">Recap of view-counts</div><p class="formula">$$\underbrace{F}_{2}\;\to\;\underbrace{\mathcal{T}}_{3}\;\to\;\underbrace{\mathcal{Q}}_{4}\;\to\;\varnothing$$</p></div>
+<div class="panel amber"><h3>Bottom line</h3><p>The quadrifocal tensor is the last new tensor; everything else reduces to it.</p></div>
+</div>
+</div>
+<div class="footer"><span>Printed pp. 411-433</span><span>Synthesis: One Determinant Pattern</span></div>
+<aside class="speaker-notes">All multi-view constraints reduce to rank and minor conditions on the joint image of the stacked cameras. The fundamental, trifocal, and quadrifocal tensors are one determinant pattern read at two, three, and four views. Choosing orthonormal lines through each point recovers exactly the independent equations with a controlled numerical scale.</aside>
+</section>
+
+</deck-stage>
+</body>
+</html>
