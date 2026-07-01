@@ -803,9 +803,27 @@ def load_course_manifest() -> dict[str, Any]:
         raise SystemExit(f"Missing {rel_posix(COURSE_MANIFEST)}") from None
 
 
+def load_existing_pdf_paths(path: Path = DEFAULT_OUTPUT) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    try:
+        manifest = read_json(path)
+    except json.JSONDecodeError:
+        return {}
+    rows = manifest.get("decks")
+    if not isinstance(rows, list):
+        return {}
+    return {
+        norm_rel(row["notebook_path"]): norm_rel(row["pdf_path"])
+        for row in rows
+        if isinstance(row, dict) and row.get("notebook_path") and row.get("pdf_path")
+    }
+
+
 def build_manifest() -> tuple[dict[str, Any], list[str]]:
     course_manifest = load_course_manifest()
     courses = course_manifest.get("courses", [])
+    existing_pdf_paths = load_existing_pdf_paths()
     rows: list[dict[str, str]] = []
     errors: list[str] = []
 
@@ -842,6 +860,8 @@ def build_manifest() -> tuple[dict[str, Any], list[str]]:
                 errors.append(f"Missing source span for {notebook['path']}")
 
             pdf_path = source_index.pick_pdf_path(source_entry)
+            if not pdf_path:
+                pdf_path = existing_pdf_paths.get(norm_rel(notebook["path"]), "")
             artifact_subtree = source_index.artifact_subtree(notebook_rel_course, source_entry)
             notebook_stem = Path(notebook_rel_course).stem.replace(".executed", "-executed")
             if notebook_rel_course.startswith("artifacts/") or notebook_stem.startswith("00-"):
